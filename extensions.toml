@@ -6,4 +6,10 @@
 # path = "ext/dev.you.thing" # submodule directory, pinned to the reviewed commit
 # subdir = "."               # where Cargo.toml + manifest.toml live inside it
 
-# (empty — the first submission adds the first entry)
+# First-party and in-tree — a third-party entry is a pinned submodule
+# instead; ext/dev.thiennguyen.sample/README.md carries the distinction.
+[[extension]]
+id = "dev.thiennguyen.sample"
+path = "ext/dev.thiennguyen.sample"
+subdir = "sample"
+

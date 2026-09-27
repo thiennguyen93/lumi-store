@@ -1,0 +1,83 @@
+# The sample extension's manifest — the file `ext::manifest` parses and the
+# review sheet will one day read. What `capabilities` names is what the host
+# lets the wasm reach; a call past that list is refused by name at runtime,
+# whatever the code inside the component asks for.
+[extension]
+id = "dev.thiennguyen.sample"
+name = "Sample"
+version = "0.1.0"
+description = "The reference extension: reads the selection, answers through the alert."
+author = "Thien Nguyen"
+
+capabilities = ["accessibility", "applications", "clipboard", "network"]
+
+[[command]]
+name = "translate"
+label = "Translate selection"
+
+[[command.params]]
+name = "target"
+label = "Translate into"
+kind = "select"
+default = "vi"
+
+[[command.params.options]]
+value = "vi"
+label = "Vietnamese"
+
+[[command.params.options]]
+value = "en"
+label = "English"
+
+[[command.params.options]]
+value = "ja"
+label = "Japanese"
+
+# A flow node too, so the dynamic half of the registry has a reference
+# contributor: Shout upper-cases each item's `text` and tacks the suffix on.
+# Pure compute — it shows that a node needs no capability at all to be
+# useful, and it is the fixture `ext::nodes`' tests run through the engine
+# boundary.
+[[node]]
+name = "shout"
+label = "Shout"
+summary = "Upper-cases each item's text field."
+
+[[node.params]]
+name = "suffix"
+label = "Suffix"
+kind = "text"
+default = "!"
+
+# The pane's own form: one field, read back through `lumi::setting`. The
+# action's `target` param outranks it when set — nearest wins — which is
+# the three-tier fallback the sample exists to demonstrate.
+[[settings]]
+name = "defaultTarget"
+label = "Default language"
+kind = "select"
+default = "vi"
+
+[[settings.options]]
+value = "vi"
+label = "Vietnamese"
+
+[[settings.options]]
+value = "en"
+label = "English"
+
+[[settings.options]]
+value = "ja"
+label = "Japanese"
+
+# The two commands below exist for `ext::runtime`'s tests, which need a guest
+# that misbehaves on purpose: one that never returns, and one that eats
+# memory until the limiter says no. A store submission carrying either would
+# be the review's problem; here they are the fixture.
+[[command]]
+name = "spin"
+label = "Spin forever (limit test)"
+
+[[command]]
+name = "grow"
+label = "Grow until refused (limit test)"

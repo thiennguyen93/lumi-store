@@ -1,0 +1,124 @@
+package lumi:ext;
+
+/// What an extension may be handed, cut into interfaces by capability.
+///
+/// The cut matters more than the contents: an interface here is the unit a
+/// manifest capability grants, and `ext::gate` is the one table that says
+/// which capabilities each interface costs. Every function lands on
+/// `flow::sdk::Host` — the trait that is already "the capability list" — so
+/// what an extension can reach and what a flow can reach stay one answer.
+///
+/// v0, deliberately unversioned: nothing here is a wire commitment until the
+/// store opens. The world imports every interface, and the grant is enforced
+/// per call by the host (`ext::runtime`), not by leaving imports out of the
+/// Linker — a Rust guest built from one SDK crate declares the whole world
+/// whether or not its code touches an interface, so a missing-import refusal
+/// would fire on extensions that never call the thing being refused. The
+/// enforcement is the same either way: in Lumi, not in the review sheet.
+
+/// The selected text in the frontmost application.
+///
+/// Costs `accessibility` — and reading it through the ⌘C fallback costs
+/// `clipboard` too, so the strategy is derived from the grant: both granted
+/// reads the way `selection.read` does, `accessibility` alone is the
+/// AX-only read that never touches the pasteboard.
+interface selection {
+    /// How the text was arrived at, `selection::How`'s wire spellings:
+    /// "accessibility", "copy", or "nothing".
+    record found {
+        text: string,
+        how: string,
+    }
+
+    read: func() -> result<found, string>;
+}
+
+/// The general pasteboard. Costs `clipboard`, both directions.
+interface clipboard {
+    /// The board's plain text, or none when it holds no text — an image, a
+    /// file, or nothing at all are one answer here, `Content::Empty`'s rule.
+    read-text: func() -> result<option<string>, string>;
+
+    write-text: func(text: string) -> result<_, string>;
+}
+
+/// Lumi's own alert overlay, styled from Settings. Costs nothing: it draws
+/// over the screen the way any of Lumi's own overlays do, reaches no other
+/// process, and is how an extension reports to the person at the keyboard.
+interface alert {
+    show: func(text: string) -> result<_, string>;
+}
+
+/// Hand a URL to whatever application claimed its scheme.
+///
+/// Web and mail addresses only — the URL was assembled by a component out
+/// of values it read off the desk, so it gets the narrow allowlist
+/// (`Host::open_url` carries the argument). Costs `applications`; a web
+/// address costs `network` too, `Action::OpenUrl`'s own split.
+interface open {
+    url: func(target: string) -> result<_, string>;
+}
+
+/// The extension's own settings, as saved in the Extensions pane.
+///
+/// Costs nothing: the values were typed into a form the extension's own
+/// manifest declared, so reading them back reaches nobody's desk. The
+/// answer is a JSON object as text, one key per declared field, with the
+/// manifest's defaults already filled in for anything the person never
+/// touched — an extension never has to know whether a value was chosen
+/// or defaulted, which is the same contract an untouched form field keeps
+/// in the sheet.
+interface settings {
+    read: func() -> string;
+}
+
+/// One HTTP request. Costs `network`.
+interface net {
+    record request {
+        /// Upper-cased by the host; an empty string is GET.
+        method: string,
+        url: string,
+        headers: list<tuple<string, string>>,
+        body: option<string>,
+    }
+
+    record response {
+        status: u16,
+        /// `status` in 200..300, the same thing `fetch` means by it.
+        ok: bool,
+        /// The final URL, which differs from the asked-for one after a
+        /// redirect.
+        url: string,
+        headers: list<tuple<string, string>>,
+        body: string,
+    }
+
+    fetch: func(request: request) -> result<response, string>;
+}
+
+world extension {
+    import selection;
+    import clipboard;
+    import alert;
+    import open;
+    import net;
+    import settings;
+
+    /// Run one of the commands the manifest declares.
+    ///
+    /// `params` is a JSON object as text — v0 keeps the boundary dumb; the
+    /// host renders `{{$…}}` in the values before they arrive. The answer
+    /// is a sentence for whoever invoked it, or a refusal the host reports
+    /// the way a failed action is reported.
+    export run-command: func(name: string, params: string) -> result<string, string>;
+
+    /// Run one of the flow nodes the manifest declares.
+    ///
+    /// `params` is the node's resolved params as a JSON object; `items` is
+    /// a JSON array of the incoming items' json (binary slots do not cross
+    /// this boundary in v0). The answer is a JSON array of the outgoing
+    /// items' json — an empty array kills the branch, which is the data-flow
+    /// rule every built-in node lives under. An error fails the node the
+    /// way a built-in's `NodeError` does.
+    export run-node: func(name: string, params: string, items: string) -> result<string, string>;
+}
