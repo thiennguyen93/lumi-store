@@ -131,16 +131,17 @@ def build_wasm(entry_id: str, crate: Path) -> Path:
     return wasm
 
 
-def pack(entry_id: str, manifest_path: Path, wasm_path: Path) -> bytes:
+def pack(entry_id: str, manifest_path: Path, wasm_path: Path, icon_path) -> bytes:
     """A reproducible tarball: fixed metadata, fixed order, no gzip
     timestamp — an unchanged extension republished is identical bytes,
     so mirrors and caches can compare instead of guessing."""
     buffer = io.BytesIO()
+    members = [("manifest.toml", manifest_path)]
+    if icon_path is not None:
+        members.append(("icon.svg", icon_path))
+    members.append(("extension.wasm", wasm_path))
     with tarfile.open(fileobj=buffer, mode="w") as tar:
-        for arcname, path in (
-            ("manifest.toml", manifest_path),
-            ("extension.wasm", wasm_path),
-        ):
+        for arcname, path in members:
             info = tar.gettarinfo(path, arcname=arcname)
             info.uid = info.gid = 0
             info.uname = info.gname = ""
@@ -198,12 +199,22 @@ def main():
         ext = check_manifest(entry_id, manifest)
 
         wasm = build_wasm(entry_id, crate)
-        package = pack(entry_id, manifest_path, wasm)
+        # In the package (signed, what the app trusts) AND beside it (a
+        # plain URL for the store page) — the same split as capabilities:
+        # the page shows a claim, the app reads the verified copy.
+        icon_path = crate / "icon.svg"
+        icon = icon_path if icon_path.exists() else None
+        package = pack(entry_id, manifest_path, wasm, icon)
         package_name = f"{entry_id}-{ext['version']}.tar.gz"
         package_path = DIST / package_name
         package_path.write_bytes(package)
         sign(entry_id, package_path)
 
+        icon_url = ""
+        if icon is not None:
+            icon_name = f"{entry_id}-{ext['version']}.svg"
+            (DIST / icon_name).write_bytes(icon.read_bytes())
+            icon_url = f"{BASE_URL}/{icon_name}"
         index.append(
             {
                 "id": entry_id,
@@ -212,6 +223,7 @@ def main():
                 "description": ext.get("description", ""),
                 "author": ext.get("author", ""),
                 "capabilities": ext.get("capabilities", []),
+                "icon": icon_url,
                 "package": f"{BASE_URL}/{package_name}",
                 "signature": f"{BASE_URL}/{package_name}.sig",
                 # Extra context the app tolerates and future surfaces can
@@ -235,6 +247,18 @@ def main():
     print(f"published {len(index)} extension(s) to {DIST}")
 
 
+def icon_img(entry: dict) -> str:
+    """An <img>, never inline SVG: the icon came out of a submission, and
+    an image context is where an SVG's scripts do not run."""
+    url = entry.get("icon", "")
+    if not url:
+        return ""
+    return (
+        f'<img class="icon" src="{html.escape(url, quote=True)}"'
+        ' alt="" width="28" height="28"> '
+    )
+
+
 def page(index: list) -> str:
     """The store's web face: the same index, browsable, with Install
     buttons that open `lumi://extensions/install?id=<id>`.
@@ -248,7 +272,7 @@ def page(index: list) -> str:
     """
     rows = "\n".join(
         f'''  <article>
-    <h2>{html.escape(e["name"])} <small>{html.escape(e["version"])}</small></h2>
+    <h2>{icon_img(e)}{html.escape(e["name"])} <small>{html.escape(e["version"])}</small></h2>
     <p class="by">{html.escape(e["author"])}</p>
     <p>{html.escape(e["description"])}</p>
     <p class="caps">{html.escape(", ".join(e["capabilities"]) or "reaches nothing outside Lumi")}</p>
