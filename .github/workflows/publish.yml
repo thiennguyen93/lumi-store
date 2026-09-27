@@ -1,0 +1,75 @@
+# Build every listed extension from its reviewed source, sign, publish.
+#
+# Merging to main is publishing — this runs on every push and rebuilds the
+# whole store, because the store is small and "rebuild everything" has no
+# stale-diff edge cases. Everything is rebuilt from pinned submodules, so
+# what ships is what was reviewed; packages are reproducible, so an
+# unchanged extension republished is identical bytes.
+#
+# The one `uses:` is pinned to a commit SHA, the Lumi repo's own rule: a
+# tag is a branch somebody can force-push, and this job holds the signing
+# key. Everything else is the runner's own toolchain, on purpose — every
+# third-party action here would be a supply-chain edge into the one job
+# that signs what every copy of Lumi trusts.
+name: publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: recursive
+
+      - name: Toolchain
+        run: |
+          rustup target add wasm32-wasip2
+          sudo apt-get update -q
+          sudo apt-get install -y -q minisign
+
+      # Into the runner's temp dir, never the workspace: the checkout is
+      # what a compromised submodule's build script can read, and the key
+      # must not be in it.
+      - name: Store key
+        env:
+          STORE_SIGNING_KEY: ${{ secrets.STORE_SIGNING_KEY }}
+        run: |
+          if [ -n "$STORE_SIGNING_KEY" ]; then
+            printf '%s\n' "$STORE_SIGNING_KEY" > "$RUNNER_TEMP/store.key"
+            chmod 600 "$RUNNER_TEMP/store.key"
+          fi
+
+      - name: Build, check, sign, index
+        env:
+          # The Pages URL until lumi.thiennguyen.dev/extensions/* proxies
+          # it; flip this line when the domain is wired so the index's own
+          # links name the canonical host.
+          BASE_URL: https://thiennguyen93.github.io/lumi-store/extensions
+          STORE_KEY_FILE: ${{ runner.temp }}/store.key
+        run: python3 scripts/publish.py
+
+      # A plain push to gh-pages rather than a deploy action — see the
+      # header. Force-pushed because the branch is an artifact, not
+      # history: the source of truth is main plus the submodule pins.
+      - name: Publish to gh-pages
+        run: |
+          cd dist
+          git init -q -b gh-pages
+          git config user.name "lumi-store ci"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          touch .nojekyll
+          git add -A
+          git commit -qm "publish ${GITHUB_SHA:0:7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" gh-pages

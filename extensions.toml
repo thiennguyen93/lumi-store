@@ -1,0 +1,9 @@
+# The reviewed list. One entry per extension; merging a change to this
+# file (or to a submodule pin) is what publishes.
+#
+# [[extension]]
+# id = "dev.you.thing"       # must equal the id in the manifest.toml
+# path = "ext/dev.you.thing" # submodule directory, pinned to the reviewed commit
+# subdir = "."               # where Cargo.toml + manifest.toml live inside it
+
+# (empty — the first submission adds the first entry)

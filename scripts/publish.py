@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+"""Build, check, sign and index every listed extension.
+
+The pipeline the README promises, in one file CI and a maintainer's
+laptop run identically:
+
+  extensions.toml -> for each entry:
+      cargo build --target wasm32-wasip2 (from the pinned submodule)
+      validate manifest.toml (the checks Lumi's installer re-runs)
+      pack manifest.toml + extension.wasm into a reproducible .tar.gz
+      minisign the tarball with the store key
+  -> dist/extensions/{index.json, *.tar.gz, *.tar.gz.sig}
+
+Fail-loud doctrine throughout: a bad manifest, a missing wasm, an absent
+signing key (with entries to sign) each stop the run with a sentence
+naming the entry — a package that cannot be verified must never be the
+one that quietly ships.
+
+The validation here mirrors `ext::manifest::parse` in the Lumi repo. Two
+copies is a known cost, paid for not needing a Lumi checkout to publish;
+the mirror is kept deliberately strict, and drift shows up as CI green /
+install refused — which the sample extension, once listed, turns into a
+CI-time signal.
+"""
+
+import hashlib
+import io
+import json
+import os
+import re
+import subprocess
+import sys
+import tarfile
+import tomllib
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+DIST = ROOT / "dist" / "extensions"
+BUILD = ROOT / "build"
+
+BASE_URL = os.environ.get(
+    "BASE_URL", "https://thiennguyen93.github.io/lumi-store/extensions"
+).rstrip("/")
+KEY_FILE = os.environ.get("STORE_KEY_FILE", "")
+
+# What Lumi's host lets an extension declare — ext/manifest.rs SUPPORTED.
+CAPABILITIES = {"accessibility", "applications", "clipboard", "network"}
+PARAM_KINDS = {"text", "textarea", "number", "bool", "select"}
+ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
+NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+
+
+def fail(entry_id: str, why: str):
+    sys.exit(f"error: {entry_id}: {why}")
+
+
+def check_params(entry_id: str, owner: str, params: list):
+    names = set()
+    for param in params:
+        name = param.get("name", "")
+        if not name.strip():
+            fail(entry_id, f"a param of {owner} has no name")
+        if name in names:
+            fail(entry_id, f"{owner} declares {name} twice")
+        names.add(name)
+        kind = param.get("kind", "")
+        if kind not in PARAM_KINDS:
+            fail(entry_id, f"{owner}'s {name} has unknown kind {kind!r}")
+        if kind == "select" and not param.get("options"):
+            fail(entry_id, f"{owner}'s {name} is a select with nothing to select")
+
+
+def check_manifest(entry_id: str, manifest: dict):
+    ext = manifest.get("extension") or fail(entry_id, "no [extension] table")
+    mid = ext.get("id", "")
+    if mid != entry_id:
+        fail(entry_id, f"manifest names itself {mid!r}; the entry and manifest id must match")
+    if not ID_RE.match(mid) or mid.startswith("."):
+        fail(entry_id, "id may hold only letters, digits, '.', '-', '_' and not start with '.'")
+    if not ext.get("name", "").strip():
+        fail(entry_id, "the extension has no name")
+    if not ext.get("version", "").strip():
+        fail(entry_id, "the extension has no version")
+    for word in ext.get("capabilities", []):
+        if word not in CAPABILITIES:
+            fail(entry_id, f"capability {word!r} is not one the host offers ({sorted(CAPABILITIES)})")
+    seen = set()
+    for command in manifest.get("command", []):
+        name = command.get("name", "")
+        if not name.strip():
+            fail(entry_id, "a command has no name")
+        if name in seen:
+            fail(entry_id, f"two commands are named {name}")
+        seen.add(name)
+        check_params(entry_id, name, command.get("params", []))
+    seen = set()
+    for node in manifest.get("node", []):
+        name = node.get("name", "")
+        if not NAME_RE.match(name):
+            fail(entry_id, f"node name {name!r} may hold only letters, digits, '-' and '_'")
+        if name in seen:
+            fail(entry_id, f"two nodes are named {name}")
+        seen.add(name)
+        check_params(entry_id, name, node.get("params", []))
+    check_params(entry_id, "settings", manifest.get("settings", []))
+    return ext
+
+
+def build_wasm(entry_id: str, crate: Path) -> Path:
+    cargo_toml = crate / "Cargo.toml"
+    if not cargo_toml.exists():
+        fail(entry_id, f"no Cargo.toml at {cargo_toml}")
+    with open(cargo_toml, "rb") as f:
+        package = tomllib.load(f).get("package", {}).get("name", "")
+    if not package:
+        fail(entry_id, "Cargo.toml names no [package]")
+    target_dir = BUILD / entry_id
+    subprocess.run(
+        [
+            "cargo", "build", "--release",
+            "--target", "wasm32-wasip2",
+            "--manifest-path", str(cargo_toml),
+            "--target-dir", str(target_dir),
+        ],
+        check=True,
+    )
+    wasm = target_dir / "wasm32-wasip2" / "release" / f"{package.replace('-', '_')}.wasm"
+    if not wasm.exists():
+        fail(entry_id, f"the build produced no {wasm.name}")
+    return wasm
+
+
+def pack(entry_id: str, manifest_path: Path, wasm_path: Path) -> bytes:
+    """A reproducible tarball: fixed metadata, fixed order, no gzip
+    timestamp — an unchanged extension republished is identical bytes,
+    so mirrors and caches can compare instead of guessing."""
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w") as tar:
+        for arcname, path in (
+            ("manifest.toml", manifest_path),
+            ("extension.wasm", wasm_path),
+        ):
+            info = tar.gettarinfo(path, arcname=arcname)
+            info.uid = info.gid = 0
+            info.uname = info.gname = ""
+            info.mtime = 0
+            info.mode = 0o644
+            with open(path, "rb") as f:
+                tar.addfile(info, f)
+    import gzip
+
+    out = io.BytesIO()
+    with gzip.GzipFile(fileobj=out, mode="wb", mtime=0) as gz:
+        gz.write(buffer.getvalue())
+    return out.getvalue()
+
+
+def sign(entry_id: str, package_path: Path):
+    if not KEY_FILE or not Path(KEY_FILE).exists():
+        fail(
+            entry_id,
+            "there are extensions to sign and no store key — add the "
+            "STORE_SIGNING_KEY secret (README: Owner setup)",
+        )
+    subprocess.run(
+        [
+            "minisign", "-S",
+            "-s", KEY_FILE,
+            "-x", str(package_path) + ".sig",
+            "-t", f"lumi-store {entry_id}",
+            "-m", str(package_path),
+        ],
+        check=True,
+    )
+
+
+def main():
+    with open(ROOT / "extensions.toml", "rb") as f:
+        listed = tomllib.load(f).get("extension", [])
+
+    DIST.mkdir(parents=True, exist_ok=True)
+    index = []
+
+    for entry in listed:
+        entry_id = entry.get("id", "") or sys.exit("error: an entry has no id")
+        crate = (ROOT / entry["path"] / entry.get("subdir", ".")).resolve()
+        # A submodule path that escapes the checkout is a listing lying
+        # about where its source lives.
+        if not str(crate).startswith(str(ROOT)):
+            fail(entry_id, f"path escapes the repository: {crate}")
+
+        manifest_path = crate / "manifest.toml"
+        if not manifest_path.exists():
+            fail(entry_id, f"no manifest.toml at {crate}")
+        with open(manifest_path, "rb") as f:
+            manifest = tomllib.load(f)
+        ext = check_manifest(entry_id, manifest)
+
+        wasm = build_wasm(entry_id, crate)
+        package = pack(entry_id, manifest_path, wasm)
+        package_name = f"{entry_id}-{ext['version']}.tar.gz"
+        package_path = DIST / package_name
+        package_path.write_bytes(package)
+        sign(entry_id, package_path)
+
+        index.append(
+            {
+                "id": entry_id,
+                "name": ext["name"],
+                "version": ext["version"],
+                "description": ext.get("description", ""),
+                "author": ext.get("author", ""),
+                "capabilities": ext.get("capabilities", []),
+                "package": f"{BASE_URL}/{package_name}",
+                "signature": f"{BASE_URL}/{package_name}.sig",
+                # Extra context the app tolerates and future surfaces can
+                # use; StoreEntry ignores unknown fields by design.
+                "sha256": hashlib.sha256(package).hexdigest(),
+            }
+        )
+
+    (DIST / "index.json").write_text(json.dumps(index, indent=2) + "\n")
+    print(f"published {len(index)} extension(s) to {DIST}")
+
+
+if __name__ == "__main__":
+    main()

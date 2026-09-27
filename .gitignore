@@ -1,0 +1,5 @@
+# CI artifacts — gh-pages is where they publish, main never holds them.
+/dist/
+/build/
+# Never, anywhere: the signing key lives in the repo secrets alone.
+store.key
