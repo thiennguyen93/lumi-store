@@ -44,7 +44,12 @@ after review.
    no secret, because a submission's build script runs inside it. Run the
    same thing locally with `python3 scripts/publish.py --check`.
 5. Merging is publishing: CI rebuilds every listed extension from source,
-   signs the packages, and rewrites the index.
+   signs the packages, and rewrites the index — in two halves that never
+   share a job. Each extension builds on a runner of its own, holding no
+   secret and a read-only token, and hands on its `extension.wasm` and
+   nothing else. The signing job runs no build and no submission's code:
+   it packs the manifest, icon and `ui/` from the reviewed source, signs,
+   and publishes. `.github/workflows/publish.yml` says why at length.
 
 ## What CI enforces
 
