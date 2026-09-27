@@ -3,3 +3,7 @@
 /build/
 # Never, anywhere: the signing key lives in the repo secrets alone.
 store.key
+# Local build leftovers: a crate built in place, and Python's bytecode cache
+# from running publish.py. CI builds into /build/ and neither is ever shipped.
+target/
+__pycache__/

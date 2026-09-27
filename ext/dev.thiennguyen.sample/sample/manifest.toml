@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.6.0"
+version = "0.7.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
@@ -56,9 +56,12 @@ label = "English"
 value = "ja"
 label = "Japanese"
 
-# Which Google Translate tab to open. A segmented control rather than a
-# select: four short answers read better side by side. Only "Text" uses the
-# selection; the other tabs want a file or an address on the page itself.
+# Which Google Translate tab to open. Declared `segmented` — four short
+# answers side by side — but each option carries a `note`, because only
+# "Text" uses the selection and that is not something the four words say.
+# A note turns the choice into radio rows so it is read before choosing;
+# Lumi decides that, not this file. Take the notes out and it is the
+# segmented control again.
 [[command.params]]
 name = "op"
 label = "Translate"
@@ -68,23 +71,51 @@ default = "translate"
 [[command.params.options]]
 value = "translate"
 label = "Text"
+note = "Translates what is selected in the front app."
 
 [[command.params.options]]
 value = "docs"
 label = "Documents"
+note = "Opens the page to upload a file. Reads no selection."
 
 [[command.params.options]]
 value = "images"
 label = "Images"
+note = "Opens the page to drop a picture. Reads no selection."
 
 [[command.params.options]]
 value = "websites"
 label = "Websites"
+note = "Opens the page to type an address. Reads no selection."
 
-# Two params, so the command asks for the sheet's width: a segmented control
-# of four does not fit in the column beside Action.
+# Any number of extra languages, each opened in a tab of its own beside the
+# first. The value reaches `run_command` as a JSON array of the ticked
+# values, in the order listed here — `["en","ja"]` — and `[]` when none is
+# ticked. Three options, so Lumi draws a tick beside each; past five it
+# would be a list that pops up.
+[[command.params]]
+name = "also"
+label = "Also open in"
+kind = "multiselect"
+default = []
+
+[[command.params.options]]
+value = "vi"
+label = "Vietnamese"
+
+[[command.params.options]]
+value = "en"
+label = "English"
+
+[[command.params.options]]
+value = "ja"
+label = "Japanese"
+
+# Three params, so the command asks for the sheet's width: the rows under
+# `op` do not fit in the column beside Action.
 [[command.layout]]
-rows = [["op"], ["target"]]
+rows = [["op"], ["target", "also"]]
+help.also = "A tab each. The language above is skipped here."
 
 # A flow node too, so there is a reference for contributing one: Shout
 # upper-cases each item's `text` and tacks the suffix on. Pure compute — it
