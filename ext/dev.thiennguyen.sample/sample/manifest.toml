@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.3.0"
+version = "0.4.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 
@@ -52,11 +52,17 @@ default = "!"
 # The pane's own form: one field, read back through `lumi::setting`. The
 # action's `target` param outranks it when set — nearest wins — which is
 # the three-tier fallback the sample exists to demonstrate.
+#
+# Kept per profile: someone translating into English at work and into
+# Japanese at home sets it once in each, and the code reading it does not
+# change at all — `lumi::setting` hands back the live profile's value.
+# Leave `scope` out (or write "mac") for one value across every profile.
 [[settings]]
 name = "defaultTarget"
 label = "Default language"
 kind = "select"
 default = "vi"
+scope = "profile"
 
 [[settings.options]]
 value = "vi"

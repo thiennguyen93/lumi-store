@@ -72,7 +72,8 @@ interface open {
 /// manifest's defaults already filled in for anything the person never
 /// touched — an extension never has to know whether a value was chosen
 /// or defaulted, which is the same contract an untouched form field keeps
-/// in the sheet.
+/// in the sheet. A field the manifest declares `scope = "profile"` holds
+/// the live profile's value, so the same read serves every profile.
 interface settings {
     read: func() -> string;
 }

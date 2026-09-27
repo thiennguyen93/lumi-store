@@ -74,12 +74,21 @@ def fail(entry_id: str, why: str):
     sys.exit(f"error: {entry_id}: {why}")
 
 
-def check_params(entry_id: str, owner: str, params: list):
+def check_params(entry_id: str, owner: str, params: list, settings: bool = False):
     names = set()
     for param in params:
         name = param.get("name", "")
         if not name.strip():
             fail(entry_id, f"a param of {owner} has no name")
+        # Mirrors the installer: only a [[settings]] field may say scope,
+        # and byProfile is the key Lumi keeps per-profile values under.
+        if settings and name == "byProfile":
+            fail(entry_id, "a setting may not be called byProfile: Lumi keeps per-profile values under that name")
+        scope = param.get("scope", "")
+        if scope not in ("", "mac", "profile"):
+            fail(entry_id, f"{owner}'s {name} has scope {scope!r} — mac and profile are the scopes")
+        if scope == "profile" and not settings:
+            fail(entry_id, f"{owner}'s {name} has a scope, which only a [[settings]] field may have")
         if name in names:
             fail(entry_id, f"{owner} declares {name} twice")
         names.add(name)
@@ -122,7 +131,7 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"two nodes are named {name}")
         seen.add(name)
         check_params(entry_id, name, node.get("params", []))
-    check_params(entry_id, "settings", manifest.get("settings", []))
+    check_params(entry_id, "settings", manifest.get("settings", []), settings=True)
     seen = set()
     for window in manifest.get("window", []):
         name = window.get("name", "")

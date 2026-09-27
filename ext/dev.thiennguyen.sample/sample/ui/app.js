@@ -52,9 +52,11 @@ async function load() {
 async function showProfile() {
   try {
     const { activeName, count } = await call({ kind: "profile" });
+    // The language is a per-profile setting, so the page says whose it is
+    // editing — and says nothing when there is only one profile to be in.
     profile.textContent =
       count > 1
-        ? `Live profile: ${activeName} (one of ${count}). This setting applies to all of them.`
+        ? `Live profile: ${activeName} (one of ${count}). The language below is saved for ${activeName}; each profile keeps its own.`
         : "";
   } catch (err) {
     profile.textContent = String(err.message || err);

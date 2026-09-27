@@ -113,11 +113,12 @@ fn translate(params: &str) -> Result<String, String> {
 
 /// Which profile the person is in, for the window's header line.
 ///
-/// The sample only *shows* it — its one setting applies to every profile
-/// alike — but this is the call an extension that keeps a value per
-/// profile starts from: key by `id`, which survives a rename; show
-/// `name`, which does not. Mapped by hand into the window's JSON because
-/// the dialect with the page is the sample's own, not the SDK's.
+/// Only for the words on the page: the sample's one setting is declared
+/// `scope = "profile"`, so Lumi already hands `lumi::setting` the live
+/// profile's value and saves the window's choice under it. The window
+/// uses this to say whose value it is editing. Mapped by hand into the
+/// window's JSON because the dialect with the page is the sample's own,
+/// not the SDK's.
 fn profiles() -> Result<String, String> {
     let book = lumi::profiles()?;
     let active = book.active_profile().map(|p| p.name.clone());

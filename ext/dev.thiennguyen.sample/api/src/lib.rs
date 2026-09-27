@@ -146,6 +146,8 @@ pub fn open_window(name: &str) -> Result<(), String> {
 
 /// Your settings, as chosen in the Extensions pane: one key per field the
 /// manifest declares, defaults already filled in for anything untouched.
+/// A field declared `scope = "profile"` holds the live profile's value —
+/// your code reads it the same way either way.
 pub fn settings() -> serde_json::Value {
     serde_json::from_str(&lumi::ext::settings::read())
         .unwrap_or_else(|_| serde_json::Value::Object(serde_json::Map::new()))
