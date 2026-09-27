@@ -8,7 +8,10 @@
 //! Extensions pane, then to Vietnamese, so the three tiers of "where does
 //! a value come from" are all exercised here. `spin` and `grow` exist for
 //! Lumi's own sandbox tests — a guest the deadline has to stop, and one the
-//! memory limit has to refuse — and so does the window's `config`
+//! memory limit has to refuse — as does `nap`, a guest that waits rather
+//! than computes, which only the deadline on the host's poll can stop; it
+//! is left out of `manifest.toml`, so only a test's own manifest can reach
+//! it. So does the window's `config`
 //! request, which reads a part of the person's setup that this manifest
 //! deliberately does not ask for, so the tests can watch it refused. Shipped in the sample on purpose: an SDK
 //! example that only shows the happy path teaches nobody what a trap
@@ -36,6 +39,13 @@ impl lumi::Guest for Sample {
                 // the point.
                 std::hint::black_box(0u64);
             },
+            "nap" => {
+                // A sleep is `subscribe-duration` and then `block` in the
+                // host, where the epoch interrupt cannot reach — so this
+                // never comes back unless the host's poll has a deadline.
+                std::thread::sleep(std::time::Duration::MAX);
+                Ok("woke up".to_string())
+            }
             "grow" => {
                 // Doubling pushes past any limit fast; the limiter refuses
                 // the grow and the allocation error surfaces as a trap.

@@ -4,10 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "Write Lumi extensions in Rust: the typed host bindings and the export macro."
 license = "MIT"
-# Not yet: the crate goes to crates.io when the store opens (phase 6) and
-# the WIT world is stamped a version. Until then the API is v0 and the
-# path dependency in `sample/` is the whole distribution.
-publish = false
+homepage = "https://lumikeys.app"
 
 [dependencies]
 wit-bindgen = "0.46"

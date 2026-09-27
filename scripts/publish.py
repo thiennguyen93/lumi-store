@@ -16,6 +16,27 @@ entry is validated, built from source and packed, and nothing is signed
 or indexed. It is what a pull request runs, in a job that holds no
 secret — see `.github/workflows/check.yml`.
 
+CI publishes in two halves, and the split is the security design rather
+than tidiness. `cargo build` runs a submission's `build.rs` and proc
+macros, and those of every crate it depends on, so the job that builds
+must hold nothing worth stealing — and the job that signs must run
+nothing it did not review:
+
+  --list              the listed ids, for the build matrix
+  --build ID OUT      validate and build one entry; write OUT/extension.wasm
+                      and nothing else (no key, read-only token, one entry
+                      per runner, so one submission's build cannot touch
+                      another's output)
+  --sign-built DIR    for every listed entry, take DIR/wasm-<id>/extension.wasm
+                      and nothing else from the build; pack the manifest,
+                      icon and ui/ from the reviewed source here; sign; index
+
+The wasm is the one thing a build produces, so it is the one thing that
+crosses from the untrusted half — a package whose manifest or ui/ came
+out of a build job could have been rewritten by that build. A plain
+`python3 scripts/publish.py` still does all of it in one process, for a
+maintainer's laptop, where the key and the build share a machine anyway.
+
 Fail-loud doctrine throughout: a bad manifest, a missing wasm, an absent
 signing key (with entries to sign) each stop the run with a sentence
 naming the entry — a package that cannot be verified must never be the
@@ -51,15 +72,27 @@ KEY_FILE = os.environ.get("STORE_KEY_FILE", "")
 
 # What Lumi lets an extension declare.
 CAPABILITIES = {"accessibility", "applications", "clipboard", "config", "network"}
-PARAM_KINDS = {"text", "textarea", "number", "bool", "select", "segmented", "multiselect"}
+PARAM_KINDS = {
+    "text", "textarea", "number", "bool", "select", "segmented", "slider",
+    "template", "app", "keys", "multiselect",
+}
 # The kinds whose value is one or more of their options.
 CHOICE_KINDS = {"select", "segmented", "multiselect"}
-ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
+# Lowercase only, as Lumi's `manifest::is_valid_id` is: the id is a
+# directory name on a case-insensitive filesystem, and a second spelling of
+# an installed id was a takeover of its directory.
+ID_RE = re.compile(r"^[a-z0-9._-]{1,100}$")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 # Mirrors the installer's ui-path alphabet and ceilings: what CI packs
 # is exactly what the installer will accept, so drift shows up here as a
 # failed publish instead of there as a refused install.
 UI_SEGMENT_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+# The installer's cap on extension.wasm, and the component-model header a
+# built component starts with: magic, then version 0x0d and layer 0x01.
+# Asked of what a build job hands the signing job, which trusts nothing
+# about it beyond those two facts.
+MAX_WASM = 48 * 1024 * 1024
+COMPONENT_HEADER = b"\x00asm\x0d\x00\x01\x00"
 MAX_UI_FILE = 5 * 1024 * 1024
 MAX_UI_FILES = 200
 MAX_UI_TOTAL = 24 * 1024 * 1024
@@ -276,41 +309,90 @@ def sign(entry_id: str, package_path: Path):
     )
 
 
-def main(check: bool = False):
+def listed_entries() -> list:
+    """The reviewed list — the only place any mode learns which
+    extensions exist. Never read from a build's output."""
     with open(ROOT / "extensions.toml", "rb") as f:
         listed = tomllib.load(f).get("extension", [])
-
-    DIST.mkdir(parents=True, exist_ok=True)
-    index = []
-
     for entry in listed:
         entry_id = entry.get("id", "") or sys.exit("error: an entry has no id")
-        crate = (ROOT / entry["path"] / entry.get("subdir", ".")).resolve()
-        # A submodule path that escapes the checkout is a listing lying
-        # about where its source lives.
-        if not str(crate).startswith(str(ROOT)):
-            fail(entry_id, f"path escapes the repository: {crate}")
+        if not ID_RE.match(entry_id) or entry_id.startswith("."):
+            fail(entry_id, "the listed id is not one Lumi would accept")
+    return listed
 
-        manifest_path = crate / "manifest.toml"
-        if not manifest_path.exists():
-            fail(entry_id, f"no manifest.toml at {crate}")
-        with open(manifest_path, "rb") as f:
-            manifest = tomllib.load(f)
-        ext = check_manifest(entry_id, manifest)
 
-        wasm = build_wasm(entry_id, crate)
-        # In the package (signed, what the app trusts) AND beside it (a
-        # plain URL for the store page) — the same split as capabilities:
-        # the page shows a claim, the app reads the verified copy.
-        icon_path = crate / "icon.svg"
-        icon = icon_path if icon_path.exists() else None
-        # Windows have to point at files that ship — the same cross-check
-        # Lumi's installer runs at the stage, made here first.
-        ui_dir = crate / "ui"
-        for window in manifest.get("window", []):
-            declared = window.get("path", "") or "index.html"
-            if not (ui_dir / declared).is_file():
-                fail(entry_id, f"window {window.get('name')} points at ui/{declared}, which does not exist")
+def sources(entry: dict):
+    """One entry's reviewed source, validated: where it lives, its
+    manifest, and the icon and ui/ that ship beside the wasm."""
+    entry_id = entry["id"]
+    crate = (ROOT / entry["path"] / entry.get("subdir", ".")).resolve()
+    # A submodule path that escapes the checkout is a listing lying
+    # about where its source lives.
+    if not str(crate).startswith(str(ROOT)):
+        fail(entry_id, f"path escapes the repository: {crate}")
+    manifest_path = crate / "manifest.toml"
+    if not manifest_path.exists():
+        fail(entry_id, f"no manifest.toml at {crate}")
+    with open(manifest_path, "rb") as f:
+        manifest = tomllib.load(f)
+    ext = check_manifest(entry_id, manifest)
+    # In the package (signed, what the app trusts) AND beside it (a
+    # plain URL for the store page) — the same split as capabilities:
+    # the page shows a claim, the app reads the verified copy.
+    icon_path = crate / "icon.svg"
+    icon = icon_path if icon_path.exists() else None
+    # Windows have to point at files that ship — the same cross-check
+    # Lumi's installer runs at the stage, made here first.
+    ui_dir = crate / "ui"
+    for window in manifest.get("window", []):
+        declared = window.get("path", "") or "index.html"
+        if not (ui_dir / declared).is_file():
+            fail(entry_id, f"window {window.get('name')} points at ui/{declared}, which does not exist")
+    ui_members(entry_id, ui_dir)
+    return crate, manifest_path, manifest, ext, icon, ui_dir
+
+
+def built_wasm(entry_id: str, built: Path) -> Path:
+    """The one file the signing half takes from a build job, held to the
+    two things that can be known about it without trusting the build: it
+    is no bigger than the installer takes, and it is a component."""
+    wasm = built / f"wasm-{entry_id}" / "extension.wasm"
+    if not wasm.is_file() or wasm.is_symlink():
+        fail(entry_id, f"the build handed over no extension.wasm at {wasm}")
+    size = wasm.stat().st_size
+    if size > MAX_WASM:
+        fail(entry_id, f"extension.wasm is {size} bytes; the installer caps it at {MAX_WASM}")
+    with open(wasm, "rb") as f:
+        if f.read(len(COMPONENT_HEADER)) != COMPONENT_HEADER:
+            fail(entry_id, "extension.wasm is not a WebAssembly component")
+    return wasm
+
+
+def build_one(entry_id: str, out: Path):
+    """`--build`: the untrusted half, for one entry. Validates the source
+    first so a bad manifest fails here, in the pull request's own terms,
+    rather than after a build."""
+    entry = next((e for e in listed_entries() if e["id"] == entry_id), None)
+    if entry is None:
+        sys.exit(f"error: {entry_id} is not in extensions.toml")
+    crate = sources(entry)[0]
+    wasm = build_wasm(entry_id, crate)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "extension.wasm").write_bytes(wasm.read_bytes())
+    print(f"built {entry_id} into {out}")
+
+
+def main(check: bool = False, built: "Path | None" = None):
+    listed = listed_entries()
+    DIST.mkdir(parents=True, exist_ok=True)
+    index = []
+    for entry in listed:
+        entry_id = entry["id"]
+        crate, manifest_path, manifest, ext, icon, ui_dir = sources(entry)
+        # From a build job when the halves are split, built here when they
+        # are not — and in both cases every other member of the package is
+        # packed from the reviewed source by this process.
+        wasm = build_wasm(entry_id, crate) if built is None else built_wasm(entry_id, built)
         package = pack(entry_id, manifest_path, wasm, icon, ui_dir)
         package_name = f"{entry_id}-{ext['version']}.tar.gz"
         package_path = DIST / package_name
@@ -440,8 +522,20 @@ No Lumi yet? <a href="https://lumikeys.app">Get it first.</a></p>
 """
 
 
+USAGE = "usage: publish.py [--check | --list | --build ID OUT | --sign-built DIR]"
+
 if __name__ == "__main__":
-    unknown = [arg for arg in sys.argv[1:] if arg != "--check"]
-    if unknown:
-        sys.exit(f"error: unknown argument {unknown[0]!r} — the one flag is --check")
-    main(check="--check" in sys.argv[1:])
+    args = sys.argv[1:]
+    if not args:
+        main()
+    elif args == ["--check"]:
+        main(check=True)
+    elif args == ["--list"]:
+        # One line for $GITHUB_OUTPUT: the build matrix.
+        print("entries=" + json.dumps([e["id"] for e in listed_entries()]))
+    elif len(args) == 3 and args[0] == "--build":
+        build_one(args[1], Path(args[2]))
+    elif len(args) == 2 and args[0] == "--sign-built":
+        main(built=Path(args[1]))
+    else:
+        sys.exit(f"error: {' '.join(args)!r} — {USAGE}")

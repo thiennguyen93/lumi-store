@@ -52,9 +52,15 @@
 //! extension being stopped — never as Lumi crashing, which is the point of
 //! the sandbox.
 //!
-//! The WIT world vendored under `wit/` is **v0 and unstable** until the
-//! extension store opens; the copy the host builds against lives in
-//! Lumi's own tree and CI holds the two byte-identical.
+//! The WIT world vendored under `wit/` is **0.1.0** — a wire commitment
+//! from here, not a moving target. The copy the host builds against lives
+//! in Lumi's own tree and CI holds the two byte-identical. A component
+//! built against it installs on every Lumi that speaks 0.1. A breaking
+//! change will bump the version, and a Lumi asked to install a component
+//! built for a version it does not speak refuses it at install and says
+//! which way to go — rebuild the extension, or update Lumi. Loading older
+//! worlds alongside the current one is planned and not built: until it
+//! is, a new world means rebuilding against the new crate.
 
 // In a module of its own because `pub_export_macro` emits helper macros at
 // the crate root *and* re-imports them where the macro ran — at the root
@@ -230,6 +236,10 @@ pub fn license() -> Edition {
 /// next Lumi hands you too — new fields may appear, existing ones keep
 /// their names. Read when you need it: the person can edit a row or switch
 /// profile at any moment, and nothing tells your component that they did.
+///
+/// A row that runs another extension's command arrives without its
+/// `action.params` — what the person typed into that extension's form is
+/// that extension's to read. Rows running your own commands keep theirs.
 ///
 /// There is no write, by design. If your extension wants to change what a
 /// keystroke does, offer a command or a flow node and let the person bind
