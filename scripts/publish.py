@@ -46,7 +46,7 @@ KEY_FILE = os.environ.get("STORE_KEY_FILE", "")
 
 # What Lumi lets an extension declare.
 CAPABILITIES = {"accessibility", "applications", "clipboard", "config", "network"}
-PARAM_KINDS = {"text", "textarea", "number", "bool", "select"}
+PARAM_KINDS = {"text", "textarea", "number", "bool", "select", "segmented"}
 ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 # Mirrors the installer's ui-path alphabet and ceilings: what CI packs
@@ -95,8 +95,10 @@ def check_params(entry_id: str, owner: str, params: list, settings: bool = False
         kind = param.get("kind", "")
         if kind not in PARAM_KINDS:
             fail(entry_id, f"{owner}'s {name} has unknown kind {kind!r}")
-        if kind == "select" and not param.get("options"):
+        if kind in ("select", "segmented") and not param.get("options"):
             fail(entry_id, f"{owner}'s {name} is a select with nothing to select")
+        if kind == "segmented" and len(param.get("options", [])) > 5:
+            fail(entry_id, f"{owner}'s {name} is segmented with {len(param['options'])} options — five fit side by side; use a select")
 
 
 def check_manifest(entry_id: str, manifest: dict):

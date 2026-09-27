@@ -61,7 +61,11 @@ impl lumi::Guest for Sample {
     /// own convention — the host carries them opaquely, which is the
     /// point: an extension and its UI agree between themselves.
     fn run_ui(window: String, request: String) -> Result<String, String> {
-        if window != "settings" {
+        // The same page answers in two places: its own window, and the
+        // Settings tab of the sample's page in Lumi's Extensions pane,
+        // where Lumi names it `:settings`. A colon is outside every window
+        // name, so the two can never be confused.
+        if window != "settings" && window != ":settings" {
             return Err(format!("the sample has no {window} window"));
         }
         let parsed: serde_json::Value =
@@ -103,6 +107,18 @@ fn translate(params: &str) -> Result<String, String> {
     let target = param(params, "target")
         .or_else(|| lumi::setting("defaultTarget").filter(|t| !t.is_empty()))
         .unwrap_or_else(|| "vi".to_string());
+    // Which of Google Translate's four tabs to open. Only `translate` takes
+    // text: the other three want a file uploaded or an address typed on the
+    // page itself, so they open on that tab with the target language set and
+    // read no selection — asking for one would spend a ⌘C for nothing.
+    let op = param(params, "op").unwrap_or_else(|| "translate".to_string());
+    if op != "translate" {
+        let Some(url) = mode_url(&op, &target) else {
+            return Err(format!("Google Translate has no {op:?} tab"));
+        };
+        lumi::open_url(&url)?;
+        return Ok(format!("opened translate {op} ({target})"));
+    }
     let found = lumi::selection()?;
     if found.text.is_empty() {
         // The alert is the answer here, not a failure: a press with nothing
@@ -183,6 +199,21 @@ fn translate_url(target: &str, text: &str) -> String {
         "https://translate.google.com/?sl=auto&tl={target}&text={}&op=translate",
         utf8_percent_encode(text, NON_ALPHANUMERIC)
     )
+}
+
+/// One of Google Translate's tabs that take no text in the address:
+/// documents, images and websites. The op is matched against the three the
+/// manifest offers rather than pasted into the URL, because a param is a
+/// string anybody can write into `config.json`.
+fn mode_url(op: &str, target: &str) -> Option<String> {
+    let op = match op {
+        "docs" | "images" | "websites" => op,
+        _ => return None,
+    };
+    Some(format!(
+        "https://translate.google.com/?sl=auto&tl={}&op={op}",
+        utf8_percent_encode(target, NON_ALPHANUMERIC)
+    ))
 }
 
 /// The reference node: upper-case each item's `text`, tack the suffix on.

@@ -1,40 +1,17 @@
-/* Matches the OS, not Lumi: this window is the extension's own, and
-   borrowing Lumi's tokens would promise a consistency the sandbox
-   cannot keep. */
-:root {
-  color-scheme: light dark;
-  font-family: -apple-system, system-ui, sans-serif;
-}
+/* Lumi's look comes from `/__lumi__/lumi.css`, linked in index.html — and put
+   in by Lumi anyway when this page is the Settings tab of the sample's page in
+   the Extensions pane. Everything in it has no specificity, so this file only
+   says what is the sample's own, and anything it says wins. */
 
-body {
-  margin: 0;
+/* The window needs an inset of its own; the pane's column already is one, so
+   embedded (Lumi marks the root `data-lumi-embedded`) the page has none. */
+:root:not([data-lumi-embedded]) body {
   padding: 20px 24px;
-  font-size: 13px;
-  line-height: 1.5;
 }
 
-h1 {
-  font-size: 16px;
-  margin: 0 0 4px;
-}
-
-label {
-  display: block;
-  font-weight: 600;
-  margin: 16px 0 4px;
-}
-
-select,
-textarea,
-button {
-  font: inherit;
-  max-width: 100%;
-}
-
-textarea {
-  width: 100%;
-  box-sizing: border-box;
-  resize: vertical;
+/* The pane's header already names the extension. */
+:root[data-lumi-embedded] h1 {
+  display: none;
 }
 
 button {
@@ -42,12 +19,9 @@ button {
 }
 
 .muted {
-  opacity: 0.65;
   margin: 6px 0;
 }
 
 code {
-  font-family: ui-monospace, monospace;
-  font-size: 12px;
   word-break: break-all;
 }

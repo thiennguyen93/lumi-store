@@ -1,0 +1,45 @@
+<!doctype html>
+<!-- The sample's About page. Lumi draws it inside the Extensions pane, in
+     place of the About page it would otherwise compose from manifest.toml,
+     so it is the one place an extension introduces itself in its own voice.
+     Two things are different from a window: the page is told Lumi's theme
+     as `?theme=light|dark`, so it can match the pane it sits in on its
+     first paint, and `run_ui` is told `:about` for any `call` it makes. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>About Sample</title>
+  <link rel="stylesheet" href="about.css">
+  <script src="about.js" defer></script>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">Reference extension</p>
+    <h1>One of everything, small enough to read.</h1>
+    <p class="lede">
+      Sample exists so an extension developer can see every surface Lumi
+      offers working at once, in a package short enough to read end to end.
+    </p>
+  </header>
+
+  <ul class="cards">
+    <li>
+      <strong>A command</strong>
+      <span>Translate selection reads what you selected and opens it in
+        Google Translate.</span>
+    </li>
+    <li>
+      <strong>A flow node</strong>
+      <span>Shout upper-cases each item's text — pure compute, no
+        capability needed.</span>
+    </li>
+    <li>
+      <strong>A window</strong>
+      <span>Sample settings talks to the extension's own WebAssembly
+        through the bridge.</span>
+    </li>
+  </ul>
+
+  <p class="small" id="language"></p>
+</body>
+</html>
