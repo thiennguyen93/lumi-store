@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- The sample's window: plain HTML and JS, no build step, so the file
+     the store reviews is the file the webview runs. A React app drops
+     its build output into this same ui/ directory and works the same
+     way — see extensions/README.md, "Windows". -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sample settings</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Sample</h1>
+  <p class="muted">
+    This dialog ships inside the extension package. It has no access to
+    Lumi's internals and no network — everything below talks to the
+    extension's own WebAssembly through the bridge.
+  </p>
+
+  <label for="target">Default language</label>
+  <select id="target">
+    <option value="vi">Vietnamese</option>
+    <option value="en">English</option>
+    <option value="ja">Japanese</option>
+  </select>
+  <p class="muted" id="saved"></p>
+
+  <label for="text">Try it</label>
+  <textarea id="text" rows="3" placeholder="Type something to translate…"></textarea>
+  <p class="muted">Would open: <code id="preview">—</code></p>
+  <button id="go">Open in Google Translate</button>
+  <p class="muted" id="said"></p>
+
+  <script src="app.js"></script>
+</body>
+</html>

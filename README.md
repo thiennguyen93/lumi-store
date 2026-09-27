@@ -43,8 +43,8 @@ after review.
 `scripts/publish.py` re-runs the checks Lumi's own installer runs —
 id/name alphabets, the supported-capability set, param kinds, selects with
 options — so a submission fails in the PR, not on somebody's Mac. (The
-long-term shape is running Lumi's `ext::manifest` itself as a check
-binary; until then this mirror is kept deliberately strict.)
+long-term shape is Lumi shipping its installer's checks as a standalone
+check tool; until then this mirror is kept deliberately strict.)
 
 Packages are reproducible tarballs (fixed metadata, sorted entries):
 rebuilding an unchanged extension publishes identical bytes.
@@ -62,12 +62,10 @@ rebuilding an unchanged extension publishes identical bytes.
    - Contents of `store.key` → repo secret **`STORE_SIGNING_KEY`**. Never
      commit it; treat a leak like a leaked updater key (anyone could sign
      packages every copy of Lumi trusts).
-   - The base64 line of `store.pub` → `STORE_PUBKEY` in Lumi's
-     `src-tauri/src/ext/install.rs`, together with turning the two tests
-     whose comments name their arms into real-vector tests.
+   - The base64 line of `store.pub` → compiled into Lumi as the store
+     key (with its verification tests fed real vectors).
 2. **Pages** — done: deploys from the `gh-pages` branch the CI run
    creates, and the account's Pages custom domain serves it at
    `https://thiennguyen.dev/lumi-store/extensions/index.json`, which is
-   the URL compiled into Lumi's store client (`ext/store.rs`) and the
-   `BASE_URL` the index's own links carry. Moving hosts later is one
-   flip of each.
+   the URL compiled into Lumi's store client and the `BASE_URL` the
+   index's own links carry. Moving hosts later is one flip of each.

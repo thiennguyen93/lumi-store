@@ -21,6 +21,13 @@ impl lumi::Guest for Sample {
     fn run_command(name: String, params: String) -> Result<String, String> {
         match name.as_str() {
             "translate" => translate(&params),
+            "configure" => {
+                // One line is the whole feature: the window is declared in
+                // the manifest, its files shipped in the package, and this
+                // call may only name what was declared.
+                lumi::open_window("settings")?;
+                Ok("opened the settings window".to_string())
+            }
             "spin" => loop {
                 // Nothing but compute, so nothing yields: the epoch
                 // interrupt is the only thing that can end this, which is
@@ -46,6 +53,37 @@ impl lumi::Guest for Sample {
             other => Err(format!("the sample has no {other} node")),
         }
     }
+
+    /// The window's half of the dialect: the page posts a JSON request to
+    /// `/__lumi__/call` and this answers it. The strings are the sample's
+    /// own convention — the host carries them opaquely, which is the
+    /// point: an extension and its UI agree between themselves.
+    fn run_ui(window: String, request: String) -> Result<String, String> {
+        if window != "settings" {
+            return Err(format!("the sample has no {window} window"));
+        }
+        let parsed: serde_json::Value =
+            serde_json::from_str(&request).map_err(|err| format!("request: {err}"))?;
+        let text = parsed.get("text").and_then(|t| t.as_str()).unwrap_or("");
+        let target = lumi::setting("defaultTarget")
+            .filter(|t| !t.is_empty())
+            .unwrap_or_else(|| "vi".to_string());
+        match parsed.get("kind").and_then(|k| k.as_str()) {
+            // What the translate command WOULD open, without opening it:
+            // the preview costs no capability at all.
+            Some("preview") => Ok(serde_json::json!({ "url": translate_url(&target, text) })
+                .to_string()),
+            // And the real thing, from a button: the open goes through the
+            // wasm's own `open.url`, where `applications` (+`network` for
+            // the web address) is checked like anywhere else — the window
+            // itself could never reach the browser.
+            Some("translate") => {
+                lumi::open_url(&translate_url(&target, text))?;
+                Ok(serde_json::json!({ "opened": true }).to_string())
+            }
+            other => Err(format!("the sample's window has no {other:?} request")),
+        }
+    }
 }
 
 fn translate(params: &str) -> Result<String, String> {
@@ -62,16 +100,21 @@ fn translate(params: &str) -> Result<String, String> {
         lumi::alert("Sample: nothing is selected to translate")?;
         return Ok("nothing selected".to_string());
     }
-    let url = format!(
-        "https://translate.google.com/?sl=auto&tl={target}&text={}&op=translate",
-        utf8_percent_encode(&found.text, NON_ALPHANUMERIC)
-    );
-    lumi::open_url(&url)?;
+    lumi::open_url(&translate_url(&target, &found.text))?;
     Ok(format!(
         "opened translate ({target}) for {} chars, via {}",
         found.text.chars().count(),
         found.how
     ))
+}
+
+/// One spelling of the Translate address, shared by the command and the
+/// window's requests so the preview can never disagree with the press.
+fn translate_url(target: &str, text: &str) -> String {
+    format!(
+        "https://translate.google.com/?sl=auto&tl={target}&text={}&op=translate",
+        utf8_percent_encode(text, NON_ALPHANUMERIC)
+    )
 }
 
 /// The reference node: upper-case each item's `text`, tack the suffix on.

@@ -16,7 +16,7 @@ signing key (with entries to sign) each stop the run with a sentence
 naming the entry — a package that cannot be verified must never be the
 one that quietly ships.
 
-The validation here mirrors `ext::manifest::parse` in the Lumi repo. Two
+The validation here mirrors Lumi's own installer checks. Two
 copies is a known cost, paid for not needing a Lumi checkout to publish;
 the mirror is kept deliberately strict, and drift shows up as CI green /
 install refused — which the sample extension, once listed, turns into a
@@ -44,11 +44,30 @@ BASE_URL = os.environ.get(
 ).rstrip("/")
 KEY_FILE = os.environ.get("STORE_KEY_FILE", "")
 
-# What Lumi's host lets an extension declare — ext/manifest.rs SUPPORTED.
+# What Lumi lets an extension declare.
 CAPABILITIES = {"accessibility", "applications", "clipboard", "network"}
 PARAM_KINDS = {"text", "textarea", "number", "bool", "select"}
 ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+# Mirrors the installer's ui-path alphabet and ceilings: what CI packs
+# is exactly what the installer will accept, so drift shows up here as a
+# failed publish instead of there as a refused install.
+UI_SEGMENT_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+MAX_UI_FILE = 5 * 1024 * 1024
+MAX_UI_FILES = 200
+MAX_UI_TOTAL = 24 * 1024 * 1024
+
+
+def is_valid_ui_path(path: str) -> bool:
+    if not path or len(path) > 512 or "\\" in path:
+        return False
+    return all(
+        segment
+        and not segment.startswith(".")
+        and segment != "__lumi__"
+        and UI_SEGMENT_RE.match(segment)
+        for segment in path.split("/")
+    )
 
 
 def fail(entry_id: str, why: str):
@@ -104,6 +123,17 @@ def check_manifest(entry_id: str, manifest: dict):
         seen.add(name)
         check_params(entry_id, name, node.get("params", []))
     check_params(entry_id, "settings", manifest.get("settings", []))
+    seen = set()
+    for window in manifest.get("window", []):
+        name = window.get("name", "")
+        if not NAME_RE.match(name):
+            fail(entry_id, f"window name {name!r} may hold only letters, digits, '-' and '_'")
+        if name in seen:
+            fail(entry_id, f"two windows are named {name}")
+        seen.add(name)
+        path = window.get("path", "") or "index.html"
+        if not is_valid_ui_path(path):
+            fail(entry_id, f"window {name} points at {path!r}, which is not a plain relative path")
     return ext
 
 
@@ -131,7 +161,34 @@ def build_wasm(entry_id: str, crate: Path) -> Path:
     return wasm
 
 
-def pack(entry_id: str, manifest_path: Path, wasm_path: Path, icon_path) -> bytes:
+def ui_members(entry_id: str, ui_dir: Path) -> list:
+    """Every file under ui/, as (arcname, path), sorted for the
+    reproducible pack — and held to the installer's own alphabet and
+    ceilings, so a publish that would be refused at install fails here,
+    naming the file."""
+    if not ui_dir.is_dir():
+        return []
+    members = []
+    total = 0
+    for path in sorted(ui_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(ui_dir).as_posix()
+        if not is_valid_ui_path(rel):
+            fail(entry_id, f"ui/{rel} is not a plain relative path Lumi would accept")
+        size = path.stat().st_size
+        if size > MAX_UI_FILE:
+            fail(entry_id, f"ui/{rel} is {size} bytes; the installer caps a ui file at {MAX_UI_FILE}")
+        total += size
+        members.append((f"ui/{rel}", path))
+    if len(members) > MAX_UI_FILES:
+        fail(entry_id, f"{len(members)} ui files; the installer caps a package at {MAX_UI_FILES}")
+    if total > MAX_UI_TOTAL:
+        fail(entry_id, f"the ui tree is {total} bytes; the installer caps it at {MAX_UI_TOTAL}")
+    return members
+
+
+def pack(entry_id: str, manifest_path: Path, wasm_path: Path, icon_path, ui_dir: Path) -> bytes:
     """A reproducible tarball: fixed metadata, fixed order, no gzip
     timestamp — an unchanged extension republished is identical bytes,
     so mirrors and caches can compare instead of guessing."""
@@ -139,6 +196,7 @@ def pack(entry_id: str, manifest_path: Path, wasm_path: Path, icon_path) -> byte
     members = [("manifest.toml", manifest_path)]
     if icon_path is not None:
         members.append(("icon.svg", icon_path))
+    members.extend(ui_members(entry_id, ui_dir))
     members.append(("extension.wasm", wasm_path))
     with tarfile.open(fileobj=buffer, mode="w") as tar:
         for arcname, path in members:
@@ -204,7 +262,14 @@ def main():
         # the page shows a claim, the app reads the verified copy.
         icon_path = crate / "icon.svg"
         icon = icon_path if icon_path.exists() else None
-        package = pack(entry_id, manifest_path, wasm, icon)
+        # Windows have to point at files that ship — the same cross-check
+        # Lumi's installer runs at the stage, made here first.
+        ui_dir = crate / "ui"
+        for window in manifest.get("window", []):
+            declared = window.get("path", "") or "index.html"
+            if not (ui_dir / declared).is_file():
+                fail(entry_id, f"window {window.get('name')} points at ui/{declared}, which does not exist")
+        package = pack(entry_id, manifest_path, wasm, icon, ui_dir)
         package_name = f"{entry_id}-{ext['version']}.tar.gz"
         package_path = DIST / package_name
         package_path.write_bytes(package)
@@ -223,11 +288,19 @@ def main():
                 "description": ext.get("description", ""),
                 "author": ext.get("author", ""),
                 "capabilities": ext.get("capabilities", []),
+                # Window titles, for the page and any future surface: the
+                # one contribution that draws arbitrary content deserves a
+                # line on the shelf too. Lumi ignores this field — the app
+                # reads windows out of the verified package's manifest.
+                "windows": [
+                    w.get("title") or w.get("name", "")
+                    for w in manifest.get("window", [])
+                ],
                 "icon": icon_url,
                 "package": f"{BASE_URL}/{package_name}",
                 "signature": f"{BASE_URL}/{package_name}.sig",
                 # Extra context the app tolerates and future surfaces can
-                # use; StoreEntry ignores unknown fields by design.
+                # use; Lumi tolerates unknown index fields by design.
                 "sha256": hashlib.sha256(package).hexdigest(),
             }
         )

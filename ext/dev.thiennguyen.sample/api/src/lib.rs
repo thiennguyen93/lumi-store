@@ -22,6 +22,10 @@
 //!     fn run_node(name: String, params: String, items: String) -> Result<String, String> {
 //!         Err(format!("no {name} node"))
 //!     }
+//!
+//!     fn run_ui(window: String, request: String) -> Result<String, String> {
+//!         Err(format!("no {window} window"))
+//!     }
 //! }
 //!
 //! lumi::register!(MyExtension);
@@ -121,6 +125,22 @@ pub fn set_clipboard_text(text: &str) -> Result<(), String> {
 /// local-network setting is enforced, whatever this request asks for.
 pub fn fetch(request: &Request) -> Result<Response, String> {
     lumi::ext::net::fetch(request)
+}
+
+/// Open (or focus) one of your own windows, by its manifest `name`.
+///
+/// A window is declared under `[[window]]` and drawn from the `ui/` files
+/// that shipped in your package — any static bundle; a React build's
+/// output is the expected shape. The page runs with no access to Lumi's
+/// internals and no network: it talks to your extension through `fetch`
+/// against its own origin — `GET`/`PUT /__lumi__/settings` for your
+/// settings, and
+/// `POST /__lumi__/call` with any string, which arrives at your
+/// [`Guest::run_ui`] under the same budget and capability gate as a
+/// command. A name the manifest does not declare is refused here, by
+/// name — the declaration is the grant.
+pub fn open_window(name: &str) -> Result<(), String> {
+    lumi::ext::ui::open_window(name)
 }
 
 /// Your settings, as chosen in the Extensions pane: one key per field the

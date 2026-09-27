@@ -5,7 +5,7 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.1.0"
+version = "0.2.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 
@@ -69,6 +69,25 @@ label = "English"
 [[settings.options]]
 value = "ja"
 label = "Japanese"
+
+# The sample's own window, drawn from the `ui/` files in the package —
+# plain HTML and JS here so the shipped source stays the reviewed source;
+# a React build's output drops into the same directory the same way. The
+# `configure` command opens it, so a shortcut can too.
+[[window]]
+name = "settings"
+title = "Sample settings"
+path = "index.html"
+width = 440
+height = 420
+# A settings dialog is a fixed thing: no resize handle, zoom button
+# greyed. The switches default on, so only the opt-outs are written.
+resizable = false
+maximizable = false
+
+[[command]]
+name = "configure"
+label = "Open sample settings"
 
 # The two commands below exist for `ext::runtime`'s tests, which need a guest
 # that misbehaves on purpose: one that never returns, and one that eats

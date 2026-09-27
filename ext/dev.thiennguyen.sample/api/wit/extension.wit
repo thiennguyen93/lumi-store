@@ -72,6 +72,19 @@ interface settings {
     read: func() -> string;
 }
 
+/// The extension's own windows, as declared under `[[window]]`.
+///
+/// Costs nothing beyond budget: a window here is the extension's own UI,
+/// drawn from the `ui/` files that shipped inside the reviewed package,
+/// in a webview with no access to Lumi's internals, whose only reach is
+/// the bridge back into this same component. The gate is the declaration —
+/// a name the manifest does not declare is refused, so the review sheet's
+/// list of windows is also the list of windows that can ever open.
+interface ui {
+    /// Open (or focus) one declared window by its manifest `name`.
+    open-window: func(name: string) -> result<_, string>;
+}
+
 /// One HTTP request. Costs `network`.
 interface net {
     record request {
@@ -103,6 +116,7 @@ world extension {
     import open;
     import net;
     import settings;
+    import ui;
 
     /// Run one of the commands the manifest declares.
     ///
@@ -121,4 +135,17 @@ world extension {
     /// rule every built-in node lives under. An error fails the node the
     /// way a built-in's `NodeError` does.
     export run-node: func(name: string, params: string, items: string) -> result<string, string>;
+
+    /// Answer one request from one of the extension's own windows.
+    ///
+    /// `window` is the declared window the request came from — the host
+    /// resolved it from the webview itself, so it cannot be spoofed by the
+    /// page. `request` is whatever the window's JavaScript posted to
+    /// `/__lumi__/call`, and the answer is handed back as the response
+    /// body — both opaque strings, JSON by convention, because the dialect
+    /// between an extension and its own UI is nobody's business but the
+    /// extension's. Runs under the same budget, capability gate and
+    /// deadline as a command: the window is a face on the sandbox, never a
+    /// door around it.
+    export run-ui: func(window: string, request: string) -> result<string, string>;
 }
