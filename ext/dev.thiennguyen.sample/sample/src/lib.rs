@@ -112,12 +112,18 @@ fn translate(params: &str) -> Result<String, String> {
     // page itself, so they open on that tab with the target language set and
     // read no selection — asking for one would spend a ⌘C for nothing.
     let op = param(params, "op").unwrap_or_else(|| "translate".to_string());
+    // The `also` multiselect: every language to open besides `target`, one
+    // tab each. The first tab is always `target`, so the list is the whole
+    // set of tabs in order.
+    let languages = languages(&target, params);
     if op != "translate" {
-        let Some(url) = mode_url(&op, &target) else {
-            return Err(format!("Google Translate has no {op:?} tab"));
-        };
-        lumi::open_url(&url)?;
-        return Ok(format!("opened translate {op} ({target})"));
+        for language in &languages {
+            let Some(url) = mode_url(&op, language) else {
+                return Err(format!("Google Translate has no {op:?} tab"));
+            };
+            lumi::open_url(&url)?;
+        }
+        return Ok(format!("opened translate {op} ({})", languages.join(", ")));
     }
     let found = lumi::selection()?;
     if found.text.is_empty() {
@@ -127,9 +133,12 @@ fn translate(params: &str) -> Result<String, String> {
         lumi::alert("Sample: nothing is selected to translate")?;
         return Ok("nothing selected".to_string());
     }
-    lumi::open_url(&translate_url(&target, &found.text))?;
+    for language in &languages {
+        lumi::open_url(&translate_url(language, &found.text))?;
+    }
     Ok(format!(
-        "opened translate ({target}) for {} chars, via {}",
+        "opened translate ({}) for {} chars, via {}",
+        languages.join(", "),
         found.text.chars().count(),
         found.how
     ))
@@ -192,11 +201,34 @@ fn config(section: &str) -> Result<String, String> {
     Ok(value.to_string())
 }
 
+/// `target` first, then each `also` language that is not already there.
+///
+/// A multiselect arrives as a JSON array in a string, because every param
+/// is a string — so it is parsed, and anything that is not an array of
+/// strings reads as nothing ticked. The params come out of `config.json`,
+/// which anybody can edit, so an entry is kept only if it is one of the
+/// codes the manifest offers: a value pasted into a URL is a value that can
+/// carry its own `&op=` with it.
+fn languages(target: &str, params: &str) -> Vec<String> {
+    const OFFERED: [&str; 3] = ["vi", "en", "ja"];
+    let also: Vec<String> = param(params, "also")
+        .and_then(|raw| serde_json::from_str(&raw).ok())
+        .unwrap_or_default();
+    let mut languages = vec![target.to_string()];
+    for language in also {
+        if OFFERED.contains(&language.as_str()) && !languages.contains(&language) {
+            languages.push(language);
+        }
+    }
+    languages
+}
+
 /// One spelling of the Translate address, shared by the command and the
 /// window's requests so the preview can never disagree with the press.
 fn translate_url(target: &str, text: &str) -> String {
     format!(
-        "https://translate.google.com/?sl=auto&tl={target}&text={}&op=translate",
+        "https://translate.google.com/?sl=auto&tl={}&text={}&op=translate",
+        utf8_percent_encode(target, NON_ALPHANUMERIC),
         utf8_percent_encode(text, NON_ALPHANUMERIC)
     )
 }

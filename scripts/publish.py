@@ -46,7 +46,9 @@ KEY_FILE = os.environ.get("STORE_KEY_FILE", "")
 
 # What Lumi lets an extension declare.
 CAPABILITIES = {"accessibility", "applications", "clipboard", "config", "network"}
-PARAM_KINDS = {"text", "textarea", "number", "bool", "select", "segmented"}
+PARAM_KINDS = {"text", "textarea", "number", "bool", "select", "segmented", "multiselect"}
+# The kinds whose value is one or more of their options.
+CHOICE_KINDS = {"select", "segmented", "multiselect"}
 ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 # Mirrors the installer's ui-path alphabet and ceilings: what CI packs
@@ -74,7 +76,7 @@ def fail(entry_id: str, why: str):
     sys.exit(f"error: {entry_id}: {why}")
 
 
-def check_params(entry_id: str, owner: str, params: list, settings: bool = False):
+def check_params(entry_id: str, owner: str, params: list, settings: bool = False, node: bool = False):
     names = set()
     for param in params:
         name = param.get("name", "")
@@ -95,10 +97,34 @@ def check_params(entry_id: str, owner: str, params: list, settings: bool = False
         kind = param.get("kind", "")
         if kind not in PARAM_KINDS:
             fail(entry_id, f"{owner}'s {name} has unknown kind {kind!r}")
-        if kind in ("select", "segmented") and not param.get("options"):
+        # The installer refuses a node's multiselect: the flow editor has no
+        # control holding several answers.
+        if kind == "multiselect" and node:
+            fail(entry_id, f"{owner}'s {name} is a multiselect, which a flow node cannot have yet — use one bool per option")
+        options = param.get("options", [])
+        if kind in CHOICE_KINDS and not options:
             fail(entry_id, f"{owner}'s {name} is a select with nothing to select")
-        if kind == "segmented" and len(param.get("options", [])) > 5:
-            fail(entry_id, f"{owner}'s {name} is segmented with {len(param['options'])} options — five fit side by side; use a select")
+        if kind == "segmented" and len(options) > 5:
+            fail(entry_id, f"{owner}'s {name} is segmented with {len(options)} options — five fit side by side; use a select")
+        if "search" in param and kind not in ("select", "multiselect"):
+            fail(entry_id, f"{owner}'s {name} has search, which only a select or a multiselect takes")
+        values = [option.get("value", "") for option in options]
+        for index, value in enumerate(values):
+            if value in values[:index]:
+                fail(entry_id, f"{owner}'s {name} offers the value {value!r} twice")
+        # A multiselect defaults to a list of its options; every other kind
+        # to a string. Absent is fine for both.
+        default = param.get("default", "")
+        if kind == "multiselect":
+            if not isinstance(default, list):
+                if default != "":
+                    fail(entry_id, f'{owner}\'s {name} is a multiselect, so its default is a list: default = ["a", "b"]')
+            else:
+                stray = next((value for value in default if value not in values), None)
+                if stray is not None:
+                    fail(entry_id, f"{owner}'s {name} defaults to {stray!r}, which is not one of its options")
+        elif isinstance(default, list):
+            fail(entry_id, f"{owner}'s {name} has a list for its default, which only a multiselect takes")
 
 
 def check_manifest(entry_id: str, manifest: dict):
@@ -132,7 +158,7 @@ def check_manifest(entry_id: str, manifest: dict):
         if name in seen:
             fail(entry_id, f"two nodes are named {name}")
         seen.add(name)
-        check_params(entry_id, name, node.get("params", []))
+        check_params(entry_id, name, node.get("params", []), node=True)
     check_params(entry_id, "settings", manifest.get("settings", []), settings=True)
     seen = set()
     for window in manifest.get("window", []):
