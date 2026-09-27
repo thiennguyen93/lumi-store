@@ -39,7 +39,11 @@ after review.
    the code actually calls, nothing phoning home, no misbehaviour shipped
    as a feature. Updates are PRs that bump the submodule commit and the
    manifest version.
-4. Merging is publishing: CI rebuilds every listed extension from source,
+4. Every PR is checked first: CI validates each manifest, builds each
+   extension from source and packs it, and signs nothing — the job holds
+   no secret, because a submission's build script runs inside it. Run the
+   same thing locally with `python3 scripts/publish.py --check`.
+5. Merging is publishing: CI rebuilds every listed extension from source,
    signs the packages, and rewrites the index.
 
 ## What CI enforces

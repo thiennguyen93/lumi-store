@@ -11,6 +11,11 @@ laptop run identically:
       minisign the tarball with the store key
   -> dist/extensions/{index.json, *.tar.gz, *.tar.gz.sig}
 
+`--check` runs everything up to the signature and stops there: every
+entry is validated, built from source and packed, and nothing is signed
+or indexed. It is what a pull request runs, in a job that holds no
+secret — see `.github/workflows/check.yml`.
+
 Fail-loud doctrine throughout: a bad manifest, a missing wasm, an absent
 signing key (with entries to sign) each stop the run with a sentence
 naming the entry — a package that cannot be verified must never be the
@@ -271,7 +276,7 @@ def sign(entry_id: str, package_path: Path):
     )
 
 
-def main():
+def main(check: bool = False):
     with open(ROOT / "extensions.toml", "rb") as f:
         listed = tomllib.load(f).get("extension", [])
 
@@ -310,7 +315,10 @@ def main():
         package_name = f"{entry_id}-{ext['version']}.tar.gz"
         package_path = DIST / package_name
         package_path.write_bytes(package)
-        sign(entry_id, package_path)
+        # A check has no key to sign with, by design: the job a pull
+        # request runs is the one a submission's build script runs in.
+        if not check:
+            sign(entry_id, package_path)
 
         icon_url = ""
         if icon is not None:
@@ -341,6 +349,13 @@ def main():
                 "sha256": hashlib.sha256(package).hexdigest(),
             }
         )
+
+    if check:
+        # Rendered and dropped: an index naming signatures that were never
+        # made is not something to leave lying in dist/ for a later push.
+        page(index)
+        print(f"checked {len(index)} extension(s): valid, built and packed; nothing signed")
+        return
 
     (DIST / "index.json").write_text(json.dumps(index, indent=2) + "\n")
     (DIST / "index.html").write_text(page(index))
@@ -415,4 +430,7 @@ No Lumi yet? <a href="https://lumikeys.app">Get it first.</a></p>
 
 
 if __name__ == "__main__":
-    main()
+    unknown = [arg for arg in sys.argv[1:] if arg != "--check"]
+    if unknown:
+        sys.exit(f"error: unknown argument {unknown[0]!r} — the one flag is --check")
+    main(check="--check" in sys.argv[1:])

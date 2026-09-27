@@ -1,0 +1,40 @@
+# Check a pull request the way publish.yml will build it on merge —
+# validate every manifest, build every extension from source, pack it —
+# and stop before the signature. Nothing is signed, indexed or deployed.
+#
+# `pull_request`, never `pull_request_target`, and that is the design: a
+# submission's own build script runs in this job (build.rs, proc macros),
+# so this job must hold nothing worth stealing. On `pull_request` a fork's
+# run gets no secrets and a read-only token; `pull_request_target` would
+# hand it the base repository's secrets, STORE_SIGNING_KEY among them —
+# the key every copy of Lumi trusts. The same reason keeps the token out of
+# the checkout (`persist-credentials: false`) and the permissions at read.
+#
+# Pinned to the commit SHA publish.yml pins, for publish.yml's reason.
+name: check
+
+on:
+  pull_request: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      # No minisign: nothing here signs.
+      - name: Toolchain
+        run: rustup target add wasm32-wasip2
+
+      - name: Validate, build, pack
+        run: python3 scripts/publish.py --check
