@@ -53,10 +53,10 @@ jobs:
 
       - name: Build, check, sign, index
         env:
-          # The Pages URL until lumi.thiennguyen.dev/extensions/* proxies
-          # it; flip this line when the domain is wired so the index's own
-          # links name the canonical host.
-          BASE_URL: https://thiennguyen93.github.io/lumi-store/extensions
+          # The Pages custom domain — the account serves *.github.io from
+          # thiennguyen.dev, so this is the URL that answers without a
+          # redirect, and the one compiled into Lumi's store client.
+          BASE_URL: https://thiennguyen.dev/lumi-store/extensions
           STORE_KEY_FILE: ${{ runner.temp }}/store.key
         run: python3 scripts/publish.py
 

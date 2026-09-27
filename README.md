@@ -65,11 +65,9 @@ rebuilding an unchanged extension publishes identical bytes.
    - The base64 line of `store.pub` → `STORE_PUBKEY` in Lumi's
      `src-tauri/src/ext/install.rs`, together with turning the two tests
      whose comments name their arms into real-vector tests.
-2. **Pages** — Settings → Pages → deploy from the `gh-pages` branch
-   (created by the first CI run). The index then lives at
-   `https://thiennguyen93.github.io/lumi-store/extensions/index.json`.
-3. **Domain** — point `lumi.thiennguyen.dev/extensions/*` at the Pages
-   output (proxy or redirect). Lumi's client reads only that URL; until it
-   answers, the in-app Store shows its not-open state. When the domain is
-   live, flip `BASE_URL` in `.github/workflows/publish.yml` so the index's
-   own links say the same host.
+2. **Pages** — done: deploys from the `gh-pages` branch the CI run
+   creates, and the account's Pages custom domain serves it at
+   `https://thiennguyen.dev/lumi-store/extensions/index.json`, which is
+   the URL compiled into Lumi's store client (`ext/store.rs`) and the
+   `BASE_URL` the index's own links carry. Moving hosts later is one
+   flip of each.
