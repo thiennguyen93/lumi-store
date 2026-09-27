@@ -24,6 +24,7 @@ CI-time signal.
 """
 
 import hashlib
+import html
 import io
 import json
 import os
@@ -220,7 +221,53 @@ def main():
         )
 
     (DIST / "index.json").write_text(json.dumps(index, indent=2) + "\n")
+    (DIST / "index.html").write_text(page(index))
     print(f"published {len(index)} extension(s) to {DIST}")
+
+
+def page(index: list) -> str:
+    """The store's web face: the same index, browsable, with Install
+    buttons that open `lumi://extensions/install?id=<id>`.
+
+    The link carries the id and nothing else — Lumi resolves it against
+    this same index over https and requires the store signature, so the
+    page (and any page copying its links) can start an install *review*,
+    never an install. Every string here came out of a reviewed manifest,
+    and is HTML-escaped anyway: review is a wall against malice, not
+    against an author's stray `<` breaking the shelf.
+    """
+    rows = "\n".join(
+        f'''  <article>
+    <h2>{html.escape(e["name"])} <small>{html.escape(e["version"])}</small></h2>
+    <p class="by">{html.escape(e["author"])}</p>
+    <p>{html.escape(e["description"])}</p>
+    <p class="caps">{html.escape(", ".join(e["capabilities"]) or "reaches nothing outside Lumi")}</p>
+    <p><a class="install" href="lumi://extensions/install?id={html.escape(e["id"], quote=True)}">Install in Lumi</a></p>
+  </article>'''
+        for e in index
+    )
+    if not rows:
+        rows = "  <p>Nothing is listed yet.</p>"
+    return f"""<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumi extensions</title>
+<style>
+  :root {{ color-scheme: light dark; font-family: -apple-system, system-ui, sans-serif; }}
+  body {{ max-width: 640px; margin: 3rem auto; padding: 0 16px; line-height: 1.5; }}
+  article {{ border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent); padding: 1rem 0; }}
+  small, .by, .caps {{ opacity: .65; }}
+  .caps {{ font-size: .85em; }}
+  .install {{ display: inline-block; padding: .4em 1em; border: 1px solid currentColor; border-radius: 8px; text-decoration: none; }}
+</style>
+<h1>Lumi extensions</h1>
+<p>Install opens Lumi, which downloads the package, verifies the store
+signature, and shows what the extension may reach before anything lands.
+No Lumi yet? <a href="https://lumikeys.app">Get it first.</a></p>
+{rows}
+</html>
+"""
 
 
 if __name__ == "__main__":
