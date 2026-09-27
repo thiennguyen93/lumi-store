@@ -6,11 +6,39 @@
 # what ships is what was reviewed; packages are reproducible, so an
 # unchanged extension republished is identical bytes.
 #
-# The one `uses:` is pinned to a commit SHA, the Lumi repo's own rule: a
-# tag is a branch somebody can force-push, and this job holds the signing
-# key. Everything else is the runner's own toolchain, on purpose — every
-# third-party action here would be a supply-chain edge into the one job
-# that signs what every copy of Lumi trusts.
+# **The build and the signature are different jobs, and that is the whole
+# design of this file.** `cargo build` runs a submission's `build.rs` and
+# proc macros, and those of every crate it depends on from crates.io — code
+# nobody here reviewed, in the job it runs in. This file used to build and
+# sign in one job. The key was written to `$RUNNER_TEMP` on the reasoning
+# that a build script reads the checkout, but a build script runs as the
+# runner's own user and can read any file the job can, and the path was in
+# the environment for it. The job's token could write `contents` too, and
+# `actions/checkout` leaves it in `.git/config`. One malicious or compromised
+# transitive crate was the store key — after which the signature every copy
+# of Lumi treats as the wall means nothing until an app release rotates it.
+#
+# So:
+#
+#   plan   reads the reviewed list. No submodules, nothing built.
+#   build  one runner per extension. No secret, a read-only token that is
+#          not persisted, and the only thing it hands on is extension.wasm —
+#          one extension's build cannot touch another's output, because it
+#          is on another machine.
+#   sign   runs no cargo and nothing from any submission. It takes the wasm
+#          and nothing else from each build, packs the manifest, icon and
+#          ui/ from the reviewed source itself (a build could have rewritten
+#          those on its own runner), signs, indexes, and pushes gh-pages.
+#          `publish.py --sign-built` is that step, and says why at length.
+#
+# What this does not close: an extension's own build can still put whatever
+# it likes in its *own* wasm. That is the author's code by definition, and
+# the review of its source and its dependencies is the wall for it.
+#
+# Every `uses:` is pinned to a commit SHA, the Lumi repo's own rule: a tag
+# is a branch somebody can force-push, and the sign job holds the key. The
+# only actions are GitHub's own checkout and artifact actions; everything
+# else is the runner's toolchain, on purpose.
 name: publish
 
 on:
@@ -18,52 +46,112 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
-permissions:
-  contents: write
+# Nothing by default; each job asks for what it needs.
+permissions: {}
 
 concurrency:
   group: publish
   cancel-in-progress: false
 
 jobs:
-  publish:
+  plan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      entries: ${{ steps.list.outputs.entries }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - id: list
+        run: python3 scripts/publish.py --list >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: true
+      matrix:
+        id: ${{ fromJSON(needs.plan.outputs.entries) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: recursive
+          persist-credentials: false
+
+      # No minisign and no secret: nothing here signs.
+      - name: Toolchain
+        run: rustup target add wasm32-wasip2
+
+      # Through the environment rather than `${{ }}` in the script: an
+      # expression is pasted into the shell before it runs. The id is
+      # already held to Lumi's alphabet by `--list`; this is the habit that
+      # does not depend on that.
+      - name: Validate and build
+        env:
+          ID: ${{ matrix.id }}
+        run: python3 scripts/publish.py --build "$ID" "$RUNNER_TEMP/out"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wasm-${{ matrix.id }}
+          path: ${{ runner.temp }}/out/extension.wasm
+          if-no-files-found: error
+          retention-days: 1
+
+  sign:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Submodules for their files — the manifests, icons and ui/ this job
+      # packs — and nothing here runs them: no cargo, no build script, no
+      # submission's code. Credentials not persisted, so nothing that reads
+      # the checkout finds a token in it; the push below names its own.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: recursive
+          persist-credentials: false
 
       - name: Toolchain
         run: |
-          rustup target add wasm32-wasip2
           sudo apt-get update -q
           sudo apt-get install -y -q minisign
 
-      # Into the runner's temp dir, never the workspace: the checkout is
-      # what a compromised submodule's build script can read, and the key
-      # must not be in it.
-      - name: Store key
+      # One directory per build, `wasm-<id>/extension.wasm`, which is the
+      # shape `--sign-built` reads. The id comes from the reviewed list,
+      # never from what an artifact is called.
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: wasm-*
+          path: ${{ runner.temp }}/built
+          merge-multiple: false
+
+      - name: Pack, sign, index
         env:
+          # The Pages custom domain — the account serves *.github.io from
+          # thiennguyen.dev, so this is the URL that answers without a
+          # redirect, and the one compiled into Lumi's store client.
+          BASE_URL: https://thiennguyen.dev/lumi-store/extensions
           STORE_SIGNING_KEY: ${{ secrets.STORE_SIGNING_KEY }}
         run: |
           if [ -n "$STORE_SIGNING_KEY" ]; then
             printf '%s\n' "$STORE_SIGNING_KEY" > "$RUNNER_TEMP/store.key"
             chmod 600 "$RUNNER_TEMP/store.key"
           fi
-
-      - name: Build, check, sign, index
-        env:
-          # The Pages custom domain — the account serves *.github.io from
-          # thiennguyen.dev, so this is the URL that answers without a
-          # redirect, and the one compiled into Lumi's store client.
-          BASE_URL: https://thiennguyen.dev/lumi-store/extensions
-          STORE_KEY_FILE: ${{ runner.temp }}/store.key
-        run: python3 scripts/publish.py
+          STORE_KEY_FILE="$RUNNER_TEMP/store.key" \
+            python3 scripts/publish.py --sign-built "$RUNNER_TEMP/built"
 
       # A plain push to gh-pages rather than a deploy action — see the
       # header. Force-pushed because the branch is an artifact, not
       # history: the source of truth is main plus the submodule pins.
       - name: Publish to gh-pages
+        env:
+          TOKEN: ${{ github.token }}
         run: |
           cd dist
           git init -q -b gh-pages
@@ -72,4 +160,4 @@ jobs:
           touch .nojekyll
           git add -A
           git commit -qm "publish ${GITHUB_SHA:0:7}"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          git push -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages

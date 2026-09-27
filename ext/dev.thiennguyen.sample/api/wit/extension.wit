@@ -1,4 +1,4 @@
-package lumi:ext;
+package lumi:ext@0.1.0;
 
 /// What an extension may be handed, cut into interfaces by capability.
 ///
@@ -8,14 +8,18 @@ package lumi:ext;
 /// reach through the same capability — never more, and never by a
 /// different road.
 ///
-/// v0, deliberately unversioned: nothing here is a wire commitment until the
-/// store opens. The world imports every interface, and Lumi checks the grant
-/// at every call rather than refusing to load a component that imports an
-/// interface its manifest did not ask for — a Rust guest built from one SDK
-/// crate declares the whole world whether or not its code touches an
-/// interface, so a load-time refusal would fire on extensions that never
-/// call the thing being refused. The enforcement is the same either way: in
-/// Lumi, at the call, not in the review sheet.
+/// v0.1, stamped the day the store's first release went out: from here,
+/// this is a wire commitment, not a moving target — a component built
+/// against this version keeps working in a later Lumi. The world still
+/// imports every interface unconditionally, and Lumi still checks the
+/// grant at every call rather than refusing to load a component that
+/// imports an interface its manifest did not ask for — a Rust guest built
+/// from one SDK crate declares the whole world whether or not its code
+/// touches an interface, so a load-time refusal would fire on extensions
+/// that never call the thing being refused. The enforcement is the same
+/// either way: in Lumi, at the call, not in the review sheet. A breaking
+/// change to an interface bumps this version and adds a new world Lumi
+/// keeps loadable alongside it — Zed's model, per `extensions/STORE.md`.
 
 /// The selected text in the frontmost application.
 ///

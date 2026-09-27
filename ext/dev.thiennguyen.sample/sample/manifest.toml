@@ -6,7 +6,8 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.7.0"
+version = "0.8.0"
+min-lumi-version = "1.21.1"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
