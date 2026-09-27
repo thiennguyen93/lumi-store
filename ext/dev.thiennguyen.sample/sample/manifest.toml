@@ -6,15 +6,37 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.5.0"
+version = "0.6.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
+# The longer text Lumi's own About page leads with. `description` is the one
+# line the Extensions list has room for.
+summary = "The reference extension: one of everything an extension can add to Lumi — a command, a flow node, a setting, a window and an About page — each small enough to read in one sitting."
+homepage = "https://lumikeys.app/docs/extensions"
+# The extension's own About page, under ui/. Lumi draws it inside the
+# Extensions pane in place of the page it would compose from this manifest;
+# the Permissions tab beside it stays Lumi's, so a page cannot restate what
+# the extension reaches. It gets the settings bridge and no `call`.
+about = "about.html"
+# And a Settings tab of its own: the same page the settings window shows,
+# drawn in place of the form Lumi would compose from [[settings]] below.
+# [[settings]] still declares what may be stored — the page saves through
+# the bridge, which keeps declared fields only.
+settings-page = "index.html"
+# How the shortcut sheet's action picker lists the commands below: `auto`
+# (the default) puts two or more behind a submenu named after the extension
+# and lists a single command directly; `group` and `flat` force either.
+menu = "auto"
 
 capabilities = ["accessibility", "applications", "clipboard", "network"]
 
 [[command]]
 name = "translate"
 label = "Translate selection"
+# A command's mark in the action picker and the shortcut list: a Lucide icon
+# name from Lumi's icon set, or an .svg file under ui/ (see `grow` below). A
+# name Lumi does not ship falls back to the extension's icon.svg.
+icon = "globe"
 
 [[command.params]]
 name = "target"
@@ -33,6 +55,36 @@ label = "English"
 [[command.params.options]]
 value = "ja"
 label = "Japanese"
+
+# Which Google Translate tab to open. A segmented control rather than a
+# select: four short answers read better side by side. Only "Text" uses the
+# selection; the other tabs want a file or an address on the page itself.
+[[command.params]]
+name = "op"
+label = "Translate"
+kind = "segmented"
+default = "translate"
+
+[[command.params.options]]
+value = "translate"
+label = "Text"
+
+[[command.params.options]]
+value = "docs"
+label = "Documents"
+
+[[command.params.options]]
+value = "images"
+label = "Images"
+
+[[command.params.options]]
+value = "websites"
+label = "Websites"
+
+# Two params, so the command asks for the sheet's width: a segmented control
+# of four does not fit in the column beside Action.
+[[command.layout]]
+rows = [["op"], ["target"]]
 
 # A flow node too, so there is a reference for contributing one: Shout
 # upper-cases each item's `text` and tacks the suffix on. Pure compute — it
@@ -94,6 +146,7 @@ maximizable = false
 [[command]]
 name = "configure"
 label = "Open sample settings"
+icon = "sliders-horizontal"
 
 # The two commands below exist for Lumi's own sandbox tests, which need a
 # guest that misbehaves on purpose: one that never returns, and one that eats
@@ -102,7 +155,9 @@ label = "Open sample settings"
 [[command]]
 name = "spin"
 label = "Spin forever (limit test)"
+icon = "refresh-cw"
 
 [[command]]
 name = "grow"
 label = "Grow until refused (limit test)"
+icon = "icons/grow.svg"
