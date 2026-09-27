@@ -17,8 +17,12 @@ after review.
 
 1. Your extension is a public git repo: a Rust crate depending on
    `lumi-extension-api`, with `manifest.toml` beside the crate's
-   `Cargo.toml`. Copy Lumi's `extensions/sample/` to start;
-   `extensions/README.md` in the Lumi repo is the developer guide.
+   `Cargo.toml`. The developer guide is
+   [docs.lumikeys.app/extensions](https://docs.lumikeys.app/extensions) —
+   a first extension, the manifest, the SDK reference, windows and
+   publishing. `ext/dev.thiennguyen.sample/sample/` is a working
+   extension to copy from, and `ext/dev.thiennguyen.sample/api/` is the
+   SDK crate the guide's git dependency points at.
 2. Open a PR that
    - adds your repo as a submodule under `ext/<your-extension-id>`,
      pinned to the exact commit you are submitting, and
