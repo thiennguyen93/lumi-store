@@ -325,11 +325,22 @@ def main(check: bool = False):
             icon_name = f"{entry_id}-{ext['version']}.svg"
             (DIST / icon_name).write_bytes(icon.read_bytes())
             icon_url = f"{BASE_URL}/{icon_name}"
+        # Same two spellings the host's own manifest reader accepts
+        # (`min-lumi-version`, aliased from `min_lumi_version`) — mirrored
+        # into the index so Lumi's update check can word a recommendation
+        # without downloading the package first. Browse copy, same trust
+        # level as every other field here: the real floor is still enforced
+        # by the host against the *verified* package's own manifest at
+        # install time, never by this string.
+        min_lumi_version = (
+            ext.get("min-lumi-version") or ext.get("min_lumi_version") or ""
+        ).strip()
         index.append(
             {
                 "id": entry_id,
                 "name": ext["name"],
                 "version": ext["version"],
+                "minLumiVersion": min_lumi_version,
                 "description": ext.get("description", ""),
                 "author": ext.get("author", ""),
                 "capabilities": ext.get("capabilities", []),
