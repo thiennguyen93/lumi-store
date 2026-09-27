@@ -222,6 +222,16 @@ def main():
 
     (DIST / "index.json").write_text(json.dumps(index, indent=2) + "\n")
     (DIST / "index.html").write_text(page(index))
+    # The site root: /lumi-store/ answered 404 while everything lived one
+    # directory down, which reads as the whole store being broken. One
+    # kind of thing per path segment — /extensions/ today, /templates/
+    # later — and the root points at the shelf people mean.
+    (DIST.parent / "index.html").write_text(
+        '<!doctype html><meta charset="utf-8">'
+        '<meta http-equiv="refresh" content="0; url=extensions/">'
+        '<title>Lumi store</title>'
+        '<a href="extensions/">Lumi extensions</a>\n'
+    )
     print(f"published {len(index)} extension(s) to {DIST}")
 
 
