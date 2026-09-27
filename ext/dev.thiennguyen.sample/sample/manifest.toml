@@ -1,11 +1,12 @@
-# The sample extension's manifest — the file `ext::manifest` parses and the
-# review sheet will one day read. What `capabilities` names is what the host
-# lets the wasm reach; a call past that list is refused by name at runtime,
-# whatever the code inside the component asks for.
+# The sample extension's manifest — the file Lumi's installer checks and the
+# review sheet reads to the person before anything is installed. What
+# `capabilities` names is what Lumi lets the wasm reach; a call past that list
+# is refused by name at runtime, whatever the code inside the component asks
+# for.
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.2.0"
+version = "0.3.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 
@@ -33,11 +34,10 @@ label = "English"
 value = "ja"
 label = "Japanese"
 
-# A flow node too, so the dynamic half of the registry has a reference
-# contributor: Shout upper-cases each item's `text` and tacks the suffix on.
-# Pure compute — it shows that a node needs no capability at all to be
-# useful, and it is the fixture `ext::nodes`' tests run through the engine
-# boundary.
+# A flow node too, so there is a reference for contributing one: Shout
+# upper-cases each item's `text` and tacks the suffix on. Pure compute — it
+# shows that a node needs no capability at all to be useful, and it doubles
+# as the fixture Lumi's own tests run a flow node through.
 [[node]]
 name = "shout"
 label = "Shout"
@@ -79,7 +79,7 @@ name = "settings"
 title = "Sample settings"
 path = "index.html"
 width = 440
-height = 420
+height = 450
 # A settings dialog is a fixed thing: no resize handle, zoom button
 # greyed. The switches default on, so only the opt-outs are written.
 resizable = false
@@ -89,8 +89,8 @@ maximizable = false
 name = "configure"
 label = "Open sample settings"
 
-# The two commands below exist for `ext::runtime`'s tests, which need a guest
-# that misbehaves on purpose: one that never returns, and one that eats
+# The two commands below exist for Lumi's own sandbox tests, which need a
+# guest that misbehaves on purpose: one that never returns, and one that eats
 # memory until the limiter says no. A store submission carrying either would
 # be the review's problem; here they are the fixture.
 [[command]]

@@ -4,7 +4,8 @@
 //   PUT  /__lumi__/settings   — declared fields only; the host filters
 //   POST /__lumi__/call       — lands in the extension's run-ui export,
 //                               under the same budget and capability
-//                               gate as a command
+//                               gate as a command (the preview, the
+//                               translate button, and the profile line)
 //
 // Same-origin fetch is the only thing this page can do: the CSP the host
 // stamps on every response is `default-src 'self'`, so a request to
@@ -15,6 +16,7 @@ const saved = document.getElementById("saved");
 const text = document.getElementById("text");
 const preview = document.getElementById("preview");
 const said = document.getElementById("said");
+const profile = document.getElementById("profile");
 
 async function call(request) {
   const answer = await fetch("/__lumi__/call", {
@@ -45,6 +47,20 @@ async function load() {
   if (settings.defaultTarget) target.value = settings.defaultTarget;
 }
 
+// Asked on every open rather than remembered: the person may have switched
+// profile since the window last drew, and nothing tells the page.
+async function showProfile() {
+  try {
+    const { activeName, count } = await call({ kind: "profile" });
+    profile.textContent =
+      count > 1
+        ? `Live profile: ${activeName} (one of ${count}). This setting applies to all of them.`
+        : "";
+  } catch (err) {
+    profile.textContent = String(err.message || err);
+  }
+}
+
 target.addEventListener("change", async () => {
   saved.textContent = "";
   const answer = await fetch("/__lumi__/settings", {
@@ -69,3 +85,4 @@ document.getElementById("go").addEventListener("click", async () => {
 });
 
 load().then(refreshPreview);
+showProfile();

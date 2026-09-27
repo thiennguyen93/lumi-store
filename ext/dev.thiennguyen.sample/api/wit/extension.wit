@@ -3,28 +3,30 @@ package lumi:ext;
 /// What an extension may be handed, cut into interfaces by capability.
 ///
 /// The cut matters more than the contents: an interface here is the unit a
-/// manifest capability grants, and `ext::gate` is the one table that says
-/// which capabilities each interface costs. Every function lands on
-/// `flow::sdk::Host` — the trait that is already "the capability list" — so
-/// what an extension can reach and what a flow can reach stay one answer.
+/// manifest capability grants, and each interface's doc says what it
+/// costs. An extension reaches exactly what one of Lumi's own flows could
+/// reach through the same capability — never more, and never by a
+/// different road.
 ///
 /// v0, deliberately unversioned: nothing here is a wire commitment until the
-/// store opens. The world imports every interface, and the grant is enforced
-/// per call by the host (`ext::runtime`), not by leaving imports out of the
-/// Linker — a Rust guest built from one SDK crate declares the whole world
-/// whether or not its code touches an interface, so a missing-import refusal
-/// would fire on extensions that never call the thing being refused. The
-/// enforcement is the same either way: in Lumi, not in the review sheet.
+/// store opens. The world imports every interface, and Lumi checks the grant
+/// at every call rather than refusing to load a component that imports an
+/// interface its manifest did not ask for — a Rust guest built from one SDK
+/// crate declares the whole world whether or not its code touches an
+/// interface, so a load-time refusal would fire on extensions that never
+/// call the thing being refused. The enforcement is the same either way: in
+/// Lumi, at the call, not in the review sheet.
 
 /// The selected text in the frontmost application.
 ///
 /// Costs `accessibility` — and reading it through the ⌘C fallback costs
-/// `clipboard` too, so the strategy is derived from the grant: both granted
-/// reads the way `selection.read` does, `accessibility` alone is the
-/// AX-only read that never touches the pasteboard.
+/// `clipboard` too, so the strategy follows the grant: both granted tries
+/// Accessibility first and falls back to a ⌘C, the way Lumi's own flows
+/// read a selection; `accessibility` alone is the Accessibility-only read
+/// that never touches the pasteboard.
 interface selection {
-    /// How the text was arrived at, `selection::How`'s wire spellings:
-    /// "accessibility", "copy", or "nothing".
+    /// How the text was arrived at: "accessibility", "copy", or
+    /// "nothing".
     record found {
         text: string,
         how: string,
@@ -36,7 +38,7 @@ interface selection {
 /// The general pasteboard. Costs `clipboard`, both directions.
 interface clipboard {
     /// The board's plain text, or none when it holds no text — an image, a
-    /// file, or nothing at all are one answer here, `Content::Empty`'s rule.
+    /// file, or nothing at all are one answer here: no text.
     read-text: func() -> result<option<string>, string>;
 
     write-text: func(text: string) -> result<_, string>;
@@ -52,9 +54,12 @@ interface alert {
 /// Hand a URL to whatever application claimed its scheme.
 ///
 /// Web and mail addresses only — the URL was assembled by a component out
-/// of values it read off the desk, so it gets the narrow allowlist
-/// (`Host::open_url` carries the argument). Costs `applications`; a web
-/// address costs `network` too, `Action::OpenUrl`'s own split.
+/// of values it read off the desk, so it gets the same narrow allowlist
+/// Lumi keeps for a URL whose scheme came out of another application's
+/// window, rather than the any-scheme door of a URL the person typed
+/// themselves. Costs
+/// `applications`; a web address costs `network` too, the same split Lumi's
+/// own Open URL action makes.
 interface open {
     url: func(target: string) -> result<_, string>;
 }
@@ -70,6 +75,42 @@ interface open {
 /// in the sheet.
 interface settings {
     read: func() -> string;
+}
+
+/// The person's profiles, and which one is live.
+///
+/// A profile is a whole set of automations — shortcuts, menus, snippets,
+/// flows — that the person switches between, one live at a time: work and
+/// home, or one per client. An extension is installed once for the whole
+/// Mac, so this is how it tells the sets apart: to keep a value per profile
+/// in its own storage, to word something by the set the person is in, or to
+/// offer a choice between them in one of its windows.
+///
+/// Costs nothing: the names are labels the person typed for their own sets,
+/// and reading them reaches no other application. One read answers both
+/// halves, so a switch landing between two calls can never pair one
+/// profile's list with another moment's live id. Read it when you need it —
+/// the person may switch at any time, and nothing tells a component that
+/// they did.
+interface profiles {
+    record profile {
+        /// Stable for the life of the profile: a rename keeps it, and it is
+        /// never reused while the profile exists. The key to store by.
+        id: string,
+        /// What the person calls it. Renamed at will — show it, never
+        /// store by it.
+        name: string,
+    }
+
+    record book {
+        /// The `id` of the live profile — always one of `profiles`.
+        active: string,
+        /// Every profile on this Mac, in the order Lumi lists them. Never
+        /// empty: a Mac that never made a second profile has one.
+        profiles: list<profile>,
+    }
+
+    read: func() -> result<book, string>;
 }
 
 /// The extension's own windows, as declared under `[[window]]`.
@@ -116,6 +157,7 @@ world extension {
     import open;
     import net;
     import settings;
+    import profiles;
     import ui;
 
     /// Run one of the commands the manifest declares.

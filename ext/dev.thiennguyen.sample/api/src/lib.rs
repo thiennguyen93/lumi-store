@@ -39,8 +39,8 @@
 //! against: `selection` needs `accessibility` (and reads through the ⌘C
 //! fallback only when `clipboard` is granted too), the clipboard pair
 //! needs `clipboard`, `open_url` needs `applications` (plus `network` for
-//! a web address), `fetch` needs `network`. `alert` and `settings` cost
-//! nothing but budget — every host call spends from one per-run allowance,
+//! a web address), `fetch` needs `network`. `alert`, `settings` and
+//! `profiles` cost nothing but budget — every host call spends from one per-run allowance,
 //! so a loop of two hundred alerts ends the run's credit.
 //!
 //! **Bounds you are running under**, so a refusal reads as the mechanism
@@ -73,6 +73,7 @@ pub mod bindings {
 pub use bindings::lumi;
 pub use bindings::Guest;
 pub use lumi::ext::net::{Request, Response};
+pub use lumi::ext::profiles::{Book as Profiles, Profile};
 pub use lumi::ext::selection::Found;
 
 /// Wire your extension type into the component's exports. Call once, at
@@ -156,4 +157,37 @@ pub fn setting(name: &str) -> Option<String> {
         .get(name)
         .and_then(|value| value.as_str())
         .map(|value| value.to_string())
+}
+
+/// Every profile on this Mac, and which one is live.
+///
+/// A profile is a whole set of the person's automations — shortcuts,
+/// menus, snippets, flows — and they switch between them, one live at a
+/// time. Your extension is installed once for the whole Mac, so this is
+/// how it tells the sets apart: key anything you keep per profile by
+/// [`Profile::id`], which survives a rename, and show [`Profile::name`],
+/// which does not.
+///
+/// One call answers both halves, so the list and the live id are always
+/// from the same moment. Ask again whenever you need it rather than
+/// holding on to an answer: the person may switch at any time, and
+/// nothing tells your component that they did.
+///
+/// ```ignore
+/// let book = lumi::profiles()?;
+/// let here = book.active_profile().map(|p| p.name.as_str()).unwrap_or("?");
+/// lumi::alert(&format!("{here} — one of {} profiles", book.profiles.len()))?;
+/// ```
+pub fn profiles() -> Result<Profiles, String> {
+    lumi::ext::profiles::read()
+}
+
+impl Profiles {
+    /// The live profile's row. `None` only if the answer broke its own
+    /// promise that `active` is one of `profiles` — never in practice, and
+    /// an `Option` rather than a panic so your code cannot be the thing
+    /// that trips over it.
+    pub fn active_profile(&self) -> Option<&Profile> {
+        self.profiles.iter().find(|profile| profile.id == self.active)
+    }
 }

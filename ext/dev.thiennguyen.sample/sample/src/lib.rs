@@ -7,8 +7,8 @@
 //! param picked — falling back to the `defaultTarget` setting from the
 //! Extensions pane, then to Vietnamese, so the three tiers of "where does
 //! a value come from" are all exercised here. `spin` and `grow` exist for
-//! `ext::runtime`'s tests — a guest the deadline has to stop, and one the
-//! memory limiter has to refuse. Shipped in the sample on purpose: an SDK
+//! Lumi's own sandbox tests — a guest the deadline has to stop, and one the
+//! memory limit has to refuse. Shipped in the sample on purpose: an SDK
 //! example that only shows the happy path teaches nobody what a trap
 //! looks like.
 
@@ -64,6 +64,9 @@ impl lumi::Guest for Sample {
         }
         let parsed: serde_json::Value =
             serde_json::from_str(&request).map_err(|err| format!("request: {err}"))?;
+        if parsed.get("kind").and_then(|k| k.as_str()) == Some("profile") {
+            return profiles();
+        }
         let text = parsed.get("text").and_then(|t| t.as_str()).unwrap_or("");
         let target = lumi::setting("defaultTarget")
             .filter(|t| !t.is_empty())
@@ -106,6 +109,24 @@ fn translate(params: &str) -> Result<String, String> {
         found.text.chars().count(),
         found.how
     ))
+}
+
+/// Which profile the person is in, for the window's header line.
+///
+/// The sample only *shows* it — its one setting applies to every profile
+/// alike — but this is the call an extension that keeps a value per
+/// profile starts from: key by `id`, which survives a rename; show
+/// `name`, which does not. Mapped by hand into the window's JSON because
+/// the dialect with the page is the sample's own, not the SDK's.
+fn profiles() -> Result<String, String> {
+    let book = lumi::profiles()?;
+    let active = book.active_profile().map(|p| p.name.clone());
+    Ok(serde_json::json!({
+        "active": book.active,
+        "activeName": active,
+        "count": book.profiles.len(),
+    })
+    .to_string())
 }
 
 /// One spelling of the Translate address, shared by the command and the
