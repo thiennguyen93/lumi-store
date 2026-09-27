@@ -103,7 +103,7 @@ jobs:
           retention-days: 1
 
   sign:
-    needs: build
+    needs: [plan, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -130,6 +130,33 @@ jobs:
           pattern: wasm-*
           path: ${{ runner.temp }}/built
           merge-multiple: false
+
+      # download-artifact flattens straight into `path` — skipping the
+      # `wasm-<id>/` subdir the comment above promises — whenever exactly
+      # one artifact matches the pattern, whatever `merge-multiple` says:
+      # https://github.com/actions/download-artifact/blob/v8.0.1/src/download-artifact.ts#L185-L194
+      # (`isSingleArtifactDownload || mergeMultiple || artifacts.length === 1`).
+      # The store has one extension today, so this branch is not
+      # hypothetical; it fired on 2026-09-27 and `--sign-built` failed with
+      # "the build handed over no extension.wasm". Restore the shape
+      # `--sign-built` reads before it runs.
+      - name: Restore per-build directory when only one artifact downloaded
+        env:
+          ENTRIES: ${{ needs.plan.outputs.entries }}
+        run: |
+          python3 - <<'PY'
+          import json, os, shutil
+
+          entries = json.loads(os.environ["ENTRIES"])
+          built = os.path.join(os.environ["RUNNER_TEMP"], "built")
+          flattened = os.path.join(built, "extension.wasm")
+
+          if len(entries) == 1 and os.path.isfile(flattened):
+              only = entries[0]
+              dest_dir = os.path.join(built, f"wasm-{only}")
+              os.makedirs(dest_dir, exist_ok=True)
+              shutil.move(flattened, os.path.join(dest_dir, "extension.wasm"))
+          PY
 
       - name: Pack, sign, index
         env:
