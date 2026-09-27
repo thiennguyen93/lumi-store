@@ -8,7 +8,9 @@
 //! Extensions pane, then to Vietnamese, so the three tiers of "where does
 //! a value come from" are all exercised here. `spin` and `grow` exist for
 //! Lumi's own sandbox tests — a guest the deadline has to stop, and one the
-//! memory limit has to refuse. Shipped in the sample on purpose: an SDK
+//! memory limit has to refuse — and so does the window's `config`
+//! request, which reads a part of the person's setup that this manifest
+//! deliberately does not ask for, so the tests can watch it refused. Shipped in the sample on purpose: an SDK
 //! example that only shows the happy path teaches nobody what a trap
 //! looks like.
 
@@ -64,8 +66,14 @@ impl lumi::Guest for Sample {
         }
         let parsed: serde_json::Value =
             serde_json::from_str(&request).map_err(|err| format!("request: {err}"))?;
-        if parsed.get("kind").and_then(|k| k.as_str()) == Some("profile") {
-            return profiles();
+        match parsed.get("kind").and_then(|k| k.as_str()) {
+            Some("profile") => return profiles(),
+            Some("about") => return about(),
+            Some("config") => {
+                let section = parsed.get("section").and_then(|s| s.as_str()).unwrap_or("");
+                return config(section);
+            }
+            _ => {}
         }
         let text = parsed.get("text").and_then(|t| t.as_str()).unwrap_or("");
         let target = lumi::setting("defaultTarget")
@@ -128,6 +136,44 @@ fn profiles() -> Result<String, String> {
         "count": book.profiles.len(),
     })
     .to_string())
+}
+
+/// Which Lumi the window is running in, for its footer.
+///
+/// Free of capability — the version and the edition are nobody's content.
+/// The edition is only worth words when it is Pro: Lumi itself never
+/// labels a free copy, and an extension that did would be advertising on
+/// Lumi's behalf.
+fn about() -> Result<String, String> {
+    let about = lumi::about();
+    let edition = match lumi::license() {
+        lumi::Edition::Pro => "pro",
+        lumi::Edition::Free => "free",
+        lumi::Edition::Inactive => "inactive",
+    };
+    Ok(serde_json::json!({
+        "version": about.version,
+        "homepage": about.homepage,
+        "edition": edition,
+    })
+    .to_string())
+}
+
+/// One part of the person's setup, as Lumi hands it over — the fixture
+/// for Lumi's own tests. The shipped manifest does not declare `config`,
+/// so from the real window this is refused by name; a test stages the
+/// same component under a manifest that does, and watches it answer.
+fn config(section: &str) -> Result<String, String> {
+    let value = match section {
+        "settings" => lumi::config::settings(),
+        "shortcuts" => lumi::config::shortcuts(),
+        "snippets" => lumi::config::snippets(),
+        "hyperKey" => lumi::config::hyper_key(),
+        "doubleTap" => lumi::config::double_tap(),
+        "fnKey" => lumi::config::fn_key(),
+        other => return Err(format!("no {other:?} part of Lumi's settings")),
+    }?;
+    Ok(value.to_string())
 }
 
 /// One spelling of the Translate address, shared by the command and the

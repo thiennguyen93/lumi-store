@@ -45,7 +45,7 @@ BASE_URL = os.environ.get(
 KEY_FILE = os.environ.get("STORE_KEY_FILE", "")
 
 # What Lumi lets an extension declare.
-CAPABILITIES = {"accessibility", "applications", "clipboard", "network"}
+CAPABILITIES = {"accessibility", "applications", "clipboard", "config", "network"}
 PARAM_KINDS = {"text", "textarea", "number", "bool", "select"}
 ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")

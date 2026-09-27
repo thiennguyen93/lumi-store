@@ -39,9 +39,11 @@
 //! against: `selection` needs `accessibility` (and reads through the ⌘C
 //! fallback only when `clipboard` is granted too), the clipboard pair
 //! needs `clipboard`, `open_url` needs `applications` (plus `network` for
-//! a web address), `fetch` needs `network`. `alert`, `settings` and
-//! `profiles` cost nothing but budget — every host call spends from one per-run allowance,
-//! so a loop of two hundred alerts ends the run's credit.
+//! a web address), `fetch` needs `network`, and everything in [`config`]
+//! needs `config`. `alert`, `settings` and `profiles` cost nothing but
+//! budget — every host call spends from one per-run allowance, so a loop
+//! of two hundred alerts ends the run's credit. [`about`] and [`license`]
+//! cost nothing at all.
 //!
 //! **Bounds you are running under**, so a refusal reads as the mechanism
 //! it is: a memory ceiling, a wall-clock deadline that stops a run that
@@ -72,6 +74,7 @@ pub mod bindings {
 
 pub use bindings::lumi;
 pub use bindings::Guest;
+pub use lumi::ext::app::{Edition, Info as About};
 pub use lumi::ext::net::{Request, Response};
 pub use lumi::ext::profiles::{Book as Profiles, Profile};
 pub use lumi::ext::selection::Found;
@@ -191,5 +194,97 @@ impl Profiles {
     /// that trips over it.
     pub fn active_profile(&self) -> Option<&Profile> {
         self.profiles.iter().find(|profile| profile.id == self.active)
+    }
+}
+
+/// Which Lumi is running: its version, homepage and author.
+///
+/// Check `version` before relying on something a newer Lumi added — it is
+/// `"major.minor.patch"`, so compare the numbers rather than matching the
+/// string.
+///
+/// ```ignore
+/// let lumi = lumi::about();
+/// lumi::alert(&format!("Running in Lumi {}", lumi.version))?;
+/// ```
+pub fn about() -> About {
+    lumi::ext::app::about()
+}
+
+/// Whether this Mac has Lumi Pro: [`Edition::Pro`], [`Edition::Free`] with
+/// no licence at all, or [`Edition::Inactive`] for a licence that is not
+/// granting Pro right now.
+///
+/// The edition is the whole of what an extension learns about the licence —
+/// never the key, the seat, or who bought it. Ask each time you need it:
+/// the person can buy, lapse or renew while your extension is installed.
+pub fn license() -> Edition {
+    lumi::ext::app::license()
+}
+
+/// The person's automations and Lumi's own settings, read-only, as the live
+/// profile holds them. Every function here needs the `config` capability.
+///
+/// Each answer is a JSON value in the same camelCase fields and values Lumi
+/// saves the document with, so the shape you read today is the shape the
+/// next Lumi hands you too — new fields may appear, existing ones keep
+/// their names. Read when you need it: the person can edit a row or switch
+/// profile at any moment, and nothing tells your component that they did.
+///
+/// There is no write, by design. If your extension wants to change what a
+/// keystroke does, offer a command or a flow node and let the person bind
+/// it; reading is how you fit around what they already have — offering a
+/// combination nobody holds, or not expanding over a snippet they wrote.
+///
+/// ```ignore
+/// let shortcuts = lumi::config::shortcuts()?;
+/// let rows = shortcuts["bindings"].as_array().map(Vec::len).unwrap_or(0);
+/// lumi::alert(&format!("{rows} shortcuts in this profile"))?;
+/// ```
+pub mod config {
+    use super::lumi::ext::config as wit;
+
+    fn parsed(text: Result<String, String>) -> Result<serde_json::Value, String> {
+        serde_json::from_str(&text?).map_err(|err| format!("Lumi answered with bad JSON: {err}"))
+    }
+
+    /// Lumi's general settings: `appearance`, `startAtLogin`,
+    /// `showProfileInMenuBar`, `appShortcuts`, `alert`, `leader` and
+    /// `arrange`.
+    pub fn settings() -> Result<serde_json::Value, String> {
+        parsed(wit::settings())
+    }
+
+    /// `{"enabled": …, "bindings": [...]}`: the Shortcuts pane's switch and
+    /// every row in it — ordinary combinations, double-taps, Fn
+    /// combinations, leader menus and their steps. A row whose
+    /// own `enabled` is false is written down but not armed — and so is
+    /// every row while the pane's `enabled` is false.
+    pub fn shortcuts() -> Result<serde_json::Value, String> {
+        parsed(wit::shortcuts())
+    }
+
+    /// Snippet expansion: its switch, its options, and every snippet under
+    /// `items`.
+    pub fn snippets() -> Result<serde_json::Value, String> {
+        parsed(wit::snippets())
+    }
+
+    /// The Caps Lock Hyper key: whether it is on, which modifiers it holds,
+    /// and what a tap on its own does.
+    pub fn hyper_key() -> Result<serde_json::Value, String> {
+        parsed(wit::hyper_key())
+    }
+
+    /// Double-tap: the switch and the timing, plus the rows it arms under
+    /// `bindings` — the same rows [`shortcuts`] lists, picked out.
+    pub fn double_tap() -> Result<serde_json::Value, String> {
+        parsed(wit::double_tap())
+    }
+
+    /// Shortcuts held on the Fn key: the switch, plus the rows it arms
+    /// under `bindings`.
+    pub fn fn_key() -> Result<serde_json::Value, String> {
+        parsed(wit::fn_key())
     }
 }

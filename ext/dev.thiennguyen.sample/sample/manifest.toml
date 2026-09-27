@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.4.0"
+version = "0.5.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 
@@ -85,7 +85,7 @@ name = "settings"
 title = "Sample settings"
 path = "index.html"
 width = 440
-height = 450
+height = 470
 # A settings dialog is a fixed thing: no resize handle, zoom button
 # greyed. The switches default on, so only the opt-outs are written.
 resizable = false

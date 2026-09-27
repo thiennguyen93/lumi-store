@@ -114,6 +114,79 @@ interface profiles {
     read: func() -> result<book, string>;
 }
 
+/// Lumi itself: which build is running, and whether this Mac has Pro.
+///
+/// Costs nothing: none of it is anybody's content. The version is what an
+/// extension checks before relying on something a newer Lumi added; the
+/// edition is what lets it word a feature by what the person has. The
+/// licence key, the seat, and who bought it are not here and never will
+/// be — the edition is the whole of what an extension learns about the
+/// licence.
+interface app {
+    record info {
+        /// Lumi's version, "major.minor.patch" — compare it rather than
+        /// match it.
+        version: string,
+        /// Lumi's homepage, as a full URL.
+        homepage: string,
+        /// Who makes Lumi.
+        author: string,
+    }
+
+    enum edition {
+        /// No licence on this Mac.
+        free,
+        /// Pro is on.
+        pro,
+        /// A licence is on this Mac and is not granting Pro right now —
+        /// ended, refused, or not checked for too long. Which one is the
+        /// person's business in Lumi's own License pane, not an
+        /// extension's.
+        inactive,
+    }
+
+    about: func() -> info;
+    /// This Mac's edition — the only thing about the licence an extension
+    /// is ever told.
+    license: func() -> edition;
+}
+
+/// The person's automations and Lumi's settings, read-only, as the live
+/// profile holds them. Costs `config`.
+///
+/// Each answer is a JSON object as text, in the same camelCase fields and
+/// values Lumi saves the document with, so what you learn reading one
+/// answer holds for the next Lumi too. Read what you need when you need
+/// it: the person may edit or switch profile at any time, and nothing tells
+/// a component that they did. Rows written by a newer Lumi that this one
+/// cannot read are left out rather than guessed at.
+///
+/// There is no write. An extension that wants to change what happens on a
+/// keystroke offers a command or a node the person binds; this is how it
+/// fits around what they already have. Refused with a sentence while
+/// Lumi's own settings file cannot be read, rather than answering with
+/// empty defaults that would read as "this person has nothing".
+interface config {
+    /// Lumi's general settings: `appearance`, `startAtLogin`,
+    /// `showProfileInMenuBar`, `appShortcuts`, `alert`, `leader`,
+    /// `arrange`.
+    settings: func() -> result<string, string>;
+    /// `{"enabled": bool, "bindings": [...]}` — the Shortcuts pane's switch
+    /// and every row: ordinary combinations, double-taps, Fn combinations,
+    /// leader menus and their steps.
+    shortcuts: func() -> result<string, string>;
+    /// Snippet expansion: its switch, its options, and every snippet.
+    snippets: func() -> result<string, string>;
+    /// The Caps Lock Hyper key.
+    hyper-key: func() -> result<string, string>;
+    /// Double-tap: its switch and timing, plus the rows it arms under
+    /// `bindings` — the same rows `shortcuts` lists, picked out.
+    double-tap: func() -> result<string, string>;
+    /// Shortcuts held on the Fn key: the switch, plus the rows it arms
+    /// under `bindings`, picked out the same way.
+    fn-key: func() -> result<string, string>;
+}
+
 /// The extension's own windows, as declared under `[[window]]`.
 ///
 /// Costs nothing beyond budget: a window here is the extension's own UI,
@@ -159,6 +232,8 @@ world extension {
     import net;
     import settings;
     import profiles;
+    import app;
+    import config;
     import ui;
 
     /// Run one of the commands the manifest declares.

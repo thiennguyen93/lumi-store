@@ -5,7 +5,8 @@
 //   POST /__lumi__/call       — lands in the extension's run-ui export,
 //                               under the same budget and capability
 //                               gate as a command (the preview, the
-//                               translate button, and the profile line)
+//                               translate button, the profile line and
+//                               the footer)
 //
 // Same-origin fetch is the only thing this page can do: the CSP the host
 // stamps on every response is `default-src 'self'`, so a request to
@@ -17,6 +18,7 @@ const text = document.getElementById("text");
 const preview = document.getElementById("preview");
 const said = document.getElementById("said");
 const profile = document.getElementById("profile");
+const running = document.getElementById("running");
 
 async function call(request) {
   const answer = await fetch("/__lumi__/call", {
@@ -63,6 +65,18 @@ async function showProfile() {
   }
 }
 
+// Which Lumi this is. The edition is said only when it is Pro — Lumi never
+// labels a free copy, and neither should anything drawn inside it.
+async function showRunning() {
+  try {
+    const { version, edition } = await call({ kind: "about" });
+    running.textContent =
+      edition === "pro" ? `Running in Lumi ${version} · Pro` : `Running in Lumi ${version}`;
+  } catch (err) {
+    running.textContent = String(err.message || err);
+  }
+}
+
 target.addEventListener("change", async () => {
   saved.textContent = "";
   const answer = await fetch("/__lumi__/settings", {
@@ -88,3 +102,4 @@ document.getElementById("go").addEventListener("click", async () => {
 
 load().then(refreshPreview);
 showProfile();
+showRunning();
