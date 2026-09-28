@@ -12,7 +12,8 @@ import react from "@vitejs/plugin-react";
 //   can be emitted as an inline <script>, and the page's CSP
 //   (`default-src 'self'`) refuses inline scripts outright.
 // - two inputs: `panel.html`, the name the manifest's [[window]] points
-//   at, and `about.html`, its `about` page.
+//   at, and `dashboard.html`, its [[page]] tab. About is Lumi's own,
+//   composed from the manifest.
 export default defineConfig({
   base: "./",
   plugins: [react()],
@@ -23,7 +24,7 @@ export default defineConfig({
     target: "safari16",
     modulePreload: { polyfill: false },
     rollupOptions: {
-      input: { panel: "panel.html", about: "about.html" },
+      input: { panel: "panel.html", dashboard: "dashboard.html" },
     },
   },
 });

@@ -153,14 +153,11 @@ if (new URLSearchParams(location.search).has("glass")) {
   document.documentElement.classList.add("glass-preview");
 }
 
-let moved: [number, number] = [0, 0];
 const real = window.fetch.bind(window);
 window.fetch = async (input, init) => {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-  if (url.endsWith("/__lumi__/move")) {
-    const { dx, dy } = JSON.parse(String(init?.body)) as { dx: number; dy: number };
-    moved = [moved[0] + dx, moved[1] + dy];
-    say(`would move the panel by ${moved[0]}, ${moved[1]}`);
+  if (url.endsWith("/__lumi__/drag")) {
+    say("would hand the drag to macOS");
     return new Response(null, { status: 204 });
   }
   if (!url.endsWith("/__lumi__/call")) return real(input, init);

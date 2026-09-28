@@ -26,10 +26,11 @@ use serde_json::{json, Value};
 /// The panel's `[[window]]` name.
 pub const PANEL: &str = "history";
 
-/// What Lumi calls the About page (`about = "about.html"`) when it asks
-/// `run-ui` something. It is not a window of the manifest's, and it only
-/// reads: nothing it can send pastes, pins or forgets.
-pub const ABOUT: &str = ":about";
+/// What Lumi calls the Dashboard tab (`[[page]] name = "dashboard"`) when
+/// it asks `run-ui` something. It is not a window of the manifest's, and it
+/// only reads: nothing it can send pastes, pins or forgets. The About page
+/// asks nothing — it is words.
+pub const DASHBOARD: &str = ":page:dashboard";
 
 /// Storage key of the row list.
 const INDEX: &str = "index";
@@ -74,7 +75,7 @@ impl lumi::Guest for Clipboard {
             serde_json::from_str(&request).map_err(|err| format!("bad request: {err}"))?;
         let answer = match window.as_str() {
             PANEL => ui(&host::Lumi, &request),
-            ABOUT => about(&host::Lumi, &request),
+            DASHBOARD => dashboard(&host::Lumi, &request),
             _ => return Err(format!("Clipboard History has no {window} window")),
         };
         answer.map(|answer| answer.to_string())
@@ -100,17 +101,17 @@ pub fn on_event(host: &impl Host, name: &str, payload: &str) -> Result<(), Strin
         // component, not something wrong with the copy.
         _ => return Ok(()),
     }
-    tell_about(host);
+    tell_dashboard(host);
     Ok(())
 }
 
-/// Hand the About page, if it is on screen, the counts as they are now.
+/// Hand the Dashboard, if it is on screen, the counts as they are now.
 /// Lumi refuses the page's own `call` while Settings is behind another app,
 /// which is exactly when copies arrive — so the news comes to it instead.
 /// Best effort: the copy is kept whether or not anybody is looking.
-fn tell_about(host: &impl Host) {
+fn tell_dashboard(host: &impl Host) {
     if let Ok(stats) = stats(host) {
-        let _ = host.post(ABOUT, &stats.to_string());
+        let _ = host.post(DASHBOARD, &stats.to_string());
     }
 }
 
@@ -360,7 +361,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
         "pin" => {
             let id = id()?;
             let pin = update_index(host, |index| history::toggle_pin(index, &id))?;
-            tell_about(host);
+            tell_dashboard(host);
             Ok(json!({ "pin": pin }))
         }
         // One id, or `ids` — ⌘⇧Z doing a Delete all again, exactly the
@@ -378,7 +379,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 }
                 Ok(())
             })?;
-            tell_about(host);
+            tell_dashboard(host);
             Ok(json!({}))
         }
         // One id, or `ids` for what a Delete all took.
@@ -398,7 +399,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                     history::Restored::Gone => {}
                 }
             }
-            tell_about(host);
+            tell_dashboard(host);
             Ok(json!({ "restored": back == ids.len() && back > 0, "count": back }))
         }
         "setPin" => {
@@ -409,7 +410,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 _ => return Err("the pin is not a letter".to_string()),
             };
             let pin = update_index(host, |index| history::set_pin(index, &id, wanted))?;
-            tell_about(host);
+            tell_dashboard(host);
             Ok(json!({ "pin": pin }))
         }
         // Delete all unpinned, and delete all: into the trash, like one
@@ -417,7 +418,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
         "clear" | "clearAll" => {
             let keep_pins = request["kind"] == "clear";
             let ids = update_index(host, |index| Ok(history::trash_all(index, keep_pins)))?;
-            tell_about(host);
+            tell_dashboard(host);
             Ok(json!({ "ids": ids }))
         }
         // Put an item on the pasteboard and put the panel away — no ⌘V.
@@ -494,11 +495,11 @@ fn preview_width(host: &impl Host) -> Option<u64> {
     stored.value.parse().ok().filter(|w| PREVIEW_WIDTHS.contains(w))
 }
 
-/// The About page's one request.
-fn about(host: &impl Host, request: &Value) -> Result<Value, String> {
+/// The Dashboard's one request.
+fn dashboard(host: &impl Host, request: &Value) -> Result<Value, String> {
     match request["kind"].as_str().unwrap_or_default() {
         "stats" => stats(host),
-        other => Err(format!("the About page has no {other} request")),
+        other => Err(format!("the Dashboard has no {other} request")),
     }
 }
 
@@ -793,9 +794,9 @@ mod tests {
     }
 
     #[test]
-    fn stats_count_the_index_and_the_about_page_can_only_read() {
+    fn stats_count_the_index_and_the_dashboard_can_only_read() {
         let host = Memory::default();
-        let empty = about(&host, &json!({"kind": "stats"})).unwrap();
+        let empty = dashboard(&host, &json!({"kind": "stats"})).unwrap();
         assert_eq!(empty, json!({"kept": 0, "limit": 200, "pinned": 0, "images": 0, "since": null}));
 
         host.blobs.borrow_mut().insert("img".into());
@@ -803,22 +804,22 @@ mod tests {
         on_event(&host, "clipboard", &event("h2", 9, "two")).unwrap();
         on_event(&host, "clipboard", &image_event("h3", "img")).unwrap();
         ui(&host, &json!({"kind": "pin", "id": "id1"})).unwrap();
-        let stats = about(&host, &json!({"kind": "stats"})).unwrap();
+        let stats = dashboard(&host, &json!({"kind": "stats"})).unwrap();
         assert_eq!(stats, json!({"kept": 3, "limit": 200, "pinned": 1, "images": 1, "since": 1}));
 
-        assert!(about(&host, &json!({"kind": "clear"})).is_err());
+        assert!(dashboard(&host, &json!({"kind": "clear"})).is_err());
         assert_eq!(list(&host).len(), 3);
     }
 
     #[test]
-    fn a_copy_and_a_pin_tell_the_about_page() {
+    fn a_copy_and_a_pin_tell_the_dashboard() {
         let host = Memory::default();
         on_event(&host, "clipboard", &event("h1", 5, "one")).unwrap();
         ui(&host, &json!({"kind": "pin", "id": "id1"})).unwrap();
         on_event(&host, "screen", "{}").unwrap();
         let posts = host.posts.borrow();
         assert_eq!(posts.len(), 2, "an unknown event tells nobody: {posts:?}");
-        assert!(posts.iter().all(|(window, _)| window == ABOUT));
+        assert!(posts.iter().all(|(window, _)| window == DASHBOARD));
         let last: Value = serde_json::from_str(&posts[1].1).unwrap();
         assert_eq!(last, json!({"kept": 1, "limit": 200, "pinned": 1, "images": 0, "since": 5}));
     }

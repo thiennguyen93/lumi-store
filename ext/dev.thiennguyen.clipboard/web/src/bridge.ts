@@ -5,7 +5,7 @@
 //
 //   POST /__lumi__/call        → the extension's run-ui export
 //   GET  /__lumi__/blob/<id>   → an image Lumi stored for this extension
-//   POST /__lumi__/move        → move this (borderless) window by dx, dy
+//   POST /__lumi__/drag        → hand this press to macOS as a window drag
 
 import type { Entry, ListAnswer, Request, Stats } from "./types";
 

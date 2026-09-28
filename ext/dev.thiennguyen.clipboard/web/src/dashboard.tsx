@@ -1,9 +1,9 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { call } from "./bridge";
-import { CopyGlyph, HiddenGlyph, LockGlyph, OfflineGlyph } from "./icons";
+import { CopyGlyph } from "./icons";
 import type { Stats } from "./types";
-import "./about.css";
+import "./pages.css";
 
 // Same as the panel: `pnpm dev` answers the bridge from a mock, which the
 // shipped bundle does not carry. `?empty` shows a fresh install.
@@ -21,7 +21,7 @@ function age(since: number): string {
   return `${Math.floor(days / 30)} mo`;
 }
 
-function About() {
+function Dashboard() {
   // `undefined` while asking, `null` when the ask failed: both draw the
   // tiles with dashes, so an empty history is only claimed once it is known.
   const [stats, setStats] = useState<Stats | null | undefined>(undefined);
@@ -51,19 +51,7 @@ function About() {
     };
   }, []);
 
-  return (
-    <main>
-      <p className="lede">
-        Everything you copy, searchable. Pick it, and it's pasted in the app you were in.
-      </p>
-      {stats?.kept === 0 ? <Welcome /> : <Tiles stats={stats ?? null} />}
-      <ul className="promises">
-        <li><LockGlyph />Encrypted, key in Keychain</li>
-        <li><OfflineGlyph />No network</li>
-        <li><HiddenGlyph />Secrets never recorded</li>
-      </ul>
-    </main>
-  );
+  return <main>{stats?.kept === 0 ? <Welcome /> : <Tiles stats={stats ?? null} />}</main>;
 }
 
 /** A post is the extension's own JSON; checked anyway, so a message of
@@ -138,7 +126,7 @@ const root = document.getElementById("root");
 if (root) {
   createRoot(root).render(
     <StrictMode>
-      <About />
+      <Dashboard />
     </StrictMode>,
   );
 }

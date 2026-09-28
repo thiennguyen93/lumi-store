@@ -178,41 +178,7 @@ export function GearGlyph() {
   );
 }
 
-// The About page's.
-
-export function LockGlyph() {
-  return (
-    <Glyph>
-      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </Glyph>
-  );
-}
-
-export function OfflineGlyph() {
-  return (
-    <Glyph>
-      <path d="M12 20h.01" />
-      <path d="M8.5 16.43a5 5 0 0 1 7 0" />
-      <path d="M2 8.82a15 15 0 0 1 4.17-2.65" />
-      <path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76" />
-      <path d="M16.85 11.25a10 10 0 0 1 2.22 1.68" />
-      <path d="M5 13a10 10 0 0 1 5.24-2.76" />
-      <path d="m2 2 20 20" />
-    </Glyph>
-  );
-}
-
-export function HiddenGlyph() {
-  return (
-    <Glyph>
-      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-      <path d="M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-      <path d="m2 2 20 20" />
-    </Glyph>
-  );
-}
+// The Dashboard's.
 
 export function CopyGlyph() {
   return (
