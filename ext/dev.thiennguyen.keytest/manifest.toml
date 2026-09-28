@@ -2,14 +2,15 @@
 [extension]
 id = "dev.thiennguyen.keytest"
 name = "Keyboard Test"
-version = "0.2.1"
+version = "0.3.0"
 description = "Check every key of a MacBook keyboard, and catch keys that double-type."
 author = "Thien Nguyen"
 summary = "Opens a Keyboard test tab here in Lumi: press each key and watch it light up on a MacBook keyboard. It counts the keys you have covered, shows which are held, and flags a key that registers twice from one press — the chatter a worn or dusty switch produces. Nothing leaves the page."
 homepage = "https://lumikeys.app/docs/extensions"
-# [[page]] and settings-tab arrived together; an older Lumi would install
-# this with neither — no tab to test in, and a form for the layout field.
-min-lumi-version = "1.23.0"
+# 1.25.0 because this build is against WIT 0.3, which a Lumi speaking 0.2
+# refuses outright. ([[page]] and settings-tab, which arrived in 1.23.0,
+# came before it.)
+min-lumi-version = "1.25.0"
 # The layout below is the page's memory, not a setting anybody picks from
 # a form: the page has its own switch for it.
 settings-tab = false

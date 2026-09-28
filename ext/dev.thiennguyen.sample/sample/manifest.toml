@@ -6,8 +6,11 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.10.0"
-min-lumi-version = "1.21.1"
+version = "0.11.0"
+# 1.25.0 for WIT 0.3: every component is built against one world, and a
+# Lumi that speaks 0.2 refuses a 0.3 build outright. (The window's storage
+# request, write-all and close came with it.)
+min-lumi-version = "1.25.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
@@ -17,7 +20,8 @@ homepage = "https://docs.lumikeys.app/extensions"
 # The extension's own About page, under ui/. Lumi draws it inside the
 # Extensions pane in place of the page it would compose from this manifest;
 # the Permissions tab beside it stays Lumi's, so a page cannot restate what
-# the extension reaches. It gets the settings bridge and no `call`.
+# the extension reaches. It gets the whole bridge, `call` included — the
+# call reaches `run_ui` as window `:about`, and only while the page is in front.
 about = "about.html"
 # And a Settings tab of its own: the same page the settings window shows,
 # drawn in place of the form Lumi would compose from [[settings]] below.

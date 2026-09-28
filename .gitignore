@@ -7,3 +7,8 @@ store.key
 # from running publish.py. CI builds into /build/ and neither is ever shipped.
 target/
 __pycache__/
+
+# A web entry's dependencies and build output: installed and built by
+# publish.py from the lockfile, never committed.
+node_modules/
+ext/*/web/dist/
