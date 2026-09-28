@@ -19,9 +19,10 @@
   // widths in key units, and every row is 14.5 of them — a MacBook Pro's
   // own proportions (the 2021 and later keyboard, full-height function
   // row): delete and tab 1.5, caps lock and return 1.75, both shifts 2.25,
-  // command 1.25, space 5. A null code is a key no page can hear (fn /
-  // Globe, Touch ID), drawn so the board looks like the one under the
-  // person's hands, and never counted.
+  // command 1.25, space 5. A null code is a key no page can hear (Touch
+  // ID), drawn so the board looks like the one under the person's hands,
+  // and never counted. fn is counted, through what it does to other keys —
+  // `FN_COMBOS`.
   //
   // Options: `sym` and `side` draw a modifier the way the keycap does —
   // its symbol in the corner nearest the space bar's end, its word along
@@ -40,7 +41,7 @@
   ];
   const letters = (row) => [...row].map((c) => [`Key${c}`, c, 1]);
   const bottom = [
-    [null, "fn", 1, { globe: true }],
+    ["Fn", "fn", 1, { globe: true }],
     ["ControlLeft", "control", 1, { sym: "⌃", side: "left" }],
     ["AltLeft", "option", 1, { sym: "⌥", side: "left" }],
     ["MetaLeft", "command", 1.25, { sym: "⌘", side: "left" }],
@@ -98,6 +99,34 @@
       svg.appendChild(shape);
     }
     return svg;
+  }
+
+  /** What fn does to the keys under it, read backwards. A MacBook has no
+   *  forward delete, Home, End, Page Up or Page Down key: macOS makes them
+   *  out of fn and delete or an arrow, so a page that hears one of them has
+   *  heard fn held — the only way it can, since fn on its own sends a page
+   *  nothing. Each maps to the key actually pressed with it, which is
+   *  tested by the same press.
+   *
+   *  Asked of `code` and of `key` both (`fnCombo`), because which of the
+   *  two carries it is WebKit's to decide: the key's position may arrive
+   *  as the delete or arrow that was pressed with only the character
+   *  changed, or as the made-up key itself. */
+  const FN_COMBOS = {
+    Delete: "Backspace",
+    Home: "ArrowLeft",
+    End: "ArrowRight",
+    PageUp: "ArrowUp",
+    PageDown: "ArrowDown",
+  };
+
+  /** The key fn was held over, when an event says fn was held; otherwise
+   *  undefined. A made-up key's `code`, or a pressed key's `code` whose
+   *  `key` is the made-up one — `Backspace` arriving as `Delete`. */
+  function fnCombo(event) {
+    if (FN_COMBOS[event.code]) return FN_COMBOS[event.code];
+    const under = FN_COMBOS[event.key];
+    return under !== undefined && under === event.code ? under : undefined;
   }
 
   const MODIFIERS = new Set(["ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft", "AltRight", "MetaLeft", "MetaRight"]);
@@ -210,6 +239,11 @@
     how.textContent = hyperOn
       ? "Lumi's Hyper key has it: tap it on its own, or hold it and press a key no Hyper shortcut uses."
       : "Press and hold it for a moment — macOS ignores a very quick tap on purpose.";
+    for (const element of keys.get("Fn") || []) {
+      element.title = seen.has("Fn")
+        ? "fn works"
+        : "press fn — or hold it and press delete or an arrow";
+    }
     for (const element of keys.get("CapsLock") || []) {
       element.title = hyper
         ? "Caps Lock works — heard as Lumi's Hyper key"
@@ -267,6 +301,22 @@
   // Capture, and every key swallowed: Tab would move focus off the board,
   // Space would scroll the pane, ⌘-keys the page can see would act. Only
   // what reaches the page can be tested, and all of it is.
+  /** One key going down: counted, lit while held, and checked for chatter
+   *  against its own last release. */
+  function press(code, event) {
+    if (event.repeat) return;
+    const now = event.timeStamp;
+    if (!down.has(code)) {
+      const released = lastUp.get(code);
+      if (released !== undefined && now - released < CHATTER_MS) {
+        chatter.set(code, (chatter.get(code) || 0) + 1);
+      }
+    }
+    down.set(code, now);
+    seen.add(code);
+    paint();
+  }
+
   /** Whether a key arrived carrying a modifier no held modifier key explains
    *  — which is what Lumi's Hyper key looks like from here. With it on,
    *  Caps Lock is remapped to F18 below the page and swallowed whole, so its
@@ -322,22 +372,25 @@
         lastOut.textContent += " — Caps Lock, remapped by Lumi's Hyper key";
         return flash("CapsLock");
       }
+      // fn on its own, should this WebKit ever send it.
+      if (code === "Fn" || event.key === "Fn") {
+        lastOut.textContent = "fn";
+        return flash("Fn");
+      }
+      const underFn = fnCombo(event);
+      if (underFn) {
+        const pressed = underFn;
+        lastOut.textContent = `fn + ${nameOf(pressed)} — ${event.key}: fn works`;
+        flash("Fn");
+        return press(pressed, event);
+      }
       if (event.repeat) return;
       if (!MODIFIERS.has(code) && hyperStamped(event)) {
         hyper = true;
         lastOut.textContent += " — with Caps Lock as the Hyper key";
         flash("CapsLock");
       }
-      const now = event.timeStamp;
-      if (!down.has(code)) {
-        const released = lastUp.get(code);
-        if (released !== undefined && now - released < CHATTER_MS) {
-          chatter.set(code, (chatter.get(code) || 0) + 1);
-        }
-      }
-      down.set(code, now);
-      seen.add(code);
-      paint();
+      press(code, event);
     },
     true,
   );
@@ -354,9 +407,12 @@
         return flash("CapsLock");
       }
       if (code === "CapsLock") return flash(code);
-      if (code === "F18") return;
-      down.delete(code);
-      lastUp.set(code, event.timeStamp);
+      if (code === "F18" || code === "Fn") return;
+      const released = FN_COMBOS[code] || code;
+      // (A pressed key reporting the made-up one as its `key` already has
+      // its own `code`, so it needs no translating here.)
+      down.delete(released);
+      lastUp.set(released, event.timeStamp);
       // macOS sends no key-up for a key released while ⌘ is held, so the
       // ⌘ release is the last word on every key that went down under it —
       // released without a time, so it cannot read as a chatter later.
@@ -369,6 +425,47 @@
     },
     true,
   );
+
+  // fn / Globe on its own, relayed by Lumi (`fn-key = true` in the
+  // manifest): WebKit sends a page nothing for it, so Lumi's event tap
+  // hears it and dispatches `lumi:fn` with `{ down }`. Held and released
+  // like any key, so a stuck or bouncing fn shows up the same way.
+  window.addEventListener("lumi:fn", (event) => {
+    const now = performance.now();
+    if (event.detail && event.detail.down) {
+      lastOut.textContent = "fn";
+      if (!down.has("Fn")) {
+        const released = lastUp.get("Fn");
+        if (released !== undefined && now - released < CHATTER_MS) {
+          chatter.set("Fn", (chatter.get("Fn") || 0) + 1);
+        }
+      }
+      down.set("Fn", now);
+      seen.add("Fn");
+    } else {
+      down.delete("Fn");
+      lastUp.set("Fn", now);
+    }
+    paint();
+  });
+
+  // F1–F12 taken from macOS's shortcuts by Lumi (`function-keys = true`):
+  // while the tab is in front they arrive as `lumi:key` rather than as key
+  // events, so F11 — Show Desktop — can be tested without the window being
+  // swept aside. Counted and chatter-checked like any key.
+  window.addEventListener("lumi:key", (event) => {
+    const detail = event.detail || {};
+    if (typeof detail.code !== "string" || !keys.has(detail.code)) return;
+    const now = performance.now();
+    if (detail.down) {
+      lastOut.textContent = `${detail.code} · taken from macOS by Lumi`;
+      press(detail.code, { repeat: false, timeStamp: now });
+    } else {
+      down.delete(detail.code);
+      lastUp.set(detail.code, now);
+      paint();
+    }
+  });
 
   /** Ask the extension's own code whether Lumi's Hyper key is on. On load
    *  and whenever the page gets the keyboard back, since the person may

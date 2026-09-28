@@ -2,7 +2,7 @@
 [extension]
 id = "dev.thiennguyen.keytest"
 name = "Keyboard Test"
-version = "0.1.7"
+version = "0.2.1"
 description = "Check every key of a MacBook keyboard, and catch keys that double-type."
 author = "Thien Nguyen"
 summary = "Opens a Keyboard test tab here in Lumi: press each key and watch it light up on a MacBook keyboard. It counts the keys you have covered, shows which are held, and flags a key that registers twice from one press — the chatter a worn or dusty switch produces. Nothing leaves the page."
@@ -22,6 +22,14 @@ path = "keytest.html"
 # Keys are the whole page: take the keyboard when the tab opens, so the
 # first keystroke is heard without a click first.
 focus = true
+# fn / Globe on its own is never sent to a page; Lumi hears it and relays it
+# as a `lumi:fn` event. An older Lumi ignores the key, and the page falls
+# back to what fn makes of delete and the arrows.
+fn-key = true
+# F11 is macOS's Show Desktop, which moves this window aside before the key
+# reaches it. While the tab is in front, Lumi takes F1–F12 from the system
+# and relays them as `lumi:key` events; media keys are left alone.
+function-keys = true
 
 # Which keyboard the page draws. Saved by the page through the bridge;
 # declared because the bridge keeps declared fields only.
