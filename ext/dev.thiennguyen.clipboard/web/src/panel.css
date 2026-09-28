@@ -1,0 +1,347 @@
+/* The panel, drawn after Lumi's leader menu (lumi `src/leader/leader.css`):
+   a breadcrumb headed by Lumi's mark, amber key-caps, a quiet footer of
+   keys. Surfaces are Lumi's tokens with a fallback each, so the page also
+   reads under `pnpm dev`, with no Lumi; the key-cap colours are the leader
+   menu's own, which lumi.css does not carry. */
+
+:root {
+  /* `Canvas`, not white: under `pnpm dev` there is no lumi.css to say
+     which theme is on, and a white fallback under dark CanvasText drew
+     white on white. */
+  --cb-raised: var(--raised, Canvas);
+  --cb-line: var(--border, rgba(128, 128, 128, 0.28));
+  --cb-card: var(--card, rgba(128, 128, 128, 0.08));
+  --cb-hover: var(--row-hover, rgba(128, 128, 128, 0.16));
+  --cb-accent: var(--accent, #378add);
+  --cb-muted: color-mix(in srgb, CanvasText 55%, transparent);
+  --cb-faint: color-mix(in srgb, CanvasText 38%, transparent);
+  /* The leader menu's key-cap, light. */
+  --cb-bolt: #ffab00;
+  --cb-key: color-mix(in srgb, var(--cb-bolt) 20%, #fff);
+  --cb-key-edge: color-mix(in srgb, var(--cb-bolt) 55%, rgba(0, 0, 0, 0.12));
+  --cb-key-ink: #7a5300;
+  color-scheme: light dark;
+}
+
+/* And dark: by Lumi's theme when lumi.css set one, else by the system. */
+:root[data-theme="dark"] {
+  --cb-bolt: #f0a500;
+  --cb-key: rgba(255, 255, 255, 0.12);
+  --cb-key-edge: var(--cb-line);
+  --cb-key-ink: var(--cb-bolt);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --cb-bolt: #f0a500;
+    --cb-key: rgba(255, 255, 255, 0.12);
+    --cb-key-edge: var(--cb-line);
+    --cb-key-ink: var(--cb-bolt);
+  }
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--cb-raised);
+  color: CanvasText;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.glyph {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Key-caps: `.cap` is the leader menu's amber key, `.quiet` its footer
+   one — also the filter chips, which are keys of a sort (⇥). */
+.cap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--cb-key-edge);
+  border-radius: 5px;
+  background: var(--cb-key);
+  color: var(--cb-key-ink);
+  font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.cap.blank { visibility: hidden; }
+/* A row's key, ⌘ and one character: one width for all, so titles line up. */
+.row .cap { min-width: 30px; }
+/* Amber for a pin, plain for the rest. */
+.row .cap:not(.pin) {
+  border-color: var(--cb-line);
+  background: var(--cb-card);
+  color: var(--cb-muted);
+}
+.cap.quiet {
+  height: 18px;
+  min-width: 18px;
+  border-color: var(--cb-line);
+  background: transparent;
+  color: var(--cb-muted);
+  font-size: 11px;
+}
+
+/* The breadcrumb: Lumi's mark, whose panel this is, then which kinds. */
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px 8px 14px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cb-muted);
+}
+.crumbs .mark { flex: none; }
+.crumbs .sep { opacity: 0.6; }
+.crumbs .here { color: CanvasText; }
+
+.filters {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.filters .cap {
+  font-family: inherit;
+  cursor: default;
+}
+.filters .cap:hover { color: CanvasText; }
+.filters .cap .glyph { width: 13px; height: 13px; }
+.filters .cap:not(:first-child) { padding: 0 4px; }
+.filters .cap.on {
+  border-color: var(--cb-key-edge);
+  background: var(--cb-key);
+  color: var(--cb-key-ink);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin: 0 12px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--cb-card);
+}
+.search .glyph { width: 14px; height: 14px; color: var(--cb-faint); }
+.search input {
+  flex: 1;
+  height: 28px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-size: 14px;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.body-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  padding-top: 6px;
+}
+
+.list {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 6px 6px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 7px;
+}
+.row:hover { background: var(--cb-hover); }
+/* A macOS source list's selection: the accent, white on it. */
+.row[aria-selected="true"] {
+  background: var(--cb-accent);
+  color: #fff;
+}
+.row[aria-selected="true"] .meta { color: rgba(255, 255, 255, 0.8); }
+/* Amber on the accent reads as a stain; the key goes white with the row. */
+.row[aria-selected="true"] .cap.cap {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.divider {
+  height: 1px;
+  margin: 5px 8px;
+  background: var(--cb-line);
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+.thumb {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--cb-card);
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  flex: none;
+  max-width: 40%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  color: var(--cb-faint);
+}
+.meta .glyph { width: 12px; height: 12px; vertical-align: -2px; }
+
+.empty {
+  padding: 48px 12px;
+  text-align: center;
+  color: var(--cb-faint);
+}
+
+.notice {
+  margin: 0 12px;
+  padding: 6px 0;
+  font-size: 12px;
+  color: var(--denied, #b3261e);
+  border-top: 1px solid var(--cb-line);
+}
+
+/* The leader menu's footer: keys, then `esc close` against the right. */
+.hints {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 12px;
+  padding: 7px 2px 8px;
+  border-top: 1px solid var(--cb-line);
+  font-size: 11px;
+  color: var(--cb-muted);
+}
+.hints span { display: inline-flex; align-items: center; gap: 5px; }
+.hints .exit { margin-left: auto; }
+
+.preview-slot {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+/* The preview's left edge, dragged to resize it. Wider than it looks, so
+   it is easy to catch; a hairline shows on hover. */
+.grip {
+  position: absolute;
+  top: 0;
+  bottom: 10px;
+  left: -3px;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 1;
+  touch-action: none;
+}
+.grip::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--cb-accent);
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.grip:hover::after,
+.grip:active::after { opacity: 0.6; }
+
+.preview {
+  height: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0 12px 10px 0;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--cb-line);
+  border-radius: 10px;
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--cb-muted);
+}
+.card-head .glyph { width: 12px; height: 12px; }
+.card-foot {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--cb-faint);
+}
+
+.card .body {
+  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 0;
+  overflow: hidden;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.card .body.rich { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 13px; }
+.card .picture {
+  max-height: 180px;
+  border-radius: 6px;
+  background: var(--cb-card);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.card .picture img { max-width: 100%; max-height: 180px; object-fit: contain; }
+.card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); }

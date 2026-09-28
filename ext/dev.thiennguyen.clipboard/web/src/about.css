@@ -1,0 +1,170 @@
+/* The About page, as the body of Lumi's About tab. No background of its
+   own: the webview is transparent, so a bare body sits on the pane the way
+   Lumi's own About does. Colours are Lumi's tokens with a fallback each,
+   so the page also reads under `pnpm dev`. */
+
+:root {
+  --ab-line: var(--border, rgba(128, 128, 128, 0.28));
+  --ab-card: var(--card, rgba(128, 128, 128, 0.08));
+  --ab-muted: color-mix(in srgb, CanvasText 55%, transparent);
+  --ab-faint: color-mix(in srgb, CanvasText 38%, transparent);
+  /* The icon's violet, so the page reads as this extension's. */
+  --ab-mark: #7c6ff0;
+  --ab-mark-wash: color-mix(in srgb, var(--ab-mark) 14%, transparent);
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  padding: 4px 0 16px;
+  background: transparent;
+  color: CanvasText;
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  cursor: default;
+}
+
+.glyph {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lede {
+  margin: 0 0 14px;
+  font-size: 14px;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 58px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--ab-card);
+}
+
+.tile .label {
+  font-size: 12px;
+  color: var(--ab-muted);
+}
+
+.tile .value {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile .of {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ab-faint);
+}
+
+.bar {
+  height: 4px;
+  margin-top: 6px;
+  border-radius: 2px;
+  background: var(--ab-line);
+}
+.bar span {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  border-radius: 2px;
+  background: var(--ab-mark);
+}
+
+.welcome {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--ab-line);
+  border-radius: 8px;
+}
+
+.welcome .mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--ab-mark-wash);
+  color: var(--ab-mark);
+}
+.welcome .mark .glyph {
+  width: 20px;
+  height: 20px;
+}
+
+.welcome p {
+  margin: 0;
+}
+.welcome .title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.welcome .body {
+  margin-bottom: 8px;
+  color: var(--ab-muted);
+}
+.welcome ol {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.9;
+}
+.welcome strong {
+  font-weight: 600;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 12px;
+  margin-right: 2px;
+  padding: 0 5px;
+  border: 1px solid var(--ab-line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: center;
+}
+
+/* Spread across the width the tiles take, first and last on their edges. */
+.promises {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--ab-muted);
+}
+.promises li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@media (max-width: 460px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

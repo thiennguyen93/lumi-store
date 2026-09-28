@@ -1,0 +1,757 @@
+//! The history model: what a copy becomes, what is kept, what is thrown
+//! away. Plain Rust with no host call in it, so every rule below is tested
+//! on the host target and the component only moves bytes between this and
+//! Lumi's storage.
+//!
+//! **Two documents, not one.** `index` holds one small [`Entry`] per item —
+//! everything the panel draws and searches — and each item's full content
+//! is a [`Record`] under its own key. The panel loads the index once and
+//! filters it in the page, so a search costs no call into this component;
+//! a paste reads one record. Keeping the content in the index instead would
+//! put every copied document into every panel open.
+//!
+//! **Bytes never pass through here.** Lumi writes an image, a file's data
+//! and any very long text into this extension's blob store *before* it
+//! tells the component about the copy, and the event carries blob ids. So a
+//! screenshot costs the component a string, and the only thing this model
+//! must get right about blobs is to hand back every id it stops referring
+//! to — [`Outcome`] names them so the caller can delete them.
+
+use serde::{Deserialize, Serialize};
+
+/// Current `index` shape. Bumped only on a change an older build cannot
+/// read; a field added with a default is not one.
+pub const INDEX_VERSION: u32 = 1;
+
+/// How many characters of text a row's title keeps. The panel draws one
+/// line, so more is only weight in the index.
+pub const TITLE_CHARS: usize = 200;
+
+/// How much text an entry keeps for searching. The same trade-off Maccy
+/// makes at 1k for its title: a search over the first kilobyte finds what
+/// people search for, and a pasted log file does not make every keystroke
+/// in the search field scan megabytes.
+pub const SEARCH_CHARS: usize = 1024;
+
+/// Pin letters, in the order they are handed out. Leaves out the letters
+/// the panel already answers with ⌘ held: `a` select all, `c` copy, `p`
+/// pin, `q` quit, `v` paste, `w` close, `x` cut, `z` undo.
+pub const PIN_LETTERS: &str = "bdefghijklmnorstuy";
+
+/// Uniform type identifiers the model reads. Everything else in an item is
+/// kept verbatim for the paste and never interpreted.
+pub mod uti {
+    pub const TEXT: &str = "public.utf8-plain-text";
+    pub const HTML: &str = "public.html";
+    pub const RTF: &str = "public.rtf";
+    pub const FILE_URL: &str = "public.file-url";
+    pub const PNG: &str = "public.png";
+    pub const TIFF: &str = "public.tiff";
+    pub const JPEG: &str = "public.jpeg";
+    pub const HEIC: &str = "public.heic";
+
+    pub fn is_image(uti: &str) -> bool {
+        matches!(uti, PNG | TIFF | JPEG | HEIC)
+    }
+}
+
+/// One representation of one pasteboard item, as Lumi delivers it.
+/// Exactly one of `text` and `blob` is set; `bytes` is the size either way,
+/// so the panel can say how big an image is without reading it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Rep {
+    pub uti: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub blob: Option<String>,
+    #[serde(default)]
+    pub bytes: u64,
+}
+
+/// Where a copy came from: the application in front when it happened.
+/// That is Lumi's guess, not a fact — the pasteboard does not say who
+/// wrote it — and it is the same guess every clipboard manager makes.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Source {
+    #[serde(default)]
+    pub bundle_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+}
+
+/// The `clipboard` event's payload, version 1. Unknown fields are ignored,
+/// which is what lets Lumi add one without a new version.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Copy {
+    pub v: u32,
+    /// Milliseconds since the Unix epoch, Lumi's clock.
+    pub at: i64,
+    /// Lumi's hash over the canonical representations: two copies of the
+    /// same thing hash the same whatever order the application wrote its
+    /// types in, which the component could not work out without reading
+    /// every blob.
+    pub hash: String,
+    #[serde(default)]
+    pub source: Source,
+    /// Set when the write was an extension's own — a paste from this
+    /// history comes back through the watcher like any other copy.
+    #[serde(default)]
+    pub origin: Option<String>,
+    pub items: Vec<Vec<Rep>>,
+    /// Text Lumi read out of an image, when there was one.
+    #[serde(default)]
+    pub ocr: Option<String>,
+}
+
+/// What a row is, for its icon and the preview's Type line. Worked out once
+/// at capture, so the panel never inspects content.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Kind {
+    Text,
+    Link,
+    Color,
+    Rich,
+    File,
+    Image,
+}
+
+/// One row of the panel.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Entry {
+    /// Random, and the key of the item's record (`item.<id>`). Never the
+    /// hash: key names are not encrypted, and a hash of a short copy is a
+    /// dictionary lookup away from the copy.
+    pub id: String,
+    pub hash: String,
+    #[serde(default)]
+    pub pin: Option<char>,
+    pub first: i64,
+    pub last: i64,
+    pub count: u32,
+    #[serde(default)]
+    pub app: Option<String>,
+    #[serde(default)]
+    pub app_name: Option<String>,
+    pub kind: Kind,
+    pub title: String,
+    pub search: String,
+    /// The image blob the preview draws, when the item has one.
+    #[serde(default)]
+    pub thumb: Option<String>,
+    /// Every blob the record refers to — what has to be deleted with it.
+    #[serde(default)]
+    pub blobs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct Index {
+    pub v: u32,
+    #[serde(default)]
+    pub items: Vec<Entry>,
+}
+
+/// An item's full content, stored under `item.<id>`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Record {
+    pub items: Vec<Vec<Rep>>,
+}
+
+/// The person's settings, as far as the model cares.
+#[derive(Debug, Clone)]
+pub struct Rules {
+    /// Unpinned items kept. Pins never count and are never evicted.
+    pub size: usize,
+    /// Bundle ids whose copies are dropped.
+    pub ignore_apps: Vec<String>,
+    /// Patterns; a copy whose text matches any of them is dropped.
+    pub ignore_patterns: Vec<regex_lite::Regex>,
+}
+
+impl Rules {
+    /// Compile the ignore list, one pattern per line. A line that does not
+    /// compile is reported and skipped rather than failing the whole list —
+    /// the rest of what somebody asked to keep out still is.
+    pub fn new(size: usize, ignore_apps: Vec<String>, patterns: &str) -> (Self, Vec<String>) {
+        let mut compiled = Vec::new();
+        let mut refused = Vec::new();
+        for line in patterns.lines().map(str::trim).filter(|l| !l.is_empty()) {
+            match regex_lite::Regex::new(line) {
+                Ok(re) => compiled.push(re),
+                Err(err) => refused.push(format!("{line}: {err}")),
+            }
+        }
+        (
+            Rules {
+                size: size.max(1),
+                ignore_apps,
+                ignore_patterns: compiled,
+            },
+            refused,
+        )
+    }
+}
+
+/// What applying one copy did, for the caller to carry out against storage.
+#[derive(Debug, PartialEq)]
+pub enum Outcome {
+    /// Nothing kept. `blobs` are the ones Lumi wrote for this copy.
+    Ignored { blobs: Vec<String> },
+    /// Already in the history; that row moved to the top. `blobs` are the
+    /// new copy's, which duplicate the kept row's and are not needed.
+    Bumped { id: String, blobs: Vec<String> },
+    /// A new row, whose record the caller writes. `evicted` are rows pushed
+    /// out by the size limit: their records and blobs go.
+    Inserted {
+        id: String,
+        record: Record,
+        evicted: Vec<Entry>,
+    },
+}
+
+/// Every blob id one copy refers to.
+pub fn blobs_of(items: &[Vec<Rep>]) -> Vec<String> {
+    items
+        .iter()
+        .flatten()
+        .filter_map(|rep| rep.blob.clone())
+        .collect()
+}
+
+/// Apply one copy to the index. `new_id` is used only if a row is added.
+pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Outcome {
+    let blobs = blobs_of(&copy.items);
+
+    if ignored(&copy, rules) {
+        return Outcome::Ignored { blobs };
+    }
+
+    // The same content again — including a paste from this very history,
+    // which comes back as a copy with `origin` set — moves the row up and
+    // counts it rather than adding a second one. Maccy's `supersedes`
+    // compares representations one by one because it has no hash; Lumi's
+    // canonical hash is that comparison done once, on its side.
+    if let Some(entry) = index.items.iter_mut().find(|e| e.hash == copy.hash) {
+        entry.last = entry.last.max(copy.at);
+        entry.count = entry.count.saturating_add(1);
+        if copy.origin.is_none() {
+            // A copy made in another application says where it now lives.
+            // A paste from here says only that it came from here.
+            entry.app = copy.source.bundle_id.clone();
+            entry.app_name = copy.source.name.clone();
+        }
+        return Outcome::Bumped {
+            id: entry.id.clone(),
+            blobs,
+        };
+    }
+
+    let kind = kind_of(&copy.items);
+    let entry = Entry {
+        id: new_id.clone(),
+        hash: copy.hash.clone(),
+        pin: None,
+        first: copy.at,
+        last: copy.at,
+        count: 1,
+        app: copy.source.bundle_id.clone(),
+        app_name: copy.source.name.clone(),
+        kind,
+        title: title_of(&copy.items, kind),
+        search: search_of(&copy.items, copy.ocr.as_deref()),
+        thumb: copy
+            .items
+            .iter()
+            .flatten()
+            .find(|rep| uti::is_image(&rep.uti))
+            .and_then(|rep| rep.blob.clone()),
+        blobs,
+    };
+    index.v = INDEX_VERSION;
+    index.items.push(entry);
+    let evicted = evict(index, rules.size);
+
+    Outcome::Inserted {
+        id: new_id,
+        record: Record { items: copy.items },
+        evicted,
+    }
+}
+
+fn ignored(copy: &Copy, rules: &Rules) -> bool {
+    if let Some(app) = &copy.source.bundle_id {
+        // A paste from this history is never "a copy in an ignored app":
+        // the person chose the row, wherever the caret was.
+        if copy.origin.is_none() && rules.ignore_apps.iter().any(|a| a == app) {
+            return true;
+        }
+    }
+    if rules.ignore_patterns.is_empty() {
+        return false;
+    }
+    let Some(text) = plain_text(&copy.items) else {
+        return false;
+    };
+    rules.ignore_patterns.iter().any(|re| re.is_match(text))
+}
+
+/// Keep at most `size` unpinned rows, dropping the least recently copied.
+/// Answers the rows removed.
+pub fn evict(index: &mut Index, size: usize) -> Vec<Entry> {
+    let unpinned = index.items.iter().filter(|e| e.pin.is_none()).count();
+    if unpinned <= size {
+        return Vec::new();
+    }
+    let mut order: Vec<(i64, usize)> = index
+        .items
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| e.pin.is_none())
+        .map(|(i, e)| (e.last, i))
+        .collect();
+    order.sort();
+    let mut doomed: Vec<usize> = order[..unpinned - size].iter().map(|(_, i)| *i).collect();
+    doomed.sort_unstable_by(|a, b| b.cmp(a));
+    let mut evicted: Vec<Entry> = doomed.into_iter().map(|i| index.items.remove(i)).collect();
+    evicted.reverse();
+    evicted
+}
+
+/// Pin a row to the first free letter, or unpin it. Answers the letter it
+/// now has, or `None` when it was unpinned or every letter is taken.
+/// Add the text Lumi read in a copy's image to that row's search, by the
+/// copy's hash. `false` when no row has it — the copy was ignored, or rolled
+/// out of the history while the image was being read — which is nothing to
+/// do, not an error. Appended, not replaced: the row may already be
+/// searchable by its own text, and the image's words are extra ways in.
+pub fn add_ocr(index: &mut Index, hash: &str, text: &str) -> bool {
+    let Some(entry) = index.items.iter_mut().find(|e| e.hash == hash) else {
+        return false;
+    };
+    let mut search = std::mem::take(&mut entry.search);
+    if !search.is_empty() {
+        search.push(' ');
+    }
+    search.push_str(&text.to_lowercase());
+    entry.search = search.chars().take(SEARCH_CHARS).collect();
+    true
+}
+
+pub fn toggle_pin(index: &mut Index, id: &str) -> Result<Option<char>, String> {
+    let taken: Vec<char> = index.items.iter().filter_map(|e| e.pin).collect();
+    let entry = index
+        .items
+        .iter_mut()
+        .find(|e| e.id == id)
+        .ok_or_else(|| "That item is no longer in the history.".to_string())?;
+    if entry.pin.take().is_some() {
+        return Ok(None);
+    }
+    let Some(letter) = PIN_LETTERS.chars().find(|c| !taken.contains(c)) else {
+        return Err(format!(
+            "All {} pins are in use. Unpin one first.",
+            PIN_LETTERS.len()
+        ));
+    };
+    entry.pin = Some(letter);
+    Ok(Some(letter))
+}
+
+/// Remove one row. Answers it, so its record and blobs can go too.
+pub fn remove(index: &mut Index, id: &str) -> Option<Entry> {
+    let at = index.items.iter().position(|e| e.id == id)?;
+    Some(index.items.remove(at))
+}
+
+/// Remove every unpinned row — the panel's Clear. Pins are the rows
+/// somebody asked to keep, so clearing does not take them.
+pub fn clear_unpinned(index: &mut Index) -> Vec<Entry> {
+    let (kept, gone): (Vec<Entry>, Vec<Entry>) =
+        index.items.drain(..).partition(|e| e.pin.is_some());
+    index.items = kept;
+    gone
+}
+
+/// Rows in the order the panel draws them: pins first by letter, then the
+/// rest by the chosen order.
+pub fn sorted(index: &Index, order: Order) -> Vec<Entry> {
+    let mut pins: Vec<Entry> = index.items.iter().filter(|e| e.pin.is_some()).cloned().collect();
+    pins.sort_by_key(|e| e.pin);
+    let mut rest: Vec<Entry> = index.items.iter().filter(|e| e.pin.is_none()).cloned().collect();
+    match order {
+        Order::LastCopied => rest.sort_by_key(|e| std::cmp::Reverse(e.last)),
+        Order::FirstCopied => rest.sort_by_key(|e| std::cmp::Reverse(e.first)),
+        Order::MostUsed => rest.sort_by(|a, b| b.count.cmp(&a.count).then(b.last.cmp(&a.last))),
+    }
+    pins.extend(rest);
+    pins
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Order {
+    LastCopied,
+    FirstCopied,
+    MostUsed,
+}
+
+impl Order {
+    pub fn parse(word: &str) -> Order {
+        match word {
+            "first" => Order::FirstCopied,
+            "used" => Order::MostUsed,
+            _ => Order::LastCopied,
+        }
+    }
+}
+
+/// The representations a plain-text paste keeps: the text alone, or the
+/// file URLs when that is all there is — a plain paste of copied files is
+/// still the files, which is Maccy's #962.
+pub fn plain(items: &[Vec<Rep>]) -> Vec<Vec<Rep>> {
+    items
+        .iter()
+        .map(|item| {
+            let text: Vec<Rep> = item.iter().filter(|r| r.uti == uti::TEXT).cloned().collect();
+            if text.is_empty() {
+                item.iter().filter(|r| r.uti == uti::FILE_URL).cloned().collect()
+            } else {
+                text
+            }
+        })
+        .filter(|item: &Vec<Rep>| !item.is_empty())
+        .collect()
+}
+
+/// How much text the preview pane is given. It shows a few lines; the rest
+/// would be bytes across the bridge for nothing.
+pub const PREVIEW_CHARS: usize = 4000;
+
+/// The text the preview pane draws: the item's plain text, or its file
+/// paths one per line. Empty for an image, which the pane draws from its
+/// blob instead.
+pub fn preview_text(items: &[Vec<Rep>]) -> String {
+    let text = match plain_text(items) {
+        Some(text) => text.to_string(),
+        None => file_paths(items).join("\n"),
+    };
+    text.chars().take(PREVIEW_CHARS).collect()
+}
+
+fn plain_text(items: &[Vec<Rep>]) -> Option<&str> {
+    items
+        .iter()
+        .flatten()
+        .find(|rep| rep.uti == uti::TEXT)
+        .and_then(|rep| rep.text.as_deref())
+}
+
+fn file_paths(items: &[Vec<Rep>]) -> Vec<String> {
+    items
+        .iter()
+        .flatten()
+        .filter(|rep| rep.uti == uti::FILE_URL)
+        .filter_map(|rep| rep.text.as_deref())
+        .map(|url| percent_decode(url.strip_prefix("file://").unwrap_or(url)))
+        .collect()
+}
+
+pub fn kind_of(items: &[Vec<Rep>]) -> Kind {
+    let utis: Vec<&str> = items.iter().flatten().map(|r| r.uti.as_str()).collect();
+    if utis.contains(&uti::FILE_URL) {
+        return Kind::File;
+    }
+    if utis.iter().any(|u| uti::is_image(u)) && plain_text(items).is_none() {
+        return Kind::Image;
+    }
+    if utis.contains(&uti::HTML) || utis.contains(&uti::RTF) {
+        return Kind::Rich;
+    }
+    match plain_text(items).map(str::trim) {
+        Some(text) if is_color(text) => Kind::Color,
+        Some(text) if is_link(text) => Kind::Link,
+        _ => Kind::Text,
+    }
+}
+
+/// `#rgb` or `#rrggbb` — what the panel draws as a swatch.
+fn is_color(text: &str) -> bool {
+    let Some(hex) = text.strip_prefix('#') else {
+        return false;
+    };
+    matches!(hex.len(), 3 | 6) && hex.chars().all(|c| c.is_ascii_hexdigit())
+}
+
+/// One web address and nothing else. Deliberately narrow: a row is drawn as
+/// a link only when that is all it is.
+fn is_link(text: &str) -> bool {
+    (text.starts_with("https://") || text.starts_with("http://"))
+        && text.len() > 8
+        && !text.chars().any(char::is_whitespace)
+}
+
+fn title_of(items: &[Vec<Rep>], kind: Kind) -> String {
+    let raw = match kind {
+        Kind::File => file_paths(items).join(", "),
+        Kind::Image => "Image".to_string(),
+        _ => plain_text(items).unwrap_or_default().to_string(),
+    };
+    one_line(&raw, TITLE_CHARS)
+}
+
+fn search_of(items: &[Vec<Rep>], ocr: Option<&str>) -> String {
+    let mut text = String::new();
+    if let Some(plain) = plain_text(items) {
+        text.push_str(plain);
+    }
+    for path in file_paths(items) {
+        text.push(' ');
+        text.push_str(&path);
+    }
+    if let Some(ocr) = ocr {
+        text.push(' ');
+        text.push_str(ocr);
+    }
+    text.chars().take(SEARCH_CHARS).collect::<String>().to_lowercase()
+}
+
+/// A one-line title: leading and trailing whitespace off, line breaks and
+/// tabs drawn as ⏎ and ⇥ so a multi-line copy still reads as one, runs of
+/// spaces collapsed, and U+FFFC dropped. That last one is the placeholder
+/// rich text leaves for an inline image, meaningless in a title — and on
+/// macOS 26 two of them next to non-Latin text hang CoreText's truncation
+/// (Maccy #1520), which a title drawn one line with an ellipsis is exactly.
+pub fn one_line(raw: &str, limit: usize) -> String {
+    let mut out = String::new();
+    let mut space = false;
+    for c in raw.trim().chars() {
+        let mapped = match c {
+            '\u{FFFC}' => continue,
+            '\r' => continue,
+            '\n' => '⏎',
+            '\t' => '⇥',
+            c => c,
+        };
+        if mapped == ' ' {
+            if space {
+                continue;
+            }
+            space = true;
+        } else {
+            space = false;
+        }
+        out.push(mapped);
+        if out.chars().count() >= limit {
+            out.push('…');
+            break;
+        }
+    }
+    out
+}
+
+fn percent_decode(text: &str) -> String {
+    let bytes = text.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'%' {
+            // `get`, not slicing: a `%` before a multi-byte character would
+            // put the range mid-character, and a slice there panics.
+            if let Some(Ok(byte)) = text.get(i + 1..i + 3).map(|hex| u8::from_str_radix(hex, 16)) {
+                out.push(byte);
+                i += 3;
+                continue;
+            }
+        }
+        out.push(bytes[i]);
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn text(t: &str) -> Rep {
+        Rep {
+            uti: uti::TEXT.into(),
+            text: Some(t.into()),
+            blob: None,
+            bytes: t.len() as u64,
+        }
+    }
+
+    fn blob(u: &str, id: &str) -> Rep {
+        Rep {
+            uti: u.into(),
+            text: None,
+            blob: Some(id.into()),
+            bytes: 10,
+        }
+    }
+
+    fn copy(hash: &str, at: i64, reps: Vec<Rep>) -> Copy {
+        Copy {
+            v: 1,
+            at,
+            hash: hash.into(),
+            source: Source {
+                bundle_id: Some("com.apple.Safari".into()),
+                name: Some("Safari".into()),
+            },
+            origin: None,
+            items: vec![reps],
+            ocr: None,
+        }
+    }
+
+    fn rules(size: usize) -> Rules {
+        Rules::new(size, vec![], "").0
+    }
+
+    #[test]
+    fn a_new_copy_is_inserted_with_its_title_and_kind() {
+        let mut index = Index::default();
+        let out = apply(&mut index, copy("h1", 1, vec![text("  hello\nworld ")]), &rules(10), "a".into());
+        assert!(matches!(out, Outcome::Inserted { ref id, .. } if id == "a"));
+        let e = &index.items[0];
+        assert_eq!(e.title, "hello⏎world");
+        assert_eq!(e.kind, Kind::Text);
+        assert_eq!(e.search, "  hello\nworld ");
+    }
+
+    #[test]
+    fn the_same_content_bumps_rather_than_duplicates() {
+        let mut index = Index::default();
+        apply(&mut index, copy("h1", 1, vec![text("x")]), &rules(10), "a".into());
+        let out = apply(&mut index, copy("h1", 5, vec![blob(uti::PNG, "dup")]), &rules(10), "b".into());
+        assert_eq!(out, Outcome::Bumped { id: "a".into(), blobs: vec!["dup".into()] });
+        assert_eq!(index.items.len(), 1);
+        assert_eq!(index.items[0].count, 2);
+        assert_eq!(index.items[0].last, 5);
+        assert_eq!(index.items[0].first, 1);
+    }
+
+    #[test]
+    fn a_paste_from_here_keeps_the_row_s_application() {
+        let mut index = Index::default();
+        apply(&mut index, copy("h1", 1, vec![text("x")]), &rules(10), "a".into());
+        let mut again = copy("h1", 2, vec![text("x")]);
+        again.origin = Some("dev.thiennguyen.clipboard".into());
+        again.source.bundle_id = Some("com.apple.TextEdit".into());
+        apply(&mut index, again, &rules(10), "b".into());
+        assert_eq!(index.items[0].app.as_deref(), Some("com.apple.Safari"));
+    }
+
+    #[test]
+    fn ignored_apps_and_patterns_drop_the_copy_and_hand_back_its_blobs() {
+        let (r, refused) = Rules::new(10, vec!["com.apple.Safari".into()], "^secret\n(unclosed");
+        assert_eq!(refused.len(), 1, "a bad line is reported, not fatal");
+        let mut index = Index::default();
+        let out = apply(&mut index, copy("h1", 1, vec![blob(uti::PNG, "p")]), &r, "a".into());
+        assert_eq!(out, Outcome::Ignored { blobs: vec!["p".into()] });
+
+        let (r, _) = Rules::new(10, vec![], "^secret");
+        let out = apply(&mut index, copy("h2", 1, vec![text("secret sauce")]), &r, "a".into());
+        assert!(matches!(out, Outcome::Ignored { .. }));
+        assert!(index.items.is_empty());
+    }
+
+    #[test]
+    fn eviction_drops_the_oldest_unpinned_and_never_a_pin() {
+        let mut index = Index::default();
+        apply(&mut index, copy("h1", 1, vec![text("one")]), &rules(2), "a".into());
+        toggle_pin(&mut index, "a").unwrap();
+        apply(&mut index, copy("h2", 2, vec![text("two")]), &rules(2), "b".into());
+        apply(&mut index, copy("h3", 3, vec![text("three")]), &rules(2), "c".into());
+        let out = apply(&mut index, copy("h4", 4, vec![blob(uti::PNG, "img")]), &rules(2), "d".into());
+        let Outcome::Inserted { evicted, .. } = out else { panic!() };
+        assert_eq!(evicted.iter().map(|e| e.id.as_str()).collect::<Vec<_>>(), ["b"]);
+        let ids: Vec<&str> = index.items.iter().map(|e| e.id.as_str()).collect();
+        assert_eq!(ids, ["a", "c", "d"]);
+    }
+
+    #[test]
+    fn pins_take_free_letters_in_order_and_toggle_off() {
+        let mut index = Index::default();
+        for (i, id) in ["a", "b"].iter().enumerate() {
+            apply(&mut index, copy(&format!("h{i}"), i as i64, vec![text(id)]), &rules(10), (*id).into());
+        }
+        assert_eq!(toggle_pin(&mut index, "a").unwrap(), Some('b'));
+        assert_eq!(toggle_pin(&mut index, "b").unwrap(), Some('d'));
+        assert_eq!(toggle_pin(&mut index, "a").unwrap(), None);
+        assert_eq!(toggle_pin(&mut index, "a").unwrap(), Some('b'));
+    }
+
+    #[test]
+    fn kinds_are_told_apart() {
+        assert_eq!(kind_of(&[vec![text("#378ADD")]]), Kind::Color);
+        assert_eq!(kind_of(&[vec![text("#12g")]]), Kind::Text);
+        assert_eq!(kind_of(&[vec![text("https://github.com/p0deje/Maccy")]]), Kind::Link);
+        assert_eq!(kind_of(&[vec![text("see https://x.y")]]), Kind::Text);
+        assert_eq!(kind_of(&[vec![blob(uti::PNG, "p")]]), Kind::Image);
+        assert_eq!(
+            kind_of(&[vec![text("b"), Rep { uti: uti::HTML.into(), text: Some("<b>b</b>".into()), blob: None, bytes: 8 }]]),
+            Kind::Rich
+        );
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///Users/me/a%20b.txt".into()), blob: None, bytes: 0 };
+        assert_eq!(kind_of(&[vec![file.clone()]]), Kind::File);
+        assert_eq!(title_of(&[vec![file]], Kind::File), "/Users/me/a b.txt");
+    }
+
+    #[test]
+    fn titles_are_one_line_capped_and_free_of_object_placeholders() {
+        assert_eq!(one_line("a\u{FFFC}\u{FFFC}b   c\td", 100), "ab c⇥d");
+        let long = "x".repeat(300);
+        assert_eq!(one_line(&long, TITLE_CHARS).chars().count(), TITLE_CHARS + 1);
+    }
+
+    #[test]
+    fn image_text_is_searchable() {
+        let mut index = Index::default();
+        let mut c = copy("h1", 1, vec![blob(uti::PNG, "p")]);
+        c.ocr = Some("Search History".into());
+        apply(&mut index, c, &rules(10), "a".into());
+        assert!(index.items[0].search.contains("search history"));
+        assert_eq!(index.items[0].thumb.as_deref(), Some("p"));
+    }
+
+    #[test]
+    fn plain_keeps_text_or_files_only() {
+        let html = Rep { uti: uti::HTML.into(), text: Some("<b>x</b>".into()), blob: None, bytes: 8 };
+        assert_eq!(plain(&[vec![text("x"), html.clone()]]), vec![vec![text("x")]]);
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///a".into()), blob: None, bytes: 0 };
+        assert_eq!(plain(&[vec![file.clone(), blob(uti::PNG, "p")]]), vec![vec![file]]);
+        assert!(plain(&[vec![html]]).is_empty());
+    }
+
+    #[test]
+    fn clear_keeps_pins() {
+        let mut index = Index::default();
+        apply(&mut index, copy("h1", 1, vec![text("one")]), &rules(10), "a".into());
+        apply(&mut index, copy("h2", 2, vec![text("two")]), &rules(10), "b".into());
+        toggle_pin(&mut index, "b").unwrap();
+        let gone = clear_unpinned(&mut index);
+        assert_eq!(gone.len(), 1);
+        assert_eq!(index.items[0].id, "b");
+    }
+
+    #[test]
+    fn sorted_puts_pins_first_then_the_chosen_order() {
+        let mut index = Index::default();
+        apply(&mut index, copy("h1", 1, vec![text("one")]), &rules(10), "a".into());
+        apply(&mut index, copy("h2", 2, vec![text("two")]), &rules(10), "b".into());
+        apply(&mut index, copy("h1", 3, vec![text("one")]), &rules(10), "x".into());
+        apply(&mut index, copy("h3", 4, vec![text("three")]), &rules(10), "c".into());
+        toggle_pin(&mut index, "b").unwrap();
+        let ids = |o| sorted(&index, o).into_iter().map(|e| e.id).collect::<Vec<_>>();
+        assert_eq!(ids(Order::LastCopied), ["b", "c", "a"]);
+        assert_eq!(ids(Order::FirstCopied), ["b", "c", "a"]);
+        assert_eq!(ids(Order::MostUsed), ["b", "a", "c"]);
+    }
+}

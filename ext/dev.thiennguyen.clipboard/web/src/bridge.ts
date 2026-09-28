@@ -1,0 +1,47 @@
+// The page's only way out: same-origin requests to Lumi's bridge. The CSP
+// Lumi stamps on every response (`default-src 'self'`) means a request to
+// anywhere else never leaves the webview, so this file is the whole of
+// what the panel can reach.
+//
+//   POST /__lumi__/call        → the extension's run-ui export
+//   GET  /__lumi__/blob/<id>   → an image Lumi stored for this extension
+
+import type { Entry, ListAnswer, Request, Stats } from "./types";
+
+type Answers = {
+  list: ListAnswer;
+  preview: { text: string };
+  paste: Record<string, never>;
+  pin: { pin: string | null };
+  delete: Record<string, never>;
+  clear: { removed: number };
+  close: Record<string, never>;
+  stats: Stats;
+  previewWidth: Record<string, never>;
+};
+
+export async function call<R extends Request>(request: R): Promise<Answers[R["kind"]]> {
+  const answer = await fetch("/__lumi__/call", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+  const body = await answer.text();
+  // A refusal comes back as the extension's (or Lumi's) own sentence,
+  // written for the person — shown as is.
+  if (!answer.ok) throw new Error(body || `Lumi answered ${answer.status}`);
+  return (body ? JSON.parse(body) : {}) as Answers[R["kind"]];
+}
+
+/** Where an image blob is served. Swappable so the dev mock can hand back
+ *  pictures of its own; Lumi mints the ids, so they need only escaping. */
+export let blobUrl = (id: string): string => `/__lumi__/blob/${encodeURIComponent(id)}`;
+
+export function setBlobUrl(resolve: (id: string) => string) {
+  blobUrl = resolve;
+}
+
+export function message(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+export type { Entry };

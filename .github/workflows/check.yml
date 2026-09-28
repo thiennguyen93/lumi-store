@@ -32,9 +32,12 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
-      # No minisign: nothing here signs.
+      # No minisign: nothing here signs. corepack for a web entry's pinned
+      # pnpm, publish.yml's reason.
       - name: Toolchain
-        run: rustup target add wasm32-wasip2
+        run: |
+          rustup target add wasm32-wasip2
+          corepack enable
 
       - name: Validate, build, pack
         run: python3 scripts/publish.py --check
