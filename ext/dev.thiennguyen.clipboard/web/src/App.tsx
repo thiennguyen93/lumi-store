@@ -53,7 +53,7 @@ export function App() {
   const slideFrom = useRef<Map<string, number> | null>(null);
   // The row just pinned, so its pin can pop in once.
   const [popped, setPopped] = useState<string | null>(null);
-  // A delete is folding: a second ⌥⌫ waits for it rather than racing it.
+  // A delete is folding: a second ⌘⌥⌫ waits for it rather than racing it.
   const folding = useRef(false);
   // Everything done since the panel opened, newest last, for ⌘Z. The page
   // is blanked when the panel goes, and the extension empties its trash
@@ -296,7 +296,7 @@ export function App() {
         : []),
       { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
       ...(row
-        ? [{ id: "delete", label: "Delete entry", glyph: <TrashGlyph />, keys: "⌥⌫", danger: true, run: remove }]
+        ? [{ id: "delete", label: "Delete entry", glyph: <TrashGlyph />, keys: "⌘⌥⌫", danger: true, run: remove }]
         : []),
       ...(unpinned && unpinned < all
         ? [
@@ -389,9 +389,10 @@ export function App() {
       }
     } else if (cmd && key.toLowerCase() === "k") setMenuOpen(true);
     else if (cmd && key === ",") openSettings();
-    // ⌥⌫, not ⌘⌫: ⌘⌫ is how people clear what they typed in a field, and
-    // it stays the search field's — it used to delete the selected row too.
-    else if (event.altKey && !event.metaKey && !event.ctrlKey && key === "Backspace") remove();
+    // ⌘⌥⌫, Finder's "Delete Immediately": ⌘⌫ (to the line's start) and ⌥⌫
+    // (a word) stay the search field's, where people reach for them while
+    // typing — ⌘⌫ alone used to delete the selected row too.
+    else if (cmd && event.altKey && key === "Backspace") remove();
     // ⌘Z / ⌘⇧Z are the history's while there is something to take back or
     // do again; with nothing, they stay the search field's own text undo.
     else if (cmd && !event.shiftKey && key.toLowerCase() === "z" && undos.current.length) undo();
@@ -500,7 +501,7 @@ export function App() {
         <span><kbd className="cap quiet">↩</kbd> paste</span>
         <span><kbd className="cap quiet">⌥↩</kbd> plain</span>
         <span><kbd className="cap quiet">⌘P</kbd> pin</span>
-        <span><kbd className="cap quiet">⌥⌫</kbd> delete</span>
+        <span><kbd className="cap quiet">⌘⌥⌫</kbd> delete</span>
         <span><kbd className="cap quiet">⇥</kbd> filter</span>
         <button
           type="button"
