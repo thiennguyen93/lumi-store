@@ -156,6 +156,19 @@ interface app {
     /// This Mac's edition — the only thing about the licence an extension
     /// is ever told.
     license: func() -> edition;
+
+    /// Whether the Hyper key is switched on in the live profile. While it
+    /// is, Caps Lock is Lumi's: remapped below every application and never
+    /// delivered as itself, so an extension that listens for keys — a
+    /// keyboard tester — has to know not to wait for it. One switch and
+    /// nothing else: which modifiers it adds, what a tap does and every
+    /// shortcut it holds stay behind `config`. Costs no capability.
+    ///
+    /// Added to 0.2 without a new world version: an existing component
+    /// imports nothing new and is unaffected. A component that calls this
+    /// needs a Lumi that has it, which its manifest's `min-lumi-version`
+    /// says.
+    hyper-key-enabled: func() -> result<bool, string>;
 }
 
 /// The person's automations and Lumi's settings, read-only, as the live

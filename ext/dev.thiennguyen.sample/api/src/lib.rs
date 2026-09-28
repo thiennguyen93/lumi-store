@@ -45,10 +45,10 @@
 //! fallback only when `clipboard` is granted too), the clipboard pair
 //! needs `clipboard`, `open_url` needs `applications` (plus `network` for
 //! a web address), `fetch` needs `network`, and everything in [`config`]
-//! needs `config`. `alert`, `settings` and `profiles` cost nothing but
-//! budget — every host call spends from one per-run allowance, so a loop
-//! of two hundred alerts ends the run's credit. [`about`] and [`license`]
-//! cost nothing at all.
+//! needs `config`. `alert`, `settings`, `profiles` and
+//! [`hyper_key_enabled`] cost nothing but budget — every host call spends
+//! from one per-run allowance, so a loop of two hundred alerts ends the
+//! run's credit. [`about`] and [`license`] cost nothing at all.
 //!
 //! **Bounds you are running under**, so a refusal reads as the mechanism
 //! it is: a memory ceiling, a wall-clock deadline that stops a run that
@@ -246,6 +246,19 @@ pub fn about() -> About {
 /// the person can buy, lapse or renew while your extension is installed.
 pub fn license() -> Edition {
     lumi::ext::app::license()
+}
+
+/// Whether Lumi's Hyper key is switched on in the live profile. While it
+/// is, Caps Lock belongs to Lumi — remapped and never delivered as itself —
+/// so a page listening for keys should not wait for one.
+///
+/// Needs no capability; it spends one host call, like `settings`. It is the
+/// switch alone: the modifiers the Hyper key adds and what a tap does are
+/// under [`config::hyper_key`], which needs `config`. Ask when you need it:
+/// the person can flip it, or switch profile, at any time. Needs Lumi 1.23.0
+/// or later — say so with `min-lumi-version` in your manifest.
+pub fn hyper_key_enabled() -> Result<bool, String> {
+    lumi::ext::app::hyper_key_enabled()
 }
 
 /// The person's automations and Lumi's own settings, read-only, as the live
