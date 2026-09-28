@@ -33,6 +33,8 @@ export interface ListAnswer {
   theme?: "light" | "dark" | "system";
   /** How the search field reads a query (the Search setting). */
   searchMode?: "exact" | "fuzzy" | "regexp" | "mixed";
+  /** The panel's Pin key, as the setting spells it: "alt+p". */
+  pinKey?: string;
 }
 
 /** The About page's `stats` answer. `since` is Lumi's clock, in ms. */

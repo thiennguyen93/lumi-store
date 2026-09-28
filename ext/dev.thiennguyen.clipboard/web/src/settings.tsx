@@ -6,6 +6,7 @@
 
 import { StrictMode, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { acceleratorGlyphs, comboOf, comboText, DEFAULT_PIN_KEY, glyphs, parseCombo, refusal } from "./keys";
 import { KEEP_LABELS, type Stats } from "./types";
 import "./settings.css";
 
@@ -23,6 +24,7 @@ interface Values {
   keep: Keep;
   theme: Theme;
   search: Search;
+  pinKey: string;
   pasteOnSelect: boolean;
   ocr: boolean;
   sort: Order;
@@ -77,10 +79,12 @@ function read(raw: Record<string, unknown>): Values {
   const keep = text(raw.keep, "3mo");
   const theme = text(raw.theme, "system");
   const search = text(raw.search, "mixed");
+  const pin = parseCombo(text(raw.pinKey, DEFAULT_PIN_KEY));
   return {
     keep: (KEEPS.some((k) => k.value === keep) ? keep : "3mo") as Keep,
     theme: (THEMES.some((t) => t.value === theme) ? theme : "system") as Theme,
     search: (SEARCHES.some((m) => m.value === search) ? search : "mixed") as Search,
+    pinKey: pin && !refusal(pin) ? comboText(pin) : DEFAULT_PIN_KEY,
     pasteOnSelect: text(raw.pasteOnSelect, "true") !== "false",
     ocr: text(raw.ocr, "true") !== "false",
     sort: (["last", "first", "used"].includes(text(raw.sort, "")) ? raw.sort : "last") as Order,
@@ -99,6 +103,7 @@ function written(v: Values): Record<string, string> {
     keep: v.keep,
     theme: v.theme,
     search: v.search,
+    pinKey: v.pinKey,
     pasteOnSelect: String(v.pasteOnSelect),
     ocr: String(v.ocr),
     sort: v.sort,
@@ -219,6 +224,16 @@ function Settings() {
       </section>
 
       <section>
+        <h3>Shortcuts</h3>
+        <div className="group">
+          <GlobalShortcut command="open" />
+          <Row label="Pin" hint="While the panel is up; pins or unpins the selected item">
+            <Recorder value={values.pinKey} fallback={DEFAULT_PIN_KEY} onChange={(pinKey) => change({ pinKey }, true)} />
+          </Row>
+        </div>
+      </section>
+
+      <section>
         <h3>Appearance</h3>
         <div className="group">
           <Row label="Theme" hint={values.appearance === "hud" ? "Dark glass is always dark" : undefined}>
@@ -329,6 +344,122 @@ function Segmented<T extends string>({
           {o.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+interface OwnShortcuts {
+  on: boolean;
+  commands: { name: string; label: string; rows: { trigger: string; enabled: boolean }[] }[];
+}
+
+/** One of the extension's commands and the global shortcuts that run it —
+ *  Lumi's, set in its Shortcuts pane and only shown here, with a button
+ *  that goes there. One place sets a global key, so two cannot disagree. */
+function GlobalShortcut({ command }: { command: string }) {
+  const [own, setOwn] = useState<OwnShortcuts | null>(null);
+  const [failed, setFailed] = useState("");
+
+  useEffect(() => {
+    fetch("/__lumi__/shortcuts")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: OwnShortcuts | null) => setOwn(body))
+      .catch(() => setOwn(null));
+  }, []);
+
+  const mine = own?.commands.find((c) => c.name === command);
+  const keys = (mine?.rows ?? []).filter((row) => row.trigger);
+  const live = keys.filter((row) => row.enabled && own?.on);
+  const hint = !own
+    ? "Global — set in Lumi's Shortcuts"
+    : !own.on
+      ? "Shortcuts are switched off in Lumi"
+      : keys.length === 0
+        ? "No key yet — give it one in Shortcuts"
+        : live.length < keys.length
+          ? "Global · a switched-off row is dimmed"
+          : "Global — works from any app";
+
+  return (
+    <Row label={mine?.label ?? "Show clipboard history"} hint={failed || hint}>
+      <div className="recorder">
+        {keys.length === 0 ? (
+          <span className="keycap unset">Not set</span>
+        ) : (
+          keys.map((row, at) => (
+            <span key={at} className={row.enabled && own?.on ? "keycap" : "keycap off"}>
+              {acceleratorGlyphs(row.trigger)}
+            </span>
+          ))
+        )}
+        <button
+          type="button"
+          className="add"
+          onClick={() =>
+            fetch("/__lumi__/show-shortcuts", { method: "POST", body: JSON.stringify({ command }) })
+              .then(async (r) => setFailed(r.ok ? "" : (await r.text()) || "Could not open Shortcuts"))
+              .catch(() => setFailed("Could not open Shortcuts"))
+          }
+        >
+          Edit in Shortcuts…
+        </button>
+      </div>
+    </Row>
+  );
+}
+
+/** A key-cap that records the next combo pressed: click, press, done.
+ *  Esc puts it back; a combo the panel cannot use says why and is not
+ *  kept. Recorded by position, so ⌥P is P and not the π it types. */
+function Recorder({ value, fallback, onChange }: { value: string; fallback: string; onChange: (value: string) => void }) {
+  const [recording, setRecording] = useState(false);
+  const [said, setSaid] = useState("");
+  const combo = parseCombo(value) ?? parseCombo(fallback)!;
+
+  useEffect(() => {
+    if (!recording) return;
+    const take = (event: KeyboardEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.key === "Escape") {
+        setRecording(false);
+        setSaid("");
+        return;
+      }
+      const got = comboOf(event);
+      if (!got) return; // a modifier on its own, still being held
+      const why = refusal(got);
+      if (why) {
+        setSaid(`${glyphs(got)}: ${why}`);
+        return;
+      }
+      setSaid("");
+      setRecording(false);
+      onChange(comboText(got));
+    };
+    window.addEventListener("keydown", take, true);
+    return () => window.removeEventListener("keydown", take, true);
+  }, [recording, onChange]);
+
+  return (
+    <div className="recorder">
+      {said && <span className="bad small">{said}</span>}
+      <button
+        type="button"
+        className={recording ? "keycap recording" : "keycap"}
+        aria-label={recording ? "Press the new shortcut, or Esc" : `Shortcut ${glyphs(combo)}, click to change`}
+        onClick={() => {
+          setSaid("");
+          setRecording((was) => !was);
+        }}
+      >
+        {recording ? "Press keys…" : glyphs(combo)}
+      </button>
+      {value !== fallback && !recording && (
+        <button type="button" className="add" onClick={() => onChange(fallback)}>
+          Reset
+        </button>
+      )}
     </div>
   );
 }

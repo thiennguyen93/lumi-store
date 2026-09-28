@@ -44,6 +44,7 @@ let previewWidth: number | null = null;
 // What Lumi keeps for `GET /__lumi__/settings`, as text the way it stores it.
 let settings: Record<string, string> = {
   keep: "3mo",
+  pinKey: "alt+p",
   theme: "system",
   search: new URLSearchParams(location.search).get("search") ?? "mixed",
   pasteOnSelect: "true",
@@ -76,6 +77,7 @@ function answer(request: Request): unknown {
         items: sorted(),
         pasteOnSelect: true,
         previewWidth,
+        pinKey: settings.pinKey ?? "alt+p",
         searchMode: (settings.search ?? "mixed") as "exact" | "fuzzy" | "regexp" | "mixed",
         appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
       };
@@ -200,6 +202,24 @@ window.fetch = async (input, init) => {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
   if (url.endsWith("/__lumi__/drag")) {
     say("would hand the drag to macOS");
+    return new Response(null, { status: 204 });
+  }
+  if (url.endsWith("/__lumi__/shortcuts")) {
+    const none = new URLSearchParams(location.search).has("nokey");
+    const body = {
+      on: true,
+      commands: [
+        {
+          name: "open",
+          label: "Show clipboard history",
+          rows: none ? [] : [{ trigger: "Shift+Super+KeyC", enabled: true }, { trigger: "Ctrl+Alt+KeyV", enabled: false }],
+        },
+      ],
+    };
+    return new Response(JSON.stringify(body), { status: 200 });
+  }
+  if (url.endsWith("/__lumi__/show-shortcuts")) {
+    say("would open Lumi's Shortcuts, searched for Show clipboard history");
     return new Response(null, { status: 204 });
   }
   if (url.endsWith("/__lumi__/settings")) {

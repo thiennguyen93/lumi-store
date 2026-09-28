@@ -157,6 +157,9 @@ struct Prefs {
     theme: &'static str,
     /// How the panel reads a search: "exact", "fuzzy", "regexp", "mixed".
     search: &'static str,
+    /// The panel's Pin key, as the page spells it ("alt+p"); the page
+    /// checks it and falls back to its default on anything it cannot read.
+    pin_key: String,
 }
 
 impl Prefs {
@@ -208,6 +211,7 @@ fn prefs(host: &impl Host) -> Prefs {
             Some("sidebar") => "sidebar",
             _ => "popover",
         },
+        pin_key: s["pinKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("alt+p").to_string(),
         search: match s["search"].as_str() {
             Some("exact") => "exact",
             Some("fuzzy") => "fuzzy",
@@ -415,6 +419,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "appearance": prefs.appearance,
                 "theme": prefs.shown_theme(),
                 "searchMode": prefs.search,
+                "pinKey": prefs.pin_key,
                 "previewWidth": preview_width(host),
             }))
         }

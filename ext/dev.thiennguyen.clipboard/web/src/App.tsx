@@ -32,6 +32,7 @@ import { Preview } from "./Preview";
 import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
+import { type Combo, DEFAULT_PIN_KEY, glyphs, parseCombo, pressed } from "./keys";
 import { badPattern, FILTER_LABELS, FILTERS, type Filter, inFilter, search, type SearchMode, shortcuts } from "./search";
 import type { Entry, ListAnswer } from "./types";
 
@@ -41,6 +42,8 @@ export function App() {
   // How the query is read — the Search setting; `reload` sets it.
   const [mode, setMode] = useState<SearchMode>("mixed");
   const modeRef = useRef<SearchMode>("mixed");
+  // Pin's key — the Pin shortcut setting; ⌥P until the list says.
+  const [pinKey, setPinKey] = useState<Combo>(() => parseCombo(DEFAULT_PIN_KEY)!);
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState(0);
   const [notice, setNotice] = useState("");
@@ -78,6 +81,7 @@ export function App() {
     setRows(answer.items);
     adoptWidth(answer.previewWidth);
     wear(answer.appearance, answer.theme);
+    setPinKey(parseCombo(answer.pinKey ?? "") ?? parseCombo(DEFAULT_PIN_KEY)!);
     modeRef.current = answer.searchMode ?? "mixed";
     setMode(modeRef.current);
     if (keepId) {
@@ -291,7 +295,7 @@ export function App() {
             ...(row.ocr ? [{ id: "copyText", label: "Copy text in image", glyph: <ScanTextGlyph />, run: run("copyText") }] : []),
             ...(row.kind === "link" ? [{ id: "open", label: "Open in browser", glyph: <ExternalGlyph />, run: run("open") }] : []),
             ...(row.kind === "file" ? [{ id: "reveal", label: "Show in Finder", glyph: <FolderGlyph />, run: run("reveal") }] : []),
-            { id: "pin", label: row.pin ? "Unpin" : "Pin", glyph: <PinGlyph />, keys: "⌘P", run: togglePin },
+            { id: "pin", label: row.pin ? "Unpin" : "Pin", glyph: <PinGlyph />, keys: glyphs(pinKey), run: togglePin },
           ]
         : []),
       { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
@@ -323,7 +327,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [act, current, openSettings, paste, remove, removeAll, rows, togglePin]);
+  }, [act, current, openSettings, paste, pinKey, remove, removeAll, rows, togglePin]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -397,7 +401,8 @@ export function App() {
     // do again; with nothing, they stay the search field's own text undo.
     else if (cmd && !event.shiftKey && key.toLowerCase() === "z" && undos.current.length) undo();
     else if (cmd && event.shiftKey && key.toLowerCase() === "z" && redos.current.length) redo();
-    else if (cmd && key.toLowerCase() === "p") togglePin();
+    // Before ⌘+letter below, which a Pin of ⌘⌥P would otherwise fall to.
+    else if (pressed(event, pinKey)) togglePin();
     else if (cmd && /^[1-9a-z]$/i.test(key)) {
       const wanted = key.toLowerCase();
       const at = shown.findIndex((row) => keys.get(row.id) === wanted);
@@ -500,7 +505,7 @@ export function App() {
       <footer className="hints">
         <span><kbd className="cap quiet">↩</kbd> paste</span>
         <span><kbd className="cap quiet">⌥↩</kbd> plain</span>
-        <span><kbd className="cap quiet">⌘P</kbd> pin</span>
+        <span><kbd className="cap quiet">{glyphs(pinKey)}</kbd> pin</span>
         <span><kbd className="cap quiet">⌘⌥⌫</kbd> delete</span>
         <span><kbd className="cap quiet">⇥</kbd> filter</span>
         <button

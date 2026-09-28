@@ -78,7 +78,12 @@ main > section:first-of-type h3 { margin-top: 0; }
 }
 .row + .row { border-top: 1px solid var(--st-line); }
 .row.col { flex-direction: column; align-items: stretch; }
-.lbl { flex: 1; min-width: 0; }
+/* A label keeps a readable width; past it, the controls go under it. */
+.row:not(.col) > .lbl { flex: 1 1 160px; min-width: 0; }
+.row:not(.col) { flex-wrap: wrap; }
+/* Stacked, a label is only as tall as its text: a flex-basis here is a
+   height. */
+.row.col > .lbl { flex: none; }
 .lbl small { display: block; margin-top: 1px; font-size: 11.5px; color: var(--st-dim); }
 
 /* lumi.css makes every field full width; beside a label, a select is only
@@ -202,6 +207,31 @@ main > section:first-of-type h3 { margin-top: 0; }
 :root[data-theme="dark"] .look-system .sidebar .pane { background: rgba(50, 52, 58, 0.82); }
 .look-dark .sidebar .pane i,
 :root[data-theme="dark"] .look-system .sidebar .pane i { background: rgba(255, 255, 255, 0.34); }
+
+/* A shortcut recorder: a key-cap, lit while it listens. */
+.recorder { display: flex; align-items: center; gap: 8px; flex: none; }
+.keycap {
+  all: unset;
+  min-width: 64px;
+  padding: 3px 10px;
+  border: 1px solid var(--st-line);
+  border-radius: 6px;
+  background: var(--st-raised);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+  text-align: center;
+  font: 500 12px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+}
+.keycap:focus-visible { outline: 2px solid var(--st-accent); outline-offset: 1px; }
+.keycap.recording {
+  color: var(--st-accent);
+  border-color: var(--st-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--st-accent) 22%, transparent);
+}
+.recorder .bad { color: var(--st-bad); }
+.keycap.off { opacity: 0.45; text-decoration: line-through; }
+.keycap.unset { color: var(--st-dim); font-weight: 400; }
+span.keycap { cursor: default; }
 
 /* Ignored apps. */
 .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
