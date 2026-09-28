@@ -75,7 +75,9 @@ impl lumi::Guest for Sample {
         // Settings tab of the sample's page in Lumi's Extensions pane,
         // where Lumi names it `:settings`. A colon is outside every window
         // name, so the two can never be confused.
-        if window != "settings" && window != ":settings" {
+        // And its Welcome window, which asks for the same `about` and
+        // `open-settings` the settings page does.
+        if window != "settings" && window != ":settings" && window != "welcome" {
             return Err(format!("the sample has no {window} window"));
         }
         let parsed: serde_json::Value =
@@ -86,6 +88,12 @@ impl lumi::Guest for Sample {
             Some("config") => {
                 let section = parsed.get("section").and_then(|s| s.as_str()).unwrap_or("");
                 return config(section);
+            }
+            // The button the embedded Settings tab draws and the standalone
+            // window hides: same door the `configure` command uses.
+            Some("open-settings") => {
+                lumi::open_window("settings")?;
+                return Ok(serde_json::json!({ "opened": true }).to_string());
             }
             _ => {}
         }
@@ -107,6 +115,30 @@ impl lumi::Guest for Sample {
                 Ok(serde_json::json!({ "opened": true }).to_string())
             }
             other => Err(format!("the sample's window has no {other:?} request")),
+        }
+    }
+
+    /// The three moments, one each: a Welcome window after the install, a
+    /// line after an update saying from what, and a web page on the way
+    /// out. Every one of them is optional — `Ok(())` for all three is an
+    /// extension that simply does not care, and is what most will write.
+    fn on_lifecycle(event: lumi::Lifecycle) -> Result<(), String> {
+        match event {
+            // An ordinary declared window: the manifest's `[[window]]` is
+            // the grant, exactly as for the `configure` command.
+            lumi::Lifecycle::Installed => lumi::open_window("welcome"),
+            // `from` is the version the manifest said before; the new one is
+            // this build's own manifest, which the component does not read.
+            lumi::Lifecycle::Updated(from) => {
+                lumi::alert(&format!("Sample was updated from {from}. Thanks for keeping it."))
+            }
+            // No window here — the files go the moment this returns, and
+            // Lumi refuses the open by name. A page in the browser is where
+            // an uninstall survey belongs; this one costs `applications`
+            // and `network`, both already in the manifest for `translate`.
+            lumi::Lifecycle::Uninstalling => lumi::open_url(
+                "https://lumikeys.app/docs/extensions?uninstalled=dev.thiennguyen.sample",
+            ),
         }
     }
 }

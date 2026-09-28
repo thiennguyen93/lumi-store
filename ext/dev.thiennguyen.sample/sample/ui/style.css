@@ -14,6 +14,12 @@
   display: none;
 }
 
+/* The button opens the standalone window — no reason to offer that from
+   inside the window it would open. */
+:root:not([data-lumi-embedded]) #open-settings {
+  display: none;
+}
+
 button {
   margin-top: 8px;
 }
@@ -24,4 +30,38 @@ button {
 
 code {
   word-break: break-all;
+}
+
+/* The installer: a fixed dialog, Cancel and Install at the bottom right the
+   way Lumi's own sheets place them. */
+body.installer,
+body.dialog {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body.installer select {
+  width: 100%;
+}
+
+body.installer .warn:empty,
+body.dialog .warn:empty {
+  display: none;
+}
+
+body.installer .actions,
+body.dialog .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+body.installer .actions button,
+body.dialog .actions button {
+  margin-top: 0;
 }

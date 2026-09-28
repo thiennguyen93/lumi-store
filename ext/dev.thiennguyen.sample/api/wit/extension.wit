@@ -1,4 +1,4 @@
-package lumi:ext@0.1.0;
+package lumi:ext@0.2.0;
 
 /// What an extension may be handed, cut into interfaces by capability.
 ///
@@ -8,9 +8,12 @@ package lumi:ext@0.1.0;
 /// reach through the same capability — never more, and never by a
 /// different road.
 ///
-/// v0.1, stamped the day the store's first release went out: from here,
-/// this is a wire commitment, not a moving target — a component built
-/// against this version keeps working in a later Lumi. The world still
+/// v0.2, the first break: `on-lifecycle` joined the exports, and a world's
+/// exports are what the host requires, so a component built against 0.1 —
+/// which has no such export — does not fit this one and is refused at
+/// install with a sentence saying to rebuild it. v0.1 was stamped the day
+/// the store's first release went out and kept every promise it made
+/// until this; from here 0.2 is the wire commitment, not a moving target. The world still
 /// imports every interface unconditionally, and Lumi still checks the
 /// grant at every call rather than refusing to load a component that
 /// imports an interface its manifest did not ask for — a Rust guest built
@@ -270,4 +273,39 @@ world extension {
     /// deadline as a command: the window is a face on the sandbox, never a
     /// door around it.
     export run-ui: func(window: string, request: string) -> result<string, string>;
+
+    /// A moment in the extension's own life, as Lumi saw it happen.
+    variant lifecycle {
+        /// Installed just now, for the first time on this Mac — after the
+        /// package's own installer, if it has one, has already written the
+        /// settings it asked for.
+        installed,
+        /// Replaced by this version. The payload is the version it
+        /// replaced, so a "What's new" can say since when.
+        updated(string),
+        /// About to be removed: the last run this extension gets. Its
+        /// files go the moment this returns.
+        uninstalling,
+    }
+
+    /// Hear about one lifecycle moment. Called only while the extension is
+    /// switched on — off means none of its code runs, this included.
+    ///
+    /// Under the same capability gate as a command, with three differences
+    /// that follow from nobody having pressed anything:
+    ///
+    /// - **The answer is never shown.** An error is written to Lumi's log
+    ///   and goes no further; there is nobody at the keyboard who asked.
+    /// - **It cannot veto.** An `uninstalling` that fails, traps or runs
+    ///   out of time is logged, and the uninstall goes ahead.
+    /// - **`uninstalling` is short and has no windows.** The person is
+    ///   waiting on the Uninstall button, so the deadline is a few seconds
+    ///   rather than a command's; and the `ui/` files are about to go, so
+    ///   `ui.open-window` is refused — open a web page with `open.url`
+    ///   instead, which is where an uninstall survey belongs.
+    ///
+    /// `installed` and `updated` run on a thread of their own once the
+    /// package has landed, so a Welcome window opened from here comes up
+    /// after the install has finished rather than holding it.
+    export on-lifecycle: func(event: lifecycle) -> result<_, string>;
 }

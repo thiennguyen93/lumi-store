@@ -19,6 +19,7 @@ const preview = document.getElementById("preview");
 const said = document.getElementById("said");
 const profile = document.getElementById("profile");
 const running = document.getElementById("running");
+const opened = document.getElementById("opened");
 
 async function call(request) {
   const answer = await fetch("/__lumi__/call", {
@@ -76,6 +77,15 @@ async function showRunning() {
     running.textContent = String(err.message || err);
   }
 }
+
+document.getElementById("open-settings").addEventListener("click", async () => {
+  opened.textContent = "";
+  try {
+    await call({ kind: "open-settings" });
+  } catch (err) {
+    opened.textContent = String(err.message || err);
+  }
+});
 
 target.addEventListener("change", async () => {
   saved.textContent = "";

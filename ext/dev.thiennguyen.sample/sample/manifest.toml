@@ -6,14 +6,14 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.8.0"
+version = "0.10.0"
 min-lumi-version = "1.21.1"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
 # line the Extensions list has room for.
 summary = "The reference extension: one of everything an extension can add to Lumi — a command, a flow node, a setting, a window and an About page — each small enough to read in one sitting."
-homepage = "https://lumikeys.app/docs/extensions"
+homepage = "https://docs.lumikeys.app/extensions"
 # The extension's own About page, under ui/. Lumi draws it inside the
 # Extensions pane in place of the page it would compose from this manifest;
 # the Permissions tab beside it stays Lumi's, so a page cannot restate what
@@ -57,12 +57,11 @@ label = "English"
 value = "ja"
 label = "Japanese"
 
-# Which Google Translate tab to open. Declared `segmented` — four short
-# answers side by side — but each option carries a `note`, because only
-# "Text" uses the selection and that is not something the four words say.
-# A note turns the choice into radio rows so it is read before choosing;
-# Lumi decides that, not this file. Take the notes out and it is the
-# segmented control again.
+# Which Google Translate tab to open. `segmented` with no `note` on any
+# option, so `choiceControl` in extensionChoiceRules.ts draws it as the
+# segmented control rather than a radio list — four short answers side by
+# side is the point; put a `note` back on any option and Lumi turns the
+# whole group into rows again.
 [[command.params]]
 name = "op"
 label = "Translate"
@@ -72,22 +71,18 @@ default = "translate"
 [[command.params.options]]
 value = "translate"
 label = "Text"
-note = "Translates what is selected in the front app."
 
 [[command.params.options]]
 value = "docs"
 label = "Documents"
-note = "Opens the page to upload a file. Reads no selection."
 
 [[command.params.options]]
 value = "images"
 label = "Images"
-note = "Opens the page to drop a picture. Reads no selection."
 
 [[command.params.options]]
 value = "websites"
 label = "Websites"
-note = "Opens the page to type an address. Reads no selection."
 
 # Any number of extra languages, each opened in a tab of its own beside the
 # first. The value reaches `run_command` as a JSON array of the ticked
@@ -175,6 +170,18 @@ height = 470
 resizable = false
 maximizable = false
 
+# The Welcome window, opened by the sample's own code the moment it is
+# installed — `on_lifecycle` in src/lib.rs. Declared like any other window:
+# the declaration is the grant, and the review sheet lists it.
+[[window]]
+name = "welcome"
+title = "Welcome to Sample"
+path = "welcome.html"
+width = 420
+height = 340
+resizable = false
+maximizable = false
+
 [[command]]
 name = "configure"
 label = "Open sample settings"
@@ -193,3 +200,19 @@ icon = "refresh-cw"
 name = "grow"
 label = "Grow until refused (limit test)"
 icon = "icons/grow.svg"
+
+# The sample's own installer. On a fresh install Lumi first shows its own
+# review of the package — what it reaches and who signed it, which is never
+# this page's to say — and its button reads Continue… instead of Install.
+# This page then opens in a window of its own, asks for the default language
+# above, and nothing is installed until its Install is pressed; its Cancel,
+# or closing the window, abandons the install and writes nothing. What it
+# sets lands in settings.json with the package, through the same
+# declared-fields filter as any other save. An update never opens it — the
+# person's settings are kept — and a Lumi that predates [install] ignores
+# the table and installs with every setting at its default.
+[install]
+page = "install.html"
+title = "Set up Sample"
+width = 420
+height = 380

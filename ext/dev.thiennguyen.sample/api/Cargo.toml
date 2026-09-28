@@ -1,6 +1,6 @@
 [package]
 name = "lumi-extension-api"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Write Lumi extensions in Rust: the typed host bindings and the export macro."
 license = "MIT"

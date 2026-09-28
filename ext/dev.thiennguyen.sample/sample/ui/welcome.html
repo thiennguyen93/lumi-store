@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- The sample's Welcome window: opened by the extension's own
+     `on_lifecycle` when it is installed. An ordinary declared window with
+     the ordinary bridge — by the time it opens, the extension is installed. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Welcome to Sample</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dialog">
+  <h1>Welcome to Sample</h1>
+  <p>
+    Sample is installed. Give <strong>Translate selection</strong> a shortcut
+    under Settings → Shortcuts, select some text anywhere, and press it.
+  </p>
+  <p class="muted" id="language"></p>
+
+  <p class="warn" id="said" role="alert"></p>
+
+  <div class="actions">
+    <!-- No Done button: a page cannot close its own window, and a button
+         that does nothing is worse than the title bar's close. -->
+    <button type="button" class="primary" id="settings">Open settings</button>
+  </div>
+
+  <script src="welcome.js"></script>
+</body>
+</html>

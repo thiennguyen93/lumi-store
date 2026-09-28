@@ -83,6 +83,9 @@ CHOICE_KINDS = {"select", "segmented", "multiselect"}
 # an installed id was a takeover of its directory.
 ID_RE = re.compile(r"^[a-z0-9._-]{1,100}$")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+# A command icon that is not an .svg is a Lucide name: lowercase words and
+# digits joined by single hyphens — Lumi's `manifest::command_icon`.
+LUCIDE_RE = re.compile(r"^(?=.{1,64}$)[a-z0-9]+(-[a-z0-9]+)*$")
 # Mirrors the installer's ui-path alphabet and ceilings: what CI packs
 # is exactly what the installer will accept, so drift shows up here as a
 # failed publish instead of there as a refused install.
@@ -93,6 +96,7 @@ UI_SEGMENT_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 # about it beyond those two facts.
 MAX_WASM = 48 * 1024 * 1024
 COMPONENT_HEADER = b"\x00asm\x0d\x00\x01\x00"
+MAX_ICON = 64 * 1024
 MAX_UI_FILE = 5 * 1024 * 1024
 MAX_UI_FILES = 200
 MAX_UI_TOTAL = 24 * 1024 * 1024
@@ -209,7 +213,49 @@ def check_manifest(entry_id: str, manifest: dict):
         path = window.get("path", "") or "index.html"
         if not is_valid_ui_path(path):
             fail(entry_id, f"window {name} points at {path!r}, which is not a plain relative path")
+    for noun, path in declared_pages(manifest):
+        if not is_valid_ui_path(path):
+            fail(entry_id, f"the {noun} points at {path!r}, which is not a plain relative path")
+    install = manifest.get("install")
+    if install is not None and not str(install.get("page", "")).strip():
+        # Lumi refuses an [install] table with no page rather than
+        # ignoring it: somebody wrote the table meaning it to do something.
+        fail(entry_id, "the [install] table names no page")
+    for command in manifest.get("command", []):
+        icon = str(command.get("icon", "")).strip()
+        if icon.endswith(".svg"):
+            if not is_valid_ui_path(icon):
+                fail(entry_id, f"the command {command.get('name')}'s icon points at {icon!r}, which is not a plain relative path")
+        elif icon and not LUCIDE_RE.match(icon):
+            fail(
+                entry_id,
+                f"the command {command.get('name')}'s icon {icon!r} is neither a Lucide icon "
+                "name (lowercase words joined by '-') nor an .svg file under ui/",
+            )
     return ext
+
+
+def declared_pages(manifest: dict) -> list:
+    """Every ui/ page the manifest names outside [[window]], as (noun, path):
+    the extension's own About and Settings pages and its installer. Lumi's
+    installer refuses a package naming a page it does not ship — the About
+    tab opening on a 404, an Install button that opens nothing — so they are
+    held to the window rule here, in both halves: a plain path, and a file
+    that is actually there."""
+    ext = manifest.get("extension", {})
+    pages = []
+    about = str(ext.get("about", "")).strip()
+    if about:
+        pages.append(("about page", about))
+    settings_page = str(ext.get("settings-page", ext.get("settings_page", ""))).strip()
+    if settings_page:
+        pages.append(("settings page", settings_page))
+    install = manifest.get("install")
+    if install is not None:
+        page = str(install.get("page", "")).strip()
+        if page:
+            pages.append(("installer page", page))
+    return pages
 
 
 def build_wasm(entry_id: str, crate: Path) -> Path:
@@ -348,6 +394,19 @@ def sources(entry: dict):
         declared = window.get("path", "") or "index.html"
         if not (ui_dir / declared).is_file():
             fail(entry_id, f"window {window.get('name')} points at ui/{declared}, which does not exist")
+    for noun, declared in declared_pages(manifest):
+        if not (ui_dir / declared).is_file():
+            fail(entry_id, f"the {noun} points at ui/{declared}, which does not exist")
+    for command in manifest.get("command", []):
+        # Not `icon`: that name is the package's icon.svg, returned below.
+        mark = str(command.get("icon", "")).strip()
+        if mark.endswith(".svg"):
+            mark_path = ui_dir / mark
+            if not mark_path.is_file():
+                fail(entry_id, f"the command {command.get('name')} draws its icon from ui/{mark}, which does not exist")
+            # The installer's own ceiling for a command mark, icon.svg's.
+            if mark_path.stat().st_size > MAX_ICON:
+                fail(entry_id, f"the command {command.get('name')}'s icon ui/{mark} is past {MAX_ICON} bytes")
     ui_members(entry_id, ui_dir)
     return crate, manifest_path, manifest, ext, icon, ui_dir
 
