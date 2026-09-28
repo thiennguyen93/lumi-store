@@ -78,6 +78,8 @@
   const hint = document.getElementById("focus-hint");
 
   let layout = "ansi";
+  /** Caps Lock has been heard as Lumi's Hyper key rather than as itself. */
+  let hyper = false;
   /** code -> the elements drawing it (ISO's Return is two). */
   let keys = new Map();
   const seen = new Set();
@@ -148,6 +150,11 @@
         element.classList.toggle("chatter", chatter.has(code));
       }
     }
+    for (const element of keys.get("CapsLock") || []) {
+      element.title = hyper
+        ? "Caps Lock works — heard as Lumi's Hyper key"
+        : "CapsLock — with Lumi's Hyper key on, hold it and press another key";
+    }
     const total = keys.size;
     const covered = [...keys.keys()].filter((code) => seen.has(code)).length;
     progress.textContent =
@@ -190,6 +197,20 @@
   // Capture, and every key swallowed: Tab would move focus off the board,
   // Space would scroll the pane, ⌘-keys the page can see would act. Only
   // what reaches the page can be tested, and all of it is.
+  /** Whether a key arrived carrying a modifier no held modifier key explains
+   *  — which is what Lumi's Hyper key looks like from here. With it on,
+   *  Caps Lock is remapped to F18 below the page and swallowed whole, so its
+   *  own press is never heard; what is heard is the next key, stamped with
+   *  the modifiers the Hyper key adds. That stamp can only have come from a
+   *  held Caps Lock, so it is Caps Lock working. Read off the event rather
+   *  than off Lumi's settings, which would cost the `config` capability for
+   *  one key. A modifier held down before the page had focus would read the
+   *  same way — rare, and a false pass on one key rather than a failure. */
+  const hyperStamped = (event) =>
+    (event.metaKey && !down.has("MetaLeft") && !down.has("MetaRight")) ||
+    (event.ctrlKey && !down.has("ControlLeft") && !down.has("ControlRight")) ||
+    (event.altKey && !down.has("AltLeft") && !down.has("AltRight"));
+
   document.addEventListener(
     "keydown",
     (event) => {
@@ -198,6 +219,11 @@
       lastOut.textContent = describe(event);
       if (code === "CapsLock") return flash(code);
       if (event.repeat) return;
+      if (!MODIFIERS.has(code) && hyperStamped(event)) {
+        hyper = true;
+        lastOut.textContent += " — with Caps Lock as the Hyper key";
+        flash("CapsLock");
+      }
       const now = event.timeStamp;
       if (!down.has(code)) {
         const released = lastUp.get(code);
@@ -251,6 +277,7 @@
     down.clear();
     lastUp.clear();
     chatter.clear();
+    hyper = false;
     lastOut.textContent = "—";
     paint();
     board.focus();
