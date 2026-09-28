@@ -12,7 +12,15 @@
   color-scheme: light dark;
 }
 
+/* The page is exactly the tab's height and never scrolls as a whole: the
+   board and the facts under it stay put, and only the notes at the bottom
+   scroll when there is not room for them. */
+html, body { height: 100%; }
 body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
   margin: 0;
   font: 13px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   user-select: none;
@@ -187,7 +195,16 @@ body {
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
 .chatter-list b { color: var(--kt-bad); }
 
-.notes { margin-top: 14px; }
+.bar, .board-wrap, .facts { flex: none; }
+.notes-wrap {
+  flex: 1 1 auto;
+  /* Room for the summary line at least, so the notes can always be found
+     and opened however short the pane is. */
+  min-height: 22px;
+  overflow-y: auto;
+  margin-top: 14px;
+}
+.notes { margin: 0; }
 .notes summary { cursor: default; opacity: 0.75; }
 .notes ul { margin: 6px 0 0; padding-left: 18px; opacity: 0.8; }
 .notes li { margin: 3px 0; }
