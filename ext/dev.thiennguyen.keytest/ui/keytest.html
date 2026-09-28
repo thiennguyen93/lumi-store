@@ -1,0 +1,61 @@
+<!doctype html>
+<!-- Keyboard Test's tab. Plain HTML and JS, no build step, so the file the
+     store reviews is the file the webview runs. Lumi puts its own
+     stylesheet first when it embeds the page; keytest.css only adds the
+     keyboard. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Keyboard test</title>
+  <link rel="stylesheet" href="keytest.css">
+</head>
+<body>
+  <div class="bar">
+    <div class="segmented" role="radiogroup" aria-label="Layout">
+      <button type="button" data-layout="ansi" role="radio">ANSI (US)</button>
+      <button type="button" data-layout="iso" role="radio">ISO</button>
+    </div>
+    <span class="grow"></span>
+    <span id="progress" class="muted" aria-live="polite"></span>
+    <button type="button" id="reset">Reset</button>
+  </div>
+
+  <!-- Lumi hands the page the keyboard when the tab opens (`focus = true`
+       in the manifest). Keys are only heard while it has it, so when it
+       is lost — a click elsewhere, another app in front — `#focus-hint`
+       covers the board and one click anywhere on it brings it back. -->
+  <div class="board-wrap">
+    <div id="board" class="board" tabindex="0" aria-label="Keyboard — press keys to test them"></div>
+    <button type="button" id="focus-hint" class="cover" hidden>Click to test keys</button>
+  </div>
+
+  <dl class="facts">
+    <dt>Last key</dt>
+    <dd id="last" class="mono">—</dd>
+    <dt>Held</dt>
+    <dd id="held" class="mono">—</dd>
+    <dt>Double-typed</dt>
+    <dd id="chatter">None yet</dd>
+    <!-- How to test Caps Lock, which depends on Lumi's Hyper key: filled
+         from the extension's own code, and gone once Caps Lock is seen. -->
+    <dt class="caps-how" hidden>Caps Lock</dt>
+    <dd class="caps-how" id="caps-how" hidden></dd>
+  </dl>
+
+  <!-- The one part that scrolls: the page is exactly as tall as its tab,
+       so opening the notes never moves the board off screen. -->
+  <div class="notes-wrap">
+    <details class="notes">
+      <summary>Keys this page cannot hear</summary>
+      <ul>
+        <li><b>fn / Globe, Touch ID and the power key</b> never reach a web page, so they stay grey.</li>
+        <li><b>F1–F12</b> control brightness, volume and media by default. Hold <b>fn</b> while pressing them to test them as keys.</li>
+        <li><b>Caps Lock as Lumi's Hyper key</b> is never heard as itself. Tap it on its own if the tap toggles Caps Lock, or hold it and press a key none of your Hyper shortcuts use — either tells this page it works.</li>
+        <li><b>Shortcuts macOS or Lumi take first</b> — ⌘Tab, ⌘Space, ⌘Q, a shortcut you recorded in Lumi — are used up before they get here. Test those keys on their own.</li>
+      </ul>
+    </details>
+  </div>
+
+  <script src="keytest.js"></script>
+</body>
+</html>

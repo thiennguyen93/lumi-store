@@ -13,3 +13,9 @@ id = "dev.thiennguyen.sample"
 path = "ext/dev.thiennguyen.sample"
 subdir = "sample"
 
+
+# First-party and in-tree, for the sample's reason.
+[[extension]]
+id = "dev.thiennguyen.keytest"
+path = "ext/dev.thiennguyen.keytest"
+subdir = "."

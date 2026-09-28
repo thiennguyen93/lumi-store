@@ -1,0 +1,210 @@
+/* The keyboard, on top of Lumi's own sheet (put first by Lumi when it
+   embeds the page). Every colour is one of Lumi's tokens with a fallback,
+   so the page also reads when opened on its own while developing. */
+
+:root {
+  --kt-key: var(--card, rgba(128, 128, 128, 0.08));
+  --kt-line: var(--border, rgba(128, 128, 128, 0.28));
+  --kt-seen: color-mix(in srgb, var(--granted, #1a7f37) 22%, transparent);
+  --kt-seen-line: color-mix(in srgb, var(--granted, #1a7f37) 55%, transparent);
+  --kt-down: var(--accent, #378add);
+  --kt-bad: var(--warn, #8a6100);
+  color-scheme: light dark;
+}
+
+/* The page is exactly the tab's height and never scrolls as a whole: the
+   board and the facts under it stay put, and only the notes at the bottom
+   scroll when there is not room for them. */
+html, body { height: 100%; }
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin: 0;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.grow { flex: 1; }
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  border-radius: 7px;
+  background: var(--kt-key);
+  border: 1px solid var(--kt-line);
+}
+.segmented button {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 3px 10px;
+  border-radius: 5px;
+}
+.segmented button[aria-checked="true"] {
+  background: var(--raised, color-mix(in srgb, CanvasText 18%, Canvas));
+  box-shadow: 0 0 0 0.5px var(--kt-line), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* Fifteen units to a row, every row: a key's flex-grow is its width in
+   units, so the rows line up whatever width the pane gives the page. */
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--kt-line);
+  outline: none;
+  /* Legends are sized by the board's width, not the page's: the pane can
+     be anywhere from narrow to wide, and a legend that fits one clips
+     "caps lock" and "command" on the other. */
+  container-type: inline-size;
+}
+.board:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--kt-down) 40%, transparent); }
+.row {
+  display: flex;
+  gap: 4px;
+  height: 36px;
+}
+
+.key {
+  flex-basis: 0;
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 3px 4px;
+  border-radius: 5px;
+  border: 1px solid var(--kt-line);
+  background: var(--kt-key);
+  font-size: clamp(7px, 1.55cqw, 10px);
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background 120ms ease-out, border-color 120ms ease-out;
+}
+.key.center { justify-content: center; align-items: center; font-size: clamp(9px, 2.1cqw, 13px); }
+
+/* A modifier as its keycap draws it: the symbol in the top corner on the
+   side away from the space bar's end — right on the left-hand keys, left
+   on the right-hand ones — and the word along the bottom. The fn key is
+   the other way up: "fn" top right, the Globe bottom left. */
+.key.mod {
+  padding: 3px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+}
+.mod .sym { font-size: clamp(9px, 2cqw, 13px); line-height: 1; }
+.mod .word { font-size: clamp(6.5px, 1.45cqw, 9.5px); }
+.mod.left .sym { align-self: flex-end; }
+.mod.left .word { align-self: flex-start; }
+.mod.right .sym, .mod.right .word { align-self: flex-start; }
+.mod.globe .word { align-self: flex-end; }
+.mod.globe .sym { align-self: flex-start; display: flex; }
+
+/* The arrows: ← and → half height, sat on the floor of the row; ↑ over ↓
+   in the middle, each half height too. */
+.key.half { align-self: flex-end; height: calc(50% - 1px); }
+.stack {
+  flex-basis: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stack .key, .key.half { align-items: center; justify-content: center; padding: 0; font-size: 7px; }
+.stack .key { flex: 1; }
+
+/* Touch ID: a flat button with a ring, never heard. */
+.key.touch-id { justify-content: center; align-items: center; }
+.key.touch-id::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  opacity: 0.6;
+}
+
+.key.seen { background: var(--kt-seen); border-color: var(--kt-seen-line); }
+.key.down {
+  background: var(--kt-down);
+  border-color: var(--kt-down);
+  color: #fff;
+  transition: none;
+}
+.key.chatter { border-color: var(--kt-bad); box-shadow: inset 0 0 0 1px var(--kt-bad); }
+.key.deaf { opacity: 0.35; border-style: dashed; }
+/* ISO's Return is one key drawn as two pieces, one per row, both at the
+   row's right edge: the top piece reaches down across the gap between the
+   rows and the edge they share is dropped, so the two read as the one
+   L-shaped key under the person's hand. */
+.key.join-down {
+  align-self: flex-start;
+  height: calc(100% + 4px);
+  position: relative;
+  z-index: 1;
+  padding: 3px 2px;
+  border-bottom-color: transparent;
+  border-bottom-right-radius: 0;
+}
+.key.join-up {
+  border-top-color: transparent;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* What stands over the board while the page cannot hear keys: the whole
+   board is the button, so wherever the click lands it works. */
+.board-wrap { position: relative; }
+.cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, Canvas 55%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: none;
+  cursor: default;
+}
+.cover[hidden] { display: none; }
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 14px;
+  margin: 14px 0 0;
+}
+.facts dt { opacity: 0.65; }
+.facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.chatter-list b { color: var(--kt-bad); }
+
+.bar, .board-wrap, .facts { flex: none; }
+.notes-wrap {
+  flex: 1 1 auto;
+  /* Room for the summary line at least, so the notes can always be found
+     and opened however short the pane is. */
+  min-height: 22px;
+  overflow-y: auto;
+  margin-top: 14px;
+}
+.notes { margin: 0; }
+.notes summary { cursor: default; opacity: 0.75; }
+.notes ul { margin: 6px 0 0; padding-left: 18px; opacity: 0.8; }
+.notes li { margin: 3px 0; }

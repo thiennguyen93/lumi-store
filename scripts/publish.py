@@ -96,6 +96,12 @@ UI_SEGMENT_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 # about it beyond those two facts.
 MAX_WASM = 48 * 1024 * 1024
 COMPONENT_HEADER = b"\x00asm\x0d\x00\x01\x00"
+# Lumi's `manifest::MAX_PAGES`, `MAX_PAGE_LABEL` and `RESERVED_PAGE_LABELS`:
+# how many [[page]] tabs fit, how long a tab's label may be, and the three
+# labels that are Lumi's own tabs.
+MAX_PAGES = 4
+MAX_PAGE_LABEL = 24
+RESERVED_PAGE_LABELS = {"about", "settings", "permissions"}
 MAX_ICON = 64 * 1024
 MAX_UI_FILE = 5 * 1024 * 1024
 MAX_UI_FILES = 200
@@ -213,6 +219,12 @@ def check_manifest(entry_id: str, manifest: dict):
         path = window.get("path", "") or "index.html"
         if not is_valid_ui_path(path):
             fail(entry_id, f"window {name} points at {path!r}, which is not a plain relative path")
+    check_page_tabs(entry_id, manifest)
+    settings_tab = ext.get("settings-tab", ext.get("settings_tab", True))
+    if not isinstance(settings_tab, bool):
+        fail(entry_id, f"settings-tab = {settings_tab!r} is not true or false")
+    if not settings_tab and str(ext.get("settings-page", ext.get("settings_page", ""))).strip():
+        fail(entry_id, "settings-tab = false hides the tab settings-page draws in — leave one of them out")
     for noun, path in declared_pages(manifest):
         if not is_valid_ui_path(path):
             fail(entry_id, f"the {noun} points at {path!r}, which is not a plain relative path")
@@ -235,6 +247,36 @@ def check_manifest(entry_id: str, manifest: dict):
     return ext
 
 
+def check_page_tabs(entry_id: str, manifest: dict):
+    """The [[page]] tabs, held to Lumi's `manifest::parse`: at most
+    MAX_PAGES, the window-name alphabet up to 64 characters, a label of at
+    most MAX_PAGE_LABEL that is none of Lumi's own three tabs, and no name
+    or label twice. The reserved labels are the reach wall — a second
+    Permissions tab would be the developer's words beside the list Lumi
+    draws — so they are refused here too rather than left to the install."""
+    pages = manifest.get("page", [])
+    if len(pages) > MAX_PAGES:
+        fail(entry_id, f"the manifest declares {len(pages)} pages — {MAX_PAGES} tabs fit beside About, Settings and Permissions")
+    names, labels = set(), set()
+    for page in pages:
+        name = page.get("name", "")
+        if not NAME_RE.match(name) or len(name) > 64:
+            fail(entry_id, f"page name {name!r} may hold only letters, digits, '-' and '_', up to 64 of them")
+        if name in names:
+            fail(entry_id, f"two pages are named {name}")
+        names.add(name)
+        label = str(page.get("label", "")).strip() or name
+        if len(label) > MAX_PAGE_LABEL:
+            fail(entry_id, f"the page {name}'s label {label!r} is longer than {MAX_PAGE_LABEL} characters")
+        if label.lower() in RESERVED_PAGE_LABELS:
+            fail(entry_id, f"the page {name} may not be labelled {label!r}: that is one of Lumi's own tabs")
+        if label.lower() in labels:
+            fail(entry_id, f"two pages are labelled {label!r}")
+        labels.add(label.lower())
+        if not isinstance(page.get("focus", False), bool):
+            fail(entry_id, f"the page {name}'s focus = {page.get('focus')!r} is not true or false")
+
+
 def declared_pages(manifest: dict) -> list:
     """Every ui/ page the manifest names outside [[window]], as (noun, path):
     the extension's own About and Settings pages and its installer. Lumi's
@@ -250,6 +292,9 @@ def declared_pages(manifest: dict) -> list:
     settings_page = str(ext.get("settings-page", ext.get("settings_page", ""))).strip()
     if settings_page:
         pages.append(("settings page", settings_page))
+    for page in manifest.get("page", []):
+        path = str(page.get("path", "")).strip() or "index.html"
+        pages.append((f"page {page.get('name', '')}", path))
     install = manifest.get("install")
     if install is not None:
         page = str(install.get("page", "")).strip()
