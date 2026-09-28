@@ -322,6 +322,7 @@
   window.addEventListener("focus", focusChanged);
   window.addEventListener("blur", focusChanged);
   board.addEventListener("mousedown", () => board.focus());
+  hint.addEventListener("click", () => board.focus());
 
   document.getElementById("reset").addEventListener("click", () => {
     seen.clear();

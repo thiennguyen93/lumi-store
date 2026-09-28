@@ -20,11 +20,14 @@
     <button type="button" id="reset">Reset</button>
   </div>
 
-  <!-- The keyboard takes the focus a click gives it, and keys are only
-       heard while this page has focus — `#focus-hint` says so when it
-       has not. -->
-  <div id="board" class="board" tabindex="0" aria-label="Keyboard — press keys to test them"></div>
-  <p id="focus-hint" class="hint" hidden>Click the keyboard, then press keys.</p>
+  <!-- Lumi hands the page the keyboard when the tab opens (`focus = true`
+       in the manifest). Keys are only heard while it has it, so when it
+       is lost — a click elsewhere, another app in front — `#focus-hint`
+       covers the board and one click anywhere on it brings it back. -->
+  <div class="board-wrap">
+    <div id="board" class="board" tabindex="0" aria-label="Keyboard — press keys to test them"></div>
+    <button type="button" id="focus-hint" class="cover" hidden>Click to test keys</button>
+  </div>
 
   <dl class="facts">
     <dt>Last key</dt>

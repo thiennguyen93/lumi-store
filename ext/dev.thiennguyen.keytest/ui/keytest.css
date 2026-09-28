@@ -109,11 +109,24 @@ body {
 .key.join-down { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .key.join-up { border-top-left-radius: 0; border-top-right-radius: 0; }
 
-.hint {
-  margin: 8px 0 0;
-  text-align: center;
-  color: var(--kt-bad);
+/* What stands over the board while the page cannot hear keys: the whole
+   board is the button, so wherever the click lands it works. */
+.board-wrap { position: relative; }
+.cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, Canvas 55%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: none;
+  cursor: default;
 }
+.cover[hidden] { display: none; }
 
 .facts {
   display: grid;

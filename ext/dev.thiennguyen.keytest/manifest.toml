@@ -2,7 +2,7 @@
 [extension]
 id = "dev.thiennguyen.keytest"
 name = "Keyboard Test"
-version = "0.1.3"
+version = "0.1.4"
 description = "Check every key of a MacBook keyboard, and catch keys that double-type."
 author = "Thien Nguyen"
 summary = "Opens a Keyboard test tab here in Lumi: press each key and watch it light up on a MacBook keyboard. It counts the keys you have covered, shows which are held, and flags a key that registers twice from one press — the chatter a worn or dusty switch produces. Nothing leaves the page."
@@ -19,6 +19,9 @@ capabilities = []
 name = "keytest"
 label = "Keyboard test"
 path = "keytest.html"
+# Keys are the whole page: take the keyboard when the tab opens, so the
+# first keystroke is heard without a click first.
+focus = true
 
 # Which keyboard the page draws. Saved by the page through the bridge;
 # declared because the bridge keeps declared fields only.

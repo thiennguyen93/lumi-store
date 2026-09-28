@@ -273,6 +273,8 @@ def check_page_tabs(entry_id: str, manifest: dict):
         if label.lower() in labels:
             fail(entry_id, f"two pages are labelled {label!r}")
         labels.add(label.lower())
+        if not isinstance(page.get("focus", False), bool):
+            fail(entry_id, f"the page {name}'s focus = {page.get('focus')!r} is not true or false")
 
 
 def declared_pages(manifest: dict) -> list:
