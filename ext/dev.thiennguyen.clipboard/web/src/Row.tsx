@@ -1,5 +1,5 @@
 import { blobUrl } from "./bridge";
-import { PinGlyph } from "./icons";
+import { KindGlyph, PinGlyph } from "./icons";
 import { since } from "./search";
 import type { Entry } from "./types";
 
@@ -19,17 +19,28 @@ export const KIND_WORDS: Record<Entry["kind"], string> = {
  *  leads the row. The colour is re-checked here rather than trusted from
  *  `kind`, since it is about to become a CSS value. */
 function Lead({ row }: { row: Entry }) {
+  // One 16px slot on every row, so titles start in one column: a colour
+  // and a picture are their own sign of what they are; everything else
+  // gets its kind's glyph — the same one its filter chip wears.
   if (row.kind === "color" && HEX.test(row.title)) {
-    return <span className="swatch" style={{ background: row.title }} />;
+    return (
+      <span className="lead">
+        <span className="swatch" style={{ background: row.title }} />
+      </span>
+    );
   }
   if (row.kind === "image" && row.thumb) {
     return (
-      <span className="thumb">
+      <span className="lead thumb">
         <img alt="" src={blobUrl(row.thumb)} />
       </span>
     );
   }
-  return null;
+  return (
+    <span className="lead">
+      <KindGlyph kind={row.kind} />
+    </span>
+  );
 }
 
 export function Row({
@@ -37,6 +48,7 @@ export function Row({
   index,
   selected,
   shortcut,
+  popped,
   onPick,
   onPaste,
 }: {
@@ -44,12 +56,15 @@ export function Row({
   index: number;
   selected: boolean;
   shortcut: string | undefined;
+  /** Just pinned: its pin pops in. */
+  popped: boolean;
   onPick: (index: number) => void;
   onPaste: (plain: boolean) => void;
 }) {
   return (
     <div
       id={`row-${index}`}
+      data-id={row.id}
       className="row"
       role="option"
       aria-selected={selected}
@@ -69,15 +84,22 @@ export function Row({
       <Lead row={row} />
       {/* Copied text, so always a text node — never markup. */}
       <span className="title">{row.title || KIND_WORDS[row.kind]}</span>
+      {/* Two fixed columns at the end, so a time growing from 9s to 10s
+          never shoves the app name: the app, right-aligned against the
+          time, and the time (or a pin's glyph) in a column of its own. */}
+      {!row.pin && row.appName && (
+        <>
+          <span className="app">{row.appName}</span>
+          {/* A column of its own too, so it stays put with the others. */}
+          <span className="dot" aria-hidden="true">·</span>
+        </>
+      )}
       {row.pin ? (
-        <span className="meta" aria-label="Pinned">
+        <span className={popped ? "when pop" : "when"} aria-label="Pinned">
           <PinGlyph />
         </span>
       ) : (
-        <span className="meta">
-          {row.appName ? `${row.appName} · ` : ""}
-          {since(row.last)}
-        </span>
+        <span className="when">{since(row.last)}</span>
       )}
     </div>
   );

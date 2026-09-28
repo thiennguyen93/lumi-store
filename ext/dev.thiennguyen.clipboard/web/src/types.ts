@@ -37,11 +37,15 @@ export interface Stats {
 }
 
 export type Request =
-  | { kind: "list" }
+  /** `opening`: the panel's first list since it opened — the extension
+   *  empties the trash of what the last panel deleted. */
+  | { kind: "list"; opening?: boolean }
   | { kind: "preview"; id: string }
   | { kind: "paste"; id: string; plain: boolean }
   | { kind: "pin"; id: string }
   | { kind: "delete"; id: string }
+  | { kind: "restore"; id: string }
+  | { kind: "setPin"; id: string; pin: string | null }
   | { kind: "clear" }
   | { kind: "close" }
   | { kind: "stats" }

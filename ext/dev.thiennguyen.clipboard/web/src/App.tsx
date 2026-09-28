@@ -9,11 +9,13 @@
 // put into the page as markup; React renders it as text, and nothing here
 // uses dangerouslySetInnerHTML.
 
-import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { call, message } from "./bridge";
 import { KindGlyph, LumiMark, SearchGlyph } from "./icons";
+import { fold, moving, slide, tops } from "./motion";
 import { Preview } from "./Preview";
 import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
+import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
 import { FILTER_LABELS, FILTERS, type Filter, inFilter, matches, shortcuts, words } from "./search";
 import type { Entry } from "./types";
@@ -26,6 +28,21 @@ export function App() {
   const [notice, setNotice] = useState("");
   const input = useRef<HTMLInputElement>(null);
   const preview = usePreviewWidth();
+  const windowDrag = useWindowDrag();
+  const list = useRef<HTMLDivElement>(null);
+  // Where the rows were before a pin or unpin, for the next render to
+  // slide them from; null for every other change (typing, filtering).
+  const slideFrom = useRef<Map<string, number> | null>(null);
+  // The row just pinned, so its pin can pop in once.
+  const [popped, setPopped] = useState<string | null>(null);
+  // A delete is folding: a second ⌘⌫ waits for it rather than racing it.
+  const folding = useRef(false);
+  // Everything done since the panel opened, newest last, for ⌘Z. The page
+  // is blanked when the panel goes, and the extension empties its trash
+  // when the next one opens, so the two forget together.
+  const undos = useRef<Undo[]>([]);
+  // What ⌘Z took back, for ⌘⇧Z to do again; anything new done clears it.
+  const redos = useRef<Undo[]>([]);
   const adoptWidth = preview.adopt;
   // `reload` is made once; it reads the filter through this.
   const filterRef = useRef<Filter>("all");
@@ -38,8 +55,8 @@ export function App() {
   const keys = useMemo(() => shortcuts(shown), [shown]);
   const current = shown[selected];
 
-  const reload = useCallback(async (keepId: string | null) => {
-    const answer = await call({ kind: "list" });
+  const reload = useCallback(async (keepId: string | null, opening = false) => {
+    const answer = await call({ kind: "list", opening });
     setRows(answer.items);
     adoptWidth(answer.previewWidth);
     if (keepId) {
@@ -52,7 +69,7 @@ export function App() {
   }, [adoptWidth]);
 
   useEffect(() => {
-    reload(null)
+    reload(null, true)
       .catch((err) => setNotice(message(err)))
       .finally(() => input.current?.focus());
   }, [reload]);
@@ -88,19 +105,116 @@ export function App() {
 
   const togglePin = useCallback(() => {
     if (!current) return;
+    const id = current.id;
     void act(async () => {
-      await call({ kind: "pin", id: current.id });
-      await reload(current.id);
+      slideFrom.current = moving() ? tops(list.current) : null;
+      try {
+        const { pin } = await call({ kind: "pin", id });
+        undos.current.push({ kind: "pin", id, was: current.pin, now: pin });
+        redos.current = [];
+        setPopped(pin ? id : null);
+        await reload(id);
+      } catch (err) {
+        slideFrom.current = null;
+        throw err;
+      }
     });
   }, [act, current, reload]);
 
   const remove = useCallback(() => {
-    if (!current) return;
+    if (!current || folding.current) return;
+    const id = current.id;
     void act(async () => {
-      await call({ kind: "delete", id: current.id });
-      await reload(null);
+      folding.current = true;
+      const undo = await fold(document.getElementById(`row-${selected}`));
+      try {
+        await call({ kind: "delete", id });
+        undos.current.push({ kind: "delete", id });
+        redos.current = [];
+        await reload(null);
+      } catch (err) {
+        undo();
+        throw err;
+      } finally {
+        folding.current = false;
+      }
     });
-  }, [act, current, reload]);
+  }, [act, current, reload, selected]);
+
+  /** ⌘Z: take back the last pin, unpin or delete — and the one before,
+   *  and so on to when the panel opened. */
+  const undo = useCallback(() => {
+    const last = undos.current.pop();
+    if (!last) return;
+    void act(async () => {
+      slideFrom.current = moving() ? tops(list.current) : null;
+      try {
+        if (last.kind === "pin") {
+          const { pin } = await call({ kind: "setPin", id: last.id, pin: last.was });
+          setPopped(pin ? last.id : null);
+          redos.current.push({ ...last, now: pin ?? last.now });
+        } else {
+          const { restored } = await call({ kind: "restore", id: last.id });
+          if (restored) redos.current.push(last);
+          else setNotice("That item was copied again since, so the newer one stays.");
+        }
+        await reload(last.id);
+      } catch (err) {
+        slideFrom.current = null;
+        throw err;
+      }
+    });
+  }, [act, reload]);
+
+  /** ⌘⇧Z: do again what ⌘Z took back, newest first. */
+  const redo = useCallback(() => {
+    const next = redos.current.pop();
+    if (!next || folding.current) return;
+    void act(async () => {
+      if (next.kind === "pin") {
+        slideFrom.current = moving() ? tops(list.current) : null;
+        try {
+          const { pin } = await call({ kind: "setPin", id: next.id, pin: next.now });
+          setPopped(pin ? next.id : null);
+          undos.current.push({ ...next, now: pin });
+          await reload(next.id);
+        } catch (err) {
+          slideFrom.current = null;
+          throw err;
+        }
+        return;
+      }
+      folding.current = true;
+      const row = list.current?.querySelector<HTMLElement>(`.row[data-id="${CSS.escape(next.id)}"]`) ?? null;
+      const unfold = await fold(row);
+      try {
+        await call({ kind: "delete", id: next.id });
+        undos.current.push(next);
+        await reload(null);
+      } catch (err) {
+        unfold();
+        throw err;
+      } finally {
+        folding.current = false;
+      }
+    });
+  }, [act, reload]);
+
+  // After a pin or unpin has re-sorted the list: slide rows from where
+  // they were. Before paint, so nobody sees them at the new place first.
+  useLayoutEffect(() => {
+    const from = slideFrom.current;
+    if (!from) return;
+    slideFrom.current = null;
+    slide(list.current, from);
+  }, [shown]);
+
+  // The pop plays once; forget it so a later render does not replay it.
+  useEffect(() => {
+    if (!popped) return;
+    const timer = setTimeout(() => setPopped(null), 400);
+    return () => clearTimeout(timer);
+  }, [popped]);
 
   const choose = (next: Filter) => {
     setFilter(next);
@@ -145,6 +259,10 @@ export function App() {
         void call({ kind: "close" }).catch(() => {});
       }
     } else if (cmd && key === "Backspace") remove();
+    // ⌘Z / ⌘⇧Z are the history's while there is something to take back or
+    // do again; with nothing, they stay the search field's own text undo.
+    else if (cmd && !event.shiftKey && key.toLowerCase() === "z" && undos.current.length) undo();
+    else if (cmd && event.shiftKey && key.toLowerCase() === "z" && redos.current.length) redo();
     else if (cmd && key.toLowerCase() === "p") togglePin();
     else if (cmd && /^[1-9a-z]$/i.test(key)) {
       const wanted = key.toLowerCase();
@@ -159,7 +277,8 @@ export function App() {
 
   return (
     <main className="panel" onKeyDown={onKeyDown}>
-      <header className="crumbs">
+      {/* The breadcrumb is the panel's title bar: drag it to move the panel. */}
+      <header className="crumbs" {...windowDrag}>
         <LumiMark />
         <span>Clipboard History</span>
         <span className="sep">›</span>
@@ -203,7 +322,7 @@ export function App() {
         />
       </div>
       <section className="body-grid" style={{ gridTemplateColumns: `minmax(0, 1fr) min(${preview.width}px, calc(100% - ${MIN_LIST}px))` }}>
-        <div id="list" className="list" role="listbox" aria-label="Clipboard history">
+        <div ref={list} id="list" className="list" role="listbox" aria-label="Clipboard history">
           {rows !== null && !shown.length && (
             <div className="empty">{emptyText(rows.length, query, filter)}</div>
           )}
@@ -218,6 +337,7 @@ export function App() {
               index={index}
               selected={index === selected}
               shortcut={keys.get(row.id)}
+              popped={popped === row.id}
               onPick={setSelected}
               onPaste={(plain) => paste(plain, row)}
             />,
@@ -257,3 +377,7 @@ function emptyText(kept: number, query: string, filter: Filter): string {
   if (query) return "Nothing matches that search";
   return `No ${FILTER_LABELS[filter].toLowerCase()} yet`;
 }
+
+/** One thing ⌘Z can take back and ⌘⇧Z do again: a pin or unpin (with the
+ *  pin it had before and after), or a delete. */
+type Undo = { kind: "pin"; id: string; was: string | null; now: string | null } | { kind: "delete"; id: string };

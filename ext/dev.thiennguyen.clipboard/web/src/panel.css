@@ -113,6 +113,7 @@ body {
   line-height: 16px;
   color: var(--cb-muted);
 }
+.crumbs { touch-action: none; }
 .crumbs .mark { flex: none; }
 .crumbs .sep { opacity: 0.6; }
 .crumbs .here { color: CanvasText; }
@@ -185,7 +186,7 @@ body {
   background: var(--cb-accent);
   color: #fff;
 }
-.row[aria-selected="true"] .meta { color: rgba(255, 255, 255, 0.8); }
+.row[aria-selected="true"] :is(.app, .dot, .when) { color: rgba(255, 255, 255, 0.8); }
 /* Amber on the accent reads as a stain; the key goes white with the row. */
 .row[aria-selected="true"] .cap.cap {
   border-color: rgba(255, 255, 255, 0.4);
@@ -199,18 +200,25 @@ body {
   background: var(--cb-line);
 }
 
+/* The kind slot: a glyph, a colour, or a picture, all 16px. */
+.lead {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--cb-faint);
+}
+.lead .glyph { width: 14px; height: 14px; }
+.row[aria-selected="true"] .lead { color: rgba(255, 255, 255, 0.85); }
 .swatch {
   width: 12px;
   height: 12px;
-  flex: none;
   border-radius: 3px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 .thumb {
-  width: 22px;
-  height: 22px;
-  flex: none;
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
   background: var(--cb-card);
 }
@@ -224,16 +232,53 @@ body {
   text-overflow: ellipsis;
 }
 
-.meta {
+/* The end of a row: the app it came from, a dot, then how long ago —
+   each its own column, the time a fixed four characters wide (`12mo` at
+   most), so the app and the dot stay straight down the list whatever the
+   numbers are. */
+.app,
+.when {
   flex: none;
-  max-width: 40%;
-  overflow: hidden;
+  font-size: 11px;
+  color: var(--cb-faint);
   white-space: nowrap;
+  text-align: right;
+}
+.app {
+  max-width: 90px;
+  overflow: hidden;
   text-overflow: ellipsis;
+}
+/* Between the two, closer than the row's gap would set it. */
+.dot {
+  flex: none;
+  margin: 0 -4px;
   font-size: 11px;
   color: var(--cb-faint);
 }
-.meta .glyph { width: 12px; height: 12px; vertical-align: -2px; }
+/* Left in its fixed column, so it sits right after the dot however
+   short it is; the column's width is what keeps the dot and app still. */
+.when {
+  width: 4ch;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+.when:has(.glyph) { text-align: right; }
+.when .glyph { width: 12px; height: 12px; vertical-align: -2px; }
+
+/* A pin landing: in from small and tilted, a touch past, then settled. */
+@keyframes pin-pop {
+  0% { transform: scale(0.3) rotate(-35deg); opacity: 0; }
+  60% { transform: scale(1.3) rotate(8deg); opacity: 1; }
+  100% { transform: none; }
+}
+.when.pop .glyph { animation: pin-pop 320ms cubic-bezier(.2, .8, .2, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .when.pop .glyph { animation: none; }
+}
+
+/* A folding row's height closes; nothing inside may spill out meanwhile. */
+.row { overflow: hidden; }
 
 .empty {
   padding: 48px 12px;

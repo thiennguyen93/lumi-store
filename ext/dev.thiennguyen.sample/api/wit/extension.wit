@@ -102,11 +102,19 @@ interface alert {
 /// of values it read off the desk, so it gets the same narrow allowlist
 /// Lumi keeps for a URL whose scheme came out of another application's
 /// window, rather than the any-scheme door of a URL the person typed
-/// themselves. Costs
-/// `applications`; a web address costs `network` too, the same split Lumi's
-/// own Open URL action makes.
+/// themselves. Costs `applications`; a web address costs `network` too, the
+/// same split Lumi's own Open URL action makes — except for a URL opened for
+/// a press (a command, or the extension's own window), which the person is
+/// opening themselves and costs nothing but the call.
 interface open {
     url: func(target: string) -> result<_, string>;
+
+    /// Select one file in Finder, bringing Finder forward. `target` is a
+    /// `file:` URL — Finder's file-reference form included, which is what a
+    /// copied file carries — or an absolute path. Only for something the
+    /// person did: a command they pressed or a press in one of the
+    /// extension's windows. Costs no capability. Added in 0.3.
+    reveal: func(target: string) -> result<_, string>;
 }
 
 /// The extension's own settings, as saved in the Extensions pane.

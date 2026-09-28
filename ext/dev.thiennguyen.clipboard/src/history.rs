@@ -154,6 +154,11 @@ pub struct Index {
     pub v: u32,
     #[serde(default)]
     pub items: Vec<Entry>,
+    /// Rows deleted since the panel last opened, newest last, with their
+    /// records and blobs still stored — so ⌘Z can bring one back. Emptied,
+    /// and what they held deleted for good, when the panel next opens.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub trash: Vec<Entry>,
 }
 
 /// An item's full content, stored under `item.<id>`.
@@ -366,6 +371,76 @@ pub fn toggle_pin(index: &mut Index, id: &str) -> Result<Option<char>, String> {
 pub fn remove(index: &mut Index, id: &str) -> Option<Entry> {
     let at = index.items.iter().position(|e| e.id == id)?;
     Some(index.items.remove(at))
+}
+
+/// Put one row's pin back as it was: `Some(letter)` pins it under that
+/// letter — or the first free one, should another row have taken it
+/// meanwhile — and `None` unpins it. Undo's half of `toggle_pin`.
+pub fn set_pin(index: &mut Index, id: &str, pin: Option<char>) -> Result<Option<char>, String> {
+    let taken: Vec<char> = index
+        .items
+        .iter()
+        .filter(|e| e.id != id)
+        .filter_map(|e| e.pin)
+        .collect();
+    let letter = match pin {
+        None => None,
+        Some(wanted) if PIN_LETTERS.contains(wanted) && !taken.contains(&wanted) => Some(wanted),
+        Some(_) => Some(
+            PIN_LETTERS
+                .chars()
+                .find(|c| !taken.contains(c))
+                .ok_or_else(|| format!("All {} pins are in use. Unpin one first.", PIN_LETTERS.len()))?,
+        ),
+    };
+    let entry = index
+        .items
+        .iter_mut()
+        .find(|e| e.id == id)
+        .ok_or_else(|| "That item is no longer in the history.".to_string())?;
+    entry.pin = letter;
+    Ok(letter)
+}
+
+/// Delete one row so it can still be undone: out of the history, into the
+/// trash, its record and blobs left where they are.
+pub fn trash(index: &mut Index, id: &str) -> bool {
+    match remove(index, id) {
+        Some(entry) => {
+            index.trash.push(entry);
+            true
+        }
+        None => false,
+    }
+}
+
+/// What bringing a row back out of the trash came to.
+#[derive(Debug, PartialEq)]
+pub enum Restored {
+    /// Back in the history, where it was.
+    Back,
+    /// The same thing was copied again since, and that row stands: this
+    /// one is surplus — its record and blobs are to be deleted.
+    Surplus(Entry),
+    /// Not in the trash (already restored, or the trash was emptied).
+    Gone,
+}
+
+pub fn restore(index: &mut Index, id: &str) -> Restored {
+    let Some(at) = index.trash.iter().position(|e| e.id == id) else {
+        return Restored::Gone;
+    };
+    let entry = index.trash.remove(at);
+    if index.items.iter().any(|e| e.hash == entry.hash) {
+        return Restored::Surplus(entry);
+    }
+    index.items.push(entry);
+    Restored::Back
+}
+
+/// Empty the trash, answering what was in it so it can be deleted for good.
+pub fn empty_trash(index: &mut Index) -> Vec<Entry> {
+    std::mem::take(&mut index.trash)
 }
 
 /// Remove every unpinned row — the panel's Clear. Pins are the rows

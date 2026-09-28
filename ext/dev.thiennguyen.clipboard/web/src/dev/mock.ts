@@ -41,6 +41,7 @@ let rows: Entry[] = [
 ];
 
 let previewWidth: number | null = null;
+let trash: Entry[] = [];
 
 const PIN_LETTERS = "bdefghijklmnorstuy";
 
@@ -58,6 +59,7 @@ function say(text: string) {
 function answer(request: Request): unknown {
   switch (request.kind) {
     case "list":
+      if (request.opening) trash = [];
       return { items: sorted(), pasteOnSelect: true, previewWidth };
     case "preview": {
       const row = rows.find((r) => r.id === request.id);
@@ -74,8 +76,23 @@ function answer(request: Request): unknown {
       return { pin: row.pin };
     }
     case "delete":
+      trash.push(...rows.filter((r) => r.id === request.id));
       rows = rows.filter((r) => r.id !== request.id);
       return {};
+    case "restore": {
+      const at = trash.findIndex((r) => r.id === request.id);
+      if (at < 0) return { restored: false };
+      const [back] = trash.splice(at, 1);
+      if (back) rows.push(back);
+      return { restored: Boolean(back) };
+    }
+    case "setPin": {
+      const row = rows.find((r) => r.id === request.id);
+      if (!row) throw new Error("That item is no longer in the history.");
+      const taken = rows.some((r) => r !== row && r.pin === request.pin);
+      row.pin = request.pin && !taken ? request.pin : request.pin ? ([...PIN_LETTERS].find((c) => !rows.some((r) => r.pin === c)) ?? null) : null;
+      return { pin: row.pin };
+    }
     case "clear": {
       const before = rows.length;
       rows = rows.filter((r) => r.pin);
@@ -102,9 +119,16 @@ function answer(request: Request): unknown {
   }
 }
 
+let moved: [number, number] = [0, 0];
 const real = window.fetch.bind(window);
 window.fetch = async (input, init) => {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+  if (url.endsWith("/__lumi__/move")) {
+    const { dx, dy } = JSON.parse(String(init?.body)) as { dx: number; dy: number };
+    moved = [moved[0] + dx, moved[1] + dy];
+    say(`would move the panel by ${moved[0]}, ${moved[1]}`);
+    return new Response(null, { status: 204 });
+  }
   if (!url.endsWith("/__lumi__/call")) return real(input, init);
   try {
     const body = JSON.stringify(answer(JSON.parse(String(init?.body)) as Request));

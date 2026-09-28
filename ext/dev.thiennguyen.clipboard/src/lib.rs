@@ -276,6 +276,15 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
     match request["kind"].as_str().unwrap_or_default() {
         "list" => {
             let prefs = prefs(host);
+            // The panel's first list since it opened: what was deleted
+            // last time can no longer be undone, so it goes for good now.
+            if request["opening"].as_bool() == Some(true) {
+                let (index, _) = read_index(host)?;
+                if !index.trash.is_empty() {
+                    let gone = update_index(host, |index| Ok(history::empty_trash(index)))?;
+                    forget(host, &gone);
+                }
+            }
             let (index, _) = read_index(host)?;
             Ok(json!({
                 "items": history::sorted(&index, prefs.order),
@@ -316,10 +325,31 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
         }
         "delete" => {
             let id = id()?;
-            let gone = update_index(host, |index| Ok(history::remove(index, &id)))?;
-            forget(host, gone.as_slice());
+            // Into the trash, not gone: ⌘Z may want it back before the
+            // panel closes. Its record and blobs go when the panel next opens.
+            update_index(host, |index| Ok(history::trash(index, &id)))?;
             tell_about(host);
             Ok(json!({}))
+        }
+        "restore" => {
+            let id = id()?;
+            let restored = update_index(host, |index| Ok(history::restore(index, &id)))?;
+            if let history::Restored::Surplus(entry) = &restored {
+                forget(host, std::slice::from_ref(entry));
+            }
+            tell_about(host);
+            Ok(json!({ "restored": restored == history::Restored::Back }))
+        }
+        "setPin" => {
+            let id = id()?;
+            let wanted = match &request["pin"] {
+                Value::Null => None,
+                Value::String(s) if s.chars().count() == 1 => s.chars().next(),
+                _ => return Err("the pin is not a letter".to_string()),
+            };
+            let pin = update_index(host, |index| history::set_pin(index, &id, wanted))?;
+            tell_about(host);
+            Ok(json!({ "pin": pin }))
         }
         "clear" => {
             let gone = update_index(host, |index| Ok(history::clear_unpinned(index)))?;
@@ -540,10 +570,66 @@ mod tests {
         on_event(&host, "clipboard", &event("h1", 1, "one")).unwrap();
         on_event(&host, "clipboard", &event("h2", 2, "two")).unwrap();
         ui(&host, &json!({"kind": "delete", "id": "id1"})).unwrap();
+        assert!(host.kv.borrow().contains_key("item.id1"), "kept for ⌘Z until the panel reopens");
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
         assert!(!host.kv.borrow().contains_key("item.id1"));
         ui(&host, &json!({"kind": "pin", "id": "id2"})).unwrap();
         ui(&host, &json!({"kind": "clear"})).unwrap();
         assert_eq!(list(&host).len(), 1, "a pin survives Clear");
+    }
+
+    #[test]
+    fn a_delete_is_undone_until_the_panel_reopens() {
+        let host = Memory::default();
+        host.blobs.borrow_mut().insert("img".into());
+        on_event(&host, "clipboard", &image_event("h1", "img")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 2, "two")).unwrap();
+        ui(&host, &json!({"kind": "delete", "id": "id1"})).unwrap();
+        ui(&host, &json!({"kind": "delete", "id": "id2"})).unwrap();
+        assert!(list(&host).is_empty());
+        // A plain reload (after another change) keeps the trash.
+        list(&host);
+        let back = ui(&host, &json!({"kind": "restore", "id": "id2"})).unwrap();
+        assert_eq!(back["restored"], true);
+        ui(&host, &json!({"kind": "restore", "id": "id1"})).unwrap();
+        assert_eq!(list(&host).len(), 2);
+        assert!(host.blobs.borrow().contains("img"), "the picture came back with it");
+        // Twice is nothing the second time.
+        assert_eq!(ui(&host, &json!({"kind": "restore", "id": "id1"})).unwrap()["restored"], false);
+
+        ui(&host, &json!({"kind": "delete", "id": "id1"})).unwrap();
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        assert!(!host.blobs.borrow().contains("img"), "a new panel empties the trash");
+        assert_eq!(ui(&host, &json!({"kind": "restore", "id": "id1"})).unwrap()["restored"], false);
+    }
+
+    #[test]
+    fn a_restore_of_something_copied_again_keeps_the_new_row() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "same")).unwrap();
+        ui(&host, &json!({"kind": "delete", "id": "id1"})).unwrap();
+        on_event(&host, "clipboard", &event("h1", 5, "same")).unwrap();
+        let back = ui(&host, &json!({"kind": "restore", "id": "id1"})).unwrap();
+        assert_eq!(back["restored"], false);
+        assert_eq!(list(&host).len(), 1);
+        assert!(!host.kv.borrow().contains_key("item.id1"), "the surplus record goes");
+    }
+
+    #[test]
+    fn set_pin_puts_back_the_letter_it_had() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "one")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 2, "two")).unwrap();
+        ui(&host, &json!({"kind": "pin", "id": "id1"})).unwrap();
+        ui(&host, &json!({"kind": "pin", "id": "id2"})).unwrap();
+        // Undo of unpinning id1 (b), while b is free again: b it is.
+        ui(&host, &json!({"kind": "setPin", "id": "id1", "pin": null})).unwrap();
+        let again = ui(&host, &json!({"kind": "setPin", "id": "id1", "pin": "b"})).unwrap();
+        assert_eq!(again["pin"], "b");
+        // A letter somebody else holds is not taken from them.
+        let other = ui(&host, &json!({"kind": "setPin", "id": "id1", "pin": "d"})).unwrap();
+        assert_ne!(other["pin"], "d");
+        assert!(ui(&host, &json!({"kind": "setPin", "id": "id1", "pin": 7})).is_err());
     }
 
     #[test]

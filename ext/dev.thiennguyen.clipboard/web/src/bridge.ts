@@ -5,6 +5,7 @@
 //
 //   POST /__lumi__/call        → the extension's run-ui export
 //   GET  /__lumi__/blob/<id>   → an image Lumi stored for this extension
+//   POST /__lumi__/move        → move this (borderless) window by dx, dy
 
 import type { Entry, ListAnswer, Request, Stats } from "./types";
 
@@ -14,6 +15,8 @@ type Answers = {
   paste: Record<string, never>;
   pin: { pin: string | null };
   delete: Record<string, never>;
+  restore: { restored: boolean };
+  setPin: { pin: string | null };
   clear: { removed: number };
   close: Record<string, never>;
   stats: Stats;
