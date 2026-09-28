@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- Keyboard Test's tab. Plain HTML and JS, no build step, so the file the
+     store reviews is the file the webview runs. Lumi puts its own
+     stylesheet first when it embeds the page; keytest.css only adds the
+     keyboard. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Keyboard test</title>
+  <link rel="stylesheet" href="keytest.css">
+</head>
+<body>
+  <div class="bar">
+    <div class="segmented" role="radiogroup" aria-label="Layout">
+      <button type="button" data-layout="ansi" role="radio">ANSI (US)</button>
+      <button type="button" data-layout="iso" role="radio">ISO</button>
+    </div>
+    <span class="grow"></span>
+    <span id="progress" class="muted" aria-live="polite"></span>
+    <button type="button" id="reset">Reset</button>
+  </div>
+
+  <!-- The keyboard takes the focus a click gives it, and keys are only
+       heard while this page has focus — `#focus-hint` says so when it
+       has not. -->
+  <div id="board" class="board" tabindex="0" aria-label="Keyboard — press keys to test them"></div>
+  <p id="focus-hint" class="hint" hidden>Click the keyboard, then press keys.</p>
+
+  <dl class="facts">
+    <dt>Last key</dt>
+    <dd id="last" class="mono">—</dd>
+    <dt>Held</dt>
+    <dd id="held" class="mono">—</dd>
+    <dt>Double-typed</dt>
+    <dd id="chatter">None yet</dd>
+  </dl>
+
+  <details class="notes">
+    <summary>Keys this page cannot hear</summary>
+    <ul>
+      <li><b>fn / Globe, Touch ID and the power key</b> never reach a web page, so they stay grey.</li>
+      <li><b>F1–F12</b> control brightness, volume and media by default. Hold <b>fn</b> while pressing them to test them as keys.</li>
+      <li><b>Shortcuts macOS or Lumi take first</b> — ⌘Tab, ⌘Space, ⌘Q, a Hyper key on Caps Lock, a shortcut you recorded — are used up before they get here. Test those keys on their own.</li>
+    </ul>
+  </details>
+
+  <script src="keytest.js"></script>
+</body>
+</html>
