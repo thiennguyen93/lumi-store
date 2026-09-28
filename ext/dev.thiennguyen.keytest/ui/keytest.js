@@ -102,11 +102,16 @@
   }
 
   /** What fn does to the keys under it, read backwards. A MacBook has no
-   *  forward delete, Home, End, Page Up or Page Down key: the keyboard's
-   *  own driver makes them out of fn and delete or an arrow, so a page that
-   *  hears one of them has heard fn held — the only way it can, since fn on
-   *  its own sends a page nothing. Each maps to the key actually pressed
-   *  with it, which is tested by the same press. */
+   *  forward delete, Home, End, Page Up or Page Down key: macOS makes them
+   *  out of fn and delete or an arrow, so a page that hears one of them has
+   *  heard fn held — the only way it can, since fn on its own sends a page
+   *  nothing. Each maps to the key actually pressed with it, which is
+   *  tested by the same press.
+   *
+   *  Asked of `code` and of `key` both (`fnCombo`), because which of the
+   *  two carries it is WebKit's to decide: the key's position may arrive
+   *  as the delete or arrow that was pressed with only the character
+   *  changed, or as the made-up key itself. */
   const FN_COMBOS = {
     Delete: "Backspace",
     Home: "ArrowLeft",
@@ -114,6 +119,15 @@
     PageUp: "ArrowUp",
     PageDown: "ArrowDown",
   };
+
+  /** The key fn was held over, when an event says fn was held; otherwise
+   *  undefined. A made-up key's `code`, or a pressed key's `code` whose
+   *  `key` is the made-up one — `Backspace` arriving as `Delete`. */
+  function fnCombo(event) {
+    if (FN_COMBOS[event.code]) return FN_COMBOS[event.code];
+    const under = FN_COMBOS[event.key];
+    return under !== undefined && under === event.code ? under : undefined;
+  }
 
   const MODIFIERS = new Set(["ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft", "AltRight", "MetaLeft", "MetaRight"]);
 
@@ -363,9 +377,10 @@
         lastOut.textContent = "fn";
         return flash("Fn");
       }
-      if (FN_COMBOS[code]) {
-        const pressed = FN_COMBOS[code];
-        lastOut.textContent = `fn + ${nameOf(pressed)} — ${code}: fn works`;
+      const underFn = fnCombo(event);
+      if (underFn) {
+        const pressed = underFn;
+        lastOut.textContent = `fn + ${nameOf(pressed)} — ${event.key}: fn works`;
         flash("Fn");
         return press(pressed, event);
       }
@@ -394,6 +409,8 @@
       if (code === "CapsLock") return flash(code);
       if (code === "F18" || code === "Fn") return;
       const released = FN_COMBOS[code] || code;
+      // (A pressed key reporting the made-up one as its `key` already has
+      // its own `code`, so it needs no translating here.)
       down.delete(released);
       lastUp.set(released, event.timeStamp);
       // macOS sends no key-up for a key released while ⌘ is held, so the
