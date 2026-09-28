@@ -15,42 +15,50 @@
    *  chattering switch bounces an up and a down in a few. */
   const CHATTER_MS = 40;
 
-  // One row per line of keys, each key [code, label, width in units].
-  // Every row is fifteen units. A null code is a key no page can hear
-  // (fn / Globe, Touch ID), drawn so the keyboard looks like the one
-  // under the person's hands, and never counted.
+  // One row per line of keys, each key [code, label, width, options]:
+  // widths in key units, and every row is 14.5 of them — a MacBook Pro's
+  // own proportions (the 2021 and later keyboard, full-height function
+  // row): delete and tab 1.5, caps lock and return 1.75, both shifts 2.25,
+  // command 1.25, space 5. A null code is a key no page can hear (fn /
+  // Globe, Touch ID), drawn so the board looks like the one under the
+  // person's hands, and never counted.
+  //
+  // Options: `sym` and `side` draw a modifier the way the keycap does —
+  // its symbol in the corner nearest the space bar's end, its word along
+  // the bottom; `globe` is the fn key; `half` is a half-height arrow sat on
+  // the row's floor; `join` is a piece of ISO's two-piece Return.
   const fnRow = [
     ["Escape", "esc", 1.5],
     ...Array.from({ length: 12 }, (_, i) => [`F${i + 1}`, `F${i + 1}`, 1]),
-    [null, "Touch ID", 1.5],
+    [null, "Touch ID", 1, { touchId: true }],
   ];
   const digits = [
     ...["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((d) => [`Digit${d}`, d, 1]),
     ["Minus", "-", 1],
     ["Equal", "=", 1],
-    ["Backspace", "delete", 2],
+    ["Backspace", "delete", 1.5],
   ];
   const letters = (row) => [...row].map((c) => [`Key${c}`, c, 1]);
   const bottom = [
-    [null, "fn", 1],
-    ["ControlLeft", "control", 1],
-    ["AltLeft", "option", 1],
-    ["MetaLeft", "command", 1.25],
-    ["Space", "", 5.5],
-    ["MetaRight", "command", 1.25],
-    ["AltRight", "option", 1],
-    ["ArrowLeft", "←", 1],
-    { stack: [["ArrowUp", "↑"], ["ArrowDown", "↓"]], width: 1 },
-    ["ArrowRight", "→", 1],
+    [null, "fn", 1, { globe: true }],
+    ["ControlLeft", "control", 1, { sym: "⌃", side: "left" }],
+    ["AltLeft", "option", 1, { sym: "⌥", side: "left" }],
+    ["MetaLeft", "command", 1.25, { sym: "⌘", side: "left" }],
+    ["Space", "", 5],
+    ["MetaRight", "command", 1.25, { sym: "⌘", side: "right" }],
+    ["AltRight", "option", 1, { sym: "⌥", side: "right" }],
+    ["ArrowLeft", "◀", 1, { half: true }],
+    { stack: [["ArrowUp", "▲"], ["ArrowDown", "▼"]], width: 1 },
+    ["ArrowRight", "▶", 1, { half: true }],
   ];
 
   const LAYOUTS = {
     ansi: [
       fnRow,
       [["Backquote", "`", 1], ...digits],
-      [["Tab", "tab", 1.5], ...letters("QWERTYUIOP"), ["BracketLeft", "[", 1], ["BracketRight", "]", 1], ["Backslash", "\\", 1.5]],
-      [["CapsLock", "caps lock", 1.75], ...letters("ASDFGHJKL"), ["Semicolon", ";", 1], ["Quote", "'", 1], ["Enter", "return", 2.25]],
-      [["ShiftLeft", "shift", 2.25], ...letters("ZXCVBNM"), ["Comma", ",", 1], ["Period", ".", 1], ["Slash", "/", 1], ["ShiftRight", "shift", 2.75]],
+      [["Tab", "tab", 1.5], ...letters("QWERTYUIOP"), ["BracketLeft", "[", 1], ["BracketRight", "]", 1], ["Backslash", "\\", 1]],
+      [["CapsLock", "caps lock", 1.75], ...letters("ASDFGHJKL"), ["Semicolon", ";", 1], ["Quote", "'", 1], ["Enter", "return", 1.75]],
+      [["ShiftLeft", "shift", 2.25], ...letters("ZXCVBNM"), ["Comma", ",", 1], ["Period", ".", 1], ["Slash", "/", 1], ["ShiftRight", "shift", 2.25]],
       bottom,
     ],
     // ISO: a tall Return, a key between left Shift and Z, and § top left.
@@ -61,12 +69,36 @@
     iso: [
       fnRow,
       [["IntlBackslash", "§", 1], ...digits],
-      [["Tab", "tab", 1.5], ...letters("QWERTYUIOP"), ["BracketLeft", "[", 1], ["BracketRight", "]", 1], ["Enter", "return", 1.5, "join-down"]],
-      [["CapsLock", "caps lock", 1.75], ...letters("ASDFGHJKL"), ["Semicolon", ";", 1], ["Quote", "'", 1], ["Backslash", "\\", 1], ["Enter", "", 1.25, "join-up"]],
-      [["ShiftLeft", "shift", 1.25], ["Backquote", "`", 1], ...letters("ZXCVBNM"), ["Comma", ",", 1], ["Period", ".", 1], ["Slash", "/", 1], ["ShiftRight", "shift", 2.75]],
+      [["Tab", "tab", 1.5], ...letters("QWERTYUIOP"), ["BracketLeft", "[", 1], ["BracketRight", "]", 1], ["Enter", "return", 1, { join: "join-down" }]],
+      [["CapsLock", "caps lock", 1.75], ...letters("ASDFGHJKL"), ["Semicolon", ";", 1], ["Quote", "'", 1], ["Backslash", "\\", 1], ["Enter", "", 0.75, { join: "join-up" }]],
+      [["ShiftLeft", "shift", 1.25], ["Backquote", "`", 1], ...letters("ZXCVBNM"), ["Comma", ",", 1], ["Period", ".", 1], ["Slash", "/", 1], ["ShiftRight", "shift", 2.25]],
       bottom,
     ],
   };
+
+  /** The Globe on the fn key, drawn rather than taken from a font: the
+   *  emoji is coloured and the text glyph is missing from most. Built as
+   *  DOM, not markup, so nothing here is parsed as HTML. */
+  function globe() {
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 16 16");
+    svg.setAttribute("width", "11");
+    svg.setAttribute("height", "11");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "1.2");
+    for (const [tag, attrs] of [
+      ["circle", { cx: 8, cy: 8, r: 6.5 }],
+      ["ellipse", { cx: 8, cy: 8, rx: 2.8, ry: 6.5 }],
+      ["path", { d: "M1.5 8h13M2.6 4.6h10.8M2.6 11.4h10.8" }],
+    ]) {
+      const shape = document.createElementNS(ns, tag);
+      for (const [name, value] of Object.entries(attrs)) shape.setAttribute(name, String(value));
+      svg.appendChild(shape);
+    }
+    return svg;
+  }
 
   const MODIFIERS = new Set(["ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft", "AltRight", "MetaLeft", "MetaRight"]);
 
@@ -100,13 +132,31 @@
     board.textContent = "";
     keys = new Map();
     labels = new Map();
-    const add = (parent, [code, label, width, join], grow) => {
+    const span = (className, content) => {
+      const part = document.createElement("span");
+      part.className = className;
+      if (typeof content === "string") part.textContent = content;
+      else part.appendChild(content);
+      return part;
+    };
+    const add = (parent, [code, label, width, options = {}]) => {
       const key = document.createElement("div");
       key.className = "key";
-      if (join) key.classList.add(join);
-      if (label.length <= 1) key.classList.add("center");
-      if (grow !== undefined) key.style.flexGrow = String(grow);
-      key.textContent = label;
+      if (width !== undefined) key.style.flexGrow = String(width);
+      if (options.join) key.classList.add(options.join);
+      if (options.half) key.classList.add("half");
+      if (options.sym) {
+        key.classList.add("mod", options.side);
+        key.append(span("sym", options.sym), span("word", label));
+      } else if (options.globe) {
+        key.classList.add("mod", "globe");
+        key.append(span("word", label), span("sym", globe()));
+      } else if (options.touchId) {
+        key.classList.add("touch-id");
+      } else {
+        key.textContent = label;
+        if (label.length <= 1) key.classList.add("center");
+      }
       if (code === null) {
         key.classList.add("deaf");
         key.title = `${label} never reaches a web page`;
@@ -118,12 +168,12 @@
       }
       parent.appendChild(key);
     };
-    LAYOUTS[layout].forEach((row, index) => {
+    LAYOUTS[layout].forEach((row) => {
       const line = document.createElement("div");
-      line.className = index === 0 ? "row short" : "row";
+      line.className = "row";
       for (const entry of row) {
         if (Array.isArray(entry)) {
-          add(line, entry, entry[2]);
+          add(line, entry);
         } else {
           const stack = document.createElement("div");
           stack.className = "stack";

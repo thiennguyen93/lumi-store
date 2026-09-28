@@ -57,14 +57,17 @@ body {
   border-radius: 12px;
   border: 1px solid var(--kt-line);
   outline: none;
+  /* Legends are sized by the board's width, not the page's: the pane can
+     be anywhere from narrow to wide, and a legend that fits one clips
+     "caps lock" and "command" on the other. */
+  container-type: inline-size;
 }
 .board:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--kt-down) 40%, transparent); }
 .row {
   display: flex;
   gap: 4px;
-  height: 34px;
+  height: 36px;
 }
-.row.short { height: 20px; }
 
 .key {
   flex-basis: 0;
@@ -73,27 +76,58 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
-  padding: 3px 5px;
+  padding: 3px 4px;
   border-radius: 5px;
   border: 1px solid var(--kt-line);
   background: var(--kt-key);
-  font-size: 10px;
+  font-size: clamp(7px, 1.55cqw, 10px);
   line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   transition: background 120ms ease-out, border-color 120ms ease-out;
 }
-.row.short .key { align-items: center; }
-.key.center { justify-content: center; }
+.key.center { justify-content: center; align-items: center; font-size: clamp(9px, 2.1cqw, 13px); }
 
-/* The arrow cluster: ← and → full height, ↑ over ↓ in the middle. */
+/* A modifier as its keycap draws it: the symbol in the top corner on the
+   side away from the space bar's end — right on the left-hand keys, left
+   on the right-hand ones — and the word along the bottom. The fn key is
+   the other way up: "fn" top right, the Globe bottom left. */
+.key.mod {
+  padding: 3px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+}
+.mod .sym { font-size: clamp(9px, 2cqw, 13px); line-height: 1; }
+.mod .word { font-size: clamp(6.5px, 1.45cqw, 9.5px); }
+.mod.left .sym { align-self: flex-end; }
+.mod.left .word { align-self: flex-start; }
+.mod.right .sym, .mod.right .word { align-self: flex-start; }
+.mod.globe .word { align-self: flex-end; }
+.mod.globe .sym { align-self: flex-start; display: flex; }
+
+/* The arrows: ← and → half height, sat on the floor of the row; ↑ over ↓
+   in the middle, each half height too. */
+.key.half { align-self: flex-end; height: calc(50% - 1px); }
 .stack {
   flex-basis: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.stack .key { flex: 1; align-items: center; justify-content: center; padding: 0; }
+.stack .key, .key.half { align-items: center; justify-content: center; padding: 0; font-size: 7px; }
+.stack .key { flex: 1; }
+
+/* Touch ID: a flat button with a ring, never heard. */
+.key.touch-id { justify-content: center; align-items: center; }
+.key.touch-id::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  opacity: 0.6;
+}
 
 .key.seen { background: var(--kt-seen); border-color: var(--kt-seen-line); }
 .key.down {
@@ -104,10 +138,24 @@ body {
 }
 .key.chatter { border-color: var(--kt-bad); box-shadow: inset 0 0 0 1px var(--kt-bad); }
 .key.deaf { opacity: 0.35; border-style: dashed; }
-/* ISO's Return is one key drawn as two pieces; the top piece loses its
-   bottom edge so the two read as one. */
-.key.join-down { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.key.join-up { border-top-left-radius: 0; border-top-right-radius: 0; }
+/* ISO's Return is one key drawn as two pieces, one per row, both at the
+   row's right edge: the top piece reaches down across the gap between the
+   rows and the edge they share is dropped, so the two read as the one
+   L-shaped key under the person's hand. */
+.key.join-down {
+  align-self: flex-start;
+  height: calc(100% + 4px);
+  position: relative;
+  z-index: 1;
+  padding: 3px 2px;
+  border-bottom-color: transparent;
+  border-bottom-right-radius: 0;
+}
+.key.join-up {
+  border-top-color: transparent;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
 
 /* What stands over the board while the page cannot hear keys: the whole
    board is the button, so wherever the click lands it works. */
