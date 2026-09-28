@@ -242,7 +242,7 @@
     for (const element of keys.get("Fn") || []) {
       element.title = seen.has("Fn")
         ? "fn works"
-        : "fn on its own never reaches a page — hold it and press delete or an arrow";
+        : "press fn — or hold it and press delete or an arrow";
     }
     for (const element of keys.get("CapsLock") || []) {
       element.title = hyper
@@ -425,6 +425,29 @@
     },
     true,
   );
+
+  // fn / Globe on its own, relayed by Lumi (`fn-key = true` in the
+  // manifest): WebKit sends a page nothing for it, so Lumi's event tap
+  // hears it and dispatches `lumi:fn` with `{ down }`. Held and released
+  // like any key, so a stuck or bouncing fn shows up the same way.
+  window.addEventListener("lumi:fn", (event) => {
+    const now = performance.now();
+    if (event.detail && event.detail.down) {
+      lastOut.textContent = "fn";
+      if (!down.has("Fn")) {
+        const released = lastUp.get("Fn");
+        if (released !== undefined && now - released < CHATTER_MS) {
+          chatter.set("Fn", (chatter.get("Fn") || 0) + 1);
+        }
+      }
+      down.set("Fn", now);
+      seen.add("Fn");
+    } else {
+      down.delete("Fn");
+      lastUp.set("Fn", now);
+    }
+    paint();
+  });
 
   /** Ask the extension's own code whether Lumi's Hyper key is on. On load
    *  and whenever the page gets the keyboard back, since the person may
