@@ -279,6 +279,12 @@ interface ui {
     /// the next time the panel is shown. Added in 0.3.
     set-material: func(name: string, material: string) -> result<_, string>;
 
+    /// Choose light or dark for one of your panels: "light", "dark", or
+    /// "system" to follow macOS again — for a theme setting. The panel's
+    /// glass and its page's `prefers-color-scheme` both follow. Takes effect
+    /// at once if the panel is up, and every time it is shown. Added in 0.3.
+    set-theme: func(name: string, theme: string) -> result<_, string>;
+
     /// Send `message`, JSON text, to one of this extension's own windows
     /// or embedded pages: a declared window by its manifest `name`, or a
     /// page by `:about`, `:settings` or `:page:<name>`. It arrives as a

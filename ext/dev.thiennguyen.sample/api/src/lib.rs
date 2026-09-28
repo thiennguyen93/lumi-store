@@ -241,6 +241,12 @@ pub fn set_material(name: &str, material: &str) -> Result<(), String> {
     lumi::ext::ui::set_material(name, material)
 }
 
+/// Choose light or dark for one of your panels — "light", "dark" or
+/// "system" — for a theme setting. Applies at once if the panel is up.
+pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
+    lumi::ext::ui::set_theme(name, theme)
+}
+
 /// Send `message` (JSON text) to one of your own windows or pages — a
 /// window by its manifest `name`, or `":about"`, `":settings"`,
 /// `":page:<name>"`. The page hears it as a `lumi:message` event whose
