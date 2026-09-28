@@ -234,6 +234,13 @@ pub fn open_settings() -> Result<(), String> {
     lumi::ext::ui::open_settings()
 }
 
+/// Choose the glass one of your panels opens on from now on — "popover",
+/// "hud" or "sidebar" — for an appearance setting. The panel's manifest
+/// entry must declare a `material`.
+pub fn set_material(name: &str, material: &str) -> Result<(), String> {
+    lumi::ext::ui::set_material(name, material)
+}
+
 /// Send `message` (JSON text) to one of your own windows or pages — a
 /// window by its manifest `name`, or `":about"`, `":settings"`,
 /// `":page:<name>"`. The page hears it as a `lumi:message` event whose

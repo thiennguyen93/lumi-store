@@ -250,6 +250,12 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"the window {name} sets a position, which only a panel has")
         if position not in ("", "cursor", "center"):
             fail(entry_id, f'the panel {name} asks for position {position!r}; a panel opens at "cursor" or "center"')
+        # `manifest.rs`'s material rule, same sentences.
+        material = str(window.get("material", "")).strip()
+        if material and kind == "window":
+            fail(entry_id, f"the window {name} sets a material, which only a panel has")
+        if material not in ("", "popover", "hud", "sidebar"):
+            fail(entry_id, f'the panel {name} asks for material {material!r}; a panel\'s material is "popover", "hud" or "sidebar"')
     check_page_tabs(entry_id, manifest)
     settings_tab = ext.get("settings-tab", ext.get("settings_tab", True))
     if not isinstance(settings_tab, bool):

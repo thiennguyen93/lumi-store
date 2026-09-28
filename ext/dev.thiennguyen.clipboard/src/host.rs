@@ -34,6 +34,8 @@ pub trait Host {
     fn paste(&self, items: &[Vec<Rep>], keystroke: bool) -> Result<(), String>;
     fn close_panel(&self) -> Result<(), String>;
     fn open_panel(&self) -> Result<(), String>;
+    /// The glass the panel opens on next.
+    fn set_material(&self, window: &str, material: &str) -> Result<(), String>;
     /// Hand one of this extension's pages a message; `false` when it is
     /// not on screen.
     fn post(&self, window: &str, message: &str) -> Result<bool, String>;
@@ -147,6 +149,10 @@ impl Host for Lumi {
 
     fn open_panel(&self) -> Result<(), String> {
         lumi_extension_api::open_window(crate::PANEL)
+    }
+
+    fn set_material(&self, window: &str, material: &str) -> Result<(), String> {
+        lumi_extension_api::set_material(window, material)
     }
 
     fn post(&self, window: &str, message: &str) -> Result<bool, String> {
@@ -277,6 +283,11 @@ pub mod memory {
         fn post(&self, window: &str, message: &str) -> Result<bool, String> {
             self.posts.borrow_mut().push((window.to_string(), message.to_string()));
             Ok(true)
+        }
+
+        fn set_material(&self, window: &str, material: &str) -> Result<(), String> {
+            self.opened.borrow_mut().push(format!("material {window} {material}"));
+            Ok(())
         }
 
         fn open_url(&self, url: &str) -> Result<(), String> {

@@ -60,7 +60,12 @@ function answer(request: Request): unknown {
   switch (request.kind) {
     case "list":
       if (request.opening) trash = [];
-      return { items: sorted(), pasteOnSelect: true, previewWidth };
+      return {
+        items: sorted(),
+        pasteOnSelect: true,
+        previewWidth,
+        appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
+      };
     case "preview": {
       const row = rows.find((r) => r.id === request.id);
       return { text: row ? `${row.title}\n\n(the full text of the copy would be here)` : "" };
@@ -141,6 +146,11 @@ function answer(request: Request): unknown {
       };
     }
   }
+}
+
+// `?glass`: draw the page on a stand-in for the panel's glass.
+if (new URLSearchParams(location.search).has("glass")) {
+  document.documentElement.classList.add("glass-preview");
 }
 
 let moved: [number, number] = [0, 0];

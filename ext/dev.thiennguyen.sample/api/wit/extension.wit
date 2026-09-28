@@ -273,6 +273,12 @@ interface ui {
     /// panel's "Settings…". Only for something the person did. Added in 0.3.
     open-settings: func() -> result<_, string>;
 
+    /// Choose the glass one of your panels opens on from now on:
+    /// "popover", "hud" or "sidebar" — for a setting that lets the person
+    /// pick. Only a panel whose manifest declares a `material`. Takes effect
+    /// the next time the panel is shown. Added in 0.3.
+    set-material: func(name: string, material: string) -> result<_, string>;
+
     /// Send `message`, JSON text, to one of this extension's own windows
     /// or embedded pages: a declared window by its manifest `name`, or a
     /// page by `:about`, `:settings` or `:page:<name>`. It arrives as a

@@ -25,6 +25,7 @@
 
 /* And dark: by Lumi's theme when lumi.css set one, else by the system. */
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --cb-bolt: #f0a500;
   --cb-key: rgba(255, 255, 255, 0.12);
   --cb-key-edge: var(--cb-line);
@@ -40,10 +41,12 @@
 }
 
 html, body, #root { height: 100%; }
+/* Clear: the panel is glass (`material = "popover"`), and whatever this
+   page paints covers it. Washes, not colours, from here down. */
 body {
   margin: 0;
   overflow: hidden;
-  background: var(--cb-raised);
+  background: transparent;
   color: CanvasText;
   font: 13px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   -webkit-user-select: none;
@@ -340,7 +343,11 @@ body {
   flex-direction: column;
   border: 1px solid var(--cb-line);
   border-radius: 10px;
-  background: var(--cb-raised);
+  /* Glass on glass, as a macOS menu over a popover: mostly opaque, so the
+     rows under it do not read through, and blurred for the rest. */
+  background: color-mix(in srgb, var(--cb-raised) 86%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   animation: menu-in 140ms cubic-bezier(.2, .8, .2, 1);
@@ -470,3 +477,26 @@ body {
 }
 .card .picture img { max-width: 100%; max-height: 180px; object-fit: contain; }
 .card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); }
+
+/* `pnpm dev` only (`?glass`, set by dev/mock.ts): a busy wallpaper and a
+   CSS stand-in for AppKit's popover glass, to judge the page on it. Lumi
+   draws the real glass; nothing ships with this class set. */
+html.glass-preview {
+  background:
+    radial-gradient(circle at 15% 20%, #ffb86b 0 18%, transparent 19%),
+    radial-gradient(circle at 70% 30%, #7fb4ff 0 22%, transparent 23%),
+    radial-gradient(circle at 40% 85%, #ff7aa8 0 20%, transparent 21%),
+    #e9e4f5;
+}
+html.glass-preview #root {
+  background: color-mix(in srgb, Canvas 62%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  border-radius: 14px;
+}
+html.glass-preview[data-material="hud"] #root { background: rgba(28, 28, 30, 0.58); }
+html.glass-preview[data-material="sidebar"] #root {
+  background: color-mix(in srgb, Canvas 80%, transparent);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  backdrop-filter: blur(40px) saturate(200%);
+}

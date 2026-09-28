@@ -27,6 +27,8 @@ export interface ListAnswer {
   pasteOnSelect: boolean;
   /** The preview pane's width as last dragged, or null for never. */
   previewWidth: number | null;
+  /** The glass the panel is on (the Appearance setting). */
+  appearance?: "popover" | "hud" | "sidebar";
 }
 
 /** The About page's `stats` answer. `since` is Lumi's clock, in ms. */

@@ -55,6 +55,9 @@ impl lumi::Guest for Clipboard {
     fn run_command(name: String, _params: String) -> Result<String, String> {
         match name.as_str() {
             "open" => {
+                // The glass the person chose, before the panel is drawn on
+                // it. A Lumi that cannot set it opens the panel all the same.
+                let _ = host::Lumi.set_material(PANEL, prefs(&host::Lumi).appearance);
                 host::Lumi.open_panel()?;
                 Ok(String::new())
             }
@@ -117,6 +120,8 @@ struct Prefs {
     rules: Rules,
     order: Order,
     paste_on_select: bool,
+    /// The panel's glass: "popover", "hud" or "sidebar".
+    appearance: &'static str,
 }
 
 fn prefs(host: &impl Host) -> Prefs {
@@ -144,6 +149,11 @@ fn prefs(host: &impl Host) -> Prefs {
             Value::Bool(b) => *b,
             Value::String(t) => t != "false",
             _ => true,
+        },
+        appearance: match s["appearance"].as_str() {
+            Some("hud") => "hud",
+            Some("sidebar") => "sidebar",
+            _ => "popover",
         },
     }
 }
@@ -316,6 +326,9 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             Ok(json!({
                 "items": history::sorted(&index, prefs.order),
                 "pasteOnSelect": prefs.paste_on_select,
+                // For the page to match its text to the glass: "hud" is
+                // dark whatever the system says.
+                "appearance": prefs.appearance,
                 "previewWidth": preview_width(host),
             }))
         }

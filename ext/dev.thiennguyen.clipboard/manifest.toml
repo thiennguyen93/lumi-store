@@ -7,7 +7,7 @@
 [extension]
 id = "dev.thiennguyen.clipboard"
 name = "Clipboard History"
-version = "0.10.0"
+version = "0.12.0"
 description = "Keep what you copy — text, links, images and files — and paste it back from a panel."
 author = "Thien Nguyen"
 summary = "Remembers what you copy on this Mac and brings it back with one shortcut: search, pick, and it is pasted into the app you were typing in. Text, rich text, links, colours, files and images, with pins for what you keep reaching for. Anything a password manager marks as secret is never recorded — Lumi drops it before this extension hears of it — and the history is stored encrypted with a key Lumi keeps in your Keychain. Nothing leaves your Mac: the extension has no network access."
@@ -41,6 +41,9 @@ title = "Clipboard History"
 path = "panel.html"
 kind = "panel"
 position = "cursor"
+# macOS's popover glass behind the page — the blur Spotlight uses, light or
+# dark with the system. The page leaves its background clear for it.
+material = "popover"
 width = 620
 height = 430
 
@@ -84,6 +87,26 @@ label = "First copied"
 [[settings.options]]
 value = "used"
 label = "Most used"
+
+# The panel's glass — macOS's own materials. The manifest's `material`
+# above is only the default; the panel is opened on this one.
+[[settings]]
+name = "appearance"
+label = "Appearance"
+kind = "segmented"
+default = "popover"
+
+[[settings.options]]
+value = "popover"
+label = "Glass"
+
+[[settings.options]]
+value = "hud"
+label = "Dark glass"
+
+[[settings.options]]
+value = "sidebar"
+label = "Frosted"
 
 # One bundle id per line, e.g. com.apple.keychainaccess. Copies made while
 # one of these is in front are not kept.

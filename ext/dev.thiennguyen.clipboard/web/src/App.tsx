@@ -32,7 +32,7 @@ import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
 import { FILTER_LABELS, FILTERS, type Filter, inFilter, matches, shortcuts, words } from "./search";
-import type { Entry } from "./types";
+import type { Entry, ListAnswer } from "./types";
 
 export function App() {
   const [rows, setRows] = useState<Entry[] | null>(null);
@@ -73,6 +73,7 @@ export function App() {
     const answer = await call({ kind: "list", opening });
     setRows(answer.items);
     adoptWidth(answer.previewWidth);
+    wear(answer.appearance);
     if (keepId) {
       const wanted = words(input.current?.value ?? "");
       const at = answer.items
@@ -511,3 +512,13 @@ function emptyText(kept: number, query: string, filter: Filter): string {
 /** One thing ⌘Z can take back and ⌘⇧Z do again: a pin or unpin (with the
  *  pin it had before and after), or a delete — of one row, or of all. */
 type Undo = { kind: "pin"; id: string; was: string | null; now: string | null } | { kind: "delete"; ids: string[] };
+
+/** Match the page to the panel's glass. "Dark glass" is dark whatever the
+ *  system says, so the page takes Lumi's dark tokens with it (lumi.css and
+ *  panel.css both key on `data-theme`); the other two follow the system. */
+function wear(appearance: ListAnswer["appearance"]) {
+  const root = document.documentElement;
+  root.dataset.material = appearance ?? "popover";
+  if (appearance === "hud") root.dataset.theme = "dark";
+  else delete root.dataset.theme;
+}
