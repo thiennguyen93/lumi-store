@@ -36,6 +36,8 @@ pub trait Host {
     fn open_panel(&self) -> Result<(), String>;
     /// The glass the panel opens on next.
     fn set_material(&self, window: &str, material: &str) -> Result<(), String>;
+    /// Light, dark or the system's, for the panel — at once if it is up.
+    fn set_theme(&self, window: &str, theme: &str) -> Result<(), String>;
     /// Hand one of this extension's pages a message; `false` when it is
     /// not on screen.
     fn post(&self, window: &str, message: &str) -> Result<bool, String>;
@@ -46,6 +48,8 @@ pub trait Host {
     /// Lumi's Settings, on this extension's Settings tab.
     fn open_settings(&self) -> Result<(), String>;
     fn settings(&self) -> serde_json::Value;
+    /// Now, in ms since the epoch — the clock Lumi stamps copies with.
+    fn now(&self) -> i64;
 
     /// A fresh id for a new row, from a counter kept in storage.
     ///
@@ -155,6 +159,10 @@ impl Host for Lumi {
         lumi_extension_api::set_material(window, material)
     }
 
+    fn set_theme(&self, window: &str, theme: &str) -> Result<(), String> {
+        lumi_extension_api::set_theme(window, theme)
+    }
+
     fn post(&self, window: &str, message: &str) -> Result<bool, String> {
         lumi_extension_api::post(window, message)
     }
@@ -173,6 +181,12 @@ impl Host for Lumi {
 
     fn settings(&self) -> serde_json::Value {
         lumi_extension_api::settings()
+    }
+
+    fn now(&self) -> i64 {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_millis() as i64)
     }
 }
 
@@ -229,6 +243,8 @@ pub mod memory {
         /// Every `open_url` and `reveal`, as "open <url>" / "reveal <url>".
         pub opened: RefCell<Vec<String>>,
         pub settings: RefCell<serde_json::Value>,
+        /// The clock `now` reads; 0 unless a test moves it.
+        pub now: Cell<i64>,
         /// Fail the next `n` puts with a conflict, to exercise the retry.
         pub conflicts: Cell<u32>,
     }
@@ -290,6 +306,11 @@ pub mod memory {
             Ok(())
         }
 
+        fn set_theme(&self, window: &str, theme: &str) -> Result<(), String> {
+            self.opened.borrow_mut().push(format!("theme {window} {theme}"));
+            Ok(())
+        }
+
         fn open_url(&self, url: &str) -> Result<(), String> {
             self.opened.borrow_mut().push(format!("open {url}"));
             Ok(())
@@ -311,6 +332,10 @@ pub mod memory {
 
         fn settings(&self) -> serde_json::Value {
             self.settings.borrow().clone()
+        }
+
+        fn now(&self) -> i64 {
+            self.now.get()
         }
     }
 }

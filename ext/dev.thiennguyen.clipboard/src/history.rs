@@ -182,8 +182,11 @@ pub struct Record {
 /// The person's settings, as far as the model cares.
 #[derive(Debug, Clone)]
 pub struct Rules {
-    /// Unpinned items kept. Pins never count and are never evicted.
+    /// Unpinned items kept at most. Pins never count and are never evicted.
     pub size: usize,
+    /// How long an unpinned row is kept after it was last copied, in ms;
+    /// `None` for as long as `size` allows.
+    pub keep_ms: Option<i64>,
     /// Bundle ids whose copies are dropped.
     pub ignore_apps: Vec<String>,
     /// Patterns; a copy whose text matches any of them is dropped.
@@ -206,6 +209,7 @@ impl Rules {
         (
             Rules {
                 size: size.max(1),
+                keep_ms: None,
                 ignore_apps,
                 ignore_patterns: compiled,
             },
@@ -243,6 +247,8 @@ pub fn blobs_of(items: &[Vec<Rep>]) -> Vec<String> {
 /// Apply one copy to the index. `new_id` is used only if a row is added.
 pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Outcome {
     let blobs = blobs_of(&copy.items);
+    // Lumi's clock at the copy: what "older than" is measured from.
+    let copy_at = copy.at;
 
     if ignored(&copy, rules) {
         return Outcome::Ignored { blobs };
@@ -292,7 +298,7 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
     };
     index.v = INDEX_VERSION;
     index.items.push(entry);
-    let evicted = evict(index, rules.size);
+    let evicted = evict(index, rules.size, rules.keep_ms, copy_at);
 
     Outcome::Inserted {
         id: new_id,
@@ -318,12 +324,22 @@ fn ignored(copy: &Copy, rules: &Rules) -> bool {
     rules.ignore_patterns.iter().any(|re| re.is_match(text))
 }
 
-/// Keep at most `size` unpinned rows, dropping the least recently copied.
-/// Answers the rows removed.
-pub fn evict(index: &mut Index, size: usize) -> Vec<Entry> {
+/// Drop the unpinned rows last copied more than `keep_ms` before `now`,
+/// then keep at most `size` of the rest, dropping the least recently copied.
+/// Answers the rows removed. Pins are never dropped.
+pub fn evict(index: &mut Index, size: usize, keep_ms: Option<i64>, now: i64) -> Vec<Entry> {
+    let mut expired = Vec::new();
+    if let Some(keep) = keep_ms {
+        let cutoff = now.saturating_sub(keep);
+        let (gone, kept): (Vec<Entry>, Vec<Entry>) = std::mem::take(&mut index.items)
+            .into_iter()
+            .partition(|e| e.pin.is_none() && e.last < cutoff);
+        index.items = kept;
+        expired = gone;
+    }
     let unpinned = index.items.iter().filter(|e| e.pin.is_none()).count();
     if unpinned <= size {
-        return Vec::new();
+        return expired;
     }
     let mut order: Vec<(i64, usize)> = index
         .items
@@ -337,7 +353,8 @@ pub fn evict(index: &mut Index, size: usize) -> Vec<Entry> {
     doomed.sort_unstable_by(|a, b| b.cmp(a));
     let mut evicted: Vec<Entry> = doomed.into_iter().map(|i| index.items.remove(i)).collect();
     evicted.reverse();
-    evicted
+    expired.extend(evicted);
+    expired
 }
 
 /// Pin a row to the first free letter, or unpin it. Answers the letter it
@@ -737,6 +754,24 @@ mod tests {
 
     fn rules(size: usize) -> Rules {
         Rules::new(size, vec![], "").0
+    }
+
+    #[test]
+    fn rows_older_than_the_keep_go_but_pins_stay() {
+        let mut index = Index::default();
+        let mut keep = rules(10);
+        keep.keep_ms = Some(100);
+        apply(&mut index, copy("h1", 1, vec![text("old")]), &keep, "a".into());
+        apply(&mut index, copy("h2", 2, vec![text("pinned")]), &keep, "b".into());
+        toggle_pin(&mut index, "b").unwrap();
+        let out = apply(&mut index, copy("h3", 150, vec![text("recent")]), &keep, "c".into());
+        let Outcome::Inserted { evicted, .. } = out else { panic!("{out:?}") };
+        assert_eq!(evicted.iter().map(|e| e.id.as_str()).collect::<Vec<_>>(), vec!["a"]);
+        let ids: Vec<&str> = index.items.iter().map(|e| e.id.as_str()).collect();
+        assert_eq!(ids, vec!["b", "c"]);
+        // Nothing new: the clock alone moves the cutoff.
+        let gone = evict(&mut index, 10, Some(100), 251);
+        assert_eq!(gone.iter().map(|e| e.id.as_str()).collect::<Vec<_>>(), vec!["c"]);
     }
 
     #[test]

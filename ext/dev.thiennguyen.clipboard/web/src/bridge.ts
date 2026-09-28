@@ -28,6 +28,9 @@ type Answers = {
   close: Record<string, never>;
   stats: Stats;
   previewWidth: Record<string, never>;
+  apps: { apps: { id: string; name: string }[] };
+  dress: Record<string, never>;
+  tryPatterns: { errors: { line: number; error: string }[]; matched: number | null };
 };
 
 export async function call<R extends Request>(request: R): Promise<Answers[R["kind"]]> {

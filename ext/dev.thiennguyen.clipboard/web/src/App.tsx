@@ -32,12 +32,15 @@ import { Preview } from "./Preview";
 import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
-import { FILTER_LABELS, FILTERS, type Filter, inFilter, matches, shortcuts, words } from "./search";
+import { badPattern, FILTER_LABELS, FILTERS, type Filter, inFilter, search, type SearchMode, shortcuts } from "./search";
 import type { Entry, ListAnswer } from "./types";
 
 export function App() {
   const [rows, setRows] = useState<Entry[] | null>(null);
   const [query, setQuery] = useState("");
+  // How the query is read — the Search setting; `reload` sets it.
+  const [mode, setMode] = useState<SearchMode>("mixed");
+  const modeRef = useRef<SearchMode>("mixed");
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState(0);
   const [notice, setNotice] = useState("");
@@ -50,7 +53,7 @@ export function App() {
   const slideFrom = useRef<Map<string, number> | null>(null);
   // The row just pinned, so its pin can pop in once.
   const [popped, setPopped] = useState<string | null>(null);
-  // A delete is folding: a second ⌘⌫ waits for it rather than racing it.
+  // A delete is folding: a second ⌥⌫ waits for it rather than racing it.
   const folding = useRef(false);
   // Everything done since the panel opened, newest last, for ⌘Z. The page
   // is blanked when the panel goes, and the extension empties its trash
@@ -63,10 +66,10 @@ export function App() {
   const filterRef = useRef<Filter>("all");
   filterRef.current = filter;
 
-  const shown = useMemo(() => {
-    const wanted = words(query);
-    return (rows ?? []).filter((row) => inFilter(row, filter) && matches(row, wanted));
-  }, [rows, query, filter]);
+  const shown = useMemo(
+    () => search((rows ?? []).filter((row) => inFilter(row, filter)), query, mode),
+    [rows, query, filter, mode],
+  );
   const keys = useMemo(() => shortcuts(shown), [shown]);
   const current = shown[selected];
 
@@ -74,12 +77,15 @@ export function App() {
     const answer = await call({ kind: "list", opening });
     setRows(answer.items);
     adoptWidth(answer.previewWidth);
-    wear(answer.appearance);
+    wear(answer.appearance, answer.theme);
+    modeRef.current = answer.searchMode ?? "mixed";
+    setMode(modeRef.current);
     if (keepId) {
-      const wanted = words(input.current?.value ?? "");
-      const at = answer.items
-        .filter((row) => inFilter(row, filterRef.current) && matches(row, wanted))
-        .findIndex((row) => row.id === keepId);
+      const at = search(
+        answer.items.filter((row) => inFilter(row, filterRef.current)),
+        input.current?.value ?? "",
+        modeRef.current,
+      ).findIndex((row) => row.id === keepId);
       if (at >= 0) setSelected(at);
     }
   }, [adoptWidth]);
@@ -290,7 +296,7 @@ export function App() {
         : []),
       { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
       ...(row
-        ? [{ id: "delete", label: "Delete entry", glyph: <TrashGlyph />, keys: "⌘⌫", danger: true, run: remove }]
+        ? [{ id: "delete", label: "Delete entry", glyph: <TrashGlyph />, keys: "⌥⌫", danger: true, run: remove }]
         : []),
       ...(unpinned && unpinned < all
         ? [
@@ -383,7 +389,9 @@ export function App() {
       }
     } else if (cmd && key.toLowerCase() === "k") setMenuOpen(true);
     else if (cmd && key === ",") openSettings();
-    else if (cmd && key === "Backspace") remove();
+    // ⌥⌫, not ⌘⌫: ⌘⌫ is how people clear what they typed in a field, and
+    // it stays the search field's — it used to delete the selected row too.
+    else if (event.altKey && !event.metaKey && !event.ctrlKey && key === "Backspace") remove();
     // ⌘Z / ⌘⇧Z are the history's while there is something to take back or
     // do again; with nothing, they stay the search field's own text undo.
     else if (cmd && !event.shiftKey && key.toLowerCase() === "z" && undos.current.length) undo();
@@ -451,7 +459,7 @@ export function App() {
       <section className="body-grid" style={{ gridTemplateColumns: `minmax(0, 1fr) min(${preview.width}px, calc(100% - ${MIN_LIST}px))` }}>
         <div ref={list} id="list" className="list" role="listbox" aria-label="Clipboard history">
           {rows !== null && !shown.length && (
-            <div className="empty">{emptyText(rows.length, query, filter)}</div>
+            <div className="empty">{emptyText(rows.length, query, filter, mode)}</div>
           )}
           {shown.map((row, index) => [
             // One hairline where the pins end — only when rows follow them.
@@ -492,7 +500,7 @@ export function App() {
         <span><kbd className="cap quiet">↩</kbd> paste</span>
         <span><kbd className="cap quiet">⌥↩</kbd> plain</span>
         <span><kbd className="cap quiet">⌘P</kbd> pin</span>
-        <span><kbd className="cap quiet">⌘⌫</kbd> delete</span>
+        <span><kbd className="cap quiet">⌥⌫</kbd> delete</span>
         <span><kbd className="cap quiet">⇥</kbd> filter</span>
         <button
           type="button"
@@ -508,8 +516,9 @@ export function App() {
   );
 }
 
-function emptyText(kept: number, query: string, filter: Filter): string {
+function emptyText(kept: number, query: string, filter: Filter, mode: SearchMode): string {
   if (!kept) return "Copy something and it shows up here";
+  if (badPattern(query, mode)) return "Not a regular expression yet";
   if (query) return "Nothing matches that search";
   return `No ${FILTER_LABELS[filter].toLowerCase()} yet`;
 }
@@ -518,12 +527,14 @@ function emptyText(kept: number, query: string, filter: Filter): string {
  *  pin it had before and after), or a delete — of one row, or of all. */
 type Undo = { kind: "pin"; id: string; was: string | null; now: string | null } | { kind: "delete"; ids: string[] };
 
-/** Match the page to the panel's glass. "Dark glass" is dark whatever the
- *  system says, so the page takes Lumi's dark tokens with it (lumi.css and
- *  panel.css both key on `data-theme`); the other two follow the system. */
-function wear(appearance: ListAnswer["appearance"]) {
+/** Match the page to the panel's glass and theme. Lumi puts the chosen
+ *  theme on the window, so the glass and `prefers-color-scheme` already
+ *  follow it; `data-theme` says it too, for lumi.css and panel.css, which
+ *  key on it. "Dark glass" is always dark; "system" follows macOS. */
+function wear(appearance: ListAnswer["appearance"], theme: ListAnswer["theme"]) {
   const root = document.documentElement;
   root.dataset.material = appearance ?? "popover";
-  if (appearance === "hud") root.dataset.theme = "dark";
+  const shown = appearance === "hud" ? "dark" : theme;
+  if (shown === "light" || shown === "dark") root.dataset.theme = shown;
   else delete root.dataset.theme;
 }

@@ -63,24 +63,10 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* How long the history keeps rows, under the count. */
 .tile .of {
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 12px;
   color: var(--ab-faint);
-}
-
-.bar {
-  height: 4px;
-  margin-top: 6px;
-  border-radius: 2px;
-  background: var(--ab-line);
-}
-.bar span {
-  display: block;
-  height: 100%;
-  min-width: 3px;
-  border-radius: 2px;
-  background: var(--ab-mark);
 }
 
 .welcome {

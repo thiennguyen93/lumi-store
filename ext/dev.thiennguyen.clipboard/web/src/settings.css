@@ -1,0 +1,288 @@
+/* The Settings tab, the System Settings way: grouped boxes, the label on
+   the left and its control on the right. Lumi's lumi.css comes first and
+   has no specificity, so these rules win without trying; its tokens are
+   used with a fallback each, so `pnpm dev` reads too. */
+
+:root {
+  --st-line: var(--border, rgba(128, 128, 128, 0.28));
+  --st-box: var(--card, rgba(128, 128, 128, 0.08));
+  --st-field: rgba(128, 128, 128, 0.12);
+  --st-accent: var(--accent, #378add);
+  --st-dim: color-mix(in srgb, CanvasText 58%, transparent);
+  --st-raised: var(--raised, Canvas);
+  --st-bad: var(--denied, #b3261e);
+  --st-good: var(--granted, #1a7f37);
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  padding: 4px 0 20px;
+  background: transparent;
+  color: CanvasText;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  cursor: default;
+}
+
+/* macOS draws its scrollbar over the page, on the groups' right edge. A
+   styled one is laid out beside the content instead — the page narrows by
+   its width, and only while there is something to scroll. */
+::-webkit-scrollbar { width: 12px; background: transparent; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.45) padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(128, 128, 128, 0.65); }
+
+/* Section headers stay pinned while their section scrolls under them —
+   each in its own <section>, so the next one pushes it away — on
+   the pane's own colour (Lumi's body is `Canvas`), so nothing shows
+   through. Padding rather than margin: the band is solid all the way. */
+h3 {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 12px 0 0;
+  padding: 8px 4px 6px;
+  background: Canvas;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--st-dim);
+}
+main > section:first-of-type h3 { margin-top: 0; }
+
+.failed {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--st-bad);
+  background: color-mix(in srgb, var(--st-bad) 12%, transparent);
+}
+
+.group {
+  border: 1px solid var(--st-line);
+  border-radius: 10px;
+  background: var(--st-box);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  box-sizing: border-box;
+}
+.row + .row { border-top: 1px solid var(--st-line); }
+.row.col { flex-direction: column; align-items: stretch; }
+.lbl { flex: 1; min-width: 0; }
+.lbl small { display: block; margin-top: 1px; font-size: 11.5px; color: var(--st-dim); }
+
+/* lumi.css makes every field full width; beside a label, a select is only
+   as wide as its longest option, and never squeezes the label. */
+.row > select { flex: none; width: auto; min-width: 130px; }
+.row > .seg, .row > .toggle { flex: none; }
+
+/* A macOS switch. */
+.toggle {
+  all: unset;
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 19px;
+  border-radius: 10px;
+  background: rgba(128, 128, 128, 0.35);
+  transition: background 0.15s;
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s;
+}
+.toggle[aria-checked="true"] { background: var(--st-accent); }
+.toggle[aria-checked="true"]::after { transform: translateX(13px); }
+.toggle:focus-visible { outline: 2px solid var(--st-accent); outline-offset: 2px; }
+
+.seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 7px;
+  background: var(--st-field);
+}
+.seg button {
+  all: unset;
+  padding: 3px 10px;
+  border-radius: 5px;
+  color: var(--st-dim);
+}
+.seg button[aria-checked="true"] {
+  color: CanvasText;
+  background: var(--st-raised);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+.seg button:focus-visible { outline: 2px solid var(--st-accent); }
+.seg { flex-wrap: wrap; }
+.seg[aria-disabled="true"] { opacity: 0.5; }
+
+/* The panel's glass, each drawn over the same wallpaper. */
+.glasses {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.glass {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px;
+  border: 2px solid transparent;
+  border-radius: 11px;
+  text-align: center;
+}
+.glass:hover { background: var(--st-field); }
+.glass[aria-checked="true"] { border-color: var(--st-accent); }
+.glass:focus-visible { outline: 2px solid var(--st-accent); }
+.glass b { margin-top: 5px; font-weight: 500; }
+.glass small { font-size: 11px; color: var(--st-dim); }
+.swatch {
+  position: relative;
+  display: block;
+  height: 74px;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 20% 30%, #ff7a59 0 22%, transparent 23%),
+    radial-gradient(circle at 78% 70%, #3a7bd5 0 26%, transparent 27%),
+    linear-gradient(135deg, #ffcb47, #4ac29a);
+}
+.pane {
+  position: absolute;
+  inset: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  border-radius: 6px;
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+.pane i { display: block; height: 5px; border-radius: 3px; }
+.pane i:first-child { width: 70%; }
+.pane i:nth-child(2) { width: 90%; }
+.pane i:nth-child(3) { width: 55%; }
+.popover .pane { background: rgba(246, 246, 248, 0.6); }
+.popover .pane i { background: rgba(0, 0, 0, 0.28); }
+.hud .pane { background: rgba(28, 28, 30, 0.72); }
+.hud .pane i { background: rgba(255, 255, 255, 0.42); }
+.sidebar .pane {
+  background: rgba(232, 234, 238, 0.82);
+  -webkit-backdrop-filter: blur(18px) saturate(60%);
+  backdrop-filter: blur(18px) saturate(60%);
+}
+.sidebar .pane i { background: rgba(0, 0, 0, 0.22); }
+/* The swatches wear the theme chosen above; "system" wears the page's. */
+.look-dark .popover .pane,
+:root[data-theme="dark"] .look-system .popover .pane { background: rgba(40, 40, 44, 0.6); }
+.look-dark .popover .pane i,
+:root[data-theme="dark"] .look-system .popover .pane i { background: rgba(255, 255, 255, 0.4); }
+.look-dark .sidebar .pane,
+:root[data-theme="dark"] .look-system .sidebar .pane { background: rgba(50, 52, 58, 0.82); }
+.look-dark .sidebar .pane i,
+:root[data-theme="dark"] .look-system .sidebar .pane i { background: rgba(255, 255, 255, 0.34); }
+
+/* Ignored apps. */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 3px;
+  border-radius: 999px;
+  background: var(--st-field);
+  font-size: 12px;
+}
+.initial {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+.chip .x {
+  all: unset;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 9px;
+  color: var(--st-dim);
+}
+.chip .x:hover { background: rgba(128, 128, 128, 0.25); color: CanvasText; }
+.add { all: unset; padding: 3px 6px; font-size: 12px; color: var(--st-accent); }
+.add:hover { text-decoration: underline; }
+.add:focus-visible { outline: 2px solid var(--st-accent); border-radius: 4px; }
+
+.picker {
+  flex-basis: 100%;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--st-line);
+  border-radius: 9px;
+  background: var(--st-raised);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+.offered { display: grid; gap: 1px; max-height: 190px; overflow: auto; }
+.offered small { margin: 0 6px 4px; font-size: 11px; color: var(--st-dim); }
+.offered button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 6px;
+}
+.offered button:hover,
+.offered button:focus-visible { background: var(--st-accent); color: #fff; }
+.offered .id { margin-left: auto; font-size: 11px; opacity: 0.6; }
+.picker-foot { display: flex; justify-content: flex-end; gap: 6px; }
+
+/* Ignored text. */
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.patterns { display: grid; gap: 6px; margin-top: 8px; }
+.patterns textarea { width: 100%; box-sizing: border-box; resize: vertical; }
+.patterns .bad { margin: 0; color: var(--st-bad); font-size: 11.5px; }
+.probe { display: flex; align-items: center; gap: 8px; }
+.probe input { flex: 1; min-width: 0; }
+.verdict {
+  flex: none;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.verdict.no { color: var(--st-bad); background: color-mix(in srgb, var(--st-bad) 14%, transparent); }
+.verdict.yes { color: var(--st-good); background: color-mix(in srgb, var(--st-good) 14%, transparent); }
+
+@media (max-width: 520px) {
+  .glasses { grid-template-columns: 1fr; }
+  .row:not(.col) { flex-wrap: wrap; }
+}

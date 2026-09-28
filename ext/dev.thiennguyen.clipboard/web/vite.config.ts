@@ -11,9 +11,9 @@ import react from "@vitejs/plugin-react";
 // - no module-preload polyfill: it is the one piece of Vite's output that
 //   can be emitted as an inline <script>, and the page's CSP
 //   (`default-src 'self'`) refuses inline scripts outright.
-// - two inputs: `panel.html`, the name the manifest's [[window]] points
-//   at, and `dashboard.html`, its [[page]] tab. About is Lumi's own,
-//   composed from the manifest.
+// - three inputs: `panel.html`, the name the manifest's [[window]] points
+//   at, `dashboard.html`, its [[page]] tab, and `settings.html`, its
+//   settings-page. About is Lumi's own, composed from the manifest.
 export default defineConfig({
   base: "./",
   plugins: [react()],
@@ -24,7 +24,7 @@ export default defineConfig({
     target: "safari16",
     modulePreload: { polyfill: false },
     rollupOptions: {
-      input: { panel: "panel.html", dashboard: "dashboard.html" },
+      input: { panel: "panel.html", dashboard: "dashboard.html", settings: "settings.html" },
     },
   },
 });

@@ -29,12 +29,17 @@ export interface ListAnswer {
   previewWidth: number | null;
   /** The glass the panel is on (the Appearance setting). */
   appearance?: "popover" | "hud" | "sidebar";
+  /** Light or dark as the panel is shown: "dark" for dark glass. */
+  theme?: "light" | "dark" | "system";
+  /** How the search field reads a query (the Search setting). */
+  searchMode?: "exact" | "fuzzy" | "regexp" | "mixed";
 }
 
 /** The About page's `stats` answer. `since` is Lumi's clock, in ms. */
 export interface Stats {
   kept: number;
-  limit: number;
+  /** How long rows are kept, as the `keep` setting spells it. */
+  keep: string;
   pinned: number;
   images: number;
   since: number | null;
@@ -61,4 +66,19 @@ export type Request =
   | { kind: "clear" }
   | { kind: "close" }
   | { kind: "stats" }
-  | { kind: "previewWidth"; width: number };
+  | { kind: "previewWidth"; width: number }
+  /** The Settings tab's: the apps seen in the history, and a pattern list
+   *  tried against a sample. */
+  | { kind: "apps" }
+  | { kind: "dress" }
+  | { kind: "tryPatterns"; patterns: string; sample: string };
+
+/** The `keep` setting's words, as the Settings tab and Dashboard say them. */
+export const KEEP_LABELS: Record<string, string> = {
+  "5m": "5 minutes",
+  "1h": "1 hour",
+  "1d": "1 day",
+  "1w": "1 week",
+  "1mo": "1 month",
+  "3mo": "3 months",
+};

@@ -33,6 +33,31 @@ pub const PANEL: &str = "history";
 /// asks nothing — it is words.
 pub const DASHBOARD: &str = ":page:dashboard";
 
+/// What Lumi calls the Settings tab (`settings-page`). It saves through
+/// Lumi's own `PUT /__lumi__/settings`; what it asks here only reads.
+pub const SETTINGS: &str = ":settings";
+
+/// How long a row is kept, as the `keep` setting spells it.
+/// The keep when none is set, as the manifest's default says.
+const DEFAULT_KEEP: (&str, i64) = ("3mo", 90 * 24 * 60 * 60_000);
+
+const KEEPS: &[(&str, i64)] = &[
+    ("5m", 5 * 60_000),
+    ("1h", 60 * 60_000),
+    ("1d", 24 * 60 * 60_000),
+    ("1w", 7 * 24 * 60 * 60_000),
+    ("1mo", 30 * 24 * 60 * 60_000),
+    ("3mo", 90 * 24 * 60 * 60_000),
+];
+
+/// However long rows are kept, no more than this many unpinned: the panel
+/// reads the whole index each time it opens.
+const MAX_ITEMS: usize = 1000;
+
+/// The most of a pattern list or a sample the Settings tab may send to be
+/// tried: a few lines typed by hand, not a document.
+const MAX_TRY: usize = 16 * 1024;
+
 /// Storage key of the row list.
 const INDEX: &str = "index";
 
@@ -57,9 +82,10 @@ impl lumi::Guest for Clipboard {
     fn run_command(name: String, _params: String) -> Result<String, String> {
         match name.as_str() {
             "open" => {
-                // The glass the person chose, before the panel is drawn on
-                // it. A Lumi that cannot set it opens the panel all the same.
-                let _ = host::Lumi.set_material(PANEL, prefs(&host::Lumi).appearance);
+                // The glass and the theme the person chose, before the
+                // panel is drawn on them. A Lumi that cannot set them opens
+                // the panel all the same.
+                dress(&host::Lumi);
                 host::Lumi.open_panel()?;
                 Ok(String::new())
             }
@@ -77,6 +103,7 @@ impl lumi::Guest for Clipboard {
         let answer = match window.as_str() {
             PANEL => ui(&host::Lumi, &request),
             DASHBOARD => dashboard(&host::Lumi, &request),
+            SETTINGS => settings(&host::Lumi, &request),
             _ => return Err(format!("Clipboard History has no {window} window")),
         };
         answer.map(|answer| answer.to_string())
@@ -120,22 +147,44 @@ fn tell_dashboard(host: &impl Host) {
 /// call anyway.
 struct Prefs {
     rules: Rules,
+    /// How long rows are kept, as the setting spells it: "1d", "1mo"…
+    keep: &'static str,
     order: Order,
     paste_on_select: bool,
     /// The panel's glass: "popover", "hud" or "sidebar".
     appearance: &'static str,
+    /// "light", "dark" or "system".
+    theme: &'static str,
+    /// How the panel reads a search: "exact", "fuzzy", "regexp", "mixed".
+    search: &'static str,
+}
+
+impl Prefs {
+    /// The theme the panel is shown in: dark glass is dark whatever was
+    /// chosen, since AppKit's HUD material has no light version worth the
+    /// name.
+    fn shown_theme(&self) -> &'static str {
+        if self.appearance == "hud" { "dark" } else { self.theme }
+    }
+}
+
+/// Put the chosen glass and theme on the panel: before it opens, and when
+/// Settings changes them while it is up.
+fn dress(host: &impl Host) {
+    let prefs = prefs(host);
+    let _ = host.set_material(PANEL, prefs.appearance);
+    let _ = host.set_theme(PANEL, prefs.shown_theme());
 }
 
 fn prefs(host: &impl Host) -> Prefs {
     let s = host.settings();
     // Settings arrive as text or as numbers depending on how they were
     // saved; take either rather than fall back to the default on a spelling.
-    let size = match &s["size"] {
-        Value::Number(n) => n.as_u64(),
-        Value::String(t) => t.trim().parse().ok(),
-        _ => None,
-    }
-    .unwrap_or(200) as usize;
+    let (keep, keep_ms) = KEEPS
+        .iter()
+        .find(|(word, _)| s["keep"].as_str() == Some(word))
+        .copied()
+        .unwrap_or(DEFAULT_KEEP);
     let apps = s["ignoreApps"]
         .as_str()
         .unwrap_or_default()
@@ -143,9 +192,11 @@ fn prefs(host: &impl Host) -> Prefs {
         .map(|l| l.trim().to_string())
         .filter(|l| !l.is_empty())
         .collect();
-    let (rules, _refused) = Rules::new(size, apps, s["ignorePatterns"].as_str().unwrap_or(""));
+    let (mut rules, _refused) = Rules::new(MAX_ITEMS, apps, s["ignorePatterns"].as_str().unwrap_or(""));
+    rules.keep_ms = Some(keep_ms);
     Prefs {
         rules,
+        keep,
         order: Order::parse(s["sort"].as_str().unwrap_or("last")),
         paste_on_select: match &s["pasteOnSelect"] {
             Value::Bool(b) => *b,
@@ -156,6 +207,17 @@ fn prefs(host: &impl Host) -> Prefs {
             Some("hud") => "hud",
             Some("sidebar") => "sidebar",
             _ => "popover",
+        },
+        search: match s["search"].as_str() {
+            Some("exact") => "exact",
+            Some("fuzzy") => "fuzzy",
+            Some("regexp") => "regexp",
+            _ => "mixed",
+        },
+        theme: match s["theme"].as_str() {
+            Some("light") => "light",
+            Some("dark") => "dark",
+            _ => "system",
         },
     }
 }
@@ -188,6 +250,23 @@ fn update_index<T>(
         }
     }
     Err("the history was busy; try again".to_string())
+}
+
+/// Drop the rows older than the keep, by the clock now rather than at a
+/// copy. One read when nothing has aged out.
+fn expire(host: &impl Host, prefs: &Prefs) -> Result<(), String> {
+    let now = host.now();
+    let cutoff = now.saturating_sub(prefs.rules.keep_ms.unwrap_or(i64::MAX));
+    let (index, _) = read_index(host)?;
+    if !index.items.iter().any(|e| e.pin.is_none() && e.last < cutoff) {
+        return Ok(());
+    }
+    let gone = update_index(host, |index| {
+        Ok(history::evict(index, prefs.rules.size, prefs.rules.keep_ms, now))
+    })?;
+    forget(host, &gone);
+    tell_dashboard(host);
+    Ok(())
 }
 
 /// Delete what an evicted or removed row held. Best effort: a record or
@@ -323,6 +402,9 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                     let gone = update_index(host, |index| Ok(history::empty_trash(index)))?;
                     forget(host, &gone);
                 }
+                // And what has aged out since the last copy: with nothing
+                // copied for a day, a day's keep still ends.
+                expire(host, &prefs)?;
             }
             let (index, _) = read_index(host)?;
             Ok(json!({
@@ -331,6 +413,8 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 // For the page to match its text to the glass: "hud" is
                 // dark whatever the system says.
                 "appearance": prefs.appearance,
+                "theme": prefs.shown_theme(),
+                "searchMode": prefs.search,
                 "previewWidth": preview_width(host),
             }))
         }
@@ -507,6 +591,66 @@ fn dashboard(host: &impl Host, request: &Value) -> Result<Value, String> {
     }
 }
 
+fn settings(host: &impl Host, request: &Value) -> Result<Value, String> {
+    match request["kind"].as_str().unwrap_or_default() {
+        "stats" => stats(host),
+        "apps" => Ok(json!({ "apps": seen_apps(host)? })),
+        // Sent after the tab saves Appearance: the panel, if it is up,
+        // changes with it.
+        "dress" => {
+            dress(host);
+            Ok(json!({}))
+        }
+        "tryPatterns" => {
+            let patterns = request["patterns"].as_str().unwrap_or_default();
+            let sample = request["sample"].as_str().unwrap_or_default();
+            if patterns.len() > MAX_TRY || sample.len() > MAX_TRY {
+                return Err("that is too long to try".to_string());
+            }
+            Ok(try_patterns(patterns, sample))
+        }
+        other => Err(format!("the Settings tab has no {other} request")),
+    }
+}
+
+/// The apps copies in the history came from, most recent first, one each:
+/// what "Never keep copies from" offers to pick from.
+fn seen_apps(host: &impl Host) -> Result<Vec<Value>, String> {
+    let (index, _) = read_index(host)?;
+    let mut items: Vec<&history::Entry> = index.items.iter().collect();
+    items.sort_by_key(|e| std::cmp::Reverse(e.last));
+    let mut seen = std::collections::HashSet::new();
+    Ok(items
+        .into_iter()
+        .filter_map(|e| Some((e.app.as_deref()?, e.app_name.as_deref())))
+        .filter(|(id, _)| seen.insert(*id))
+        .map(|(id, name)| json!({ "id": id, "name": name.unwrap_or(id) }))
+        .collect())
+}
+
+/// The pattern list as the history will use it — the same engine, the same
+/// one-per-line reading — tried against a sample: which lines do not
+/// compile, and which line (1-based) would keep the sample out, if any.
+fn try_patterns(patterns: &str, sample: &str) -> Value {
+    let mut errors = Vec::new();
+    let mut matched = None;
+    for (at, line) in patterns.lines().enumerate() {
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
+        }
+        match regex_lite::Regex::new(line) {
+            Ok(re) => {
+                if matched.is_none() && !sample.is_empty() && re.is_match(sample) {
+                    matched = Some(at + 1);
+                }
+            }
+            Err(err) => errors.push(json!({ "line": at + 1, "error": err.to_string() })),
+        }
+    }
+    json!({ "errors": errors, "matched": matched })
+}
+
 /// How much the history holds, read off the index alone — no record is
 /// opened, so it costs one storage read.
 fn stats(host: &impl Host) -> Result<Value, String> {
@@ -514,7 +658,7 @@ fn stats(host: &impl Host) -> Result<Value, String> {
     let items = &index.items;
     Ok(json!({
         "kept": items.len(),
-        "limit": prefs(host).rules.size,
+        "keep": prefs(host).keep,
         "pinned": items.iter().filter(|e| e.pin.is_some()).count(),
         "images": items.iter().filter(|e| e.kind == history::Kind::Image).count(),
         // Milliseconds, Lumi's clock; null for an empty history.
@@ -628,13 +772,28 @@ mod tests {
     #[test]
     fn eviction_removes_records_and_blobs() {
         let host = Memory::default();
-        *host.settings.borrow_mut() = json!({ "size": "1" });
+        *host.settings.borrow_mut() = json!({ "keep": "5m" });
         host.blobs.borrow_mut().insert("img".into());
         on_event(&host, "clipboard", &image_event("h1", "img")).unwrap();
-        on_event(&host, "clipboard", &event("h2", 2, "newer")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 6 * 60_000, "newer")).unwrap();
         assert_eq!(list(&host).len(), 1);
         assert!(!host.kv.borrow().contains_key("item.id1"));
         assert!(host.blobs.borrow().is_empty());
+    }
+
+    #[test]
+    fn opening_the_panel_drops_what_aged_out_without_a_copy() {
+        let host = Memory::default();
+        *host.settings.borrow_mut() = json!({ "keep": "1h" });
+        on_event(&host, "clipboard", &event("h1", 1_000, "old")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 50 * 60_000, "newer")).unwrap();
+        host.now.set(61 * 60_000 + 1_000);
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        let rows = list(&host);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0]["title"], "newer");
+        assert!(!host.kv.borrow().contains_key("item.id1"));
+        assert_eq!(settings(&host, &json!({"kind": "stats"})).unwrap()["keep"], "1h");
     }
 
     #[test]
@@ -802,7 +961,7 @@ mod tests {
     fn stats_count_the_index_and_the_dashboard_can_only_read() {
         let host = Memory::default();
         let empty = dashboard(&host, &json!({"kind": "stats"})).unwrap();
-        assert_eq!(empty, json!({"kept": 0, "limit": 200, "pinned": 0, "images": 0, "since": null}));
+        assert_eq!(empty, json!({"kept": 0, "keep": "3mo", "pinned": 0, "images": 0, "since": null}));
 
         host.blobs.borrow_mut().insert("img".into());
         on_event(&host, "clipboard", &event("h1", 5, "one")).unwrap();
@@ -810,7 +969,7 @@ mod tests {
         on_event(&host, "clipboard", &image_event("h3", "img")).unwrap();
         ui(&host, &json!({"kind": "pin", "id": "id1"})).unwrap();
         let stats = dashboard(&host, &json!({"kind": "stats"})).unwrap();
-        assert_eq!(stats, json!({"kept": 3, "limit": 200, "pinned": 1, "images": 1, "since": 1}));
+        assert_eq!(stats, json!({"kept": 3, "keep": "3mo", "pinned": 1, "images": 1, "since": 1}));
 
         assert!(dashboard(&host, &json!({"kind": "clear"})).is_err());
         assert_eq!(list(&host).len(), 3);
@@ -826,7 +985,62 @@ mod tests {
         assert_eq!(posts.len(), 2, "an unknown event tells nobody: {posts:?}");
         assert!(posts.iter().all(|(window, _)| window == DASHBOARD));
         let last: Value = serde_json::from_str(&posts[1].1).unwrap();
-        assert_eq!(last, json!({"kept": 1, "limit": 200, "pinned": 1, "images": 0, "since": 5}));
+        assert_eq!(last, json!({"kept": 1, "keep": "3mo", "pinned": 1, "images": 0, "since": 5}));
+    }
+
+    #[test]
+    fn the_settings_tab_offers_each_app_seen_once_newest_first() {
+        let host = Memory::default();
+        // Just before the fixture's own copy, so none of them has aged out.
+        on_event(&host, "clipboard", &event("h1", 1790000000000 - 2, "one")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 1790000000000 - 1, "two")).unwrap();
+        on_event(&host, "clipboard", FIXTURE).unwrap();
+        let apps = settings(&host, &json!({"kind": "apps"})).unwrap()["apps"].clone();
+        let names: Vec<&str> = apps.as_array().unwrap().iter().map(|a| a["name"].as_str().unwrap()).collect();
+        assert_eq!(names.iter().filter(|n| **n == "Notes").count(), 1, "{apps}");
+        assert!(names.contains(&"Safari"), "{apps}");
+    }
+
+    #[test]
+    fn the_theme_is_put_on_the_panel_and_dark_glass_is_always_dark() {
+        let host = Memory::default();
+        *host.settings.borrow_mut() = json!({"theme": "light", "appearance": "sidebar"});
+        settings(&host, &json!({"kind": "dress"})).unwrap();
+        *host.settings.borrow_mut() = json!({"theme": "light", "appearance": "hud"});
+        settings(&host, &json!({"kind": "dress"})).unwrap();
+        let opened = host.opened.borrow();
+        assert_eq!(
+            *opened,
+            vec![
+                format!("material {PANEL} sidebar"),
+                format!("theme {PANEL} light"),
+                format!("material {PANEL} hud"),
+                format!("theme {PANEL} dark"),
+            ]
+        );
+        drop(opened);
+        assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["theme"], "dark");
+        assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["searchMode"], "mixed");
+        *host.settings.borrow_mut() = json!({"search": "exact"});
+        assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["searchMode"], "exact");
+    }
+
+    #[test]
+    fn the_settings_tab_tries_patterns_with_the_history_s_own_engine() {
+        let host = Memory::default();
+        let ask = |patterns: &str, sample: &str| {
+            settings(&host, &json!({"kind": "tryPatterns", "patterns": patterns, "sample": sample})).unwrap()
+        };
+        let tried = ask("^sk-\\w+$\n\n\\b\\d{6}\\b", "code 482913");
+        assert_eq!(tried["matched"], 3);
+        assert_eq!(tried["errors"], json!([]));
+        let tried = ask("(open\nfine", "fine");
+        assert_eq!(tried["errors"][0]["line"], 1);
+        assert_eq!(tried["matched"], 2);
+        assert_eq!(ask("x", "")["matched"], Value::Null);
+        let long = "a".repeat(MAX_TRY + 1);
+        assert!(settings(&host, &json!({"kind": "tryPatterns", "patterns": long, "sample": ""})).is_err());
+        assert!(settings(&host, &json!({"kind": "paste", "id": "x"})).is_err());
     }
 
     #[test]

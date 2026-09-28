@@ -41,6 +41,18 @@ let rows: Entry[] = [
 ];
 
 let previewWidth: number | null = null;
+// What Lumi keeps for `GET /__lumi__/settings`, as text the way it stores it.
+let settings: Record<string, string> = {
+  keep: "3mo",
+  theme: "system",
+  search: new URLSearchParams(location.search).get("search") ?? "mixed",
+  pasteOnSelect: "true",
+  ocr: "true",
+  sort: "last",
+  appearance: "popover",
+  ignoreApps: "com.example.terminal",
+  ignorePatterns: "^sk-[A-Za-z0-9]{20,}$\n\\b\\d{6}\\b",
+};
 let trash: Entry[] = [];
 
 const PIN_LETTERS = "bdefghijklmnorstuy";
@@ -64,6 +76,7 @@ function answer(request: Request): unknown {
         items: sorted(),
         pasteOnSelect: true,
         previewWidth,
+        searchMode: (settings.search ?? "mixed") as "exact" | "fuzzy" | "regexp" | "mixed",
         appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
       };
     case "preview": {
@@ -139,12 +152,36 @@ function answer(request: Request): unknown {
       previewWidth = request.width;
       say(`would keep the preview ${request.width}px wide`);
       return {};
+    case "apps": {
+      const seen = new Map<string, string>();
+      for (const r of [...rows].sort((a, b) => b.last - a.last))
+        if (r.appName) seen.set(`com.example.${r.appName.toLowerCase()}`, r.appName);
+      return { apps: [...seen].map(([id, name]) => ({ id, name })) };
+    }
+    case "dress":
+      say(`would put ${settings.appearance} glass, ${settings.theme} theme on the panel`);
+      return {};
+    case "tryPatterns": {
+      // JavaScript's RegExp stands in for the extension's regex-lite.
+      const errors: { line: number; error: string }[] = [];
+      let matched: number | null = null;
+      request.patterns.split("\n").forEach((raw, i) => {
+        const line = raw.trim();
+        if (!line) return;
+        try {
+          if (matched === null && request.sample && new RegExp(line).test(request.sample)) matched = i + 1;
+        } catch (err) {
+          errors.push({ line: i + 1, error: err instanceof Error ? err.message : String(err) });
+        }
+      });
+      return { errors, matched };
+    }
     case "stats": {
       // `?empty` shows the About page as a fresh install sees it.
       const shown = new URLSearchParams(location.search).has("empty") ? [] : rows;
       return {
         kept: shown.length,
-        limit: 200,
+        keep: settings.keep ?? "3mo",
         pinned: shown.filter((r) => r.pin).length,
         images: shown.filter((r) => r.kind === "image").length,
         since: shown.length ? Math.min(...shown.map((r) => r.first)) : null,
@@ -164,6 +201,14 @@ window.fetch = async (input, init) => {
   if (url.endsWith("/__lumi__/drag")) {
     say("would hand the drag to macOS");
     return new Response(null, { status: 204 });
+  }
+  if (url.endsWith("/__lumi__/settings")) {
+    if (init?.method === "PUT") {
+      settings = JSON.parse(String(init.body));
+      say("saved settings");
+      return new Response(null, { status: 204 });
+    }
+    return new Response(JSON.stringify(settings), { status: 200 });
   }
   if (!url.endsWith("/__lumi__/call")) return real(input, init);
   try {

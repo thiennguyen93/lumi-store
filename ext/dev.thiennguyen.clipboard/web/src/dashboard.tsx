@@ -2,7 +2,7 @@ import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { call } from "./bridge";
 import { CopyGlyph } from "./icons";
-import type { Stats } from "./types";
+import { KEEP_LABELS, type Stats } from "./types";
 import "./pages.css";
 
 // Same as the panel: `pnpm dev` answers the bridge from a mock, which the
@@ -60,7 +60,7 @@ function isStats(value: unknown): value is Stats {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
-    ["kept", "limit", "pinned", "images"].every((k) => typeof v[k] === "number") &&
+    ["kept", "pinned", "images"].every((k) => typeof v[k] === "number") &&
     (v.since === null || typeof v.since === "number")
   );
 }
@@ -68,7 +68,7 @@ function isStats(value: unknown): value is Stats {
 function same(a: Stats, b: Stats): boolean {
   return (
     a.kept === b.kept &&
-    a.limit === b.limit &&
+    a.keep === b.keep &&
     a.pinned === b.pinned &&
     a.images === b.images &&
     a.since === b.since
@@ -76,16 +76,14 @@ function same(a: Stats, b: Stats): boolean {
 }
 
 function Tiles({ stats }: { stats: Stats | null }) {
-  const full = stats ? Math.min(1, stats.kept / Math.max(1, stats.limit)) : 0;
   return (
     <div className="tiles">
       <div className="tile">
         <span className="label">Kept</span>
         <span className="value">
           {stats ? stats.kept : "—"}
-          {stats && <span className="of"> / {stats.limit}</span>}
         </span>
-        <span className="bar"><span style={{ width: `${full * 100}%` }} /></span>
+        {stats && <span className="of">for {KEEP_LABELS[stats.keep] ?? stats.keep}</span>}
       </div>
       <div className="tile">
         <span className="label">Pinned</span>
