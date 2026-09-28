@@ -80,6 +80,10 @@
   let layout = "ansi";
   /** Caps Lock has been heard as Lumi's Hyper key rather than as itself. */
   let hyper = false;
+  /** Whether Lumi's Hyper key is on, as the extension's code last said —
+   *  undefined until it has answered, or when the page is opened outside
+   *  Lumi and there is nobody to ask. */
+  let hyperOn;
   /** code -> the elements drawing it (ISO's Return is two). */
   let keys = new Map();
   const seen = new Set();
@@ -150,6 +154,12 @@
         element.classList.toggle("chatter", chatter.has(code));
       }
     }
+    const how = document.getElementById("caps-how");
+    const showHow = hyperOn !== undefined && !seen.has("CapsLock");
+    for (const element of document.querySelectorAll(".caps-how")) element.hidden = !showHow;
+    how.textContent = hyperOn
+      ? "Lumi's Hyper key has it: tap it on its own, or hold it and press a key no Hyper shortcut uses."
+      : "Press and hold it for a moment — macOS ignores a very quick tap on purpose.";
     for (const element of keys.get("CapsLock") || []) {
       element.title = hyper
         ? "Caps Lock works — heard as Lumi's Hyper key"
@@ -310,9 +320,27 @@
     true,
   );
 
+  /** Ask the extension's own code whether Lumi's Hyper key is on. On load
+   *  and whenever the page gets the keyboard back, since the person may
+   *  have flipped it meanwhile — both moments when the page is in front,
+   *  which is the only time Lumi lets it call. A refusal leaves the last
+   *  answer standing. */
+  function askHyper() {
+    fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "hyper" }) })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((answer) => {
+        if (answer && typeof answer.hyperKeyEnabled === "boolean") {
+          hyperOn = answer.hyperKeyEnabled;
+          paint();
+        }
+      })
+      .catch(() => {});
+  }
+
   // Keys held while the page loses focus never send their up here.
   const focusChanged = () => {
     const focused = document.hasFocus();
+    if (focused && hint.hidden === false) askHyper();
     hint.hidden = focused;
     if (!focused && down.size) {
       down.clear();
@@ -353,6 +381,7 @@
 
   draw();
   focusChanged();
+  askHyper();
   fetch("/__lumi__/settings")
     .then((response) => (response.ok ? response.json() : {}))
     .then((settings) => {
