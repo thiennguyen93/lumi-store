@@ -221,12 +221,37 @@
     (event.ctrlKey && !down.has("ControlLeft") && !down.has("ControlRight")) ||
     (event.altKey && !down.has("AltLeft") && !down.has("AltRight"));
 
+  /** Caps Lock's lock state as the last event reported it, or undefined
+   *  before any event has. */
+  let capsLocked;
+
+  /** Whether an event is Lumi's Hyper key tapped on its own. With the tap
+   *  set to toggle Caps Lock, Lumi flips the lock through IOKit rather than
+   *  sending a key, and the flip reaches the page as a key event with no
+   *  key at all — `Unidentified`, both code and key. What marks it as Caps
+   *  Lock is the lock state having changed across it; a first event, with
+   *  nothing to compare, is given the benefit, since nothing else on a
+   *  MacBook arrives with no code. */
+  function capsFlipped(event) {
+    const now = event.getModifierState("CapsLock");
+    const unidentified =
+      (event.code === "" || event.code === "Unidentified") && event.key === "Unidentified";
+    const flipped = unidentified && (capsLocked === undefined || now !== capsLocked);
+    capsLocked = now;
+    return flipped;
+  }
+
   document.addEventListener(
     "keydown",
     (event) => {
       event.preventDefault();
       const code = event.code;
       lastOut.textContent = describe(event);
+      if (capsFlipped(event)) {
+        hyper = true;
+        lastOut.textContent = "Caps Lock — tapped as Lumi's Hyper key";
+        return flash("CapsLock");
+      }
       if (code === "CapsLock") return flash(code);
       // No Mac keyboard has an F18 key: Lumi's Hyper key remaps Caps Lock
       // onto it, and an F18 that reaches the page is that remap with nobody
@@ -262,6 +287,12 @@
     (event) => {
       event.preventDefault();
       const code = event.code;
+      // The lock turning off arrives as an up, the on as a down.
+      if (capsFlipped(event)) {
+        hyper = true;
+        lastOut.textContent = "Caps Lock — tapped as Lumi's Hyper key";
+        return flash("CapsLock");
+      }
       if (code === "CapsLock") return flash(code);
       if (code === "F18") return;
       down.delete(code);
