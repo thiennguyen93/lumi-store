@@ -176,10 +176,20 @@
     }
   }
 
+  /** The line under the board: the physical key, the character, and the
+   *  modifiers the event carried — the last is what says whether a key
+   *  arrived stamped by Lumi's Hyper key, so it is shown rather than
+   *  inferred silently. */
   function describe(event) {
-    const where = keys.has(event.code) ? "" : " (not on this layout)";
+    const where = keys.has(event.code) || event.code === "F18" ? "" : " (not on this layout)";
     const key = event.key === " " ? "Space" : event.key;
-    return `${event.code || "?"} · ${key}${where}`;
+    const held = [
+      event.ctrlKey && "⌃",
+      event.altKey && "⌥",
+      event.shiftKey && "⇧",
+      event.metaKey && "⌘",
+    ].filter(Boolean).join("");
+    return `${event.code || "?"} · ${key}${held ? ` · ${held}` : ""}${where}`;
   }
 
   /** Caps Lock is heard once per press — a down turning it on, an up
@@ -218,6 +228,15 @@
       const code = event.code;
       lastOut.textContent = describe(event);
       if (code === "CapsLock") return flash(code);
+      // No Mac keyboard has an F18 key: Lumi's Hyper key remaps Caps Lock
+      // onto it, and an F18 that reaches the page is that remap with nobody
+      // swallowing it — Lumi's Hyper key switched off or Lumi not running,
+      // the mapping left behind. Either way it is Caps Lock, pressed.
+      if (code === "F18") {
+        hyper = true;
+        lastOut.textContent += " — Caps Lock, remapped by Lumi's Hyper key";
+        return flash("CapsLock");
+      }
       if (event.repeat) return;
       if (!MODIFIERS.has(code) && hyperStamped(event)) {
         hyper = true;
@@ -244,6 +263,7 @@
       event.preventDefault();
       const code = event.code;
       if (code === "CapsLock") return flash(code);
+      if (code === "F18") return;
       down.delete(code);
       lastUp.set(code, event.timeStamp);
       // macOS sends no key-up for a key released while ⌘ is held, so the
