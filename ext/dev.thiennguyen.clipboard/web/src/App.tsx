@@ -7,7 +7,8 @@
 //
 // Everything a row shows was copied from somewhere, so none of it is ever
 // put into the page as markup; React renders it as text, and nothing here
-// uses dangerouslySetInnerHTML.
+// uses dangerouslySetInnerHTML. A rich copy's HTML is parsed inert and
+// rebuilt from a short list of tags and styles (richText.tsx).
 
 import { type KeyboardEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { call, message } from "./bridge";
@@ -346,9 +347,13 @@ export function App() {
     choose(FILTERS[(at + by + FILTERS.length) % FILTERS.length] ?? "all");
   };
 
-  const move = (by: number) => {
-    if (!shown.length) return;
-    setSelected((at) => Math.max(0, Math.min(shown.length - 1, at + by)));
+  /** ↓ / ↑ go round the ends; a page stops at them. */
+  const move = (by: number, round = false) => {
+    const count = shown.length;
+    if (!count) return;
+    setSelected((at) =>
+      round ? (((at + by) % count) + count) % count : Math.max(0, Math.min(count - 1, at + by)),
+    );
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -359,8 +364,8 @@ export function App() {
 
     const cmd = event.metaKey && !event.ctrlKey;
     const key = event.key;
-    if (key === "ArrowDown") move(1);
-    else if (key === "ArrowUp") move(-1);
+    if (key === "ArrowDown") move(1, true);
+    else if (key === "ArrowUp") move(-1, true);
     else if (key === "PageDown") move(8);
     else if (key === "PageUp") move(-8);
     else if (key === "Enter") paste(event.altKey);

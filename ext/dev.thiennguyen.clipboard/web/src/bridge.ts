@@ -11,7 +11,8 @@ import type { Entry, ListAnswer, Request, Stats } from "./types";
 
 type Answers = {
   list: ListAnswer;
-  preview: { text: string };
+  /** `html`: a rich copy's markup, to draw in a sandbox. */
+  preview: { text: string; html?: string | null };
   paste: Record<string, never>;
   pin: { pin: string | null };
   delete: Record<string, never>;

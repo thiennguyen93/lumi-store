@@ -17,6 +17,7 @@
 
 pub mod history;
 pub mod host;
+pub mod rtf;
 
 use history::{Copy, Index, Order, Outcome, Rules};
 use host::{Host, PutError};
@@ -338,7 +339,10 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             // neither of which is what the preview pane should show; the
             // record is. Asked per selected row, not per keystroke.
             let record = read_record(host, &id()?)?;
-            Ok(json!({ "text": history::preview_text(&record.items) }))
+            Ok(json!({
+                "text": history::preview_text(&record.items),
+                "html": history::preview_html(&record.items),
+            }))
         }
         "paste" => {
             let record = read_record(host, &id()?)?;
@@ -661,6 +665,7 @@ mod tests {
         assert_eq!(*host.keystrokes.borrow(), [true, true]);
         let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
         assert_eq!(shown["text"], "bold");
+        assert_eq!(shown["html"], "<b>bold</b>");
     }
 
     #[test]

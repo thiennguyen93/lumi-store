@@ -467,6 +467,24 @@ body {
   user-select: text;
 }
 .card .body.rich { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 13px; }
+/* A rich copy's formatting (richText.tsx), on the glass like the rest. */
+.card .body.rich-html {
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  white-space: normal;
+}
+.rich-html :is(p, ul, ol, pre, blockquote, table, h1, h2, h3, h4, h5, h6) { margin: 0 0 0.5em; }
+.rich-html :is(ul, ol) { padding-left: 1.4em; }
+.rich-html h1 { font-size: 1.35em; }
+.rich-html h2 { font-size: 1.2em; }
+.rich-html :is(h3, h4, h5, h6) { font-size: 1.05em; }
+.rich-html :is(pre, code, kbd) { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+.rich-html pre { white-space: pre-wrap; }
+.rich-html blockquote { padding-left: 0.8em; border-left: 2px solid var(--cb-line); }
+.rich-html .link { color: var(--cb-accent, #3478f6); text-decoration: underline; }
+.rich-html mark { color: inherit; background: color-mix(in srgb, #ffd60a 45%, transparent); }
+.rich-html :is(td, th) { padding: 2px 6px; border: 1px solid var(--cb-line); }
+.rich-html table { border-collapse: collapse; }
+.rich-html hr { border: 0; border-top: 1px solid var(--cb-line); }
 .card .picture {
   max-height: 180px;
   border-radius: 6px;

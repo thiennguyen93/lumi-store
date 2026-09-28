@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { blobUrl, call } from "./bridge";
 import { KindGlyph } from "./icons";
+import { RichText } from "./richText";
 import { HEX, KIND_WORDS } from "./Row";
 import { ago } from "./search";
 import type { Entry } from "./types";
@@ -13,15 +14,15 @@ const SETTLE_MS = 90;
 export function Preview({ row }: { row: Entry | undefined }) {
   // The full text, keyed by the row it belongs to, so a late answer for a
   // row the selection has already left is never drawn under another.
-  const [full, setFull] = useState<{ id: string; text: string } | null>(null);
+  const [full, setFull] = useState<{ id: string; text: string; html?: string | null } | null>(null);
 
   useEffect(() => {
     if (!row || row.kind === "image") return;
     let live = true;
     const timer = setTimeout(async () => {
       try {
-        const { text } = await call({ kind: "preview", id: row.id });
-        if (live && text) setFull({ id: row.id, text });
+        const { text, html } = await call({ kind: "preview", id: row.id });
+        if (live && (text || html)) setFull({ id: row.id, text, html });
       } catch {
         // The title stays in the pane; a preview is not worth an error.
       }
@@ -36,7 +37,9 @@ export function Preview({ row }: { row: Entry | undefined }) {
 
   // The title until the full text arrives, so the pane is never empty
   // while the extension is asked.
-  const text = full?.id === row.id ? full.text : row.title;
+  const mine = full?.id === row.id ? full : null;
+  const text = mine?.text || row.title;
+  const html = row.kind === "rich" ? mine?.html : null;
 
   const from = row.appName || row.app;
   const times = row.count > 1 ? `${row.count}×` : "once";
@@ -59,7 +62,11 @@ export function Preview({ row }: { row: Entry | undefined }) {
         {row.kind === "color" && HEX.test(row.title) && (
           <div className="chip" style={{ background: row.title }} />
         )}
-        {row.kind !== "image" && <div className={row.kind === "rich" ? "body rich" : "body"}>{text}</div>}
+        {html ? (
+          <RichText key={row.id} html={html} />
+        ) : (
+          row.kind !== "image" && <div className={row.kind === "rich" ? "body rich" : "body"}>{text}</div>
+        )}
         <footer className="card-foot">
           Copied {ago(row.last)} · {times}
         </footer>

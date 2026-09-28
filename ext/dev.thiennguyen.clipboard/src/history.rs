@@ -551,6 +551,22 @@ pub fn preview_text(items: &[Vec<Rep>]) -> String {
     text.chars().take(PREVIEW_CHARS).collect()
 }
 
+/// Past this, a copy's HTML is not previewed: a whole web page copied
+/// carries its styles and scripts, and the pane shows a few lines.
+pub const PREVIEW_HTML_BYTES: usize = 256 * 1024;
+
+/// The markup the preview pane draws a rich copy with: its HTML as copied,
+/// or its RTF turned into HTML. `None` for anything else, or HTML too big
+/// to be worth the bridge. The page draws it in a sandbox — it is whatever
+/// the source app put on the pasteboard.
+pub fn preview_html(items: &[Vec<Rep>]) -> Option<String> {
+    let rep = |uti: &str| items.iter().flatten().find(|rep| rep.uti == uti).and_then(|rep| rep.text.as_deref());
+    if let Some(html) = rep(uti::HTML).filter(|html| html.len() <= PREVIEW_HTML_BYTES) {
+        return Some(html.to_string());
+    }
+    rep(uti::RTF).and_then(crate::rtf::to_html)
+}
+
 fn plain_text(items: &[Vec<Rep>]) -> Option<&str> {
     items
         .iter()
