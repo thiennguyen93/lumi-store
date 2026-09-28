@@ -215,8 +215,8 @@ pub fn fetch(request: &Request) -> Result<Response, String> {
 /// `POST /__lumi__/call` with any string, which arrives at your
 /// [`Guest::run_ui`] under the same budget and capability gate as a
 /// command. A borderless window can be dragged by its page: `POST
-/// /__lumi__/move` with `{ "dx", "dy" }` in points moves it that far,
-/// while it is the window in front. A name the manifest does not declare
+/// /__lumi__/drag` on a press hands that press to macOS as a window
+/// drag, while it is the window in front. A name the manifest does not declare
 /// is refused here, by name — the declaration is the grant.
 pub fn open_window(name: &str) -> Result<(), String> {
     lumi::ext::ui::open_window(name)
