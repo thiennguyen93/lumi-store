@@ -449,6 +449,24 @@
     paint();
   });
 
+  // F1–F12 taken from macOS's shortcuts by Lumi (`function-keys = true`):
+  // while the tab is in front they arrive as `lumi:key` rather than as key
+  // events, so F11 — Show Desktop — can be tested without the window being
+  // swept aside. Counted and chatter-checked like any key.
+  window.addEventListener("lumi:key", (event) => {
+    const detail = event.detail || {};
+    if (typeof detail.code !== "string" || !keys.has(detail.code)) return;
+    const now = performance.now();
+    if (detail.down) {
+      lastOut.textContent = `${detail.code} · taken from macOS by Lumi`;
+      press(detail.code, { repeat: false, timeStamp: now });
+    } else {
+      down.delete(detail.code);
+      lastUp.set(detail.code, now);
+      paint();
+    }
+  });
+
   /** Ask the extension's own code whether Lumi's Hyper key is on. On load
    *  and whenever the page gets the keyboard back, since the person may
    *  have flipped it meanwhile — both moments when the page is in front,
