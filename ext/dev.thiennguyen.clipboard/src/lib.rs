@@ -255,7 +255,34 @@ fn on_ocr(host: &impl Host, payload: &str) -> Result<(), String> {
         return Err(format!("OCR event version {} is newer than this build", ocr.v));
     }
     update_index(host, |index| Ok(history::add_ocr(index, &ocr.hash, &ocr.text)))?;
+    // The text as read, into the record, for Copy text in image. Best
+    // effort: the row is findable by it already, which is the part that
+    // must not fail.
+    if !ocr.text.trim().is_empty() {
+        let _ = keep_ocr(host, &ocr.hash, &ocr.text);
+    }
     Ok(())
+}
+
+fn keep_ocr(host: &impl Host, hash: &str, text: &str) -> Result<(), String> {
+    let (index, _) = read_index(host)?;
+    let Some(entry) = index.items.iter().find(|e| e.hash == hash) else {
+        return Ok(());
+    };
+    let key = record_key(&entry.id);
+    for _ in 0..CAS_ATTEMPTS {
+        let Some(stored) = host.get(&key)? else { return Ok(()) };
+        let mut record: history::Record =
+            serde_json::from_str(&stored.value).map_err(|err| err.to_string())?;
+        record.ocr = Some(text.to_string());
+        let value = serde_json::to_string(&record).map_err(|err| err.to_string())?;
+        match host.put(&key, &value, Some(stored.rev)) {
+            Ok(_) => return Ok(()),
+            Err(PutError::Conflict) => continue,
+            Err(PutError::Failed(err)) => return Err(err),
+        }
+    }
+    Err("the record was busy".to_string())
 }
 
 fn read_record(host: &impl Host, id: &str) -> Result<history::Record, String> {
@@ -323,22 +350,43 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             tell_about(host);
             Ok(json!({ "pin": pin }))
         }
+        // One id, or `ids` — ⌘⇧Z doing a Delete all again, exactly the
+        // rows it took the first time.
         "delete" => {
-            let id = id()?;
+            let ids: Vec<String> = match request["ids"].as_array() {
+                Some(ids) => ids.iter().filter_map(|id| id.as_str().map(str::to_string)).collect(),
+                None => vec![id()?],
+            };
             // Into the trash, not gone: ⌘Z may want it back before the
             // panel closes. Its record and blobs go when the panel next opens.
-            update_index(host, |index| Ok(history::trash(index, &id)))?;
+            update_index(host, |index| {
+                for id in &ids {
+                    history::trash(index, id);
+                }
+                Ok(())
+            })?;
             tell_about(host);
             Ok(json!({}))
         }
+        // One id, or `ids` for what a Delete all took.
         "restore" => {
-            let id = id()?;
-            let restored = update_index(host, |index| Ok(history::restore(index, &id)))?;
-            if let history::Restored::Surplus(entry) = &restored {
-                forget(host, std::slice::from_ref(entry));
+            let ids: Vec<String> = match request["ids"].as_array() {
+                Some(ids) => ids.iter().filter_map(|id| id.as_str().map(str::to_string)).collect(),
+                None => vec![id()?],
+            };
+            let outcomes = update_index(host, |index| {
+                Ok(ids.iter().map(|id| history::restore(index, id)).collect::<Vec<_>>())
+            })?;
+            let mut back = 0;
+            for outcome in &outcomes {
+                match outcome {
+                    history::Restored::Back => back += 1,
+                    history::Restored::Surplus(entry) => forget(host, std::slice::from_ref(entry)),
+                    history::Restored::Gone => {}
+                }
             }
             tell_about(host);
-            Ok(json!({ "restored": restored == history::Restored::Back }))
+            Ok(json!({ "restored": back == ids.len() && back > 0, "count": back }))
         }
         "setPin" => {
             let id = id()?;
@@ -351,11 +399,51 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             tell_about(host);
             Ok(json!({ "pin": pin }))
         }
-        "clear" => {
-            let gone = update_index(host, |index| Ok(history::clear_unpinned(index)))?;
-            forget(host, &gone);
+        // Delete all unpinned, and delete all: into the trash, like one
+        // delete, so ⌘Z can bring every row back until the panel reopens.
+        "clear" | "clearAll" => {
+            let keep_pins = request["kind"] == "clear";
+            let ids = update_index(host, |index| Ok(history::trash_all(index, keep_pins)))?;
             tell_about(host);
-            Ok(json!({ "removed": gone.len() }))
+            Ok(json!({ "ids": ids }))
+        }
+        // Put an item on the pasteboard and put the panel away — no ⌘V.
+        "copy" => {
+            let record = read_record(host, &id()?)?;
+            let items = if request["plain"].as_bool() == Some(true) {
+                history::plain(&record.items)
+            } else {
+                record.items
+            };
+            if items.is_empty() {
+                return Err("That item has no plain text to copy.".to_string());
+            }
+            host.paste(&items, false)?;
+            Ok(json!({}))
+        }
+        "copyText" => {
+            let record = read_record(host, &id()?)?;
+            let text = record
+                .ocr
+                .filter(|text| !text.trim().is_empty())
+                .ok_or_else(|| "Lumi read no text in that image.".to_string())?;
+            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None };
+            host.paste(&[vec![rep]], false)?;
+            Ok(json!({}))
+        }
+        "open" => {
+            let record = read_record(host, &id()?)?;
+            let url = history::link_of(&record.items).ok_or_else(|| "That item is not a web address.".to_string())?;
+            host.open_url(&url)?;
+            host.close_panel()?;
+            Ok(json!({}))
+        }
+        "reveal" => {
+            let record = read_record(host, &id()?)?;
+            let file = history::file_url_of(&record.items).ok_or_else(|| "That item is not a file.".to_string())?;
+            host.reveal(&file)?;
+            host.close_panel()?;
+            Ok(json!({}))
         }
         "previewWidth" => {
             let width = request["width"]
@@ -576,6 +664,57 @@ mod tests {
         ui(&host, &json!({"kind": "pin", "id": "id2"})).unwrap();
         ui(&host, &json!({"kind": "clear"})).unwrap();
         assert_eq!(list(&host).len(), 1, "a pin survives Clear");
+    }
+
+    #[test]
+    fn a_delete_all_is_undone_in_one_step() {
+        let host = Memory::default();
+        for (hash, at) in [("h1", 1), ("h2", 2), ("h3", 3)] {
+            on_event(&host, "clipboard", &event(hash, at, hash)).unwrap();
+        }
+        ui(&host, &json!({"kind": "pin", "id": "id1"})).unwrap();
+        let unpinned = ui(&host, &json!({"kind": "clear"})).unwrap();
+        assert_eq!(unpinned["ids"].as_array().unwrap().len(), 2);
+        assert_eq!(list(&host).len(), 1, "the pin stays");
+        let all = ui(&host, &json!({"kind": "clearAll"})).unwrap();
+        assert_eq!(all["ids"], json!(["id1"]));
+        assert!(list(&host).is_empty());
+        let back = ui(&host, &json!({"kind": "restore", "ids": ["id1", "id2", "id3"]})).unwrap();
+        assert_eq!(back["count"], 3);
+        assert_eq!(list(&host).len(), 3);
+        assert_eq!(list(&host)[0]["pin"], "b", "the pin came back pinned");
+        // ⌘⇧Z: the same rows again, by id.
+        ui(&host, &json!({"kind": "delete", "ids": ["id2", "id3"]})).unwrap();
+        assert_eq!(list(&host).len(), 1);
+    }
+
+    #[test]
+    fn open_reveal_and_copy_text_take_only_their_kind() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "https://example.com/x")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 2, "just words")).unwrap();
+        ui(&host, &json!({"kind": "open", "id": "id1"})).unwrap();
+        assert!(ui(&host, &json!({"kind": "open", "id": "id2"})).is_err());
+        assert!(ui(&host, &json!({"kind": "reveal", "id": "id2"})).is_err());
+        assert!(ui(&host, &json!({"kind": "copyText", "id": "id2"})).is_err());
+        assert_eq!(*host.opened.borrow(), ["open https://example.com/x"]);
+
+        ui(&host, &json!({"kind": "copy", "id": "id2"})).unwrap();
+        assert_eq!(*host.keystrokes.borrow(), [false], "copy is no ⌘V");
+    }
+
+    #[test]
+    fn the_text_read_in_an_image_is_kept_as_read() {
+        let host = Memory::default();
+        host.blobs.borrow_mut().insert("img".into());
+        on_event(&host, "clipboard", &image_event("h1", "img")).unwrap();
+        assert_eq!(list(&host)[0]["ocr"], Value::Null, "no text read yet");
+        let ocr = json!({"v": 1, "hash": "h1", "text": "Invoice TOTAL 42"}).to_string();
+        on_event(&host, "clipboard-ocr", &ocr).unwrap();
+        assert_eq!(list(&host)[0]["ocr"], true);
+        ui(&host, &json!({"kind": "copyText", "id": "id1"})).unwrap();
+        let pasted = host.pasted.borrow();
+        assert_eq!(pasted[0][0][0].text.as_deref(), Some("Invoice TOTAL 42"));
     }
 
     #[test]

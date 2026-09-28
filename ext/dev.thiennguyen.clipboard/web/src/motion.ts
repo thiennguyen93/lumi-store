@@ -51,15 +51,23 @@ export function slide(list: HTMLElement | null, from: Map<string, number>) {
 /** Fold a row away before it is deleted: a nudge left, fading, its height
  *  closing so the rows below rise into the gap. Resolves when done; the
  *  returned `undo` puts it back if the delete is refused. */
-export async function fold(row: HTMLElement | null): Promise<() => void> {
+export async function fold(row: HTMLElement | null, delay = 0): Promise<() => void> {
   if (!row || !moving()) return () => {};
   const animation = row.animate(
     [
       { opacity: 1, height: `${row.offsetHeight}px`, transform: "none" },
       { opacity: 0, height: "0px", transform: "translateX(-16px)" },
     ],
-    { duration: FOLD_MS, easing: "ease-in", fill: "forwards" },
+    { duration: FOLD_MS, delay, easing: "ease-in", fill: "forwards" },
   );
   await animation.finished.catch(() => {});
   return () => animation.cancel();
+}
+
+/** `fold` for many rows at once — a Delete all — each a beat after the one
+ *  above, the whole ripple held under a quarter second. */
+export async function foldAll(rows: HTMLElement[]): Promise<() => void> {
+  const step = rows.length > 1 ? Math.min(18, 240 / rows.length) : 0;
+  const undos = await Promise.all(rows.map((row, i) => fold(row, i * step)));
+  return () => undos.forEach((undo) => undo());
 }

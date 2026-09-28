@@ -11,8 +11,21 @@
 
 import { type KeyboardEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { call, message } from "./bridge";
-import { KindGlyph, LumiMark, SearchGlyph } from "./icons";
-import { fold, moving, slide, tops } from "./motion";
+import {
+  CopyGlyph,
+  ExternalGlyph,
+  FolderGlyph,
+  KindGlyph,
+  LumiMark,
+  PasteGlyph,
+  PinGlyph,
+  PlainGlyph,
+  ScanTextGlyph,
+  SearchGlyph,
+  TrashGlyph,
+} from "./icons";
+import { type Action, ActionsMenu } from "./ActionsMenu";
+import { foldAll, moving, slide, tops } from "./motion";
 import { Preview } from "./Preview";
 import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
 import { useWindowDrag } from "./windowDrag";
@@ -121,25 +134,58 @@ export function App() {
     });
   }, [act, current, reload]);
 
+  /** The rows on screen for these ids, for folding. */
+  const rowsOf = useCallback(
+    (ids: string[]) =>
+      ids
+        .map((id) => list.current?.querySelector<HTMLElement>(`.row[data-id="${CSS.escape(id)}"]`))
+        .filter((row): row is HTMLElement => Boolean(row)),
+    [],
+  );
+
+  /** Fold `ids` away, then `work` — which deletes them and answers which
+   *  went — onto the undo stack. Back as they were if it fails. */
+  const deleting = useCallback(
+    (ids: string[], work: () => Promise<string[]>) => {
+      if (folding.current) return;
+      void act(async () => {
+        folding.current = true;
+        const unfold = await foldAll(rowsOf(ids));
+        try {
+          const gone = await work();
+          if (gone.length) undos.current.push({ kind: "delete", ids: gone });
+          redos.current = [];
+          await reload(null);
+        } catch (err) {
+          unfold();
+          throw err;
+        } finally {
+          folding.current = false;
+        }
+      });
+    },
+    [act, reload, rowsOf],
+  );
+
   const remove = useCallback(() => {
-    if (!current || folding.current) return;
+    if (!current) return;
     const id = current.id;
-    void act(async () => {
-      folding.current = true;
-      const undo = await fold(document.getElementById(`row-${selected}`));
-      try {
-        await call({ kind: "delete", id });
-        undos.current.push({ kind: "delete", id });
-        redos.current = [];
-        await reload(null);
-      } catch (err) {
-        undo();
-        throw err;
-      } finally {
-        folding.current = false;
-      }
+    deleting([id], async () => {
+      await call({ kind: "delete", id });
+      return [id];
     });
-  }, [act, current, reload, selected]);
+  }, [current, deleting]);
+
+  /** Delete all — or all but the pins. Every row in the history, not only
+   *  the ones the search or filter shows. */
+  const removeAll = useCallback(
+    (keepPins: boolean) => {
+      const going = (rows ?? []).filter((row) => !(keepPins && row.pin)).map((row) => row.id);
+      if (!going.length) return;
+      deleting(going, async () => (await call({ kind: keepPins ? "clear" : "clearAll" })).ids);
+    },
+    [deleting, rows],
+  );
 
   /** ⌘Z: take back the last pin, unpin or delete — and the one before,
    *  and so on to when the panel opened. */
@@ -154,11 +200,17 @@ export function App() {
           setPopped(pin ? last.id : null);
           redos.current.push({ ...last, now: pin ?? last.now });
         } else {
-          const { restored } = await call({ kind: "restore", id: last.id });
-          if (restored) redos.current.push(last);
-          else setNotice("That item was copied again since, so the newer one stays.");
+          const { count } = await call({ kind: "restore", ids: last.ids });
+          if (count) redos.current.push(last);
+          if (count < last.ids.length) {
+            setNotice(
+              last.ids.length === 1
+                ? "That item was copied again since, so the newer one stays."
+                : "Some items were copied again since, so the newer ones stay.",
+            );
+          }
         }
-        await reload(last.id);
+        await reload(last.kind === "pin" ? last.id : (last.ids[0] ?? null));
       } catch (err) {
         slideFrom.current = null;
         throw err;
@@ -185,10 +237,9 @@ export function App() {
         return;
       }
       folding.current = true;
-      const row = list.current?.querySelector<HTMLElement>(`.row[data-id="${CSS.escape(next.id)}"]`) ?? null;
-      const unfold = await fold(row);
+      const unfold = await foldAll(rowsOf(next.ids));
       try {
-        await call({ kind: "delete", id: next.id });
+        await call({ kind: "delete", ids: next.ids });
         undos.current.push(next);
         await reload(null);
       } catch (err) {
@@ -198,7 +249,64 @@ export function App() {
         folding.current = false;
       }
     });
-  }, [act, reload]);
+  }, [act, reload, rowsOf]);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+    input.current?.focus();
+  }, []);
+
+  /** What ⌘K offers for the selected row, then for the whole history. */
+  const actions = useMemo((): Action[] => {
+    const row = current;
+    const run = (kind: "copy" | "copyText" | "open" | "reveal", plain?: boolean) => () => {
+      if (row) void act(() => call(kind === "copy" ? { kind, id: row.id, plain } : { kind, id: row.id }));
+    };
+    const unpinned = (rows ?? []).filter((r) => !r.pin).length;
+    const all = rows?.length ?? 0;
+    const textual = row && (row.kind === "text" || row.kind === "rich" || row.kind === "link");
+    return [
+      ...(row
+        ? [
+            { id: "paste", label: "Paste", glyph: <PasteGlyph />, keys: "↩", run: () => paste(false, row) },
+            ...(textual
+              ? [{ id: "plain", label: "Paste as plain text", glyph: <PlainGlyph />, keys: "⌥↩", run: () => paste(true, row) }]
+              : []),
+            { id: "copy", label: "Copy", glyph: <CopyGlyph />, run: run("copy") },
+            ...(row.ocr ? [{ id: "copyText", label: "Copy text in image", glyph: <ScanTextGlyph />, run: run("copyText") }] : []),
+            ...(row.kind === "link" ? [{ id: "open", label: "Open in browser", glyph: <ExternalGlyph />, run: run("open") }] : []),
+            ...(row.kind === "file" ? [{ id: "reveal", label: "Show in Finder", glyph: <FolderGlyph />, run: run("reveal") }] : []),
+            { id: "pin", label: row.pin ? "Unpin" : "Pin", glyph: <PinGlyph />, keys: "⌘P", run: togglePin },
+            { id: "delete", label: "Delete entry", glyph: <TrashGlyph />, keys: "⌘⌫", danger: true, run: remove },
+          ]
+        : []),
+      ...(unpinned && unpinned < all
+        ? [
+            {
+              id: "clear",
+              label: "Delete all unpinned…",
+              glyph: <TrashGlyph />,
+              danger: true,
+              confirm: `Press ↩ again to delete ${unpinned} ${unpinned === 1 ? "entry" : "entries"}`,
+              run: () => removeAll(true),
+            },
+          ]
+        : []),
+      ...(all
+        ? [
+            {
+              id: "clearAll",
+              label: "Delete all…",
+              glyph: <TrashGlyph />,
+              danger: true,
+              confirm: `Press ↩ again to delete all ${all} ${all === 1 ? "entry" : "entries"}`,
+              run: () => removeAll(false),
+            },
+          ]
+        : []),
+    ];
+  }, [act, current, paste, remove, removeAll, rows, togglePin]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -258,7 +366,8 @@ export function App() {
       } else {
         void call({ kind: "close" }).catch(() => {});
       }
-    } else if (cmd && key === "Backspace") remove();
+    } else if (cmd && key.toLowerCase() === "k") setMenuOpen(true);
+    else if (cmd && key === "Backspace") remove();
     // ⌘Z / ⌘⇧Z are the history's while there is something to take back or
     // do again; with nothing, they stay the search field's own text undo.
     else if (cmd && !event.shiftKey && key.toLowerCase() === "z" && undos.current.length) undo();
@@ -280,6 +389,8 @@ export function App() {
       {/* The breadcrumb is the panel's title bar: drag it to move the panel. */}
       <header className="crumbs" {...windowDrag}>
         <LumiMark />
+        <span className="brand">Lumi</span>
+        <span className="sep">›</span>
         <span>Clipboard History</span>
         <span className="sep">›</span>
         <span className="here">{FILTER_LABELS[filter]}</span>
@@ -360,13 +471,22 @@ export function App() {
           {notice}
         </p>
       )}
+      {menuOpen && <ActionsMenu actions={actions} onClose={closeMenu} />}
       <footer className="hints">
         <span><kbd className="cap quiet">↩</kbd> paste</span>
         <span><kbd className="cap quiet">⌥↩</kbd> plain</span>
         <span><kbd className="cap quiet">⌘P</kbd> pin</span>
         <span><kbd className="cap quiet">⌘⌫</kbd> delete</span>
         <span><kbd className="cap quiet">⇥</kbd> filter</span>
-        <span className="exit"><kbd className="cap quiet">esc</kbd> close</span>
+        <button
+          type="button"
+          className="exit"
+          data-menu-toggle
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => (menuOpen ? closeMenu() : setMenuOpen(true))}
+        >
+          <kbd className="cap quiet">⌘K</kbd> actions
+        </button>
       </footer>
     </main>
   );
@@ -379,5 +499,5 @@ function emptyText(kept: number, query: string, filter: Filter): string {
 }
 
 /** One thing ⌘Z can take back and ⌘⇧Z do again: a pin or unpin (with the
- *  pin it had before and after), or a delete. */
-type Undo = { kind: "pin"; id: string; was: string | null; now: string | null } | { kind: "delete"; id: string };
+ *  pin it had before and after), or a delete — of one row, or of all. */
+type Undo = { kind: "pin"; id: string; was: string | null; now: string | null } | { kind: "delete"; ids: string[] };

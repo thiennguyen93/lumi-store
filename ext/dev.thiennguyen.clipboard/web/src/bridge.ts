@@ -15,9 +15,14 @@ type Answers = {
   paste: Record<string, never>;
   pin: { pin: string | null };
   delete: Record<string, never>;
-  restore: { restored: boolean };
+  restore: { restored: boolean; count: number };
+  copy: Record<string, never>;
+  copyText: Record<string, never>;
+  open: Record<string, never>;
+  reveal: Record<string, never>;
+  clearAll: { ids: string[] };
   setPin: { pin: string | null };
-  clear: { removed: number };
+  clear: { ids: string[] };
   close: Record<string, never>;
   stats: Stats;
   previewWidth: Record<string, never>;

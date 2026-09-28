@@ -18,6 +18,8 @@ export interface Entry {
   search: string;
   thumb: string | null;
   blobs: string[];
+  /** Lumi read text in this item's image: Copy text in image is offered. */
+  ocr?: boolean;
 }
 
 export interface ListAnswer {
@@ -44,7 +46,14 @@ export type Request =
   | { kind: "paste"; id: string; plain: boolean }
   | { kind: "pin"; id: string }
   | { kind: "delete"; id: string }
+  | { kind: "delete"; ids: string[] }
   | { kind: "restore"; id: string }
+  | { kind: "restore"; ids: string[] }
+  | { kind: "copy"; id: string; plain?: boolean }
+  | { kind: "copyText"; id: string }
+  | { kind: "open"; id: string }
+  | { kind: "reveal"; id: string }
+  | { kind: "clearAll" }
   | { kind: "setPin"; id: string; pin: string | null }
   | { kind: "clear" }
   | { kind: "close" }

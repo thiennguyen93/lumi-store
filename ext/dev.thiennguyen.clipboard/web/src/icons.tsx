@@ -105,6 +105,70 @@ export function LumiMark({ size = 14 }: { size?: number }) {
   );
 }
 
+// The actions menu's.
+
+export function PasteGlyph() {
+  return (
+    <Glyph>
+      <path d="M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z" />
+      <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M16 4h2a2 2 0 0 1 2 2v2M11 14h10" />
+      <path d="m17 10 4 4-4 4" />
+    </Glyph>
+  );
+}
+
+export function PlainGlyph() {
+  return (
+    <Glyph>
+      <path d="M4 7V4h16v3" />
+      <path d="M9 20h6" />
+      <path d="M12 4v16" />
+    </Glyph>
+  );
+}
+
+export function ScanTextGlyph() {
+  return (
+    <Glyph>
+      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+      <path d="M7 8h8" />
+      <path d="M7 12h10" />
+      <path d="M7 16h6" />
+    </Glyph>
+  );
+}
+
+export function ExternalGlyph() {
+  return (
+    <Glyph>
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </Glyph>
+  );
+}
+
+export function FolderGlyph() {
+  return (
+    <Glyph>
+      <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+    </Glyph>
+  );
+}
+
+export function TrashGlyph() {
+  return (
+    <Glyph>
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </Glyph>
+  );
+}
+
 // The About page's.
 
 export function LockGlyph() {

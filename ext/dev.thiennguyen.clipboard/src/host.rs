@@ -37,6 +37,10 @@ pub trait Host {
     /// Hand one of this extension's pages a message; `false` when it is
     /// not on screen.
     fn post(&self, window: &str, message: &str) -> Result<bool, String>;
+    /// Open a web address — for a press, so Lumi asks no capability of it.
+    fn open_url(&self, url: &str) -> Result<(), String>;
+    /// Select a file in Finder, by its `file:` URL.
+    fn reveal(&self, file_url: &str) -> Result<(), String>;
     fn settings(&self) -> serde_json::Value;
 
     /// A fresh id for a new row, from a counter kept in storage.
@@ -147,6 +151,14 @@ impl Host for Lumi {
         lumi_extension_api::post(window, message)
     }
 
+    fn open_url(&self, url: &str) -> Result<(), String> {
+        lumi_extension_api::open_url(url)
+    }
+
+    fn reveal(&self, file_url: &str) -> Result<(), String> {
+        lumi_extension_api::reveal(file_url)
+    }
+
     fn settings(&self) -> serde_json::Value {
         lumi_extension_api::settings()
     }
@@ -202,6 +214,8 @@ pub mod memory {
         pub closed: Cell<u32>,
         /// Every `post`, as (window, message).
         pub posts: RefCell<Vec<(String, String)>>,
+        /// Every `open_url` and `reveal`, as "open <url>" / "reveal <url>".
+        pub opened: RefCell<Vec<String>>,
         pub settings: RefCell<serde_json::Value>,
         /// Fail the next `n` puts with a conflict, to exercise the retry.
         pub conflicts: Cell<u32>,
@@ -257,6 +271,16 @@ pub mod memory {
         fn post(&self, window: &str, message: &str) -> Result<bool, String> {
             self.posts.borrow_mut().push((window.to_string(), message.to_string()));
             Ok(true)
+        }
+
+        fn open_url(&self, url: &str) -> Result<(), String> {
+            self.opened.borrow_mut().push(format!("open {url}"));
+            Ok(())
+        }
+
+        fn reveal(&self, file_url: &str) -> Result<(), String> {
+            self.opened.borrow_mut().push(format!("reveal {file_url}"));
+            Ok(())
         }
 
         fn open_panel(&self) -> Result<(), String> {

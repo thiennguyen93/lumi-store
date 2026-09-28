@@ -29,7 +29,7 @@ let rows: Entry[] = [
   entry({ id: "b", kind: "text", title: "ssh deploy@10.0.4.12 -p 2222", pin: "d", appName: "Terminal", count: 12, last: now - 7 * 86_400_000 }),
   entry({ id: "c", kind: "link", title: "https://github.com/p0deje/Maccy", appName: "Safari", last: now - 10_000 }),
   entry({ id: "d", kind: "text", title: "Chuyển tính năng sang extension giảm rủi ro", appName: "Notes", last: now - min }),
-  entry({ id: "e", kind: "image", title: "Image", thumb: "shot", appName: "Screenshot", last: now - 4 * min, search: "lumi · clipboard · search history" }),
+  entry({ id: "e", kind: "image", title: "Image", thumb: "shot", appName: "Screenshot", last: now - 4 * min, search: "lumi · clipboard · search history", ocr: true }),
   entry({ id: "f", kind: "color", title: "#378ADD", appName: "Figma", count: 2, last: now - 9 * min }),
   entry({ id: "g", kind: "file", title: "/Users/me/Downloads/lumi-1.23.0.dmg", appName: "Finder", last: now - 12 * min }),
   entry({ id: "h", kind: "rich", title: "Every guest call instantiates a fresh store", appName: "Chrome", last: now - 20 * min }),
@@ -75,17 +75,37 @@ function answer(request: Request): unknown {
       else row.pin = [...PIN_LETTERS].find((c) => !rows.some((r) => r.pin === c)) ?? null;
       return { pin: row.pin };
     }
-    case "delete":
-      trash.push(...rows.filter((r) => r.id === request.id));
-      rows = rows.filter((r) => r.id !== request.id);
+    case "delete": {
+      const ids = "ids" in request ? request.ids : [request.id];
+      trash.push(...rows.filter((r) => ids.includes(r.id)));
+      rows = rows.filter((r) => !ids.includes(r.id));
       return {};
-    case "restore": {
-      const at = trash.findIndex((r) => r.id === request.id);
-      if (at < 0) return { restored: false };
-      const [back] = trash.splice(at, 1);
-      if (back) rows.push(back);
-      return { restored: Boolean(back) };
     }
+    case "restore": {
+      const ids = "ids" in request ? request.ids : [request.id];
+      const back = trash.filter((r) => ids.includes(r.id));
+      trash = trash.filter((r) => !ids.includes(r.id));
+      rows.push(...back);
+      return { restored: back.length === ids.length && back.length > 0, count: back.length };
+    }
+    case "clearAll": {
+      const ids = rows.map((r) => r.id);
+      trash.push(...rows);
+      rows = [];
+      return { ids };
+    }
+    case "copy":
+      say(`would copy ${request.plain ? "plain text of " : ""}${request.id} and close`);
+      return {};
+    case "copyText":
+      say(`would copy the text read in ${request.id} and close`);
+      return {};
+    case "open":
+      say(`would open ${rows.find((r) => r.id === request.id)?.title} in the browser`);
+      return {};
+    case "reveal":
+      say(`would show ${rows.find((r) => r.id === request.id)?.title} in Finder`);
+      return {};
     case "setPin": {
       const row = rows.find((r) => r.id === request.id);
       if (!row) throw new Error("That item is no longer in the history.");
@@ -94,9 +114,10 @@ function answer(request: Request): unknown {
       return { pin: row.pin };
     }
     case "clear": {
-      const before = rows.length;
+      const going = rows.filter((r) => !r.pin);
+      trash.push(...going);
       rows = rows.filter((r) => r.pin);
-      return { removed: before - rows.length };
+      return { ids: going.map((r) => r.id) };
     }
     case "close":
       say("would close the panel");

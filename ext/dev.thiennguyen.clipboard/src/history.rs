@@ -147,6 +147,14 @@ pub struct Entry {
     /// Every blob the record refers to — what has to be deleted with it.
     #[serde(default)]
     pub blobs: Vec<String>,
+    /// Whether Lumi read text in this item's image — kept in the record, so
+    /// the panel can offer to copy it.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub ocr: bool,
+}
+
+fn is_false(b: &bool) -> bool {
+    !*b
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
@@ -165,6 +173,10 @@ pub struct Index {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Record {
     pub items: Vec<Vec<Rep>>,
+    /// The text Lumi read in the item's image, as read — the index keeps
+    /// only a lowercased, shortened copy for searching.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ocr: Option<String>,
 }
 
 /// The person's settings, as far as the model cares.
@@ -269,6 +281,7 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
         kind,
         title: title_of(&copy.items, kind),
         search: search_of(&copy.items, copy.ocr.as_deref()),
+        ocr: copy.ocr.as_deref().is_some_and(|text| !text.trim().is_empty()),
         thumb: copy
             .items
             .iter()
@@ -283,7 +296,7 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
 
     Outcome::Inserted {
         id: new_id,
-        record: Record { items: copy.items },
+        record: Record { items: copy.items, ocr: copy.ocr.filter(|text| !text.trim().is_empty()) },
         evicted,
     }
 }
@@ -344,6 +357,7 @@ pub fn add_ocr(index: &mut Index, hash: &str, text: &str) -> bool {
     }
     search.push_str(&text.to_lowercase());
     entry.search = search.chars().take(SEARCH_CHARS).collect();
+    entry.ocr |= !text.trim().is_empty();
     true
 }
 
@@ -414,6 +428,34 @@ pub fn trash(index: &mut Index, id: &str) -> bool {
     }
 }
 
+/// Delete every row — or every unpinned one, `keep_pins` — so it can
+/// still be undone: into the trash, as `trash` does one. Answers the ids.
+pub fn trash_all(index: &mut Index, keep_pins: bool) -> Vec<String> {
+    let (kept, gone): (Vec<Entry>, Vec<Entry>) = std::mem::take(&mut index.items)
+        .into_iter()
+        .partition(|e| keep_pins && e.pin.is_some());
+    index.items = kept;
+    let ids = gone.iter().map(|e| e.id.clone()).collect();
+    index.trash.extend(gone);
+    ids
+}
+
+/// The web address a link row is, for Open in browser.
+pub fn link_of(items: &[Vec<Rep>]) -> Option<String> {
+    let text = plain_text(items)?.trim();
+    is_link(text).then(|| text.to_string())
+}
+
+/// The `file:` URL a file row carries, for Show in Finder — the first,
+/// when several files were copied together.
+pub fn file_url_of(items: &[Vec<Rep>]) -> Option<String> {
+    items
+        .iter()
+        .flatten()
+        .find(|rep| rep.uti == uti::FILE_URL)
+        .and_then(|rep| rep.text.clone())
+}
+
 /// What bringing a row back out of the trash came to.
 #[derive(Debug, PartialEq)]
 pub enum Restored {
@@ -443,14 +485,6 @@ pub fn empty_trash(index: &mut Index) -> Vec<Entry> {
     std::mem::take(&mut index.trash)
 }
 
-/// Remove every unpinned row — the panel's Clear. Pins are the rows
-/// somebody asked to keep, so clearing does not take them.
-pub fn clear_unpinned(index: &mut Index) -> Vec<Entry> {
-    let (kept, gone): (Vec<Entry>, Vec<Entry>) =
-        index.items.drain(..).partition(|e| e.pin.is_some());
-    index.items = kept;
-    gone
-}
 
 /// Rows in the order the panel draws them: pins first by letter, then the
 /// rest by the chosen order.
@@ -806,14 +840,25 @@ mod tests {
     }
 
     #[test]
-    fn clear_keeps_pins() {
+    fn clear_keeps_pins_and_clear_all_does_not() {
         let mut index = Index::default();
         apply(&mut index, copy("h1", 1, vec![text("one")]), &rules(10), "a".into());
         apply(&mut index, copy("h2", 2, vec![text("two")]), &rules(10), "b".into());
         toggle_pin(&mut index, "b").unwrap();
-        let gone = clear_unpinned(&mut index);
-        assert_eq!(gone.len(), 1);
+        assert_eq!(trash_all(&mut index, true), vec!["a".to_string()]);
         assert_eq!(index.items[0].id, "b");
+        assert_eq!(trash_all(&mut index, false), vec!["b".to_string()]);
+        assert!(index.items.is_empty());
+        assert_eq!(index.trash.len(), 2, "both can still come back");
+    }
+
+    #[test]
+    fn a_link_and_a_file_are_found_for_their_actions() {
+        assert_eq!(link_of(&[vec![text(" https://a.b/c ")]]), Some("https://a.b/c".to_string()));
+        assert_eq!(link_of(&[vec![text("see https://a.b")]]), None);
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///.file/id=1.2".into()), blob: None, bytes: 0 };
+        assert_eq!(file_url_of(&[vec![file]]), Some("file:///.file/id=1.2".to_string()));
+        assert_eq!(file_url_of(&[vec![text("x")]]), None);
     }
 
     #[test]
