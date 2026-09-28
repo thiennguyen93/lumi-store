@@ -97,6 +97,28 @@ CHOICE_KINDS = {"select", "segmented", "multiselect"}
 # an installed id was a takeover of its directory.
 ID_RE = re.compile(r"^[a-z0-9._-]{1,100}$")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+def suggested_key_problem(text):
+    """`manifest::suggested_accelerator`'s refusals, word for word: a
+    `[[command]] suggested-key` like "cmd+shift+c"."""
+    parts = [p.strip().lower() for p in text.split("+")]
+    key, mods = parts[-1], parts[:-1]
+    known = {"ctrl", "control", "alt", "opt", "option", "shift", "cmd", "command"}
+    for part in mods:
+        if part not in known:
+            return f"the suggested key \"{text}\" has \"{part}\" — use cmd, alt, ctrl and shift"
+    ok_key = (
+        (len(key) == 1 and (key.isascii() and (key.islower() or key.isdigit())))
+        or key == "space"
+        or (key.startswith("f") and key[1:].isdigit() and 1 <= int(key[1:]) <= 12)
+    )
+    if not ok_key:
+        return f"the suggested key \"{text}\" ends in \"{key}\" — a letter, a digit, space or F1–F12"
+    if not any(m in mods for m in ("ctrl", "control", "alt", "opt", "option", "cmd", "command")):
+        return (f"the suggested key \"{text}\" needs cmd, alt or ctrl — a global shortcut without one "
+                "would take that key away from typing")
+    return None
+
+
 # A command icon that is not an .svg is a Lucide name: lowercase words and
 # digits joined by single hyphens — Lumi's `manifest::command_icon`.
 LUCIDE_RE = re.compile(r"^(?=.{1,64}$)[a-z0-9]+(-[a-z0-9]+)*$")
@@ -219,6 +241,11 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"two commands are named {name}")
         seen.add(name)
         check_params(entry_id, name, command.get("params", []))
+        suggested = str(command.get("suggested-key", "")).strip()
+        if suggested:
+            why = suggested_key_problem(suggested)
+            if why:
+                fail(entry_id, f"command {name}: {why}")
     seen = set()
     for node in manifest.get("node", []):
         name = node.get("name", "")
