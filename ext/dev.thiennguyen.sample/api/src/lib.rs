@@ -26,6 +26,11 @@
 //!     fn run_ui(window: String, request: String) -> Result<String, String> {
 //!         Err(format!("no {window} window"))
 //!     }
+//!
+//!     fn on_lifecycle(event: lumi::Lifecycle) -> Result<(), String> {
+//!         // Nothing to do is the ordinary answer.
+//!         Ok(())
+//!     }
 //! }
 //!
 //! lumi::register!(MyExtension);
@@ -52,15 +57,27 @@
 //! extension being stopped — never as Lumi crashing, which is the point of
 //! the sandbox.
 //!
-//! The WIT world vendored under `wit/` is **0.1.0** — a wire commitment
+//! **Lifecycle.** [`Guest::on_lifecycle`] hears three moments: installed
+//! (after the package's own installer, if any, has saved its answers),
+//! updated (with the version it replaced), and uninstalling (the last run
+//! the extension gets, before its files go). It runs only while the
+//! extension is switched on, its answer is only ever written to Lumi's log,
+//! and it cannot stop what triggered it. Uninstalling is short — a few
+//! seconds, since the person is waiting on the button — and opens no
+//! windows, because the `ui/` files are about to be deleted: an uninstall
+//! survey is a web page, opened with [`open_url`]. A Welcome window is an
+//! ordinary declared window, opened from `installed` with [`open_window`].
+//!
+//! The WIT world vendored under `wit/` is **0.2.0** — a wire commitment
 //! from here, not a moving target. The copy the host builds against lives
-//! in Lumi's own tree and CI holds the two byte-identical. A component
-//! built against it installs on every Lumi that speaks 0.1. A breaking
-//! change will bump the version, and a Lumi asked to install a component
-//! built for a version it does not speak refuses it at install and says
-//! which way to go — rebuild the extension, or update Lumi. Loading older
-//! worlds alongside the current one is planned and not built: until it
-//! is, a new world means rebuilding against the new crate.
+//! in Lumi's own tree and CI holds the two byte-identical. 0.2 is the first
+//! break: `on-lifecycle` joined the exports, and a component built against
+//! 0.1 has none, so a Lumi that speaks 0.2 refuses it at install and says
+//! to rebuild it — against this crate, which is the whole migration: add
+//! `on_lifecycle`, returning `Ok(())` if there is nothing to do. A Lumi
+//! asked to install a component built for a version it does not speak
+//! says which way to go — rebuild the extension, or update Lumi. Loading
+//! older worlds alongside the current one is planned and not built.
 
 // In a module of its own because `pub_export_macro` emits helper macros at
 // the crate root *and* re-imports them where the macro ran — at the root
@@ -80,6 +97,9 @@ pub mod bindings {
 
 pub use bindings::lumi;
 pub use bindings::Guest;
+/// One moment in the extension's own life — what [`Guest::on_lifecycle`]
+/// is handed. `Updated` carries the version that was replaced.
+pub use bindings::Lifecycle;
 pub use lumi::ext::app::{Edition, Info as About};
 pub use lumi::ext::net::{Request, Response};
 pub use lumi::ext::profiles::{Book as Profiles, Profile};

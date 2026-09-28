@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- The sample's installer: drawn after Lumi's own review of the package,
+     before anything is installed. Its bridge is narrower than the other
+     pages' — the settings schema, pending values, Install and Cancel, and
+     no `call`, because the extension's WebAssembly is not installed yet. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Set up Sample</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="installer">
+  <h1 id="heading">Set up Sample</h1>
+  <p class="muted">
+    One question before Sample is installed. You can change the answer
+    later under Settings → Extensions → Sample.
+  </p>
+
+  <label for="target" id="target-label">Default language</label>
+  <select id="target" disabled></select>
+  <p class="muted">
+    What <strong>Translate selection</strong> translates into when a
+    shortcut does not pick a language of its own.
+  </p>
+
+  <p class="warn" id="said" role="alert"></p>
+
+  <div class="actions">
+    <button type="button" id="cancel">Cancel</button>
+    <button type="button" class="primary" id="install" disabled>Install</button>
+  </div>
+
+  <script src="install.js"></script>
+</body>
+</html>
