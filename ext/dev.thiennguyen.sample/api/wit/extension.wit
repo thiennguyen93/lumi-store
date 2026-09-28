@@ -269,6 +269,10 @@ interface ui {
     /// open is not an error. Added in 0.3.
     close-window: func(name: string) -> result<_, string>;
 
+    /// Bring up Lumi's Settings on this extension's own Settings tab — a
+    /// panel's "Settings…". Only for something the person did. Added in 0.3.
+    open-settings: func() -> result<_, string>;
+
     /// Send `message`, JSON text, to one of this extension's own windows
     /// or embedded pages: a declared window by its manifest `name`, or a
     /// page by `:about`, `:settings` or `:page:<name>`. It arrives as a

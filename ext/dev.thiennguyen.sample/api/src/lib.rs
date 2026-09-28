@@ -160,6 +160,13 @@ pub fn open_url(url: &str) -> Result<(), String> {
     lumi::ext::open::url(url)
 }
 
+/// Select one file in Finder: a `file:` URL (what a copied file carries)
+/// or an absolute path. Only for something the person did — a command or
+/// a press in one of your windows.
+pub fn reveal(target: &str) -> Result<(), String> {
+    lumi::ext::open::reveal(target)
+}
+
 /// The pasteboard's plain text, or `None` when it holds no text — an
 /// image, a file, or nothing at all are one answer here.
 pub fn clipboard_text() -> Result<Option<String>, String> {
@@ -219,6 +226,12 @@ pub fn open_window(name: &str) -> Result<(), String> {
 /// One that is not open is not an error.
 pub fn close_window(name: &str) -> Result<(), String> {
     lumi::ext::ui::close_window(name)
+}
+
+/// Bring up Lumi's Settings on your extension's Settings tab — for a
+/// "Settings…" in one of your windows. Only for a press.
+pub fn open_settings() -> Result<(), String> {
+    lumi::ext::ui::open_settings()
 }
 
 /// Send `message` (JSON text) to one of your own windows or pages — a
