@@ -21,6 +21,7 @@ type Answers = {
   open: Record<string, never>;
   reveal: Record<string, never>;
   clearAll: { ids: string[] };
+  settings: Record<string, never>;
   setPin: { pin: string | null };
   clear: { ids: string[] };
   close: Record<string, never>;

@@ -41,6 +41,8 @@ pub trait Host {
     fn open_url(&self, url: &str) -> Result<(), String>;
     /// Select a file in Finder, by its `file:` URL.
     fn reveal(&self, file_url: &str) -> Result<(), String>;
+    /// Lumi's Settings, on this extension's Settings tab.
+    fn open_settings(&self) -> Result<(), String>;
     fn settings(&self) -> serde_json::Value;
 
     /// A fresh id for a new row, from a counter kept in storage.
@@ -157,6 +159,10 @@ impl Host for Lumi {
 
     fn reveal(&self, file_url: &str) -> Result<(), String> {
         lumi_extension_api::reveal(file_url)
+    }
+
+    fn open_settings(&self) -> Result<(), String> {
+        lumi_extension_api::open_settings()
     }
 
     fn settings(&self) -> serde_json::Value {
@@ -280,6 +286,11 @@ pub mod memory {
 
         fn reveal(&self, file_url: &str) -> Result<(), String> {
             self.opened.borrow_mut().push(format!("reveal {file_url}"));
+            Ok(())
+        }
+
+        fn open_settings(&self) -> Result<(), String> {
+            self.opened.borrow_mut().push("settings".to_string());
             Ok(())
         }
 

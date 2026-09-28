@@ -15,6 +15,7 @@ import {
   CopyGlyph,
   ExternalGlyph,
   FolderGlyph,
+  GearGlyph,
   KindGlyph,
   LumiMark,
   PasteGlyph,
@@ -251,6 +252,11 @@ export function App() {
     });
   }, [act, reload, rowsOf]);
 
+  /** Settings… / ⌘,: this extension's tab in Lumi's Settings. */
+  const openSettings = useCallback(() => {
+    void act(() => call({ kind: "settings" }));
+  }, [act]);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
@@ -278,8 +284,11 @@ export function App() {
             ...(row.kind === "link" ? [{ id: "open", label: "Open in browser", glyph: <ExternalGlyph />, run: run("open") }] : []),
             ...(row.kind === "file" ? [{ id: "reveal", label: "Show in Finder", glyph: <FolderGlyph />, run: run("reveal") }] : []),
             { id: "pin", label: row.pin ? "Unpin" : "Pin", glyph: <PinGlyph />, keys: "⌘P", run: togglePin },
-            { id: "delete", label: "Delete entry", glyph: <TrashGlyph />, keys: "⌘⌫", danger: true, run: remove },
           ]
+        : []),
+      { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
+      ...(row
+        ? [{ id: "delete", label: "Delete entry", glyph: <TrashGlyph />, keys: "⌘⌫", danger: true, run: remove }]
         : []),
       ...(unpinned && unpinned < all
         ? [
@@ -306,7 +315,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [act, current, paste, remove, removeAll, rows, togglePin]);
+  }, [act, current, openSettings, paste, remove, removeAll, rows, togglePin]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -367,6 +376,7 @@ export function App() {
         void call({ kind: "close" }).catch(() => {});
       }
     } else if (cmd && key.toLowerCase() === "k") setMenuOpen(true);
+    else if (cmd && key === ",") openSettings();
     else if (cmd && key === "Backspace") remove();
     // ⌘Z / ⌘⇧Z are the history's while there is something to take back or
     // do again; with nothing, they stay the search field's own text undo.

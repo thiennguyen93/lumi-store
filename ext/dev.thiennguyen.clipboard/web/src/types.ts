@@ -54,6 +54,7 @@ export type Request =
   | { kind: "open"; id: string }
   | { kind: "reveal"; id: string }
   | { kind: "clearAll" }
+  | { kind: "settings" }
   | { kind: "setPin"; id: string; pin: string | null }
   | { kind: "clear" }
   | { kind: "close" }

@@ -438,6 +438,12 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             host.close_panel()?;
             Ok(json!({}))
         }
+        // The menu's Settings… / ⌘,: the panel goes, Settings comes.
+        "settings" => {
+            host.close_panel()?;
+            host.open_settings()?;
+            Ok(json!({}))
+        }
         "reveal" => {
             let record = read_record(host, &id()?)?;
             let file = history::file_url_of(&record.items).ok_or_else(|| "That item is not a file.".to_string())?;
@@ -698,6 +704,8 @@ mod tests {
         assert!(ui(&host, &json!({"kind": "reveal", "id": "id2"})).is_err());
         assert!(ui(&host, &json!({"kind": "copyText", "id": "id2"})).is_err());
         assert_eq!(*host.opened.borrow(), ["open https://example.com/x"]);
+        ui(&host, &json!({"kind": "settings"})).unwrap();
+        assert_eq!(host.opened.borrow().last().map(String::as_str), Some("settings"));
 
         ui(&host, &json!({"kind": "copy", "id": "id2"})).unwrap();
         assert_eq!(*host.keystrokes.borrow(), [false], "copy is no ⌘V");

@@ -97,6 +97,9 @@ function answer(request: Request): unknown {
     case "copy":
       say(`would copy ${request.plain ? "plain text of " : ""}${request.id} and close`);
       return {};
+    case "settings":
+      say("would close the panel and open Settings on this extension's tab");
+      return {};
     case "copyText":
       say(`would copy the text read in ${request.id} and close`);
       return {};
