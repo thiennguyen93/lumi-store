@@ -2,7 +2,7 @@
 [extension]
 id = "dev.thiennguyen.keytest"
 name = "Keyboard Test"
-version = "0.3.0"
+version = "0.3.1"
 description = "Check every key of a MacBook keyboard, and catch keys that double-type."
 author = "Thien Nguyen"
 summary = "Opens a Keyboard test tab here in Lumi: press each key and watch it light up on a MacBook keyboard. It counts the keys you have covered, shows which are held, and flags a key that registers twice from one press — the chatter a worn or dusty switch produces. Nothing leaves the page."
@@ -15,6 +15,10 @@ min-lumi-version = "1.25.0"
 # a form: the page has its own switch for it.
 settings-tab = false
 capabilities = []
+# Pictures for this extension's page in Lumi's Extension Store: the board
+# mid-test (a double-typed E, shift + K held) and the ISO layout in dark.
+# The store publishes them beside the package; Lumi's installer ignores it.
+screenshots = ["shots/1-keyboard.png", "shots/2-iso-dark.png"]
 
 [[page]]
 name = "keytest"
