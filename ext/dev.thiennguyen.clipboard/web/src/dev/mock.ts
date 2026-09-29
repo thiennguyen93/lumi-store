@@ -34,17 +34,17 @@ function entry(partial: Partial<Entry> & Pick<Entry, "id" | "kind" | "title">): 
 }
 
 let rows: Entry[] = [
-  entry({ id: "a", kind: "text", title: "hi@thiennguyen.dev", pin: "b", appName: "Mail", count: 3, last: now - 2 * 86_400_000 }),
-  entry({ id: "b", kind: "text", title: "ssh deploy@10.0.4.12 -p 2222", pin: "d", appName: "Terminal", count: 12, last: now - 7 * 86_400_000 }),
-  entry({ id: "c", kind: "link", title: "https://github.com/p0deje/Maccy", appName: "Safari", last: now - 10_000 }),
-  entry({ id: "d", kind: "text", title: "Chuyển tính năng sang extension giảm rủi ro", appName: "Notes", last: now - min }),
+  entry({ id: "a", kind: "text", title: "hello@example.com", pin: "b", appName: "Mail", count: 3, last: now - 2 * 86_400_000 }),
+  entry({ id: "b", kind: "text", title: "ssh deploy@staging.example.com", pin: "d", appName: "Terminal", count: 12, last: now - 7 * 86_400_000 }),
+  entry({ id: "c", kind: "link", title: "https://github.com/example/project", appName: "Safari", last: now - 10_000 }),
+  entry({ id: "d", kind: "text", title: "Meeting moved to Thursday, 3 pm", appName: "Notes", last: now - min }),
   entry({ id: "e", kind: "image", title: "Image", thumb: "shot", appName: "Screenshot", last: now - 4 * min, search: "lumi · clipboard · search history", ocr: true }),
   entry({ id: "f", kind: "color", title: "#378ADD", appName: "Figma", count: 2, last: now - 9 * min }),
   entry({ id: "g", kind: "file", title: "/Users/me/Downloads/lumi-1.23.0.dmg", fileExt: "dmg", appName: "Finder", last: now - 12 * min }),
-  entry({ id: "h", kind: "rich", title: "Every guest call instantiates a fresh store", appName: "Chrome", last: now - 20 * min }),
+  entry({ id: "h", kind: "rich", title: "Quarterly report — final draft", appName: "Chrome", last: now - 20 * min }),
   entry({ id: "i", kind: "text", title: "cargo clippy --all-targets -- -D warnings", appName: "Terminal", count: 5, last: now - 60 * min }),
   entry({ id: "j", kind: "text", title: "pnpm tauri dev", appName: "Terminal", count: 9, last: now - 120 * min }),
-  entry({ id: "k", kind: "text", title: "thiennguyen.dev/lumi-store/extensions/index.json", appName: "Chrome", last: now - 180 * min }),
+  entry({ id: "k", kind: "text", title: "example.com/docs/getting-started", appName: "Chrome", last: now - 180 * min }),
   entry({ id: "l", kind: "link", title: "https://developer.apple.com/design/human-interface-guidelines", appName: "Safari", last: now - 240 * min }),
   entry({ id: "m", kind: "file", title: "/Users/me/Desktop/invoice-2041.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min }),
   entry({ id: "m2", kind: "file", title: "/Users/me/Desktop/broken.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min - 1 }),
