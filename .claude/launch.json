@@ -26,6 +26,29 @@
         "--strictPort"
       ],
       "port": 5179
+    },
+    {
+      "name": "clipboard-web-3",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "ext/dev.thiennguyen.clipboard/web",
+        "dev",
+        "--port",
+        "5180",
+        "--strictPort"
+      ],
+      "port": 5180
+    },
+    {
+      "name": "clipboard-web-auto",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "pnpm -C ext/dev.thiennguyen.clipboard/web dev --port ${PORT:-5181} --strictPort"
+      ],
+      "port": 5181,
+      "autoPort": true
     }
   ]
 }

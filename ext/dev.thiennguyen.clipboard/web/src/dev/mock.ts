@@ -55,9 +55,12 @@ let rows: Entry[] = [
   entry({ id: "p4", kind: "file", title: "/Users/me/Projects/api/main.go", fileExt: "go", appName: "Finder", last: now - 29 * 60 * min + 3 }),
   entry({ id: "p5", kind: "file", title: "/Users/me/Projects/web/App.tsx", fileExt: "tsx", appName: "Finder", last: now - 29 * 60 * min + 4 }),
   entry({ id: "p3", kind: "file", title: "/Users/me/Projects/lumi/package.json", fileExt: "json", appName: "Finder", last: now - 29 * 60 * min + 2 }),
+  entry({ id: "p6", kind: "file", title: "/Users/me/Projects/lumi/README.md", fileExt: "md", appName: "Finder", last: now - 29 * 60 * min + 5 }),
   entry({ id: "p2", kind: "file", title: "/Users/me/Documents/notes.md", fileExt: "md", appName: "Finder", last: now - 29 * 60 * min + 1 }),
   entry({ id: "p", kind: "file", title: "/Users/me/Sites/index.html", fileExt: "html", appName: "Finder", last: now - 29 * 60 * min }),
   entry({ id: "q", kind: "file", title: "/Users/me/Projects/", fileExt: "/", appName: "Finder", last: now - 30 * 60 * min }),
+  entry({ id: "q2", kind: "file", title: "/Users/me/logo.taolao", fileExt: "taolao", appName: "Finder", last: now - 30 * 60 * min - 1 }),
+  entry({ id: "q3", kind: "file", title: "/Users/me/Projects/lumi/Makefile", fileExt: "", appName: "Finder", last: now - 30 * 60 * min - 2 }),
   entry({ id: "r1", kind: "file", title: "brag-vertical.mp4 + 2 more", fileCount: 3, appName: "Finder", last: now - 31 * 60 * min }),
   entry({ id: "r2", kind: "file", title: "brag2.mp4 + 1 more", fileExt: "mp4", fileCount: 2, appName: "Finder", last: now - 32 * 60 * min }),
   entry({ id: "r3", kind: "file", title: "Projects + 1 more", fileExt: "/", fileCount: 2, appName: "Finder", last: now - 33 * 60 * min }),
@@ -178,6 +181,9 @@ function answer(request: Request): unknown {
       return {};
     case "copyText":
       say(`would copy the text read in ${request.id} and close`);
+      return {};
+    case "copyPath":
+      say(`would copy the path of ${rows.find((r) => r.id === request.id)?.title}`);
       return {};
     case "open":
       say(`would open ${rows.find((r) => r.id === request.id)?.title} in the browser`);
@@ -407,6 +413,41 @@ func main() {
       empty: { list: [], map: {} },
     };
     return URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "text/plain" }));
+  }
+  if (token.endsWith("README.md")) {
+    const readme = [
+      "# Lumi",
+      "",
+      "A **launcher** for macOS with _extensions_, ~~plugins~~ and `inline code`.",
+      "",
+      "## Install",
+      "",
+      "```bash",
+      "brew install --cask lumi",
+      "```",
+      "",
+      "> Tip: press ⌘⇧C for the clipboard.",
+      "",
+      "- [x] PDF preview",
+      "- [ ] Markdown preview",
+      "  - nested item",
+      "",
+      "1. First",
+      "2. Second",
+      "",
+      "| Key | Action |",
+      "| --- | --- |",
+      "| ↵ | paste |",
+      "| ⌥↵ | plain |",
+      "",
+      "[docs](https://thiennguyen.dev) · [bad](javascript:alert(1)) · ![logo](https://example.com/x.png)",
+      "",
+      '<script>document.title = "ran!"</script><img src=x onerror="document.title=\'ran\'">',
+      "",
+      "---",
+      "Done.",
+    ].join("\n");
+    return URL.createObjectURL(new Blob([readme], { type: "text/plain" }));
   }
   if (token.endsWith(".md")) {
     const notes = Array.from({ length: 3000 }, (_, i) => `- [${i % 3 ? " " : "x"}] Note ${i + 1}: chuyển tính năng sang extension\tgiảm rủi ro`).join("\n");

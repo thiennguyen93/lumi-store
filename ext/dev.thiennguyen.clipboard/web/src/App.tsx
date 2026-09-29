@@ -279,7 +279,7 @@ export function App() {
   /** What ⌘K offers for the selected row, then for the whole history. */
   const actions = useMemo((): Action[] => {
     const row = current;
-    const run = (kind: "copy" | "copyText" | "open" | "reveal", plain?: boolean) => () => {
+    const run = (kind: "copy" | "copyText" | "copyPath" | "open" | "reveal", plain?: boolean) => () => {
       if (row) void act(() => call(kind === "copy" ? { kind, id: row.id, plain } : { kind, id: row.id }));
     };
     const unpinned = (rows ?? []).filter((r) => !r.pin).length;
@@ -293,6 +293,16 @@ export function App() {
               ? [{ id: "plain", label: "Paste as plain text", glyph: <PlainGlyph />, keys: "⌥↩", run: () => paste(true, row) }]
               : []),
             { id: "copy", label: "Copy", glyph: <CopyGlyph />, run: run("copy") },
+            ...(row.kind === "file"
+              ? [
+                  {
+                    id: "copyPath",
+                    label: (row.fileCount ?? 0) > 1 ? "Copy paths" : "Copy path",
+                    glyph: <CopyGlyph />,
+                    run: run("copyPath"),
+                  },
+                ]
+              : []),
             ...(row.ocr ? [{ id: "copyText", label: "Copy text in image", glyph: <ScanTextGlyph />, run: run("copyText") }] : []),
             ...(row.kind === "link" ? [{ id: "open", label: "Open in browser", glyph: <ExternalGlyph />, run: run("open") }] : []),
             ...(row.kind === "file" ? [{ id: "reveal", label: "Show in Finder", glyph: <FolderGlyph />, run: run("reveal") }] : []),

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { blobUrl, call, fileUrl, type FileItem } from "./bridge";
 import { AppMark } from "./AppMark";
-import { CollapseGlyph, ExpandGlyph, FileGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
+import { CollapseGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { useItemDrag } from "./itemDrag";
 import { PdfViewer } from "./PdfViewer";
@@ -159,8 +159,9 @@ export function Preview({ row }: { row: Entry | undefined }) {
         {row.kind === "file" &&
           // One file only: several sharing an extension are the list below.
           (row.fileCount ?? 0) <= 1 &&
-          !mine?.files?.length &&
-          (MEDIA_FAMILIES.has(fileFamily(row.fileExt)) || isTextFile(row.fileExt)) && (
+          // Every one gets a picture of some kind — a viewer, or at least the
+          // tile — so a file is never mistaken for a copied path.
+          !mine?.files?.length && (
           <FileMedia
             key={row.id}
             family={fileFamily(row.fileExt)}
@@ -176,6 +177,8 @@ export function Preview({ row }: { row: Entry | undefined }) {
         )}
         {mine?.files?.length ? (
           <FileList id={row.id} files={mine.files} count={mine.fileCount || mine.files.length} />
+        ) : row.kind === "file" && (row.fileCount ?? 0) <= 1 ? (
+          <FilePath path={text.split("\n")[0]!} />
         ) : waiting ? (
           <div className="body rich" />
         ) : html ? (
@@ -191,9 +194,10 @@ export function Preview({ row }: { row: Entry | undefined }) {
   );
 }
 
-/** A copied PDF, picture, text file, sound or film: its player or viewer
- *  once Lumi has given a grant for it, and until then — or when Lumi cannot serve it, an older Lumi
- *  or a file moved since — a tile that says what it is. Never plays by
+/** A copied file: for a PDF, picture, text file, sound or film its player
+ *  or viewer once Lumi has given a grant for it; for anything else, and until
+ *  then — or when Lumi cannot serve it, an older Lumi or a file moved since —
+ *  a tile that says what it is. Never plays by
  *  itself: `controls` and no `autoPlay`, and audio loads nothing until asked.
  *  Keyed by row, so choosing another row takes the player away and stops it. */
 function FileMedia({
@@ -217,7 +221,15 @@ function FileMedia({
   const address = useMemo(() => (token ? fileUrl(token) : null), [token]);
   const src = failed ? null : address;
   if (src && text) {
-    return <TextFile src={src} json={ext === "json"} language={codeLanguage(ext)} onFail={() => setFailed(true)} />;
+    return (
+      <TextFile
+        src={src}
+        json={ext === "json"}
+        markdown={ext === "md" || ext === "markdown"}
+        language={codeLanguage(ext)}
+        onFail={() => setFailed(true)}
+      />
+    );
   }
   if (src && family === "image") {
     // The file itself, drawn by the webview: a type it cannot draw (HEIC
@@ -254,7 +266,7 @@ function FileMedia({
   return (
     <div className="file-tile" data-family={family}>
       <FileGlyph family={family} />
-      <span>{ext.toUpperCase()}</span>
+      <span>{family === "folder" ? "FOLDER" : ext ? ext.toUpperCase() : "FILE"}</span>
     </div>
   );
 }
@@ -371,6 +383,27 @@ function FileLine({ id, at, file }: { id: string; at: number; file: FileItem }) 
   );
 }
 
+/** Where a lone copied file is: its name, then the folder it is in — not
+ *  the bare path, which reads like copied text. Both wrap rather than cut,
+ *  and both can be selected. */
+function FilePath({ path }: { path: string }) {
+  const trimmed = path.length > 1 ? path.replace(/\/+$/, "") : path;
+  const cut = trimmed.lastIndexOf("/");
+  const name = trimmed.slice(cut + 1) || trimmed;
+  const dir = cut > 0 ? trimmed.slice(0, cut) : cut === 0 ? "/" : "";
+  return (
+    <div className="file-where" title={path}>
+      <div className="file-where-name">{name}</div>
+      {dir && (
+        <div className="file-where-dir">
+          <FolderGlyph />
+          <span>{home(dir)}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** A name cut in its middle when too long, its extension kept: "brag-vert….mp4". */
 function FileName({ name, folder }: { name: string; folder: boolean }) {
   const dot = folder ? -1 : name.lastIndexOf(".");
@@ -402,9 +435,6 @@ function clock(seconds: number): string {
   const s = String(whole % 60).padStart(2, "0");
   return h ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
 }
-
-/** The families that get a tile of their own above the paths. */
-const MEDIA_FAMILIES = new Set<FileFamily>(["pdf", "image", "audio", "video"]);
 
 /** A size the way Finder writes one: decimal units, whole kilobytes, one
  *  decimal from a megabyte up — "812 bytes", "234 KB", "1.2 MB". */

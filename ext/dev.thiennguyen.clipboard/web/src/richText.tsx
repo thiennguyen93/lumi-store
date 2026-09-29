@@ -25,7 +25,8 @@ const TAGS: Record<string, string> = {
 /** Tags whose contents are not text to show. */
 const DROPPED = new Set(["script", "style", "head", "title", "template", "noscript", "svg", "math", "iframe", "object", "img", "video", "audio", "canvas", "button", "input", "select", "textarea"]);
 
-/** Past these, the rest is not drawn: the pane shows a few lines. */
+/** Past these, the rest is not drawn: the pane shows a few lines. A
+ *  markdown file, read to the end, may ask for more nodes. */
 const MAX_NODES = 3000;
 const MAX_DEPTH = 40;
 
@@ -64,13 +65,21 @@ function styleOf(el: Element): CSSProperties | undefined {
 /** The copy's formatting, or `fallback` when nothing of it would show —
  *  markup whose words all sit in tags dropped above, or none at all — so
  *  a rich row's pane is never blank while its plain text has something. */
-export function RichText({ html, fallback }: { html: string; fallback: ReactNode }) {
+export function RichText({
+  html,
+  fallback,
+  maxNodes = MAX_NODES,
+}: {
+  html: string;
+  fallback: ReactNode;
+  maxNodes?: number;
+}) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   let nodes = 0;
   let shown = false;
 
   const walk = (node: Node, depth: number, key: number): ReactNode => {
-    if (++nodes > MAX_NODES) return null;
+    if (++nodes > maxNodes) return null;
     if (node.nodeType === Node.TEXT_NODE) {
       if (node.textContent?.trim()) shown = true;
       return node.textContent;
@@ -78,6 +87,11 @@ export function RichText({ html, fallback }: { html: string; fallback: ReactNode
     if (node.nodeType !== Node.ELEMENT_NODE || depth > MAX_DEPTH) return null;
     const el = node as Element;
     const name = el.tagName.toLowerCase();
+    // A task list's box (markdown's `- [x]`): its state, as text.
+    if (name === "input" && el.getAttribute("type") === "checkbox") {
+      shown = true;
+      return el.hasAttribute("checked") ? "☑ " : "☐ ";
+    }
     if (DROPPED.has(name)) return null;
     const kids = Array.from(el.childNodes, (child, i) => walk(child, depth + 1, i));
     const tag = TAGS[name];

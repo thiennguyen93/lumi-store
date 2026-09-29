@@ -68,6 +68,7 @@ export type Request =
   | { kind: "restore"; ids: string[] }
   | { kind: "copy"; id: string; plain?: boolean }
   | { kind: "copyText"; id: string }
+  | { kind: "copyPath"; id: string }
   | { kind: "open"; id: string }
   | { kind: "reveal"; id: string }
   | { kind: "saveImage"; id: string; name: string }

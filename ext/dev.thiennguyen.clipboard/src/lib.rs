@@ -586,7 +586,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             for outcome in &outcomes {
                 match outcome {
                     history::Restored::Back => back += 1,
-                    history::Restored::Surplus(entry) => forget(host, std::slice::from_ref(entry)),
+                    history::Restored::Surplus(entry) => forget(host, std::slice::from_ref(&**entry)),
                     history::Restored::Gone => {}
                 }
             }
@@ -646,6 +646,14 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 .ocr
                 .filter(|text| prefs(host).ocr && !text.trim().is_empty())
                 .ok_or_else(|| "Lumi read no text in that image.".to_string())?;
+            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None, path: None, file_token: None };
+            host.paste(&[vec![rep]], false)?;
+            Ok(json!({}))
+        }
+        // Copy path(s): the places, as text — not the files, which Copy is.
+        "copyPath" => {
+            let record = read_record(host, &id()?)?;
+            let text = history::paths_text_of(&record.items).ok_or_else(|| "Lumi does not know where that file is.".to_string())?;
             let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None, path: None, file_token: None };
             host.paste(&[vec![rep]], false)?;
             Ok(json!({}))
@@ -1054,6 +1062,35 @@ mod tests {
 
         ui(&host, &json!({"kind": "copy", "id": "id2"})).unwrap();
         assert_eq!(*host.keystrokes.borrow(), [false], "copy is no ⌘V");
+    }
+
+    #[test]
+    fn copy_path_copies_where_the_files_are_as_text() {
+        let host = Memory::default();
+        let one = json!({ "v": 1, "at": 1, "hash": "h1", "items": [[
+            { "uti": "public.file-url", "text": "file:///.file/id=1.2", "bytes": 20, "path": "/Users/me/My Notes/a.md" },
+        ]] });
+        let many = json!({ "v": 1, "at": 2, "hash": "h2", "items": [
+            [{ "uti": "public.file-url", "text": "file:///tmp/b%20c.pdf", "bytes": 21 }],
+            [{ "uti": "public.file-url", "text": "file:///tmp/folder/", "bytes": 19 }],
+        ] });
+        let lost = json!({ "v": 1, "at": 3, "hash": "h3", "items": [[
+            { "uti": "public.file-url", "text": "file:///.file/id=9.9", "bytes": 20 },
+        ]] });
+        for copy in [&one, &many, &lost] {
+            on_event(&host, "clipboard", &copy.to_string()).unwrap();
+        }
+        on_event(&host, "clipboard", &event("h4", 4, "just words")).unwrap();
+
+        ui(&host, &json!({"kind": "copyPath", "id": "id1"})).unwrap();
+        ui(&host, &json!({"kind": "copyPath", "id": "id2"})).unwrap();
+        let pasted = host.pasted.borrow();
+        assert_eq!(pasted[0][0][0].uti, "public.utf8-plain-text");
+        assert_eq!(pasted[0][0][0].text.as_deref(), Some("/Users/me/My Notes/a.md"), "Lumi's resolved path");
+        assert_eq!(pasted[1][0][0].text.as_deref(), Some("/tmp/b c.pdf\n/tmp/folder/"), "one a line, decoded");
+        drop(pasted);
+        assert!(ui(&host, &json!({"kind": "copyPath", "id": "id3"})).is_err(), "a file-reference URL is no place");
+        assert!(ui(&host, &json!({"kind": "copyPath", "id": "id4"})).is_err(), "not a file");
     }
 
     /// A file row kept under its file-reference id is titled by name when

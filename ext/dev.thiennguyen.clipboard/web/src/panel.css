@@ -600,6 +600,8 @@ body {
   color: var(--cb-faint);
 }
 .card .file-tile .glyph { width: 36px; height: 36px; stroke-width: 1.5; }
+/* A made-up extension can be long; it stays on one line. */
+.card .file-tile span { max-width: calc(100% - 16px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .card .player { width: 100%; border-radius: 6px; background: rgba(0, 0, 0, 0.25); }
 .card .player.video { position: relative; overflow: hidden; }
 .card .player.video video { display: block; width: 100%; max-height: 200px; background: #000; }
@@ -665,6 +667,13 @@ body {
   -webkit-user-select: text;
   user-select: text;
 }
+/* A markdown file, rendered: `RichText`'s document, scrolling in the box. */
+.card .file-doc { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
+.card .file-doc .rich-html { flex: 1 1 0; min-height: 0; padding: 8px 10px; -webkit-user-select: text; user-select: text; }
+.card .file-doc > pre { flex: 1 1 0; }
+.file-doc .rich-html :is(h1, h2) { padding-bottom: 0.2em; border-bottom: 1px solid var(--cb-line); }
+.file-doc .rich-html :not(pre) > code { padding: 0 0.3em; border-radius: 3px; background: var(--cb-hover); }
+.file-doc .rich-html pre { padding: 6px 8px; border-radius: 4px; background: var(--cb-hover); }
 /* A code file: line numbers beside the code, one scroller for both. */
 .card .code-scroll {
   display: flex;
@@ -774,6 +783,30 @@ body {
 .card pre.code .hljs-deletion { color: var(--cb-code-keyword); }
 .card pre.code .hljs-addition { color: var(--cb-json-string); }
 /* A copy of several files: one line each, the list scrolls, the foot stays. */
+/* A lone file's name and folder, under its tile or viewer (FilePath). */
+.card .file-where {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.card .file-where-name {
+  font: 600 13px/1.35 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  color: CanvasText;
+  overflow-wrap: anywhere;
+}
+.card .file-where-dir {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--cb-muted);
+  overflow-wrap: anywhere;
+}
+.card .file-where-dir .glyph { flex: none; width: 12px; height: 12px; margin-top: 1.5px; }
 .card .file-list {
   display: flex;
   flex-direction: column;

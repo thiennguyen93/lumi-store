@@ -503,6 +503,14 @@ pub fn file_url_of(items: &[Vec<Rep>]) -> Option<String> {
         .and_then(|rep| rep.text.clone())
 }
 
+/// Where the copied files are, one path a line, for Copy path — `None` when
+/// no file has one to give (a file-reference URL from an older copy, which
+/// names a volume and an inode, not a place).
+pub fn paths_text_of(items: &[Vec<Rep>]) -> Option<String> {
+    let paths = file_paths(items);
+    (!paths.is_empty()).then(|| paths.join("\n"))
+}
+
 /// The token to play the copied file with — of a copy of exactly one file,
 /// since a preview plays one thing; `None` for several, for a file Lumi gave
 /// no grant, and for a copy from before Lumi did.
@@ -563,7 +571,7 @@ pub enum Restored {
     Back,
     /// The same thing was copied again since, and that row stands: this
     /// one is surplus — its record and blobs are to be deleted.
-    Surplus(Entry),
+    Surplus(Box<Entry>),
     /// Not in the trash (already restored, or the trash was emptied).
     Gone,
 }
@@ -574,7 +582,7 @@ pub fn restore(index: &mut Index, id: &str) -> Restored {
     };
     let entry = index.trash.remove(at);
     if index.items.iter().any(|e| e.hash == entry.hash) {
-        return Restored::Surplus(entry);
+        return Restored::Surplus(Box::new(entry));
     }
     index.items.push(entry);
     Restored::Back

@@ -30,6 +30,7 @@ type Answers = {
   restore: { restored: boolean; count: number };
   copy: Record<string, never>;
   copyText: Record<string, never>;
+  copyPath: Record<string, never>;
   open: Record<string, never>;
   reveal: Record<string, never>;
   saveImage: Record<string, never>;

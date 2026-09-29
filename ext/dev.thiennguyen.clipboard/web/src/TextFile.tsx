@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { JsonTree, type Json } from "./JsonTree";
+import { RichText } from "./richText";
 
 /** How much of a text file is shown: enough to see what it is, and a
  *  log of a gigabyte costs the same as a note. */
@@ -11,9 +12,14 @@ const JSON_BYTES = 1024 * 1024;
 
 type Head = { text: string; cut: boolean; tree: Json | undefined };
 
+/** The most elements a rendered markdown file is drawn with; past it the
+ *  rest is left out, as `RichText` does for a rich copy. */
+const MARKDOWN_NODES = 20000;
+
 /** The start of a copied text or code file, as plain text — coloured by
  *  `language` once its grammar has loaded — or, for a JSON file small enough
- *  to read whole, a tree, with the text a click away.
+ *  to read whole, a tree, and for a markdown file the rendered document,
+ *  each with the code a click away.
  *  Lumi serves it as `text/plain` under `nosniff` whatever its name, and it
  *  is drawn here as text nodes — an HTML file shows its markup, nothing in
  *  it runs. A file with a NUL in its start is not text after all: `onFail`,
@@ -21,11 +27,14 @@ type Head = { text: string; cut: boolean; tree: Json | undefined };
 export function TextFile({
   src,
   json,
+  markdown,
   language,
   onFail,
 }: {
   src: string;
   json: boolean;
+  /** A markdown file: drawn rendered first, its source a click away. */
+  markdown: boolean;
   language: string | null;
   onFail: () => void;
 }) {
@@ -63,8 +72,33 @@ export function TextFile({
     return () => stop.abort();
   }, [src, json]);
 
-  const tree = !!head && head.tree !== undefined && !asText;
-  const text = head && !tree ? head.text : "";
+  // The rendered markdown, as HTML for `RichText`; `null` until marked is
+  // loaded, and for good if it could not be.
+  const [rendered, setRendered] = useState<{ text: string; html: string } | null>(null);
+  useEffect(() => {
+    const source = head?.text;
+    if (!markdown || !source) return;
+    let live = true;
+    void import("./markdown")
+      .then(({ markdownHtml }) => live && setRendered({ text: source, html: markdownHtml(source) }))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [markdown, head?.text]);
+  const mine = rendered && rendered.text === head?.text ? rendered : null;
+  // Parsed once per file, not on every draw of the card. A document with
+  // nothing to show once rendered (only images, say) shows its source.
+  const doc = useMemo(
+    () => mine && <RichText html={mine.html} maxNodes={MARKDOWN_NODES} fallback={<pre>{mine.text}</pre>} />,
+    [mine],
+  );
+
+  // The other view than the code: a JSON tree, or a rendered markdown file.
+  const other = head?.tree !== undefined ? "tree" : markdown && !!head?.text ? "doc" : null;
+  const tree = other === "tree" && !asText;
+  const showDoc = other === "doc" && !asText && !!doc;
+  const text = head && !tree && !showDoc ? head.text : "";
 
   // Colours come after the text: plain first, the same lines coloured when
   // highlight.js is loaded and done, so nothing moves. Any failure keeps it plain.
@@ -87,6 +121,11 @@ export function TextFile({
     <div className="file-text">
       {tree ? (
         <JsonTree value={head.tree!} />
+      ) : showDoc ? (
+        <div className="file-doc">{doc}</div>
+      ) : other === "doc" && !asText ? (
+        // marked still loading: the same box, blank, rather than a flash of code.
+        <div className="file-doc" />
       ) : language && text ? (
         // Numbers and code in one scroller, so they never drift apart; the
         // numbers stay put when a long line is scrolled to, and are left
@@ -100,16 +139,16 @@ export function TextFile({
       ) : (
         <pre>{text || "Empty file"}</pre>
       )}
-      {(head.tree !== undefined || head.cut) && (
+      {(other || head.cut) && (
         <div className="file-text-more">
           {head.cut && !tree && <span>First {Math.round(HEAD_BYTES / 1024)} KB of the file</span>}
-          {head.tree !== undefined && (
+          {other && (
             <span className="file-text-modes" role="group" aria-label="Show as">
-              <button type="button" aria-pressed={tree} onMouseDown={keepFocus} onClick={() => setAsText(false)}>
-                Tree
+              <button type="button" aria-pressed={!asText} onMouseDown={keepFocus} onClick={() => setAsText(false)}>
+                {other === "tree" ? "Tree" : "Preview"}
               </button>
-              <button type="button" aria-pressed={!tree} onMouseDown={keepFocus} onClick={() => setAsText(true)}>
-                Text
+              <button type="button" aria-pressed={asText} onMouseDown={keepFocus} onClick={() => setAsText(true)}>
+                {other === "tree" ? "Text" : "Code"}
               </button>
             </span>
           )}
