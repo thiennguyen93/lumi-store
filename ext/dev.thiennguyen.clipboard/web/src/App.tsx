@@ -403,8 +403,11 @@ export function App() {
     else if (key === "Tab") cycle(event.shiftKey ? -1 : 1);
     else if (key === "Escape") {
       // Undo what narrows the list first — the search, then the filter —
-      // and only then put the panel away.
-      if (query) {
+      // and only then put the panel away. The menu keeps its own ⎋; one that
+      // gets here anyway while it is up puts away the menu, never the panel.
+      if (menuOpen) {
+        closeMenu();
+      } else if (query) {
         setQuery("");
         setSelected(0);
       } else if (filter !== "all") {

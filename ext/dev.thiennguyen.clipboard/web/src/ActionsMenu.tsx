@@ -71,6 +71,9 @@ export function ActionsMenu({ actions, onClose }: { actions: Action[]; onClose: 
     if (key === "ArrowDown") setAt((i) => Math.min(shown.length - 1, i + 1));
     else if (key === "ArrowUp") setAt((i) => Math.max(0, i - 1));
     else if (key === "Enter") run(current);
+    // ⎋ takes back one step at a time: a waiting confirmation first, the
+    // menu only when nothing is waiting.
+    else if (key === "Escape" && armed) setArmed(null);
     else if (key === "Escape" || (event.metaKey && key.toLowerCase() === "k")) onClose();
     else return;
     event.preventDefault();
