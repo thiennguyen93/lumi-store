@@ -1,4 +1,4 @@
-// Clipboard History's Settings tab — the manifest's `settings-page`, drawn
+// Clipboard Manager's Settings tab — the manifest's `settings-page`, drawn
 // in place of the form Lumi would make from [[settings]]. It saves through
 // Lumi's own `PUT /__lumi__/settings`, so the manifest still decides what
 // can be stored; the extension is asked only things that read: how full the

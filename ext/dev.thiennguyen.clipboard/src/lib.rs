@@ -1,4 +1,4 @@
-//! Clipboard History: keeps what you copy and pastes it back from a panel.
+//! Clipboard Manager: keeps what you copy and pastes it back from a panel.
 //!
 //! **Lumi does the parts that must not be left to an extension.** It
 //! watches the pasteboard, drops anything a password manager marks as
@@ -103,12 +103,12 @@ impl lumi::Guest for Clipboard {
                 host::Lumi.open_window(PANEL)?;
                 Ok(String::new())
             }
-            _ => Err(format!("Clipboard History has no {name} command")),
+            _ => Err(format!("Clipboard Manager has no {name} command")),
         }
     }
 
     fn run_node(name: String, _params: String, _items: String) -> Result<String, String> {
-        Err(format!("Clipboard History has no {name} node"))
+        Err(format!("Clipboard Manager has no {name} node"))
     }
 
     fn run_ui(window: String, request: String) -> Result<String, String> {
@@ -119,7 +119,7 @@ impl lumi::Guest for Clipboard {
             WELCOME => welcome(&host::Lumi, &request),
             DASHBOARD => dashboard(&host::Lumi, &request),
             SETTINGS => settings(&host::Lumi, &request),
-            _ => return Err(format!("Clipboard History has no {window} window")),
+            _ => return Err(format!("Clipboard Manager has no {window} window")),
         };
         answer.map(|answer| answer.to_string())
     }

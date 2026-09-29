@@ -65,13 +65,15 @@ export function fuzzyScore(hay: string, needle: string): number | null {
 /** How many starts `fuzzyScore` tries, so a long row stays cheap. */
 const MAX_STARTS = 40;
 
-function fuzzyFrom(hay: string, needle: string, start: number): number | null {
+/** `path`, when given, is filled with where each letter was found. */
+function fuzzyFrom(hay: string, needle: string, start: number, path?: number[]): number | null {
   let score = 0;
   let from = start;
   let prev = -2;
   for (const ch of needle) {
     const at = hay.indexOf(ch, from);
     if (at < 0) return null;
+    path?.push(at);
     score += 1;
     if (at === prev + 1) score += 3;
     if (at === 0 || /[\s\p{P}]/u.test(hay[at - 1] ?? " ")) score += 2;
@@ -100,8 +102,17 @@ function compiled(query: string): RegExp | null {
  * - mixed: exact, else regexp, else fuzzy — the first that finds anything,
  *   as Maccy's Mixed does. */
 export function search(rows: Entry[], query: string, mode: SearchMode): Entry[] {
+  return searchWith(rows, query, mode).rows;
+}
+
+/** The way a search was read in the end: mixed is one of the other three. */
+export type Used = Exclude<SearchMode, "mixed">;
+
+/** `search`, and which way of reading the query found the rows — what the
+ *  list marks in each title. */
+export function searchWith(rows: Entry[], query: string, mode: SearchMode): { rows: Entry[]; used: Used } {
   const wanted = words(query);
-  if (!wanted.length) return rows;
+  if (!wanted.length) return { rows, used: "exact" };
   const exact = () => rows.filter((row) => matches(row, wanted));
   const regexp = () => {
     const re = compiled(query.trim());
@@ -124,18 +135,100 @@ export function search(rows: Entry[], query: string, mode: SearchMode): Entry[] 
       .map((hit) => hit.row);
   switch (mode) {
     case "fuzzy":
-      return fuzzy();
+      return { rows: fuzzy(), used: "fuzzy" };
     case "regexp":
-      return regexp();
+      return { rows: regexp(), used: "regexp" };
     case "mixed": {
       const first = exact();
-      if (first.length) return first;
+      if (first.length) return { rows: first, used: "exact" };
       const second = regexp();
-      return second.length ? second : fuzzy();
+      return second.length ? { rows: second, used: "regexp" } : { rows: fuzzy(), used: "fuzzy" };
     }
     default:
-      return exact();
+      return { rows: exact(), used: "exact" };
   }
+}
+
+/** A stretch of a title to mark, `[start, end)` in its UTF-16 units. */
+export type Span = [number, number];
+
+/** Where the query lands in `title`, to mark it in the list: every place
+ *  a word appears for exact, the letters a word was spread over for fuzzy
+ *  (or the word itself when it appears whole), and every match for
+ *  regexp. Found in the folded title, then mapped back, so `tieng` marks
+ *  `Tiếng`. A word found only in the row's other text marks nothing. */
+export function highlights(title: string, query: string, used: Used): Span[] {
+  const wanted = words(query);
+  if (!wanted.length || !title) return [];
+  const spans: Span[] = [];
+  if (used === "regexp") {
+    const re = compiled(query.trim());
+    if (!re) return [];
+    const all = new RegExp(re.source, "giu");
+    for (const m of title.matchAll(all)) {
+      if (m[0]) spans.push([m.index, m.index + m[0].length]);
+    }
+    return merged(spans);
+  }
+  const { text, back } = foldMapped(title);
+  const add = (from: number, to: number) => {
+    const start = back[from]?.[0];
+    const end = back[to - 1]?.[1];
+    if (start !== undefined && end !== undefined) spans.push([start, end]);
+  };
+  for (const word of wanted) {
+    let at = text.indexOf(word);
+    if (used === "fuzzy" && at < 0) {
+      for (const letter of fuzzyPath(text, word)) add(letter, letter + 1);
+      continue;
+    }
+    while (at >= 0) {
+      add(at, at + word.length);
+      at = text.indexOf(word, at + word.length);
+    }
+  }
+  return merged(spans);
+}
+
+/** The best spread of `needle` through `hay`, as `fuzzyScore` finds it:
+ *  where each letter landed, or nothing when one is missing. */
+function fuzzyPath(hay: string, needle: string): number[] {
+  const first = needle[0] ?? "";
+  let best: { score: number; path: number[] } | null = null;
+  let start = hay.indexOf(first);
+  for (let tries = 0; start >= 0 && tries < MAX_STARTS; tries++) {
+    const path: number[] = [];
+    const score = fuzzyFrom(hay, needle, start, path);
+    if (score !== null && (best === null || score > best.score)) best = { score, path };
+    start = hay.indexOf(first, start + 1);
+  }
+  return best?.path ?? [];
+}
+
+/** `fold(text)`, with where in `text` each folded unit came from. */
+function foldMapped(text: string): { text: string; back: Span[] } {
+  let out = "";
+  const back: Span[] = [];
+  let at = 0;
+  for (const ch of text) {
+    const f = fold(ch);
+    out += f;
+    for (let i = 0; i < f.length; i++) back.push([at, at + ch.length]);
+    at += ch.length;
+  }
+  return { text: out, back };
+}
+
+/** Sorted, with overlapping and touching spans joined. */
+function merged(spans: Span[]): Span[] {
+  spans.sort((a, b) => a[0] - b[0]);
+  const out: Span[] = [];
+  for (const span of spans) {
+    const last = out[out.length - 1];
+    if (last && span[0] <= last[1]) last[1] = Math.max(last[1], span[1]);
+    else out.push([span[0], span[1]]);
+  }
+  return out;
 }
 
 /** Whether the query is one the regexp mode cannot read. */

@@ -1,4 +1,4 @@
-// Clipboard History's panel.
+// Clipboard Manager's panel.
 //
 // The whole history index is read once when the panel opens and searched
 // here: typing in the search field costs no call into the extension. The
@@ -35,7 +35,7 @@ import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
 import { type Combo, DEFAULT_PIN_KEY, glyphs, parseCombo, pressed } from "./keys";
-import { badPattern, FILTER_LABELS, FILTERS, type Filter, inFilter, search, type SearchMode, shortcuts } from "./search";
+import { badPattern, FILTER_LABELS, FILTERS, type Filter, highlights, inFilter, search, searchWith, type SearchMode, shortcuts } from "./search";
 import type { Entry, ListAnswer } from "./types";
 
 export function App() {
@@ -71,8 +71,8 @@ export function App() {
   const filterRef = useRef<Filter>("all");
   filterRef.current = filter;
 
-  const shown = useMemo(
-    () => search((rows ?? []).filter((row) => inFilter(row, filter)), query, mode),
+  const { rows: shown, used } = useMemo(
+    () => searchWith((rows ?? []).filter((row) => inFilter(row, filter)), query, mode),
     [rows, query, filter, mode],
   );
   const keys = useMemo(() => shortcuts(shown), [shown]);
@@ -451,7 +451,7 @@ export function App() {
         <LumiMark />
         <span className="brand">Lumi</span>
         <span className="sep">›</span>
-        <span>Clipboard History</span>
+        <span>Clipboard Manager</span>
         <span className="sep">›</span>
         <span className="here">{FILTER_LABELS[filter]}</span>
         <nav className="filters" aria-label="Show">
@@ -516,6 +516,7 @@ export function App() {
               index={index}
               selected={index === selected}
               shortcut={keys.get(row.id)}
+              marks={highlights(row.title, query, used)}
               popped={popped === row.id}
               onPick={(at) => {
                 setSelected(at);

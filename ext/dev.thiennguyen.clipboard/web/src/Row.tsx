@@ -3,7 +3,7 @@ import { useItemDrag } from "./itemDrag";
 import { FileGlyph, KindGlyph, PinGlyph } from "./icons";
 import { fileFamily } from "./fileType";
 import { AppMark } from "./AppMark";
-import { since } from "./search";
+import { since, type Span } from "./search";
 import type { Entry } from "./types";
 
 export const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -53,11 +53,26 @@ function Lead({ row }: { row: Entry }) {
   );
 }
 
+/** The title, with what the search found in it marked. */
+function Title({ text, marks }: { text: string; marks: Span[] }) {
+  if (!marks.length) return <>{text}</>;
+  const parts = [];
+  let at = 0;
+  for (const [start, end] of marks) {
+    if (start > at) parts.push(text.slice(at, start));
+    parts.push(<mark key={start}>{text.slice(start, end)}</mark>);
+    at = end;
+  }
+  if (at < text.length) parts.push(text.slice(at));
+  return <>{parts}</>;
+}
+
 export function Row({
   row,
   index,
   selected,
   shortcut,
+  marks,
   popped,
   onPick,
   onPaste,
@@ -66,6 +81,8 @@ export function Row({
   index: number;
   selected: boolean;
   shortcut: string | undefined;
+  /** What the search found in the title. */
+  marks: Span[];
   /** Just pinned: its pin pops in. */
   popped: boolean;
   onPick: (index: number) => void;
@@ -101,7 +118,7 @@ export function Row({
       </span>
       <Lead row={row} />
       {/* Copied text, so always a text node — never markup. */}
-      <span className="title">{row.title || KIND_WORDS[row.kind]}</span>
+      <span className="title">{row.title ? <Title text={row.title} marks={marks} /> : KIND_WORDS[row.kind]}</span>
       {/* Two fixed columns at the end, so a time growing from 9s to 10s
           never shoves the app name: the app, right-aligned against the
           time, and the time (or a pin's glyph) in a column of its own. */}

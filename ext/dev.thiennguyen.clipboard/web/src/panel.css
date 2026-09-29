@@ -58,6 +58,57 @@
   }
 }
 
+/* The search's marks, per glass (`data-material`, set by App's `wear`)
+   and theme. Glass is clear, so a pale stroke with dark ink reads in
+   light and a warm glow with bright ink in dark; Dark glass is darker
+   still and takes the brightest; Frosted is "less colour", so its stroke
+   is the quietest of each. */
+:root {
+  --cb-hit-bg: rgba(255, 171, 0, 0.3);
+  --cb-hit-ink: #6b4700;
+  --cb-hit-on-bg: #fff;
+  --cb-hit-on-ink: color-mix(in srgb, var(--cb-accent) 78%, #000);
+}
+:root[data-theme="dark"] {
+  --cb-hit-bg: rgba(240, 165, 0, 0.22);
+  --cb-hit-ink: #ffc44d;
+  --cb-hit-on-bg: rgba(255, 255, 255, 0.9);
+  --cb-hit-on-ink: color-mix(in srgb, var(--cb-accent) 70%, #000);
+}
+:root[data-material="sidebar"] {
+  --cb-hit-bg: rgba(255, 171, 0, 0.2);
+  --cb-hit-ink: #5c3d00;
+  --cb-hit-on-bg: rgba(255, 255, 255, 0.92);
+  --cb-hit-on-ink: color-mix(in srgb, var(--cb-accent) 78%, #000);
+}
+:root[data-material="sidebar"][data-theme="dark"] {
+  --cb-hit-bg: rgba(240, 165, 0, 0.15);
+  --cb-hit-ink: #f5c867;
+  --cb-hit-on-bg: rgba(255, 255, 255, 0.82);
+  --cb-hit-on-ink: color-mix(in srgb, var(--cb-accent) 65%, #000);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --cb-hit-bg: rgba(240, 165, 0, 0.22);
+    --cb-hit-ink: #ffc44d;
+    --cb-hit-on-bg: rgba(255, 255, 255, 0.9);
+    --cb-hit-on-ink: color-mix(in srgb, var(--cb-accent) 70%, #000);
+  }
+  :root[data-material="sidebar"]:not([data-theme]) {
+    --cb-hit-bg: rgba(240, 165, 0, 0.15);
+    --cb-hit-ink: #f5c867;
+    --cb-hit-on-bg: rgba(255, 255, 255, 0.82);
+    --cb-hit-on-ink: color-mix(in srgb, var(--cb-accent) 65%, #000);
+  }
+}
+/* Dark glass is always dark (`wear` sets the theme), whatever the system. */
+:root[data-material="hud"] {
+  --cb-hit-bg: rgba(255, 190, 40, 0.24);
+  --cb-hit-ink: #ffd166;
+  --cb-hit-on-bg: rgba(255, 255, 255, 0.88);
+  --cb-hit-on-ink: color-mix(in srgb, var(--cb-accent) 65%, #000);
+}
+
 html, body, #root { height: 100%; }
 /* Clear: the panel is glass (`material = "popover"`), and whatever this
    page paints covers it. Washes, not colours, from here down. */
@@ -273,6 +324,24 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* What the search found in a title: a highlighter stroke in the key's
+   amber, its ink picked per glass (the --cb-hit tokens below). On the
+   accent, amber is a stain and a faint white wash sinks: the mark turns
+   over instead — a white stroke, the accent's ink (--cb-hit-on-*). */
+.title mark {
+  padding: 1px 1px;
+  margin: 0 -1px;
+  border-radius: 3px;
+  background: var(--cb-hit-bg);
+  color: var(--cb-hit-ink);
+  font-weight: 600;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.row[aria-selected="true"] .title mark {
+  background: var(--cb-hit-on-bg);
+  color: var(--cb-hit-on-ink);
 }
 
 /* The end of a row: the app it came from, a dot, then how long ago —

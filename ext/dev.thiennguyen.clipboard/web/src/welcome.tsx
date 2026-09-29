@@ -1,4 +1,4 @@
-// Clipboard History's Welcome window — the three-step tour `on_lifecycle`
+// Clipboard Manager's Welcome window — the three-step tour `on_lifecycle`
 // opens on an install and on an update. The top half is a small, live
 // picture of the panel acting out each step; the bottom half says it.
 //
@@ -63,7 +63,7 @@ function Welcome() {
         {step === 0 &&
           (from ? (
             <>
-              <h1>Clipboard History was updated</h1>
+              <h1>Clipboard Manager was updated</h1>
               <p className="dim">
                 From {from}. Your history and pins are where they were. New: one shortcut that
                 opens the panel in every profile.
@@ -71,7 +71,7 @@ function Welcome() {
             </>
           ) : (
             <>
-              <h1>Welcome to Clipboard History</h1>
+              <h1>Welcome to Clipboard Manager</h1>
               <p className="dim">
                 Everything you copy — text, links, colours, files, screenshots — is kept on this
                 Mac and pasted back from a panel. Stored encrypted; anything a password manager
@@ -379,7 +379,7 @@ function Shortcut({ onArmed }: { onArmed: (key: string | null) => void }) {
   } else if (later) {
     body = (
       <p className="dim">
-        No key for now. Lumi's Extensions → Clipboard History → Shortcuts has the same control.{" "}
+        No key for now. Lumi's Extensions → Clipboard Manager → Shortcuts has the same control.{" "}
         <button type="button" className="link" onClick={record}>Record one now</button>
       </p>
     );
