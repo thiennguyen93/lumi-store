@@ -583,6 +583,17 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             host.close_panel()?;
             Ok(json!({}))
         }
+        // Save image as…: the panel suggests a name (it has the local
+        // clock; the component has only UTC), the type picks the suffix.
+        // Lumi takes the panel down itself before its Save panel comes up.
+        "saveImage" => {
+            let record = read_record(host, &id()?)?;
+            let (blob, suffix) =
+                history::image_file_of(&record.items).ok_or_else(|| "That item has no image to save.".to_string())?;
+            let stem = request["name"].as_str().and_then(history::file_stem).unwrap_or_else(|| "Image".to_string());
+            host.save_blob(&blob, &format!("{stem}.{suffix}"))?;
+            Ok(json!({}))
+        }
         "previewWidth" => {
             let width = request["width"]
                 .as_u64()
@@ -917,6 +928,22 @@ mod tests {
 
         ui(&host, &json!({"kind": "copy", "id": "id2"})).unwrap();
         assert_eq!(*host.keystrokes.borrow(), [false], "copy is no ⌘V");
+    }
+
+    #[test]
+    fn an_image_is_saved_under_a_clean_name_and_its_own_suffix() {
+        let host = Memory::default();
+        host.blobs.borrow_mut().insert("img".into());
+        on_event(&host, "clipboard", &image_event("h1", "img")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 2, "just words")).unwrap();
+        ui(&host, &json!({"kind": "saveImage", "id": "id1", "name": "Image 2026-09-29 at 11.07.12"})).unwrap();
+        ui(&host, &json!({"kind": "saveImage", "id": "id1", "name": "../a/b: c"})).unwrap();
+        ui(&host, &json!({"kind": "saveImage", "id": "id1", "name": " ..\u{7} "})).unwrap();
+        assert_eq!(
+            *host.opened.borrow(),
+            ["save img Image 2026-09-29 at 11.07.12.png", "save img -a-b- c.png", "save img Image.png"]
+        );
+        assert!(ui(&host, &json!({"kind": "saveImage", "id": "id2"})).is_err(), "no image in text");
     }
 
     #[test]

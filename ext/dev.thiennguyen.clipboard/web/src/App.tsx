@@ -15,6 +15,7 @@ import { call, message } from "./bridge";
 import {
   CopyGlyph,
   ExternalGlyph,
+  DownloadGlyph,
   FolderGlyph,
   GearGlyph,
   KindGlyph,
@@ -295,6 +296,16 @@ export function App() {
             ...(row.ocr ? [{ id: "copyText", label: "Copy text in image", glyph: <ScanTextGlyph />, run: run("copyText") }] : []),
             ...(row.kind === "link" ? [{ id: "open", label: "Open in browser", glyph: <ExternalGlyph />, run: run("open") }] : []),
             ...(row.kind === "file" ? [{ id: "reveal", label: "Show in Finder", glyph: <FolderGlyph />, run: run("reveal") }] : []),
+            ...(row.kind === "image"
+              ? [
+                  {
+                    id: "saveImage",
+                    label: "Save image as…",
+                    glyph: <DownloadGlyph />,
+                    run: () => void act(() => call({ kind: "saveImage", id: row.id, name: savedName(row.last) })),
+                  },
+                ]
+              : []),
             { id: "pin", label: row.pin ? "Unpin" : "Pin", glyph: <PinGlyph />, keys: glyphs(pinKey), run: togglePin },
           ]
         : []),
@@ -550,4 +561,13 @@ function wear(appearance: ListAnswer["appearance"], theme: ListAnswer["theme"]) 
   const shown = appearance === "hud" ? "dark" : theme;
   if (shown === "light" || shown === "dark") root.dataset.theme = shown;
   else delete root.dataset.theme;
+}
+
+/** The name Save image as… suggests, macOS's screenshot shape in the
+ *  local clock: "Image 2026-09-29 at 11.07.12". The suffix is the
+ *  extension's to add, from the image's type. */
+function savedName(at: number): string {
+  const d = new Date(at);
+  const two = (n: number) => String(n).padStart(2, "0");
+  return `Image ${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())} at ${two(d.getHours())}.${two(d.getMinutes())}.${two(d.getSeconds())}`;
 }

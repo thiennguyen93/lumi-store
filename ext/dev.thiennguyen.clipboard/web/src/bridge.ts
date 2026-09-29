@@ -21,6 +21,7 @@ type Answers = {
   copyText: Record<string, never>;
   open: Record<string, never>;
   reveal: Record<string, never>;
+  saveImage: Record<string, never>;
   clearAll: { ids: string[] };
   settings: Record<string, never>;
   setPin: { pin: string | null };

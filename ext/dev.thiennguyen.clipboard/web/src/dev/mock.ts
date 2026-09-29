@@ -132,6 +132,9 @@ function answer(request: Request): unknown {
     case "open":
       say(`would open ${rows.find((r) => r.id === request.id)?.title} in the browser`);
       return {};
+    case "saveImage":
+      say(`would close the panel and offer ${request.id} to save as "${request.name}.png"`);
+      return {};
     case "reveal":
       say(`would show ${rows.find((r) => r.id === request.id)?.title} in Finder`);
       return {};

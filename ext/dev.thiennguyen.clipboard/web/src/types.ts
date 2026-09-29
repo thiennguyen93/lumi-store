@@ -62,6 +62,7 @@ export type Request =
   | { kind: "copyText"; id: string }
   | { kind: "open"; id: string }
   | { kind: "reveal"; id: string }
+  | { kind: "saveImage"; id: string; name: string }
   | { kind: "clearAll" }
   | { kind: "settings" }
   | { kind: "setPin"; id: string; pin: string | null }

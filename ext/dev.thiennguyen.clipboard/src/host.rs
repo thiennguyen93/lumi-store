@@ -45,6 +45,9 @@ pub trait Host {
     fn open_url(&self, url: &str) -> Result<(), String>;
     /// Select a file in Finder, by its `file:` URL.
     fn reveal(&self, file_url: &str) -> Result<(), String>;
+    /// Hand a stored blob to the person through Lumi's Save panel, as
+    /// `name`. Lumi closes the panel first and does not say where it went.
+    fn save_blob(&self, blob: &str, name: &str) -> Result<(), String>;
     /// Lumi's Settings, on this extension's Settings tab.
     fn open_settings(&self) -> Result<(), String>;
     fn settings(&self) -> serde_json::Value;
@@ -173,6 +176,10 @@ impl Host for Lumi {
 
     fn reveal(&self, file_url: &str) -> Result<(), String> {
         lumi_extension_api::reveal(file_url)
+    }
+
+    fn save_blob(&self, blob: &str, name: &str) -> Result<(), String> {
+        lumi_extension_api::storage::blob_save(blob, name)
     }
 
     fn open_settings(&self) -> Result<(), String> {
@@ -318,6 +325,11 @@ pub mod memory {
 
         fn reveal(&self, file_url: &str) -> Result<(), String> {
             self.opened.borrow_mut().push(format!("reveal {file_url}"));
+            Ok(())
+        }
+
+        fn save_blob(&self, blob: &str, name: &str) -> Result<(), String> {
+            self.opened.borrow_mut().push(format!("save {blob} {name}"));
             Ok(())
         }
 

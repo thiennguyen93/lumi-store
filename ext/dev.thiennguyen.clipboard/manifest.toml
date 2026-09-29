@@ -3,16 +3,18 @@
 # Listed in extensions.toml, and held back by `min-lumi-version` alone: the
 # `clipboard-history` and `input` capabilities, `events` and the panel `kind`
 # all arrive with lumi:ext 0.3 in Lumi 1.25.0, and an older Lumi shows this
-# as needing an update rather than installing it.
+# as needing an update rather than installing it. 1.26.0 since Save image
+# as…: `storage.blob-save` is a new import, and a component that imports it
+# does not load on a Lumi without it at all.
 [extension]
 id = "dev.thiennguyen.clipboard"
 name = "Clipboard History"
-version = "0.25.2"
+version = "0.26.2"
 description = "Keep what you copy — text, links, images and files — and paste it back from a panel."
 author = "Thien Nguyen"
 summary = "Remembers what you copy on this Mac and brings it back with one shortcut: search, pick, and it is pasted into the app you were typing in. Text, rich text, links, colours, files and images, with pins for what you keep reaching for. Anything a password manager marks as secret is never recorded — Lumi drops it before this extension hears of it — and the history is stored encrypted with a key Lumi keeps in your Keychain. Nothing leaves your Mac: the extension has no network access."
 homepage = "https://lumikeys.app/docs/extensions"
-min-lumi-version = "1.25.0"
+min-lumi-version = "1.26.0"
 # `clipboard-history`: hears each copy (the review sheet says so).
 # `clipboard`: puts a chosen item back on the pasteboard.
 # `input` + `accessibility`: pastes it into the app in front — the same

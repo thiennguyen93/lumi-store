@@ -473,6 +473,36 @@ pub fn file_url_of(items: &[Vec<Rep>]) -> Option<String> {
         .and_then(|rep| rep.text.clone())
 }
 
+/// The image an image row carries, as the blob Lumi stored it in and the
+/// file extension its type is saved under — for Save image as….
+pub fn image_file_of(items: &[Vec<Rep>]) -> Option<(String, &'static str)> {
+    items.iter().flatten().find_map(|rep| {
+        let suffix = match rep.uti.as_str() {
+            uti::PNG => "png",
+            uti::JPEG => "jpg",
+            uti::TIFF => "tiff",
+            uti::HEIC => "heic",
+            _ => return None,
+        };
+        rep.blob.clone().map(|blob| (blob, suffix))
+    })
+}
+
+/// A file name for a saved copy out of what the panel suggests: kept to
+/// one visible path component, as Lumi's Save panel takes it — no `/` or
+/// `:` (Finder's own separator), no control characters, no leading dot —
+/// and to a length that leaves the suffix room. `None` when nothing is left.
+pub fn file_stem(suggested: &str) -> Option<String> {
+    let cleaned: String = suggested
+        .chars()
+        .filter(|c| !c.is_control())
+        .map(|c| if c == '/' || c == ':' { '-' } else { c })
+        .take(200)
+        .collect();
+    let cleaned = cleaned.trim().trim_start_matches('.').trim();
+    (!cleaned.is_empty()).then(|| cleaned.to_string())
+}
+
 /// What bringing a row back out of the trash came to.
 #[derive(Debug, PartialEq)]
 pub enum Restored {

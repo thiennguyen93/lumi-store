@@ -89,9 +89,12 @@ interface clipboard {
     paste: func(items: list<list<rep>>) -> result<_, string>;
 }
 
-/// Lumi's own alert overlay, styled from Settings. Costs nothing: it draws
-/// over the screen the way any of Lumi's own overlays do, reaches no other
-/// process, and is how an extension reports to the person at the keyboard.
+/// Lumi's own alert overlay, styled from Settings. Costs no capability,
+/// and one call of the run's budget: it draws over the screen the way any
+/// of Lumi's own overlays do, reaches no other process, and is how an
+/// extension reports to the person at the keyboard. Free of permission is
+/// not free of budget, which is what stops a loop of alerts flooding the
+/// screen.
 interface alert {
     show: func(text: string) -> result<_, string>;
 }
@@ -119,8 +122,10 @@ interface open {
 
 /// The extension's own settings, as saved in the Extensions pane.
 ///
-/// Costs nothing: the values were typed into a form the extension's own
-/// manifest declared, so reading them back reaches nobody's desk. The
+/// Costs no capability, and one call of the run's budget: the values were
+/// typed into a form the extension's own manifest declared, so reading them
+/// back reaches nobody's desk. A read past the budget has no error to give
+/// in this shape and answers the empty object, so read early in a run. The
 /// answer is a JSON object as text, one key per declared field, with the
 /// manifest's defaults already filled in for anything the person never
 /// touched — an extension never has to know whether a value was chosen
@@ -140,8 +145,9 @@ interface settings {
 /// in its own storage, to word something by the set the person is in, or to
 /// offer a choice between them in one of its windows.
 ///
-/// Costs nothing: the names are labels the person typed for their own sets,
-/// and reading them reaches no other application. One read answers both
+/// Costs no capability, and one call of the run's budget: the names are
+/// labels the person typed for their own sets, and reading them reaches no
+/// other application. One read answers both
 /// halves, so a switch landing between two calls can never pair one
 /// profile's list with another moment's live id. Read it when you need it —
 /// the person may switch at any time, and nothing tells a component that
@@ -169,12 +175,16 @@ interface profiles {
 
 /// Lumi itself: which build is running, and whether this Mac has Pro.
 ///
-/// Costs nothing: none of it is anybody's content. The version is what an
-/// extension checks before relying on something a newer Lumi added; the
-/// edition is what lets it word a feature by what the person has. The
-/// licence key, the seat, and who bought it are not here and never will
-/// be — the edition is the whole of what an extension learns about the
-/// licence.
+/// `about` and `license` cost nothing at all, not even a call of the
+/// budget: none of it is anybody's content, and an over-budget answer would
+/// have to invent a version or an edition. `hyper-key-enabled` costs no
+/// capability and one call, since it reads the live document.
+///
+/// The version is what an extension checks before relying on something a
+/// newer Lumi added; the edition is what lets it word a feature by what the
+/// person has. The licence key, the seat, and who bought it are not here
+/// and never will be — the edition is the whole of what an extension
+/// learns about the licence.
 interface app {
     record info {
         /// Lumi's version, "major.minor.patch" — compare it rather than
@@ -365,6 +375,19 @@ interface storage {
     /// back; those are for pages to show, not for the component to load.
     blob-read: func(id: string) -> result<list<u8>, string>;
     blob-delete: func(id: string) -> result<_, string>;
+    /// Hand one blob to the person as a file: this extension's panels go
+    /// off screen, and Lumi's own Save panel comes up with `name` filled
+    /// in and the extension's name in its message. Answers once the Save
+    /// panel is asked for, not once it is answered — where the file went,
+    /// or that the person cancelled, is theirs and is not told back; a
+    /// write that fails is reported to them in an alert.
+    ///
+    /// `name` is a file name, not a path: 1–255 bytes, no `/`, no control
+    /// characters, not starting with `.`. Any size of blob, Lumi's own
+    /// larger ones included — the bytes never cross into the component.
+    /// Only for something the person did: a command they pressed or a
+    /// press in one of the extension's windows. Added in Lumi 1.26.
+    blob-save: func(id: string, name: string) -> result<_, string>;
     /// Every blob and its size in bytes, sorted by id.
     blobs: func() -> result<list<tuple<string, u64>>, string>;
     usage: func() -> result<space, string>;
