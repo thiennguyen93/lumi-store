@@ -281,6 +281,35 @@ fn expire(host: &impl Host, prefs: &Prefs) -> Result<(), String> {
     Ok(())
 }
 
+/// File rows kept before titles were read by name carry Finder's
+/// file-reference id as their title (`/.file/id=6571367.2286…`). Each is
+/// titled again from its record — by the path Lumi resolved, or by the names
+/// Finder wrote beside it — once, when the panel opens; none left is one read.
+fn rename_file_rows(host: &impl Host) -> Result<(), String> {
+    let (index, _) = read_index(host)?;
+    let mut renamed = std::collections::HashMap::new();
+    for entry in index.items.iter().filter(|e| e.kind == history::Kind::File && e.title.contains("/.file/id=")) {
+        if let Ok(record) = read_record(host, &entry.id) {
+            let title = history::title_of(&record.items, history::Kind::File);
+            if !title.is_empty() && title != entry.title {
+                renamed.insert(entry.id.clone(), (title, history::file_ext_of(&record.items)));
+            }
+        }
+    }
+    if renamed.is_empty() {
+        return Ok(());
+    }
+    update_index(host, |index| {
+        for entry in &mut index.items {
+            if let Some((title, ext)) = renamed.get(&entry.id) {
+                entry.title = title.clone();
+                entry.file_ext = ext.clone();
+            }
+        }
+        Ok(())
+    })
+}
+
 /// Delete what an evicted or removed row held. Best effort: a record or
 /// blob left behind is storage wasted, not a history that is wrong, and a
 /// failure here must not undo the index write that already happened.
@@ -417,6 +446,8 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 // And what has aged out since the last copy: with nothing
                 // copied for a day, a day's keep still ends.
                 expire(host, &prefs)?;
+                // Best effort: a stale title is only a title.
+                let _ = rename_file_rows(host);
             }
             let (index, _) = read_index(host)?;
             let mut items = history::sorted(&index, prefs.order);
@@ -560,7 +591,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 .ocr
                 .filter(|text| prefs(host).ocr && !text.trim().is_empty())
                 .ok_or_else(|| "Lumi read no text in that image.".to_string())?;
-            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None };
+            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None, path: None };
             host.paste(&[vec![rep]], false)?;
             Ok(json!({}))
         }
@@ -929,6 +960,32 @@ mod tests {
 
         ui(&host, &json!({"kind": "copy", "id": "id2"})).unwrap();
         assert_eq!(*host.keystrokes.borrow(), [false], "copy is no ⌘V");
+    }
+
+    /// A file row kept under its file-reference id is titled by name when
+    /// the panel next opens.
+    #[test]
+    fn a_file_row_kept_by_its_id_is_renamed_on_opening() {
+        let host = Memory::default();
+        let copy = json!({ "v": 1, "at": 1, "hash": "h1", "items": [[
+            { "uti": "public.file-url", "text": "file:///.file/id=6571367.228661126", "bytes": 35 },
+            { "uti": "public.utf8-plain-text", "text": "brag2.mp4", "bytes": 9 },
+        ]] });
+        on_event(&host, "clipboard", &copy.to_string()).unwrap();
+        assert_eq!(list(&host)[0]["title"], "brag2.mp4", "named at the copy");
+
+        // As an older build kept it.
+        let (mut index, rev) = read_index(&host).unwrap();
+        index.items[0].title = "/.file/id=6571367.228661126".to_string();
+        index.items[0].file_ext = String::new();
+        host.put(INDEX, &serde_json::to_string(&index).unwrap(), rev).unwrap();
+        assert_eq!(list(&host)[0]["title"], "/.file/id=6571367.228661126");
+
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        assert_eq!(list(&host)[0]["title"], "brag2.mp4");
+        assert_eq!(list(&host)[0]["fileExt"], "mp4");
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["text"], "brag2.mp4", "no path to show, so the name");
     }
 
     #[test]

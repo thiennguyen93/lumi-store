@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { blobUrl, call } from "./bridge";
 import { AppMark } from "./AppMark";
 import { CollapseGlyph, ExpandGlyph, FileGlyph, KindGlyph } from "./icons";
-import { fileFamily } from "./fileType";
+import { fileFamily, type FileFamily } from "./fileType";
 import { RichText } from "./richText";
 import { HEX, KIND_WORDS } from "./Row";
 import { ago } from "./search";
@@ -140,6 +140,13 @@ export function Preview({ row }: { row: Entry | undefined }) {
             <div className="body ocr">{ocr}</div>
           </section>
         )}
+        {row.kind === "file" && MEDIA_FAMILIES.has(fileFamily(row.fileExt)) && (
+          // Stands where a player will be once Lumi can serve the file.
+          <div className="file-tile" data-family={fileFamily(row.fileExt)}>
+            <FileGlyph family={fileFamily(row.fileExt)} />
+            <span>{(row.fileExt ?? "").toUpperCase()}</span>
+          </div>
+        )}
         {row.kind === "color" && HEX.test(row.title) && (
           <div className="chip" style={{ background: row.title }} />
         )}
@@ -157,6 +164,9 @@ export function Preview({ row }: { row: Entry | undefined }) {
     </aside>
   );
 }
+
+/** The families that get a tile of their own above the paths. */
+const MEDIA_FAMILIES = new Set<FileFamily>(["pdf", "audio", "video"]);
 
 /** A size the way Finder writes one: decimal units, whole kilobytes, one
  *  decimal from a megabyte up — "812 bytes", "234 KB", "1.2 MB". */

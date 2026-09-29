@@ -8,7 +8,15 @@ import type { Entry, Request } from "../types";
 const now = Date.now();
 const min = 60_000;
 
+/** Where each mock file is: a file row is titled by its name, as the
+ *  extension titles one, and previews by this path. */
+const filePaths = new Map<string, string>();
+
 function entry(partial: Partial<Entry> & Pick<Entry, "id" | "kind" | "title">): Entry {
+  if (partial.kind === "file") {
+    filePaths.set(partial.id, partial.title);
+    partial = { ...partial, title: partial.title.replace(/\/$/, "").split("/").pop() ?? partial.title };
+  }
   return {
     hash: partial.id,
     pin: null,
@@ -88,7 +96,11 @@ function answer(request: Request): unknown {
       };
     case "preview": {
       const row = rows.find((r) => r.id === request.id);
-      const text = row ? `${row.title}\n\n(the full text of the copy would be here)` : "";
+      const text = !row
+        ? ""
+        : row.kind === "file"
+          ? (filePaths.get(row.id) ?? row.title)
+          : `${row.title}\n\n(the full text of the copy would be here)`;
       const html =
         row?.kind === "rich"
           ? `<meta charset="utf-8"><div style="color: rgb(0, 0, 0); font-family: Georgia;">${row.title.replace(/</g, "&lt;")} 🎉</div><p style="color: rgb(34, 34, 34)">Some <b>bold</b>, <i>italic</i>, <s>struck</s>, <u>under</u> and <span style="color: rgb(220, 38, 38)">red</span> <span style="font-family: Menlo">mono</span> <a href="https://x.test">link</a>.</p><ul><li>one ✅</li><li>two</li></ul><img src="https://x.test/a.png"><script>parent.document.body.remove()</script>`

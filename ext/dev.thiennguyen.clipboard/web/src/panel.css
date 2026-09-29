@@ -565,6 +565,21 @@ body {
   font: 12px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 .card .picture img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.card .file-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 96px;
+  border-radius: 6px;
+  border: 1px solid var(--cb-line);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--cb-faint);
+}
+.card .file-tile .glyph { width: 36px; height: 36px; stroke-width: 1.5; }
 .card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); }
 
 /* `pnpm dev` only (`?glass`, set by dev/mock.ts): a busy wallpaper and a

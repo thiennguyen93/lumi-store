@@ -72,6 +72,11 @@ pub struct Rep {
     /// on a `public.file-url` rep only, from Lumi 1.26.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub file_size: Option<u64>,
+    /// Where a copied file is, as Lumi resolved it at the copy — Finder
+    /// writes `file:///.file/id=…`, which names nothing a person can read
+    /// and nothing this component can resolve. From Lumi 1.26.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
 }
 
 /// Where a copy came from: the application in front when it happened.
@@ -159,6 +164,11 @@ pub struct Entry {
     /// can leave it out while reading is off. `list` folds it into `search`.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub ocr_search: String,
+    /// What a file row's files are, for the icon its row wears: their
+    /// extension, lowercased, when they all share one — `"/"` when they are
+    /// all folders. Empty for anything else, and for rows kept before this.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub file_ext: String,
 }
 
 fn is_false(b: &bool) -> bool {
@@ -297,6 +307,7 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
         search: search_of(&copy.items),
         ocr_search: copy.ocr.as_deref().map(ocr_search_of).unwrap_or_default(),
         ocr: copy.ocr.as_deref().is_some_and(|text| !text.trim().is_empty()),
+        file_ext: if kind == Kind::File { file_ext_of(&copy.items) } else { String::new() },
         thumb: copy
             .items
             .iter()
@@ -606,9 +617,18 @@ pub const PREVIEW_CHARS: usize = 4000;
 /// paths one per line. Empty for an image, which the pane draws from its
 /// blob instead.
 pub fn preview_text(items: &[Vec<Rep>]) -> String {
-    let text = match plain_text(items) {
-        Some(text) => text.to_string(),
-        None => file_paths(items).join("\n"),
+    let files = files_of(items);
+    let text = if files.is_empty() {
+        plain_text(items).unwrap_or_default().to_string()
+    } else {
+        // Each file where it is, or by name where Lumi could not say.
+        let names = file_names(items);
+        files
+            .iter()
+            .enumerate()
+            .map(|(i, (path, _))| path.clone().or_else(|| names.get(i).cloned()).unwrap_or_else(|| "A file".to_string()))
+            .collect::<Vec<_>>()
+            .join("\n")
     };
     text.chars().take(PREVIEW_CHARS).collect()
 }
@@ -637,14 +657,73 @@ fn plain_text(items: &[Vec<Rep>]) -> Option<&str> {
         .and_then(|rep| rep.text.as_deref())
 }
 
-fn file_paths(items: &[Vec<Rep>]) -> Vec<String> {
+/// Each copied file: its path when there is one to read — Lumi's, or the
+/// URL's own for a plain `file:` URL — and whether it is a folder. A file
+/// reference Lumi did not resolve (a copy from before it did, or of a file
+/// since gone) has no path: `/.file/id=…` is not one worth showing.
+fn files_of(items: &[Vec<Rep>]) -> Vec<(Option<String>, bool)> {
     items
         .iter()
         .flatten()
         .filter(|rep| rep.uti == uti::FILE_URL)
-        .filter_map(|rep| rep.text.as_deref())
-        .map(|url| percent_decode(url.strip_prefix("file://").unwrap_or(url)))
+        .filter_map(|rep| {
+            let url = rep.text.as_deref()?;
+            let path = rep.path.clone().or_else(|| {
+                let path = percent_decode(url.strip_prefix("file://").unwrap_or(url));
+                (!path.starts_with("/.file/")).then_some(path)
+            });
+            Some((path, url.ends_with('/')))
+        })
         .collect()
+}
+
+fn file_paths(items: &[Vec<Rep>]) -> Vec<String> {
+    files_of(items).into_iter().filter_map(|(path, _)| path).collect()
+}
+
+/// The copied files' names, the way Finder shows them: off each path, or —
+/// when a path is missing — the names Finder writes beside the URLs as the
+/// copy's plain text, one per line.
+fn file_names(items: &[Vec<Rep>]) -> Vec<String> {
+    let files = files_of(items);
+    let base = |path: &str| path.trim_end_matches('/').rsplit('/').next().unwrap_or_default().to_string();
+    if files.iter().all(|(path, _)| path.is_some()) {
+        return files.iter().filter_map(|(path, _)| path.as_deref().map(base)).collect();
+    }
+    match plain_text(items) {
+        Some(text) => text.split(['\r', '\n']).map(str::trim).filter(|l| !l.is_empty()).map(str::to_string).collect(),
+        None => files.iter().filter_map(|(path, _)| path.as_deref().map(base)).collect(),
+    }
+}
+
+/// The one extension the copied files share, or `"/"` for folders; empty
+/// when they differ or have none. Read off the name alone — nothing is
+/// opened — and kept to a short run of letters and digits, since the page
+/// picks an icon by it and shows it nowhere. A run of digits alone is no
+/// extension: it is what a file reference (`/.file/id=1.2`) ends in.
+pub fn file_ext_of(items: &[Vec<Rep>]) -> String {
+    let files = files_of(items);
+    // By name, so a file reference Lumi resolved — or whose name Finder
+    // wrote beside it — has its extension too.
+    let names = file_names(items);
+    if names.len() != files.len() {
+        return String::new();
+    }
+    let mut exts = names.iter().zip(&files).map(|(name, (_, folder))| {
+        if *folder {
+            return "/".to_string();
+        }
+        match name.rsplit_once('.') {
+            Some((stem, ext)) if !stem.is_empty() && ext.len() <= 8
+                && ext.chars().all(|c| c.is_ascii_alphanumeric())
+                && ext.chars().any(|c| c.is_ascii_alphabetic()) => {
+                ext.to_ascii_lowercase()
+            }
+            _ => String::new(),
+        }
+    });
+    let first = exts.next().unwrap_or_default();
+    if exts.all(|ext| ext == first) { first } else { String::new() }
 }
 
 pub fn kind_of(items: &[Vec<Rep>]) -> Kind {
@@ -681,9 +760,14 @@ fn is_link(text: &str) -> bool {
         && !text.chars().any(char::is_whitespace)
 }
 
-fn title_of(items: &[Vec<Rep>], kind: Kind) -> String {
+pub fn title_of(items: &[Vec<Rep>], kind: Kind) -> String {
     let raw = match kind {
-        Kind::File => file_paths(items).join(", "),
+        // The file's name, as Finder lists it; its folder is the preview's.
+        Kind::File => match file_names(items).as_slice() {
+            [] => String::new(),
+            [one] => one.clone(),
+            [first, rest @ ..] => format!("{first} + {} more", rest.len()),
+        },
         Kind::Image => "Image".to_string(),
         _ => plain_text(items).unwrap_or_default().to_string(),
     };
@@ -771,6 +855,7 @@ mod tests {
             blob: None,
             bytes: t.len() as u64,
             file_size: None,
+            path: None,
         }
     }
 
@@ -781,6 +866,7 @@ mod tests {
             blob: Some(id.into()),
             bytes: 10,
             file_size: None,
+            path: None,
         }
     }
 
@@ -903,12 +989,12 @@ mod tests {
         assert_eq!(kind_of(&[vec![text("see https://x.y")]]), Kind::Text);
         assert_eq!(kind_of(&[vec![blob(uti::PNG, "p")]]), Kind::Image);
         assert_eq!(
-            kind_of(&[vec![text("b"), Rep { uti: uti::HTML.into(), text: Some("<b>b</b>".into()), blob: None, bytes: 8, file_size: None }]]),
+            kind_of(&[vec![text("b"), Rep { uti: uti::HTML.into(), text: Some("<b>b</b>".into()), blob: None, bytes: 8, file_size: None, path: None }]]),
             Kind::Rich
         );
-        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///Users/me/a%20b.txt".into()), blob: None, bytes: 0, file_size: None };
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///Users/me/a%20b.txt".into()), blob: None, bytes: 0, file_size: None, path: None };
         assert_eq!(kind_of(&[vec![file.clone()]]), Kind::File);
-        assert_eq!(title_of(&[vec![file]], Kind::File), "/Users/me/a b.txt");
+        assert_eq!(title_of(&[vec![file]], Kind::File), "a b.txt");
     }
 
     #[test]
@@ -928,11 +1014,57 @@ mod tests {
         assert_eq!(index.items[0].thumb.as_deref(), Some("p"));
     }
 
+    /// Finder's file references read by the path Lumi resolved, or — for a
+    /// copy from before it did — by the names Finder wrote beside them;
+    /// the id itself is never shown.
+    #[test]
+    fn a_file_reads_by_its_name_and_previews_by_its_path() {
+        let reference = |id: &str, path: Option<&str>| Rep {
+            uti: uti::FILE_URL.into(),
+            text: Some(format!("file:///.file/id=6571367.{id}")),
+            blob: None,
+            bytes: 30,
+            file_size: None,
+            path: path.map(str::to_string),
+        };
+        let resolved = [vec![reference("1", Some("/Users/me/Movies/brag2.mp4"))]];
+        assert_eq!(title_of(&resolved, Kind::File), "brag2.mp4");
+        assert_eq!(preview_text(&resolved), "/Users/me/Movies/brag2.mp4");
+        assert_eq!(file_ext_of(&resolved), "mp4");
+
+        let two = [
+            vec![reference("1", Some("/a/brag2.mp4")), text("brag2.mp4\rnotes.txt")],
+            vec![reference("2", Some("/b/notes.txt"))],
+        ];
+        assert_eq!(title_of(&two, Kind::File), "brag2.mp4 + 1 more");
+        assert_eq!(preview_text(&two), "/a/brag2.mp4\n/b/notes.txt");
+        assert!(search_of(&two).contains("/b/notes.txt"));
+
+        let old = [vec![reference("1", None), text("brag2.mp4")]];
+        assert_eq!(title_of(&old, Kind::File), "brag2.mp4");
+        assert_eq!(preview_text(&old), "brag2.mp4");
+        assert_eq!(file_ext_of(&old), "mp4");
+        assert!(!title_of(&old, Kind::File).contains(".file/id"));
+    }
+
+    #[test]
+    fn files_share_an_extension_or_have_none() {
+        let file = |url: &str| vec![Rep { uti: uti::FILE_URL.into(), text: Some(url.into()), blob: None, bytes: 0, file_size: None, path: None }];
+        let ext = |urls: &[&str]| file_ext_of(&urls.iter().map(|u| file(u)).collect::<Vec<_>>());
+        assert_eq!(ext(&["file:///a/Talk%20Final.PDF"]), "pdf");
+        assert_eq!(ext(&["file:///a/x.mp4", "file:///b/y.MP4"]), "mp4");
+        assert_eq!(ext(&["file:///a/x.mp4", "file:///b/y.mp3"]), "");
+        assert_eq!(ext(&["file:///a/folder/", "file:///b/other/"]), "/");
+        assert_eq!(ext(&["file:///a/.zshrc"]), "");
+        assert_eq!(ext(&["file:///.file/id=1.2"]), "");
+        assert_eq!(ext(&["file:///a/README"]), "");
+    }
+
     #[test]
     fn plain_keeps_text_or_files_only() {
-        let html = Rep { uti: uti::HTML.into(), text: Some("<b>x</b>".into()), blob: None, bytes: 8, file_size: None };
+        let html = Rep { uti: uti::HTML.into(), text: Some("<b>x</b>".into()), blob: None, bytes: 8, file_size: None, path: None };
         assert_eq!(plain(&[vec![text("x"), html.clone()]]), vec![vec![text("x")]]);
-        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///a".into()), blob: None, bytes: 0, file_size: None };
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///a".into()), blob: None, bytes: 0, file_size: None, path: None };
         assert_eq!(plain(&[vec![file.clone(), blob(uti::PNG, "p")]]), vec![vec![file]]);
         assert!(plain(&[vec![html]]).is_empty());
     }
@@ -954,7 +1086,7 @@ mod tests {
     fn a_link_and_a_file_are_found_for_their_actions() {
         assert_eq!(link_of(&[vec![text(" https://a.b/c ")]]), Some("https://a.b/c".to_string()));
         assert_eq!(link_of(&[vec![text("see https://a.b")]]), None);
-        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///.file/id=1.2".into()), blob: None, bytes: 0, file_size: None };
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///.file/id=1.2".into()), blob: None, bytes: 0, file_size: None, path: None };
         assert_eq!(file_url_of(&[vec![file]]), Some("file:///.file/id=1.2".to_string()));
         assert_eq!(file_url_of(&[vec![text("x")]]), None);
     }
