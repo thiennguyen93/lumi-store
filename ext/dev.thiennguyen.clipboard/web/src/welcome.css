@@ -1,20 +1,41 @@
-/* The Welcome window: a fixed dialog of three steps. Lumi's lumi.css comes
-   first and has no specificity, so these rules win without trying; its
-   tokens are used with a fallback each, so `pnpm dev` reads too. */
+/* The Welcome window: a small live panel on top acting out each of three
+   steps, the words below. Lumi's lumi.css comes first and has no
+   specificity, so these rules win without trying; its tokens are used with a
+   fallback each, so `pnpm dev` reads too. */
 
 :root {
   --wc-line: var(--border, rgba(128, 128, 128, 0.28));
-  --wc-box: var(--card, rgba(128, 128, 128, 0.08));
   --wc-accent: var(--accent, #378add);
   --wc-dim: color-mix(in srgb, CanvasText 58%, transparent);
+  --wc-faint: color-mix(in srgb, CanvasText 40%, transparent);
   --wc-raised: var(--raised, Canvas);
+  --wc-sunk: color-mix(in srgb, CanvasText 4%, Canvas);
   --wc-bad: var(--denied, #b3261e);
+  --wc-ok: #2f8a3e;
   --wc-warn-wash: color-mix(in srgb, #e0a300 16%, transparent);
   --wc-warn-ink: color-mix(in srgb, #7a5300 80%, CanvasText);
   /* The icon's violet, so the window reads as this extension's. */
   --wc-mark: #7c6ff0;
-  --wc-mark-wash: color-mix(in srgb, var(--wc-mark) 14%, transparent);
+  --wc-mark-ink: #534ab7;
+  --wc-mark-wash: color-mix(in srgb, var(--wc-mark) 16%, transparent);
+  /* The preview's stage. */
+  --wc-stage: #f4f2fd;
+  --wc-glow-a: rgba(124, 111, 240, 0.38);
+  --wc-glow-b: rgba(55, 138, 221, 0.26);
+  --wc-glow-c: rgba(212, 83, 126, 0.22);
+  --wc-dot: rgba(83, 74, 183, 0.14);
   color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wc-ok: #6cc47a;
+    --wc-mark-ink: #afa9ec;
+    --wc-stage: #17152a;
+    --wc-glow-a: rgba(124, 111, 240, 0.42);
+    --wc-glow-b: rgba(55, 138, 221, 0.24);
+    --wc-glow-c: rgba(212, 83, 126, 0.22);
+    --wc-dot: rgba(255, 255, 255, 0.07);
+  }
 }
 
 html, body, #root { height: 100%; }
@@ -27,115 +48,249 @@ body {
   user-select: none;
 }
 
-.tour {
+.tour { display: flex; flex-direction: column; height: 100%; }
+
+h1 { margin: 0; font-size: 17px; font-weight: 600; }
+p { margin: 0; }
+.dim { color: var(--wc-dim); }
+.small { font-size: 12px; }
+
+/* The panel's line icons, as panel.css draws them. */
+.glyph {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---- The live panel ---------------------------------------------------- */
+
+.preview {
+  position: relative;
+  flex: none;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  height: 176px;
+  padding-top: 20px;
   box-sizing: border-box;
-  height: 100%;
-  padding: 22px 26px 18px;
-  gap: 12px;
+  overflow: hidden;
+  /* A faint dot grid over three soft glows — violet, blue, pink — so the
+     stage has some depth without drawing the eye off the panel. */
+  background:
+    radial-gradient(circle, var(--wc-dot) 1px, transparent 1.4px) 0 0 / 14px 14px,
+    radial-gradient(60% 90% at 12% 10%, var(--wc-glow-a), transparent 70%),
+    radial-gradient(55% 80% at 92% 20%, var(--wc-glow-b), transparent 70%),
+    radial-gradient(70% 90% at 55% 120%, var(--wc-glow-c), transparent 70%),
+    var(--wc-stage);
+  border-bottom: 1px solid var(--wc-line);
 }
-
-/* One dot per step, the one on screen filled. */
-.dots { display: flex; gap: 6px; }
-.dots span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--wc-line);
+.preview::after {
+  /* The panel sinks into the edge rather than being cut by it. */
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 28px;
+  background: linear-gradient(transparent, color-mix(in srgb, var(--wc-stage) 70%, transparent));
+  pointer-events: none;
 }
-.dots span.on { background: var(--wc-accent); }
-
-.step { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
-.step h1 { margin: 0; font-size: 17px; font-weight: 600; }
-.step p { margin: 0; color: var(--wc-dim); }
-.step p.plain { color: CanvasText; }
-
-.mark {
+.panel {
+  width: 340px;
+  padding: 8px;
+  border: 1px solid var(--wc-line);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: var(--wc-raised);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+.search {
   display: flex;
   align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--wc-line);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.search svg { width: 13px; height: 13px; color: var(--wc-faint); }
+.search .placeholder { color: var(--wc-faint); }
+.caret { width: 1px; height: 13px; margin-left: -4px; background: CanvasText; animation: blink 1s steps(1) infinite; }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.item svg { width: 13px; height: 13px; flex: none; color: var(--wc-dim); }
+.item.first { background: var(--wc-mark-wash); }
+.item.first svg { color: var(--wc-mark-ink); }
+.item .text { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.item .meta { font-size: 11px; color: var(--wc-faint); }
+.item.first .meta { color: var(--wc-mark-ink); }
+/* The letters a fuzzy search matched. */
+.item mark {
+  background: none;
+  color: var(--wc-mark-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.swatch { width: 11px; height: 11px; flex: none; border-radius: 3px; background: #534ab7; }
+
+/* Step one: things arrive as they are copied. */
+.step-0 .item { animation: arrive 0.5s ease-out both; }
+/* Step two: the panel pops up at the key, again and again — once it has
+   slid aside for the key. */
+.step-1 .panel { animation: pop 3.6s ease-in-out 0.5s infinite; }
+/* The key sits beside the panel, never on it. It is always there and only
+   grows in on step two, so the panel glides aside and back instead of
+   jumping; the key lines up with the panel's search field. */
+.press {
+  align-self: flex-start;
+  flex: none;
+  box-sizing: border-box;
+  max-width: 0;
+  margin-top: 12px;
+  margin-right: 0;
+  padding: 6px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  border-radius: 8px;
+  background: var(--wc-raised);
+  border: 1px solid transparent;
+  transition:
+    max-width 0.45s ease,
+    margin-right 0.45s ease,
+    padding 0.45s ease,
+    opacity 0.25s ease,
+    border-color 0.25s ease;
+}
+.press.shown {
+  max-width: 140px;
+  margin-right: 28px;
+  padding: 6px 8px;
+  opacity: 1;
+  border-color: var(--wc-line);
+  transition-delay: 0s, 0s, 0s, 0.2s, 0.2s;
+  animation: press 3.6s ease-out 0.5s infinite;
+}
+.press.none { font-size: 11px; color: var(--wc-dim); animation: none; }
+.step-1 .press.none + .panel { animation: none; opacity: 0.45; }
+.panel { transition: opacity 0.3s ease; }
+
+@keyframes arrive { from { opacity: 0; transform: translateY(-6px); } }
+/* One loop: shown, slides away, the key is pressed, slides back. It starts
+   and ends shown, so neither entering the step nor looping jumps. */
+@keyframes pop {
+  0%, 50% { opacity: 1; transform: none; }
+  62%, 76% { opacity: 0; transform: translateY(40px); }
+  88%, 100% { opacity: 1; transform: none; }
+}
+@keyframes press {
+  0%, 70% { transform: scale(1); }
+  75% { transform: scale(0.9); box-shadow: 0 0 0 4px var(--wc-mark-wash); }
+  81%, 100% { transform: scale(1); }
+}
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .preview *, .preview { animation: none !important; }
+}
+
+/* ---- The words --------------------------------------------------------- */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 26px 16px;
+}
+.shortcut { display: flex; flex-direction: column; gap: 10px; }
+.shortcut[hidden] { display: none; }
+
+.keyline { display: flex; align-items: center; gap: 12px; }
+.ok { color: var(--wc-ok); font-size: 12px; }
+.ok::before { content: "✓ "; }
+
+.caps { display: inline-flex; gap: 4px; }
+kbd {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: var(--wc-mark-wash);
-  color: var(--wc-mark);
-}
-.mark svg { width: 22px; height: 22px; }
-
-/* The key, large: the one thing the second step is about. */
-.big {
-  display: inline-block;
-  padding: 8px 18px;
+  box-sizing: border-box;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
   border: 1px solid var(--wc-line);
-  border-radius: 8px;
+  border-bottom-width: 2px;
+  border-radius: 7px;
   background: var(--wc-raised);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
-  font: 500 20px/1.3 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  letter-spacing: 0.04em;
+  color: CanvasText;
+  font: 500 16px/1 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
-.keyline { display: flex; align-items: center; gap: 12px; margin: 4px 0; }
+.caps.small { gap: 2px; }
+.caps.small kbd {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-size: 11px;
+}
 
-.recorder { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.keycap {
-  all: unset;
-  min-width: 96px;
-  padding: 7px 14px;
-  border: 1px solid var(--wc-line);
+.recording { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.keycap.live {
+  min-width: 160px;
+  padding: 8px 14px;
+  border: 1px solid var(--wc-accent);
   border-radius: 8px;
-  background: var(--wc-raised);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
-  text-align: center;
-  font: 500 15px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  letter-spacing: 0.04em;
-  cursor: default;
-}
-.keycap:focus-visible { outline: 2px solid var(--wc-accent); outline-offset: 1px; }
-.keycap.recording {
-  color: var(--wc-accent);
-  border-color: var(--wc-accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--wc-accent) 22%, transparent);
+  color: var(--wc-accent);
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
 }
-.hint { font-size: 12px; color: var(--wc-dim); }
 
 /* What the install wrote down, or what a press just came back with. */
 .note {
-  padding: 9px 12px;
+  padding: 8px 10px;
   border-radius: 8px;
   background: var(--wc-warn-wash);
   color: var(--wc-warn-ink);
+  font-size: 12px;
   line-height: 1.45;
 }
 .note.bad { background: color-mix(in srgb, var(--wc-bad) 12%, transparent); color: var(--wc-bad); }
 .note .row { margin-top: 8px; }
-.row { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .row .sp { flex: 1; }
+
+.tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 14px; }
+.tips span { display: flex; align-items: center; gap: 8px; color: var(--wc-dim); white-space: nowrap; }
 
 .link { all: unset; color: var(--wc-accent); cursor: default; }
 .link:hover { text-decoration: underline; }
 .link:focus-visible { outline: 2px solid var(--wc-accent); border-radius: 4px; }
 
-/* The keys inside the panel, two columns. */
-.tips {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 18px;
-  margin: 2px 0;
+button.primary {
+  background: var(--wc-mark-ink);
+  border-color: var(--wc-mark-ink);
+  color: #fff;
 }
-.tips span { display: flex; align-items: center; gap: 8px; color: var(--wc-dim); }
-kbd {
-  display: inline-block;
-  min-width: 14px;
-  padding: 1px 6px;
-  border: 1px solid var(--wc-line);
-  border-bottom-width: 2px;
-  border-radius: 4px;
-  background: var(--wc-raised);
-  color: CanvasText;
-  font: 11px/1.6 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  text-align: center;
+@media (prefers-color-scheme: dark) {
+  button.primary { background: #534ab7; border-color: #534ab7; }
 }
 
-.actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: auto; }
+.actions { display: flex; gap: 10px; align-items: center; margin-top: auto; }
 .actions .sp { flex: 1; }
+.dots { display: flex; gap: 5px; }
+.dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--wc-line); }
+.dots span.on { background: var(--wc-mark); }
 .failed { color: var(--wc-bad); font-size: 12px; }
