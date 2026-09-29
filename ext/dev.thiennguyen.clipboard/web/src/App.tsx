@@ -415,7 +415,10 @@ export function App() {
   };
 
   return (
-    <main className="panel" onKeyDown={onKeyDown}>
+    // Focusable itself, so a click on what is not — the preview's text,
+    // which stays selectable — leaves the focus in here rather than on the
+    // body, where no key reaches `onKeyDown`.
+    <main className="panel" tabIndex={-1} onKeyDown={onKeyDown}>
       {/* The breadcrumb is the panel's title bar: drag it to move the panel. */}
       <header className="crumbs" {...windowDrag}>
         <LumiMark />
@@ -479,7 +482,11 @@ export function App() {
               selected={index === selected}
               shortcut={keys.get(row.id)}
               popped={popped === row.id}
-              onPick={setSelected}
+              onPick={(at) => {
+                setSelected(at);
+                // Back from the preview, the next letter is the search's.
+                input.current?.focus();
+              }}
               onPaste={(plain) => paste(plain, row)}
             />,
           ])}

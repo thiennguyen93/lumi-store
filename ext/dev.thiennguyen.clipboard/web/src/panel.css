@@ -54,6 +54,7 @@ body {
   cursor: default;
 }
 
+.panel:focus { outline: none; }
 .panel {
   position: relative;
   display: flex;
@@ -445,13 +446,18 @@ body {
 }
 .card-head {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 6px;
   font-size: 11px;
   color: var(--cb-muted);
 }
 .card-head .glyph { width: 12px; height: 12px; }
+/* The kind and app give way first; the pixel size stays whole. */
+.card-head > span:not(.dims) { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.card-head .dims { margin-left: auto; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--cb-faint); }
 .card-foot {
+  flex: none;
   margin-top: auto;
   font-size: 11px;
   color: var(--cb-faint);
@@ -489,24 +495,49 @@ body {
 .rich-html :is(td, th) { padding: 2px 6px; border: 1px solid var(--cb-line); }
 .rich-html table { border-collapse: collapse; }
 .rich-html hr { border: 0; border-top: 1px solid var(--cb-line); }
+/* A long OCR read scrolls rather than squeezing the picture; only a pane
+   too short for both gives way, the picture down to 96px, so the foot is
+   never pushed out of the card. */
 .card .picture {
+  flex: 0 1 auto;
+  min-height: 96px;
   max-height: 180px;
   border-radius: 6px;
   background: var(--cb-card);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
-/* The text Lumi read in the image, under it; long reads scroll. */
+/* The text Lumi read in the image, under it; long reads scroll. Its
+   expand button hides the picture so the read gets the whole card. */
+.card .ocr-read {
+  flex: 1 1 0;
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--cb-line);
+}
+.ocr-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--cb-muted);
+}
+.ocr-head .cap { padding: 0 4px; cursor: pointer; }
+.ocr-head .cap:hover { color: CanvasText; }
+.ocr-head .glyph { width: 12px; height: 12px; }
 .card .body.ocr {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   font: 12px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  padding-top: 8px;
-  border-top: 1px solid var(--cb-line);
 }
-.card .picture img { max-width: 100%; max-height: 180px; object-fit: contain; }
+.card .picture img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); }
 
 /* `pnpm dev` only (`?glass`, set by dev/mock.ts): a busy wallpaper and a

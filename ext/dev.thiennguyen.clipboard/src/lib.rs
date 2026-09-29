@@ -419,8 +419,22 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 expire(host, &prefs)?;
             }
             let (index, _) = read_index(host)?;
+            let mut items = history::sorted(&index, prefs.order);
+            for entry in &mut items {
+                let read = std::mem::take(&mut entry.ocr_search);
+                if prefs.ocr {
+                    if !read.is_empty() {
+                        entry.search.push(' ');
+                        entry.search.push_str(&read);
+                    }
+                } else {
+                    // Reading is off: no row offers, or is found by, the
+                    // text in its image.
+                    entry.ocr = false;
+                }
+            }
             Ok(json!({
-                "items": history::sorted(&index, prefs.order),
+                "items": items,
                 "pasteOnSelect": prefs.paste_on_select,
                 // For the page to match its text to the glass: "hud" is
                 // dark whatever the system says.
@@ -543,7 +557,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let record = read_record(host, &id()?)?;
             let text = record
                 .ocr
-                .filter(|text| !text.trim().is_empty())
+                .filter(|text| prefs(host).ocr && !text.trim().is_empty())
                 .ok_or_else(|| "Lumi read no text in that image.".to_string())?;
             let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None };
             host.paste(&[vec![rep]], false)?;
@@ -914,6 +928,7 @@ mod tests {
         let ocr = json!({"v": 1, "hash": "h1", "text": "Invoice TOTAL 42"}).to_string();
         on_event(&host, "clipboard-ocr", &ocr).unwrap();
         assert_eq!(list(&host)[0]["ocr"], true);
+        assert!(list(&host)[0]["search"].as_str().unwrap().contains("invoice total 42"));
         ui(&host, &json!({"kind": "copyText", "id": "id1"})).unwrap();
         let pasted = host.pasted.borrow();
         assert_eq!(pasted[0][0][0].text.as_deref(), Some("Invoice TOTAL 42"));
@@ -922,6 +937,9 @@ mod tests {
         *host.settings.borrow_mut() = json!({ "ocr": "false" });
         let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
         assert_eq!(shown["ocr"], Value::Null, "reading turned off hides the text");
+        assert_eq!(list(&host)[0]["ocr"], Value::Null, "and no row offers it");
+        assert!(!list(&host)[0]["search"].as_str().unwrap().contains("invoice"), "nor is found by it");
+        assert!(ui(&host, &json!({"kind": "copyText", "id": "id1"})).is_err());
     }
 
     #[test]

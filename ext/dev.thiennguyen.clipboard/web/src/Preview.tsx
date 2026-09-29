@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { blobUrl, call } from "./bridge";
-import { KindGlyph } from "./icons";
+import { CollapseGlyph, ExpandGlyph, KindGlyph } from "./icons";
 import { RichText } from "./richText";
 import { HEX, KIND_WORDS } from "./Row";
 import { ago } from "./search";
@@ -15,6 +15,13 @@ export function Preview({ row }: { row: Entry | undefined }) {
   // The full text, keyed by the row it belongs to, so a late answer for a
   // row the selection has already left is never drawn under another.
   const [full, setFull] = useState<{ id: string; text: string; html?: string | null; ocr?: string | null } | null>(null);
+  // The row whose read text is drawn over the whole card, picture hidden.
+  // Leaving the row puts its picture back, coming back included.
+  const [expanded, setExpanded] = useState<string | null>(null);
+  useEffect(() => setExpanded(null), [row?.id]);
+  // The picture's size in pixels, read off the image once it has loaded;
+  // by row, like the text.
+  const [size, setSize] = useState<{ id: string; w: number; h: number } | null>(null);
 
   useEffect(() => {
     // An image has no text to ask for, unless Lumi read some in it.
@@ -42,6 +49,8 @@ export function Preview({ row }: { row: Entry | undefined }) {
   const text = mine?.text || row.title;
   const html = row.kind === "rich" ? mine?.html : null;
   const ocr = row.kind === "image" ? mine?.ocr : null;
+  const wide = !!ocr && expanded === row.id;
+  const pixels = size?.id === row.id ? `${size.w} × ${size.h} px` : null;
 
   const from = row.appName || row.app;
   const times = row.count > 1 ? `${row.count}×` : "once";
@@ -55,13 +64,40 @@ export function Preview({ row }: { row: Entry | undefined }) {
             {KIND_WORDS[row.kind]}
             {from ? ` · ${from}` : ""}
           </span>
+          {pixels && <span className="dims">{pixels}</span>}
         </header>
-        {row.kind === "image" && row.thumb && (
+        {row.kind === "image" && row.thumb && !wide && (
           <div className="picture">
-            <img alt="Copied image" src={blobUrl(row.thumb)} />
+            <img
+              alt="Copied image"
+              src={blobUrl(row.thumb)}
+              onLoad={(event) => {
+                const { naturalWidth: w, naturalHeight: h } = event.currentTarget;
+                if (w && h) setSize({ id: row.id, w, h });
+              }}
+            />
           </div>
         )}
-        {ocr && <div className="body ocr">{ocr}</div>}
+        {ocr && (
+          <section className="ocr-read">
+            <header className="ocr-head">
+              <span>Text in image</span>
+              <button
+                type="button"
+                className="cap quiet"
+                aria-pressed={wide}
+                title={wide ? "Show the image" : "Give the text the whole card"}
+                aria-label={wide ? "Collapse text" : "Expand text"}
+                // The caret stays in the search field, as it does for a row.
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => setExpanded(wide ? null : row.id)}
+              >
+                {wide ? <CollapseGlyph /> : <ExpandGlyph />}
+              </button>
+            </header>
+            <div className="body ocr">{ocr}</div>
+          </section>
+        )}
         {row.kind === "color" && HEX.test(row.title) && (
           <div className="chip" style={{ background: row.title }} />
         )}

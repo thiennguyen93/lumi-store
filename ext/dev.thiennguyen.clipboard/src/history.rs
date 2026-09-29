@@ -151,6 +151,10 @@ pub struct Entry {
     /// the panel can offer to copy it.
     #[serde(default, skip_serializing_if = "is_false")]
     pub ocr: bool,
+    /// The lowercased text Lumi read, kept apart from `search` so the panel
+    /// can leave it out while reading is off. `list` folds it into `search`.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub ocr_search: String,
 }
 
 fn is_false(b: &bool) -> bool {
@@ -286,7 +290,8 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
         app_name: copy.source.name.clone(),
         kind,
         title: title_of(&copy.items, kind),
-        search: search_of(&copy.items, copy.ocr.as_deref()),
+        search: search_of(&copy.items),
+        ocr_search: copy.ocr.as_deref().map(ocr_search_of).unwrap_or_default(),
         ocr: copy.ocr.as_deref().is_some_and(|text| !text.trim().is_empty()),
         thumb: copy
             .items
@@ -368,12 +373,7 @@ pub fn add_ocr(index: &mut Index, hash: &str, text: &str) -> bool {
     let Some(entry) = index.items.iter_mut().find(|e| e.hash == hash) else {
         return false;
     };
-    let mut search = std::mem::take(&mut entry.search);
-    if !search.is_empty() {
-        search.push(' ');
-    }
-    search.push_str(&text.to_lowercase());
-    entry.search = search.chars().take(SEARCH_CHARS).collect();
+    entry.ocr_search = ocr_search_of(text);
     entry.ocr |= !text.trim().is_empty();
     true
 }
@@ -645,7 +645,11 @@ fn title_of(items: &[Vec<Rep>], kind: Kind) -> String {
     one_line(&raw, TITLE_CHARS)
 }
 
-fn search_of(items: &[Vec<Rep>], ocr: Option<&str>) -> String {
+fn ocr_search_of(text: &str) -> String {
+    text.chars().take(SEARCH_CHARS).collect::<String>().to_lowercase()
+}
+
+fn search_of(items: &[Vec<Rep>]) -> String {
     let mut text = String::new();
     if let Some(plain) = plain_text(items) {
         text.push_str(plain);
@@ -653,10 +657,6 @@ fn search_of(items: &[Vec<Rep>], ocr: Option<&str>) -> String {
     for path in file_paths(items) {
         text.push(' ');
         text.push_str(&path);
-    }
-    if let Some(ocr) = ocr {
-        text.push(' ');
-        text.push_str(ocr);
     }
     text.chars().take(SEARCH_CHARS).collect::<String>().to_lowercase()
 }
@@ -877,7 +877,7 @@ mod tests {
         let mut c = copy("h1", 1, vec![blob(uti::PNG, "p")]);
         c.ocr = Some("Search History".into());
         apply(&mut index, c, &rules(10), "a".into());
-        assert!(index.items[0].search.contains("search history"));
+        assert!(index.items[0].ocr_search.contains("search history"));
         assert_eq!(index.items[0].thumb.as_deref(), Some("p"));
     }
 
