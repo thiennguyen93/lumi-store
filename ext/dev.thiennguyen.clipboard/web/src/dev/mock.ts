@@ -3,7 +3,7 @@
 // close have nowhere to go in a browser, so they say what Lumi would do.
 
 import { setAppIconUrl, setBlobUrl, setFileUrl } from "../bridge";
-import type { Entry, Request } from "../types";
+import type { Entry, ExtensionShortcut, Request, ShortcutHolder } from "../types";
 
 const now = Date.now();
 const min = 60_000;
@@ -114,6 +114,12 @@ function say(text: string) {
 
 function answer(request: Request): unknown {
   switch (request.kind) {
+    // `?from=0.45.6` opens the tour as an update would.
+    case "welcome":
+      return { from: new URLSearchParams(location.search).get("from"), version: "0.46.0" };
+    case "openPanel":
+      say("would open the panel");
+      return {};
     case "list":
       if (request.opening) trash = [];
       return {
@@ -257,6 +263,41 @@ if (new URLSearchParams(location.search).has("glass")) {
   document.documentElement.classList.add("glass-preview");
 }
 
+/** Who the mock says holds ⌘⇧C: `?holder=Screenshot` a Shortcuts row of
+ *  that name in the Work profile, `?other` another extension's key. */
+function holdersOf(key: string | null): ShortcutHolder[] {
+  if (key !== "Shift+Super+KeyC") return [];
+  const search = new URLSearchParams(location.search);
+  if (search.has("other")) {
+    return [{ kind: "extension", extensionId: "dev.example.snap", extensionName: "Window Snap", command: "left", commandLabel: "Snap left" }];
+  }
+  const name = search.get("holder");
+  return name === null ? [] : [{ kind: "shortcut", profile: "p2", profileName: "Work", name }];
+}
+
+/** The extension's own `[[shortcut]]` as the install left it. `?scenario=`
+ *  `taken` (⌘⇧C held by `?holder`, default Screenshot), `invalid`, `cleared`;
+ *  anything else is a key that was armed. */
+let ess: ExtensionShortcut = (() => {
+  const search = new URLSearchParams(location.search);
+  const scenario = search.get("scenario") ?? "registered";
+  const base = { command: "open", label: "Show clipboard history", declared: "Shift+Super+KeyC" };
+  if (scenario === "taken") {
+    if (!search.has("holder") && !search.has("other")) search.set("holder", "Screenshot");
+    history.replaceState(null, "", `?${search}`);
+    const holder = holdersOf("Shift+Super+KeyC")[0] ?? null;
+    const reason = holder?.kind === "extension"
+      ? "⇧⌘C belongs to the extension Window Snap (Snap left)."
+      : `⇧⌘C is already the shortcut \u201c${search.get("holder")}\u201d in the Work profile.`;
+    return { ...base, key: null, state: "taken", reason, holder };
+  }
+  if (scenario === "invalid") {
+    return { ...base, key: null, state: "invalid", reason: "macOS keeps ⇧⌘C for itself on this Mac.", holder: null };
+  }
+  if (scenario === "cleared") return { ...base, key: null, state: "cleared", reason: null, holder: null };
+  return { ...base, key: "Shift+Super+KeyC", state: "registered", reason: null, holder: null };
+})();
+
 const real = window.fetch.bind(window);
 window.fetch = async (input, init) => {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
@@ -265,6 +306,32 @@ window.fetch = async (input, init) => {
     return new Response(null, { status: 204 });
   }
   if (url.endsWith("/__lumi__/shortcuts")) {
+    if (init?.method === "PUT") {
+      const asked = JSON.parse(String(init.body)) as { command: string; key: string | null; replace?: boolean };
+      // `?holder=<name>` is a Shortcuts row holding ⌘⇧C in the Work
+      // profile: recording it is refused until `replace`, the way Lumi
+      // refuses; any other key lands. Another extension's key (`?other`)
+      // is refused outright.
+      const holders = holdersOf(asked.key);
+      if (holders.length && (!asked.replace || holders.some((h) => h.kind === "extension"))) {
+        const said = holders[0]!.kind === "extension"
+          ? "⇧⌘C belongs to the extension Window Snap (Snap left). Change it under Extensions, on that extension's Shortcuts tab, or pick another key."
+          : `⇧⌘C is already the shortcut \u201c${(holders[0] as { name: string }).name}\u201d in the Work profile.`;
+        return new Response(JSON.stringify({ said, holders }), { status: 409 });
+      }
+      if (asked.key && !/^(Ctrl\+|Alt\+|Super\+|Shift\+)*(Key[A-Z]|Digit[0-9]|Space|F([1-9]|1[0-2]))$/.test(asked.key)) {
+        return new Response("that is not a key Lumi can register", { status: 400 });
+      }
+      ess = {
+        ...ess,
+        key: asked.key,
+        state: asked.key ? "registered" : "cleared",
+        reason: null,
+        holder: null,
+      };
+      say(asked.key ? `armed ${asked.key}${asked.replace ? " (replacing)" : ""}` : "cleared the shortcut");
+      return new Response(JSON.stringify(ess), { status: 200 });
+    }
     const none = new URLSearchParams(location.search).has("nokey");
     const body = {
       on: true,
@@ -272,9 +339,10 @@ window.fetch = async (input, init) => {
         {
           name: "open",
           label: "Show clipboard history",
-          rows: none ? [] : [{ trigger: "Shift+Super+KeyC", enabled: true }, { trigger: "Ctrl+Alt+KeyV", enabled: false }],
+          rows: none ? [] : [{ trigger: "Ctrl+Alt+KeyV", enabled: false }],
         },
       ],
+      ess: [ess],
     };
     return new Response(JSON.stringify(body), { status: 200 });
   }

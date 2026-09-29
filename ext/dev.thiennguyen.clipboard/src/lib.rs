@@ -27,6 +27,20 @@ use serde_json::{json, Value};
 /// The panel's `[[window]]` name.
 pub const PANEL: &str = "history";
 
+/// The Welcome window's `[[window]]` name: a three-step tour opened by
+/// `on_lifecycle` when the extension is installed or updated. Its own
+/// choice, not Lumi's — Lumi opens nothing on an install — and what it is
+/// for is the one thing an install can leave undone: the `[[shortcut]]`.
+/// Lumi tries ⌘⇧C once at install and, when something holds it, arms
+/// nothing and says who (`GET /__lumi__/shortcuts`' `ess`); the tour's
+/// second step is where the person hears that and decides.
+pub const WELCOME: &str = "welcome";
+
+/// Storage key of the version an update replaced, written by `on_lifecycle`
+/// for the Welcome window's first request to read and clear: the window is
+/// a page, and a page is told nothing about why it was opened.
+const WELCOME_FROM: &str = "welcome.from";
+
 /// What Lumi calls the Dashboard tab (`[[page]] name = "dashboard"`) when
 /// it asks `run-ui` something. It is not a window of the manifest's, and it
 /// only reads: nothing it can send pastes, pins or forgets. The About page
@@ -86,7 +100,7 @@ impl lumi::Guest for Clipboard {
                 // panel is drawn on them. A Lumi that cannot set them opens
                 // the panel all the same.
                 dress(&host::Lumi);
-                host::Lumi.open_panel()?;
+                host::Lumi.open_window(PANEL)?;
                 Ok(String::new())
             }
             _ => Err(format!("Clipboard History has no {name} command")),
@@ -102,6 +116,7 @@ impl lumi::Guest for Clipboard {
             serde_json::from_str(&request).map_err(|err| format!("bad request: {err}"))?;
         let answer = match window.as_str() {
             PANEL => ui(&host::Lumi, &request),
+            WELCOME => welcome(&host::Lumi, &request),
             DASHBOARD => dashboard(&host::Lumi, &request),
             SETTINGS => settings(&host::Lumi, &request),
             _ => return Err(format!("Clipboard History has no {window} window")),
@@ -109,8 +124,8 @@ impl lumi::Guest for Clipboard {
         answer.map(|answer| answer.to_string())
     }
 
-    fn on_lifecycle(_event: lumi::Lifecycle) -> Result<(), String> {
-        Ok(())
+    fn on_lifecycle(event: lumi::Lifecycle) -> Result<(), String> {
+        on_lifecycle(&host::Lumi, &event)
     }
 
     fn on_event(name: String, payload: String) -> Result<(), String> {
@@ -119,6 +134,58 @@ impl lumi::Guest for Clipboard {
 }
 
 lumi::register!(Clipboard);
+
+/// One lifecycle moment, from the `on-lifecycle` export: the Welcome
+/// window on an install and on an update. Nothing on an uninstall — the
+/// windows are gone by then, and the history's storage goes with the
+/// extension without any help from here.
+pub fn on_lifecycle(host: &impl Host, event: &lumi::Lifecycle) -> Result<(), String> {
+    match event {
+        lumi::Lifecycle::Installed => host.open_window(WELCOME),
+        lumi::Lifecycle::Updated(from) => {
+            // Best effort, and before the window: a tour that cannot say
+            // what changed is still the tour, and one opened before the
+            // flag lands would read as a first install.
+            let rev = host.get(WELCOME_FROM).ok().flatten().map(|s| s.rev);
+            let _ = host.put(WELCOME_FROM, from, rev);
+            host.open_window(WELCOME)
+        }
+        lumi::Lifecycle::Uninstalling => Ok(()),
+    }
+}
+
+/// A request from the Welcome window.
+fn welcome(host: &impl Host, request: &Value) -> Result<Value, String> {
+    match request["kind"].as_str().unwrap_or_default() {
+        // Why the window is up: the version an update replaced, or null for
+        // an install. Read once — the flag is cleared here, so a Welcome
+        // reopened from the pane's Open button is a plain welcome again.
+        "welcome" => {
+            let from = host.get(WELCOME_FROM)?.map(|stored| stored.value);
+            if from.is_some() {
+                let _ = host.delete(WELCOME_FROM);
+            }
+            Ok(json!({ "from": from, "version": env!("CARGO_PKG_VERSION") }))
+        }
+        // The tour's "Try it": the panel comes up over the window, dressed
+        // as Settings says, the way the command opens it.
+        "openPanel" => {
+            dress(host);
+            host.open_window(PANEL)?;
+            Ok(json!({}))
+        }
+        "settings" => {
+            host.close_window(WELCOME)?;
+            host.open_settings()?;
+            Ok(json!({}))
+        }
+        "close" => {
+            host.close_window(WELCOME)?;
+            Ok(json!({}))
+        }
+        other => Err(format!("the Welcome window has no {other} request")),
+    }
+}
 
 /// One host event, from the `on-event` export.
 pub fn on_event(host: &impl Host, name: &str, payload: &str) -> Result<(), String> {
@@ -662,12 +729,12 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let record = read_record(host, &id()?)?;
             let url = history::link_of(&record.items).ok_or_else(|| "That item is not a web address.".to_string())?;
             host.open_url(&url)?;
-            host.close_panel()?;
+            host.close_window(PANEL)?;
             Ok(json!({}))
         }
         // The menu's Settings… / ⌘,: the panel goes, Settings comes.
         "settings" => {
-            host.close_panel()?;
+            host.close_window(PANEL)?;
             host.open_settings()?;
             Ok(json!({}))
         }
@@ -675,7 +742,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let record = read_record(host, &id()?)?;
             let file = history::file_url_of(&record.items).ok_or_else(|| "That item is not a file.".to_string())?;
             host.reveal(&file)?;
-            host.close_panel()?;
+            host.close_window(PANEL)?;
             Ok(json!({}))
         }
         // Save image as…: the panel suggests a name (it has the local
@@ -705,7 +772,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             Err("the width was busy; try again".to_string())
         }
         "close" => {
-            host.close_panel()?;
+            host.close_window(PANEL)?;
             Ok(json!({}))
         }
         other => Err(format!("the panel has no {other} request")),
@@ -1327,6 +1394,47 @@ mod tests {
         assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["previewWidth"], 340);
         assert!(ui(&host, &json!({"kind": "previewWidth", "width": 5})).is_err());
         assert!(ui(&host, &json!({"kind": "previewWidth", "width": "wide"})).is_err());
+    }
+
+    #[test]
+    fn an_install_opens_the_welcome_window_and_an_update_says_since_when() {
+        let host = Memory::default();
+        on_lifecycle(&host, &lumi::Lifecycle::Installed).unwrap();
+        assert_eq!(*host.opened.borrow(), ["open-window welcome"]);
+        let told = welcome(&host, &json!({"kind": "welcome"})).unwrap();
+        assert_eq!(told["from"], Value::Null, "a first install is not an update");
+        assert_eq!(told["version"], env!("CARGO_PKG_VERSION"));
+
+        on_lifecycle(&host, &lumi::Lifecycle::Updated("0.45.6".to_string())).unwrap();
+        assert_eq!(host.opened.borrow().last().map(String::as_str), Some("open-window welcome"));
+        let told = welcome(&host, &json!({"kind": "welcome"})).unwrap();
+        assert_eq!(told["from"], "0.45.6");
+        // Read once: reopened from the pane, the window is a plain welcome.
+        let again = welcome(&host, &json!({"kind": "welcome"})).unwrap();
+        assert_eq!(again["from"], Value::Null);
+        assert!(!host.kv.borrow().contains_key(WELCOME_FROM));
+
+        on_lifecycle(&host, &lumi::Lifecycle::Uninstalling).unwrap();
+        assert_eq!(host.opened.borrow().len(), 2, "an uninstall opens nothing");
+    }
+
+    #[test]
+    fn the_welcome_window_can_show_the_panel_and_put_itself_away() {
+        let host = Memory::default();
+        *host.settings.borrow_mut() = json!({"appearance": "hud"});
+        welcome(&host, &json!({"kind": "openPanel"})).unwrap();
+        assert_eq!(
+            *host.opened.borrow(),
+            [format!("material {PANEL} hud"), format!("theme {PANEL} dark"), format!("open-window {PANEL}")],
+            "dressed as Settings says, then opened"
+        );
+        welcome(&host, &json!({"kind": "close"})).unwrap();
+        assert_eq!(host.opened.borrow().last().map(String::as_str), Some("close-window welcome"));
+        assert_eq!(host.closed.get(), 0, "the panel is not the window that closed");
+        welcome(&host, &json!({"kind": "settings"})).unwrap();
+        assert_eq!(host.opened.borrow().last().map(String::as_str), Some("settings"));
+        assert!(welcome(&host, &json!({"kind": "paste", "id": "x"})).is_err(), "nothing that pastes");
+        assert!(ui(&host, &json!({"kind": "welcome"})).is_err(), "and the panel has no welcome");
     }
 
     #[test]

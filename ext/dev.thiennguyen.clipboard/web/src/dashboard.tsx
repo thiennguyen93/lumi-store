@@ -1,7 +1,8 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { call } from "./bridge";
+import { call, shortcuts } from "./bridge";
 import { CopyGlyph } from "./icons";
+import { acceleratorGlyphs } from "./keys";
 import { KEEP_LABELS, type Stats } from "./types";
 import "./pages.css";
 
@@ -102,6 +103,14 @@ function Tiles({ stats }: { stats: Stats | null }) {
 }
 
 function Welcome() {
+  // The extension's own key, as the install left it: the second step names
+  // it when it is armed, and sends people to the Shortcuts tab when not.
+  const [key, setKey] = useState<string | null | undefined>(undefined);
+  useEffect(() => {
+    shortcuts()
+      .then((all) => setKey(all.ess?.find((one) => one.command === "open")?.key ?? null))
+      .catch(() => setKey(null));
+  }, []);
   return (
     <div className="welcome">
       <span className="mark"><CopyGlyph /></span>
@@ -110,7 +119,17 @@ function Welcome() {
         <p className="body">Your history is empty. Anything you copy from now on shows up here.</p>
         <ol>
           <li>Copy as usual — text, links, colours, files, screenshots</li>
-          <li>Run <strong>Show clipboard history</strong> from Lumi</li>
+          <li>
+            {key ? (
+              <>
+                Press <kbd>{acceleratorGlyphs(key)}</kbd> anywhere
+              </>
+            ) : (
+              <>
+                Give <strong>Show clipboard history</strong> a key on the Shortcuts tab, then press it
+              </>
+            )}
+          </li>
           <li>
             Type to search, <kbd>↩</kbd> pastes, <kbd>⌥</kbd><kbd>↩</kbd> as plain text
           </li>

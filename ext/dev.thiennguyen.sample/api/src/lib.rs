@@ -548,4 +548,32 @@ pub mod config {
     pub fn fn_key() -> Result<serde_json::Value, String> {
         parsed(wit::fn_key())
     }
+
+    /// Your own `[[shortcut]]`s as Lumi holds them — a list, one per
+    /// declaration in manifest order, each `{"command", "label", "key",
+    /// "declared", "state", "reason", "holder"}`. `key` is the accelerator
+    /// armed now or null; `state` is `"registered"`, `"taken"` (something
+    /// held the declared key at install — `holder` says what, `reason`
+    /// says it in a sentence), `"invalid"` or `"cleared"`. Needs no
+    /// capability: these are yours. Lumi tries each key once, at install,
+    /// and never chooses between your key and a row of the person's —
+    /// read this, from `on_lifecycle` or a window, and decide.
+    pub fn extension_shortcuts() -> Result<serde_json::Value, String> {
+        parsed(wit::extension_shortcuts())
+    }
+
+    /// Arm, change or clear one of your own `[[shortcut]]`s. `key` is an
+    /// accelerator in the recorder's spelling (`Shift+Super+KeyC`), or
+    /// `None` to clear. Refused with a sentence when something holds the
+    /// key, unless `replace` — which takes it off the person's row, in
+    /// whichever profile, or off Lumi's own; another extension's key is
+    /// never taken. Answers the entry as it now stands, in
+    /// [`extension_shortcuts`]' shape. Needs no capability.
+    pub fn set_extension_shortcut(
+        command: &str,
+        key: Option<&str>,
+        replace: bool,
+    ) -> Result<serde_json::Value, String> {
+        parsed(wit::set_extension_shortcut(command, key, replace))
+    }
 }

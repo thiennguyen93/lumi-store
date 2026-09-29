@@ -64,6 +64,31 @@ export function pressed(event: Pressed, combo: Combo): boolean {
   );
 }
 
+/** The next press as a Lumi accelerator — `Shift+Super+KeyC`, the spelling
+ *  Lumi's own recorder writes and `PUT /__lumi__/shortcuts` takes: modifiers
+ *  in Ctrl, Alt, Shift, Super order, then the key's `code`. A letter, a
+ *  digit, Space or F1–F12, the set a `[[shortcut]]` may declare; null for a
+ *  modifier on its own or any other key. By position, like `comboOf`. */
+export function acceleratorOf(event: Pressed): string | null {
+  const code = event.code;
+  const key = /^(Key[A-Z]|Digit[0-9]|Space|F([1-9]|1[0-2]))$/.test(code) ? code : null;
+  if (!key) return null;
+  const mods = [event.ctrlKey && "Ctrl", event.altKey && "Alt", event.shiftKey && "Shift", event.metaKey && "Super"].filter(
+    (m): m is string => Boolean(m),
+  );
+  return [...mods, key].join("+");
+}
+
+/** Why an accelerator cannot be a global shortcut, or null when it can —
+ *  Lumi's own rule, asked here so the answer comes before the round trip. */
+export function acceleratorRefusal(accelerator: string): string | null {
+  const parts = accelerator.split("+");
+  if (!parts.some((p) => p === "Ctrl" || p === "Alt" || p === "Super")) {
+    return "Add ⌘, ⌥ or ⌃ — on its own this would take the key away from typing";
+  }
+  return null;
+}
+
 /** Why a combo cannot be the panel's Pin, or null when it can. */
 export function refusal(combo: Combo): string | null {
   if (!combo.ctrl && !combo.alt && !combo.cmd) {

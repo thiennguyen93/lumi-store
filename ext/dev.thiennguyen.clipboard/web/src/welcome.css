@@ -1,0 +1,141 @@
+/* The Welcome window: a fixed dialog of three steps. Lumi's lumi.css comes
+   first and has no specificity, so these rules win without trying; its
+   tokens are used with a fallback each, so `pnpm dev` reads too. */
+
+:root {
+  --wc-line: var(--border, rgba(128, 128, 128, 0.28));
+  --wc-box: var(--card, rgba(128, 128, 128, 0.08));
+  --wc-accent: var(--accent, #378add);
+  --wc-dim: color-mix(in srgb, CanvasText 58%, transparent);
+  --wc-raised: var(--raised, Canvas);
+  --wc-bad: var(--denied, #b3261e);
+  --wc-warn-wash: color-mix(in srgb, #e0a300 16%, transparent);
+  --wc-warn-ink: color-mix(in srgb, #7a5300 80%, CanvasText);
+  /* The icon's violet, so the window reads as this extension's. */
+  --wc-mark: #7c6ff0;
+  --wc-mark-wash: color-mix(in srgb, var(--wc-mark) 14%, transparent);
+  color-scheme: light dark;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  color: CanvasText;
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.tour {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  padding: 22px 26px 18px;
+  gap: 12px;
+}
+
+/* One dot per step, the one on screen filled. */
+.dots { display: flex; gap: 6px; }
+.dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--wc-line);
+}
+.dots span.on { background: var(--wc-accent); }
+
+.step { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+.step h1 { margin: 0; font-size: 17px; font-weight: 600; }
+.step p { margin: 0; color: var(--wc-dim); }
+.step p.plain { color: CanvasText; }
+
+.mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--wc-mark-wash);
+  color: var(--wc-mark);
+}
+.mark svg { width: 22px; height: 22px; }
+
+/* The key, large: the one thing the second step is about. */
+.big {
+  display: inline-block;
+  padding: 8px 18px;
+  border: 1px solid var(--wc-line);
+  border-radius: 8px;
+  background: var(--wc-raised);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+  font: 500 20px/1.3 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+}
+.keyline { display: flex; align-items: center; gap: 12px; margin: 4px 0; }
+
+.recorder { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.keycap {
+  all: unset;
+  min-width: 96px;
+  padding: 7px 14px;
+  border: 1px solid var(--wc-line);
+  border-radius: 8px;
+  background: var(--wc-raised);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+  text-align: center;
+  font: 500 15px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: default;
+}
+.keycap:focus-visible { outline: 2px solid var(--wc-accent); outline-offset: 1px; }
+.keycap.recording {
+  color: var(--wc-accent);
+  border-color: var(--wc-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--wc-accent) 22%, transparent);
+}
+.hint { font-size: 12px; color: var(--wc-dim); }
+
+/* What the install wrote down, or what a press just came back with. */
+.note {
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--wc-warn-wash);
+  color: var(--wc-warn-ink);
+  line-height: 1.45;
+}
+.note.bad { background: color-mix(in srgb, var(--wc-bad) 12%, transparent); color: var(--wc-bad); }
+.note .row { margin-top: 8px; }
+.row { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+.row .sp { flex: 1; }
+
+.link { all: unset; color: var(--wc-accent); cursor: default; }
+.link:hover { text-decoration: underline; }
+.link:focus-visible { outline: 2px solid var(--wc-accent); border-radius: 4px; }
+
+/* The keys inside the panel, two columns. */
+.tips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 18px;
+  margin: 2px 0;
+}
+.tips span { display: flex; align-items: center; gap: 8px; color: var(--wc-dim); }
+kbd {
+  display: inline-block;
+  min-width: 14px;
+  padding: 1px 6px;
+  border: 1px solid var(--wc-line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--wc-raised);
+  color: CanvasText;
+  font: 11px/1.6 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  text-align: center;
+}
+
+.actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: auto; }
+.actions .sp { flex: 1; }
+.failed { color: var(--wc-bad); font-size: 12px; }

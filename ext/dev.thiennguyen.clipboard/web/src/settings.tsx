@@ -7,7 +7,8 @@
 import { StrictMode, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { acceleratorGlyphs, comboOf, comboText, DEFAULT_PIN_KEY, glyphs, parseCombo, refusal } from "./keys";
-import { KEEP_LABELS, type Stats } from "./types";
+import { shortcuts } from "./bridge";
+import { KEEP_LABELS, type OwnShortcuts, type Stats } from "./types";
 import "./settings.css";
 
 if (import.meta.env.DEV) {
@@ -361,42 +362,47 @@ function Segmented<T extends string>({
   );
 }
 
-interface OwnShortcuts {
-  on: boolean;
-  commands: { name: string; label: string; rows: { trigger: string; enabled: boolean }[] }[];
-}
-
-/** One of the extension's commands and the global shortcuts that run it —
- *  Lumi's, set in its Shortcuts pane and only shown here, with a button
- *  that goes there. One place sets a global key, so two cannot disagree. */
+/** One of the extension's commands and the keys that run it. Two kinds,
+ *  drawn apart because they are owned apart: the extension's own
+ *  `[[shortcut]]` (`ess`), armed by Lumi at install in every profile and
+ *  changed on the Shortcuts tab of this extension's page; and the person's
+ *  rows from Lumi's Shortcuts pane, with a button that goes there. Neither
+ *  is recorded here — one place sets each, so two cannot disagree. */
 function GlobalShortcut({ command }: { command: string }) {
   const [own, setOwn] = useState<OwnShortcuts | null>(null);
   const [failed, setFailed] = useState("");
 
   useEffect(() => {
-    fetch("/__lumi__/shortcuts")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((body: OwnShortcuts | null) => setOwn(body))
+    shortcuts()
+      .then(setOwn)
       .catch(() => setOwn(null));
   }, []);
 
   const mine = own?.commands.find((c) => c.name === command);
+  const ess = own?.ess?.find((one) => one.command === command);
   const keys = (mine?.rows ?? []).filter((row) => row.trigger);
   const live = keys.filter((row) => row.enabled && own?.on);
   const hint = !own
     ? "Global — set in Lumi's Shortcuts"
-    : !own.on
-      ? "Shortcuts are switched off in Lumi"
-      : keys.length === 0
-        ? "No key yet — give it one in Shortcuts"
-        : live.length < keys.length
-          ? "Global · a switched-off row is dimmed"
-          : "Global — works from any app";
+    : ess?.key
+      ? keys.length
+        ? "Its own key, in every profile · and your rows"
+        : "Its own key, in every profile — change it on the Shortcuts tab"
+      : ess && (ess.state === "taken" || ess.state === "invalid") && ess.reason
+        ? ess.reason
+        : !own.on
+          ? "Shortcuts are switched off in Lumi"
+          : keys.length === 0
+            ? "No key yet — the Shortcuts tab of this extension, or Lumi's Shortcuts"
+            : live.length < keys.length
+              ? "Global · a switched-off row is dimmed"
+              : "Global — works from any app";
 
   return (
-    <Row label={mine?.label ?? "Show clipboard history"} hint={failed || hint}>
+    <Row label={mine?.label ?? ess?.label ?? "Show clipboard history"} hint={failed || hint}>
       <div className="recorder">
-        {keys.length === 0 ? (
+        {ess?.key && <span className="keycap">{acceleratorGlyphs(ess.key)}</span>}
+        {!ess?.key && keys.length === 0 ? (
           <span className="keycap unset">Not set</span>
         ) : (
           keys.map((row, at) => (

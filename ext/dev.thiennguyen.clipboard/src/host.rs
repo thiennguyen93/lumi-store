@@ -36,8 +36,11 @@ pub trait Host {
     /// application they drop them on; Lumi refuses unless the button is still
     /// down. `close_on_drop`: put the panel away after a drop that took them.
     fn drag(&self, items: &[Vec<Rep>], close_on_drop: bool) -> Result<(), String>;
-    fn close_panel(&self) -> Result<(), String>;
-    fn open_panel(&self) -> Result<(), String>;
+    /// Close one of the manifest's windows by name — `lib::PANEL` or
+    /// `lib::WELCOME`. One that is not open is not an error.
+    fn close_window(&self, name: &str) -> Result<(), String>;
+    /// Open (or bring forward) one of the manifest's windows by name.
+    fn open_window(&self, name: &str) -> Result<(), String>;
     /// The glass the panel opens on next.
     fn set_material(&self, window: &str, material: &str) -> Result<(), String>;
     /// Light, dark or the system's, for the panel — at once if it is up.
@@ -150,7 +153,7 @@ impl Host for Lumi {
             lumi::paste(&items)
         } else {
             lumi::write_clipboard(&items)?;
-            self.close_panel()
+            self.close_window(crate::PANEL)
         }
     }
 
@@ -158,12 +161,12 @@ impl Host for Lumi {
         lumi::drag(&board(items), close_on_drop)
     }
 
-    fn close_panel(&self) -> Result<(), String> {
-        lumi::close_window(crate::PANEL)
+    fn close_window(&self, name: &str) -> Result<(), String> {
+        lumi::close_window(name)
     }
 
-    fn open_panel(&self) -> Result<(), String> {
-        lumi_extension_api::open_window(crate::PANEL)
+    fn open_window(&self, name: &str) -> Result<(), String> {
+        lumi_extension_api::open_window(name)
     }
 
     fn set_material(&self, window: &str, material: &str) -> Result<(), String> {
@@ -256,6 +259,7 @@ pub mod memory {
         pub keystrokes: RefCell<Vec<bool>>,
         /// Every `drag`, as (items, close_on_drop).
         pub dragged: RefCell<Vec<(Vec<Vec<Rep>>, bool)>>,
+        /// How many times the panel was closed; other windows go to `opened`.
         pub closed: Cell<u32>,
         /// Every `post`, as (window, message).
         pub posts: RefCell<Vec<(String, String)>>,
@@ -315,8 +319,17 @@ pub mod memory {
             Ok(())
         }
 
-        fn close_panel(&self) -> Result<(), String> {
-            self.closed.set(self.closed.get() + 1);
+        fn close_window(&self, name: &str) -> Result<(), String> {
+            if name == crate::PANEL {
+                self.closed.set(self.closed.get() + 1);
+            } else {
+                self.opened.borrow_mut().push(format!("close-window {name}"));
+            }
+            Ok(())
+        }
+
+        fn open_window(&self, name: &str) -> Result<(), String> {
+            self.opened.borrow_mut().push(format!("open-window {name}"));
             Ok(())
         }
 
@@ -352,10 +365,6 @@ pub mod memory {
 
         fn open_settings(&self) -> Result<(), String> {
             self.opened.borrow_mut().push("settings".to_string());
-            Ok(())
-        }
-
-        fn open_panel(&self) -> Result<(), String> {
             Ok(())
         }
 

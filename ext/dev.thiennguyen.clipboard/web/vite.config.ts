@@ -11,9 +11,10 @@ import react from "@vitejs/plugin-react";
 // - no module-preload polyfill: it is the one piece of Vite's output that
 //   can be emitted as an inline <script>, and the page's CSP
 //   (`default-src 'self'`) refuses inline scripts outright.
-// - three inputs: `panel.html`, the name the manifest's [[window]] points
-//   at, `dashboard.html`, its [[page]] tab, and `settings.html`, its
-//   settings-page. About is Lumi's own, composed from the manifest.
+// - four inputs: `panel.html` and `welcome.html`, the names the manifest's
+//   two [[window]]s point at, `dashboard.html`, its [[page]] tab, and
+//   `settings.html`, its settings-page. About is Lumi's own, composed from
+//   the manifest.
 export default defineConfig({
   base: "./",
   plugins: [react()],
@@ -27,7 +28,7 @@ export default defineConfig({
     // they are always files. Their licences keep a `.txt` name beside them.
     assetsInlineLimit: (file) => (file.includes("/pdfjs-dist/standard_fonts/") ? false : undefined),
     rollupOptions: {
-      input: { panel: "panel.html", dashboard: "dashboard.html", settings: "settings.html" },
+      input: { panel: "panel.html", welcome: "welcome.html", dashboard: "dashboard.html", settings: "settings.html" },
       output: {
         assetFileNames: ({ names }) =>
           names[0]?.startsWith("LICENSE_") ? "assets/[name]-[hash].txt" : "assets/[name]-[hash][extname]",

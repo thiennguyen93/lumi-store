@@ -52,10 +52,53 @@ export interface Stats {
   since: number | null;
 }
 
+/**
+ * One of the extension's own `[[shortcut]]`s as Lumi holds it — the `ess`
+ * list of `GET /__lumi__/shortcuts`. `state` is what the install came to:
+ * `registered` (armed, `key` set), `taken` (something held `declared` —
+ * `holder` says what, `reason` says it in a sentence), `invalid` (a key Lumi
+ * cannot register) or `cleared`.
+ */
+export interface ExtensionShortcut {
+  command: string;
+  label: string;
+  key: string | null;
+  declared: string;
+  state: "registered" | "taken" | "invalid" | "cleared";
+  reason: string | null;
+  holder: ShortcutHolder | null;
+}
+
+/** Who holds a combination, as Lumi names them. */
+export type ShortcutHolder =
+  | { kind: "shortcut"; profile: string; profileName: string; name: string }
+  | { kind: "extension"; extensionId: string; extensionName: string; command: string; commandLabel: string }
+  | { kind: "app"; label: string };
+
+/** `PUT /__lumi__/shortcuts`' 409: who is in the way, for a second ask with
+ *  `replace`. */
+export interface ShortcutRefusal {
+  said: string;
+  holders: ShortcutHolder[];
+}
+
+/** `GET /__lumi__/shortcuts`: the person's rows on each command (`commands`),
+ *  the pane's switch (`on`), and the extension's own keys (`ess`). */
+export interface OwnShortcuts {
+  on: boolean;
+  commands: { name: string; label: string; rows: { trigger: string; enabled: boolean }[] }[];
+  /** Absent on a Lumi older than `[[shortcut]]`. */
+  ess?: ExtensionShortcut[];
+}
+
 export type Request =
   /** `opening`: the panel's first list since it opened — the extension
    *  empties the trash of what the last panel deleted. */
   | { kind: "list"; opening?: boolean }
+  /** The Welcome window's: why it is up (`from` is the version an update
+   *  replaced, null for an install), and its two buttons. */
+  | { kind: "welcome" }
+  | { kind: "openPanel" }
   | { kind: "preview"; id: string }
   | { kind: "paste"; id: string; plain: boolean }
   /** A press that started to move: Lumi drags the item (or its `file`-th
