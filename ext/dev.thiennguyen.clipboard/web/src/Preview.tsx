@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { blobUrl, call } from "./bridge";
+import { AppMark } from "./AppMark";
 import { CollapseGlyph, ExpandGlyph, KindGlyph } from "./icons";
 import { RichText } from "./richText";
 import { HEX, KIND_WORDS } from "./Row";
@@ -89,8 +90,8 @@ export function Preview({ row }: { row: Entry | undefined }) {
   const ocr = row.kind === "image" ? mine?.ocr : null;
   const wide = !!ocr && expanded === row.id;
   const pixels = size?.id === row.id ? `${size.w} × ${size.h} px` : null;
-
   const weight = row.kind === "file" && mine?.fileSize != null ? bytes(mine.fileSize) : null;
+
   const from = row.appName || row.app;
   const times = row.count > 1 ? `${row.count}×` : "once";
 
@@ -101,7 +102,8 @@ export function Preview({ row }: { row: Entry | undefined }) {
           <KindGlyph kind={row.kind} />
           <span>
             {KIND_WORDS[row.kind]}
-            {from ? ` · ${from}` : ""}
+            {from ? " · " : ""}
+            <AppMark key={row.app ?? ""} app={row.app} name={row.appName} withName />
           </span>
           {(pixels || weight) && <span className="dims">{pixels ?? weight}</span>}
         </header>

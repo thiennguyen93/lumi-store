@@ -2,7 +2,7 @@
 // the requests src/lib.rs answers, over a history held in memory. Paste and
 // close have nowhere to go in a browser, so they say what Lumi would do.
 
-import { setBlobUrl } from "../bridge";
+import { setAppIconUrl, setBlobUrl } from "../bridge";
 import type { Entry, Request } from "../types";
 
 const now = Date.now();
@@ -15,11 +15,12 @@ function entry(partial: Partial<Entry> & Pick<Entry, "id" | "kind" | "title">): 
     first: partial.last ?? now - 3 * min,
     last: now - 3 * min,
     count: 1,
-    app: null,
     appName: null,
     search: partial.title.toLowerCase(),
     thumb: null,
     blobs: [],
+    // A stand-in bundle id, so the row asks for an icon.
+    app: partial.appName ? `mock.${partial.appName.toLowerCase()}` : null,
     ...partial,
   };
 }
@@ -253,3 +254,17 @@ setBlobUrl(
       '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="320" height="200" fill="#378add" opacity=".25"/><text x="24" y="104" font-family="-apple-system" font-size="22" fill="#185fa5">Search history</text></svg>',
     ),
 );
+
+// A coloured tile with the app's initial, for `/__lumi__/app-icon/<id>`;
+// the one app named "Figma" has none, to show the name falling back.
+setAppIconUrl((bundleId) => {
+  const name = bundleId.replace(/^mock\./, "");
+  if (name === "figma") return "data:,missing";
+  const hue = [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+  return (
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" rx="7" fill="hsl(${hue} 60% 50%)"/><text x="16" y="22" text-anchor="middle" font-family="-apple-system" font-size="17" font-weight="600" fill="white">${name[0]?.toUpperCase() ?? "?"}</text></svg>`,
+    )
+  );
+});

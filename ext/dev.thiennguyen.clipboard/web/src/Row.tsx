@@ -1,5 +1,6 @@
 import { blobUrl } from "./bridge";
 import { KindGlyph, PinGlyph } from "./icons";
+import { AppMark } from "./AppMark";
 import { since } from "./search";
 import type { Entry } from "./types";
 
@@ -87,9 +88,10 @@ export function Row({
       {/* Two fixed columns at the end, so a time growing from 9s to 10s
           never shoves the app name: the app, right-aligned against the
           time, and the time (or a pin's glyph) in a column of its own. */}
-      {!row.pin && row.appName && (
+      {!row.pin && (row.app || row.appName) && (
         <>
-          <span className="app">{row.appName}</span>
+          {/* The source application's icon, its name when there is none. */}
+          <AppMark app={row.app} name={row.appName} />
           {/* A column of its own too, so it stays put with the others. */}
           <span className="dot" aria-hidden="true">·</span>
         </>

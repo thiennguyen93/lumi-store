@@ -55,6 +55,14 @@ export function setBlobUrl(resolve: (id: string) => string) {
   blobUrl = resolve;
 }
 
+/** Where an application's icon is served, by bundle id — Lumi draws it.
+ *  Swappable for the dev mock, like `blobUrl`. */
+export let appIconUrl = (bundleId: string): string => `/__lumi__/app-icon/${encodeURIComponent(bundleId)}`;
+
+export function setAppIconUrl(resolve: (bundleId: string) => string) {
+  appIconUrl = resolve;
+}
+
 export function message(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }

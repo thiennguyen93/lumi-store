@@ -261,6 +261,20 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* The source application, as its icon in the row and beside its name in
+   the preview's head. */
+.app-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+.card-head .app-icon {
+  width: 12px;
+  height: 12px;
+  margin-right: 3px;
+  vertical-align: -2px;
+}
 /* Between the two, closer than the row's gap would set it. */
 .dot {
   flex: none;
