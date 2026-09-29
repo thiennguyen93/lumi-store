@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.11.0"
+version = "0.11.1"
 # 1.25.0 for WIT 0.3: every component is built against one world, and a
 # Lumi that speaks 0.2 refuses a 0.3 build outright. (The window's storage
 # request, write-all and close came with it.)
@@ -34,6 +34,11 @@ settings-page = "index.html"
 menu = "auto"
 
 capabilities = ["accessibility", "applications", "clipboard", "network"]
+
+# Pictures for this extension's page in Lumi's Extension Store: its About
+# page and its Settings page. The store publishes them beside the package;
+# Lumi's installer ignores the key.
+screenshots = ["shots/1-about.jpg", "shots/2-settings.jpg"]
 
 [[command]]
 name = "translate"
