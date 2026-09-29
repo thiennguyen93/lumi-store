@@ -5,6 +5,10 @@
 # id = "dev.you.thing"       # must equal the id in the manifest.toml
 # path = "ext/dev.you.thing" # submodule directory, pinned to the reviewed commit
 # subdir = "."               # where Cargo.toml + manifest.toml live inside it
+# web = "web"                # optional: a front end built by the store — a pnpm
+#                            # project (package.json with "packageManager": "pnpm@…",
+#                            # pnpm-lock.yaml, a build script writing dist/) whose
+#                            # output ships as ui/. ui/ itself is then not committed.
 
 # First-party and in-tree — a third-party entry is a pinned submodule
 # instead; ext/dev.thiennguyen.sample/README.md carries the distinction.
@@ -19,3 +23,12 @@ subdir = "sample"
 id = "dev.thiennguyen.keytest"
 path = "ext/dev.thiennguyen.keytest"
 subdir = "."
+
+
+# First-party and in-tree, for the sample's reason. Its panel is React +
+# TypeScript under web/, built by the store (`web`), so no ui/ is committed.
+[[extension]]
+id = "dev.thiennguyen.clipboard"
+path = "ext/dev.thiennguyen.clipboard"
+subdir = "."
+web = "web"

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "clipboard-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["-C", "ext/dev.thiennguyen.clipboard/web", "dev", "--port", "5178", "--strictPort"],
+      "port": 5178
+    }
+  ]
+}

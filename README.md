@@ -22,7 +22,11 @@ after review.
    a first extension, the manifest, the SDK reference, windows and
    publishing. `ext/dev.thiennguyen.sample/sample/` is a working
    extension to copy from, and `ext/dev.thiennguyen.sample/api/` is the
-   SDK crate the guide's git dependency points at.
+   SDK crate the guide's git dependency points at. The other two in-tree
+   entries are fuller examples: `ext/dev.thiennguyen.keytest/` (a tab in
+   Lumi's own Extensions pane) and `ext/dev.thiennguyen.clipboard/` (a
+   panel, encrypted storage, clipboard events and a React front end the
+   store builds).
 2. Open a PR that
    - adds your repo as a submodule under `ext/<your-extension-id>`,
      pinned to the exact commit you are submitting, and
@@ -33,6 +37,7 @@ after review.
    id = "dev.you.thing"      # must equal the id in your manifest.toml
    path = "ext/dev.you.thing" # the submodule
    subdir = "."               # where the crate + manifest live inside it
+   web = "web"                # optional — see "A built front end" below
    ```
 
 3. Review is human, of source: the manifest's capabilities against what
@@ -46,10 +51,32 @@ after review.
 5. Merging is publishing: CI rebuilds every listed extension from source,
    signs the packages, and rewrites the index — in two halves that never
    share a job. Each extension builds on a runner of its own, holding no
-   secret and a read-only token, and hands on its `extension.wasm` and
+   secret and a read-only token, and hands on what it compiled —
+   `extension.wasm`, and `ui/` for an entry with a built front end — and
    nothing else. The signing job runs no build and no submission's code:
-   it packs the manifest, icon and `ui/` from the reviewed source, signs,
-   and publishes. `.github/workflows/publish.yml` says why at length.
+   it packs the manifest and icon (and a hand-written `ui/`) from the
+   reviewed source, signs, and publishes. `.github/workflows/publish.yml`
+   says why at length.
+
+### A built front end
+
+Windows can be plain HTML and JS in `ui/`, packed as written — or a
+React/TypeScript (or any bundler) project the store builds, the way it
+builds the Rust. Set `web` on the entry to a directory beside the
+manifest holding:
+
+- `package.json` with `"packageManager": "pnpm@<version>"` and a `build`
+  script that writes `dist/` (Vite's default);
+- `pnpm-lock.yaml`, committed — the build installs from it only.
+
+CI runs `pnpm install --frozen-lockfile --ignore-scripts` then
+`pnpm run build` in the no-secret build job, and ships `dist/` as the
+package's `ui/`. Review reads the TypeScript and the lockfile; the bundle
+is never committed — an entry with `web` set and a `ui/` directory in the
+source is refused, because a committed bundle is a binary swapped past
+review. The page's CSP (`default-src 'self'`) still applies: production
+builds only, no inline `<script>`. `ext/dev.thiennguyen.clipboard/web/` is
+a working example.
 
 ## What CI enforces
 

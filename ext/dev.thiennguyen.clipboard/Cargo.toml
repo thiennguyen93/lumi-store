@@ -1,0 +1,26 @@
+[package]
+name = "lumi-clipboard-ext"
+version = "0.23.0"
+edition = "2021"
+publish = false
+
+# A reactor component: no `main`, the WIT world's exports are the entry
+# points. Build with
+#   cargo build --release --target wasm32-wasip2
+#
+# `rlib` beside `cdylib` so `cargo test` can link the history model on the
+# host target — the model is plain Rust with no host call in it, and it is
+# where every rule about what the history keeps lives.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# The SDK's in-tree copy, beside the sample that carries it — see
+# ext/dev.thiennguyen.sample/README.md for why it lives there for now.
+lumi-extension-api = { path = "../dev.thiennguyen.sample/api" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# `regex-lite`, not `regex`: the ignore patterns are a person's own list,
+# matched once per copy against one item's text, so the full engine's
+# Unicode tables and DFA are size in the component for speed nobody needs.
+regex-lite = "0.1"

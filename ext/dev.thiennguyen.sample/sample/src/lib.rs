@@ -85,9 +85,30 @@ impl lumi::Guest for Sample {
         match parsed.get("kind").and_then(|k| k.as_str()) {
             Some("profile") => return profiles(),
             Some("about") => return about(),
+            // The one piece of the person's setup that needs no capability.
+            Some("hyper") => {
+                let on = lumi::hyper_key_enabled()?;
+                return Ok(serde_json::json!({ "hyperKeyEnabled": on }).to_string());
+            }
             Some("config") => {
                 let section = parsed.get("section").and_then(|s| s.as_str()).unwrap_or("");
                 return config(section);
+            }
+            // Storage, exercised once each way: a write, a read of it, the
+            // conflict a stale revision earns, and a blob round trip.
+            Some("storage") => return storage(),
+            // The 0.3 clipboard: a two-item board, one of them out of
+            // storage, and the same pasted — which this manifest cannot
+            // pay for (`input`), so the tests watch it refused.
+            Some("write-all") => return write_all(),
+            Some("paste") => {
+                lumi::paste(&[vec![text_rep("pasted")]])?;
+                return Ok(serde_json::json!({ "pasted": true }).to_string());
+            }
+            // Esc in a window: closed by name, the way it was opened.
+            Some("close") => {
+                lumi::close_window("settings")?;
+                return Ok(serde_json::json!({ "closed": true }).to_string());
             }
             // The button the embedded Settings tab draws and the standalone
             // window hides: same door the `configure` command uses.
@@ -140,6 +161,18 @@ impl lumi::Guest for Sample {
                 "https://lumikeys.app/docs/extensions?uninstalled=dev.thiennguyen.sample",
             ),
         }
+    }
+
+    /// The sample asks for no events, so Lumi never calls this — except
+    /// Lumi's own tests, which hand it one and read back what it kept, and
+    /// try a paste from here to watch it refused.
+    fn on_event(name: String, payload: String) -> Result<(), String> {
+        if name == "paste" {
+            return lumi::paste(&[vec![text_rep(&payload)]]);
+        }
+        lumi::storage::put("last-event", &format!("{name} {payload}"), None)
+            .map(|_| ())
+            .map_err(lumi::storage::PutError::into_message)
     }
 }
 
@@ -194,6 +227,52 @@ fn translate(params: &str) -> Result<String, String> {
 /// uses this to say whose value it is editing. Mapped by hand into the
 /// window's JSON because the dialect with the page is the sample's own,
 /// not the SDK's.
+fn text_rep(text: &str) -> lumi::Rep {
+    lumi::Rep {
+        uti: "public.utf8-plain-text".to_string(),
+        data: lumi::Data::Text(text.to_string()),
+    }
+}
+
+fn write_all() -> Result<String, String> {
+    let blob = lumi::storage::blob_write(&[0x89, b'P', b'N', b'G'])?;
+    let written = lumi::write_clipboard(&[
+        vec![text_rep("first")],
+        vec![
+            lumi::Rep {
+                uti: "public.png".to_string(),
+                data: lumi::Data::Blob(blob.clone()),
+            },
+            lumi::Rep {
+                uti: "public.data".to_string(),
+                data: lumi::Data::Bytes(vec![7; 3]),
+            },
+        ],
+    ]);
+    lumi::storage::blob_delete(&blob)?;
+    written?;
+    Ok(serde_json::json!({ "written": 2 }).to_string())
+}
+
+fn storage() -> Result<String, String> {
+    use lumi::storage::{self, PutError};
+    let first = storage::put("greeting", "xin chào", None).map_err(PutError::into_message)?;
+    let read = storage::get("greeting")?.ok_or("the write was not there")?;
+    let stale = storage::put("greeting", "again", None);
+    let blob = storage::blob_write(&[1, 2, 3])?;
+    let back = storage::blob_read(&blob)?;
+    storage::blob_delete(&blob)?;
+    storage::delete("greeting")?;
+    Ok(serde_json::json!({
+        "rev": first,
+        "value": read.value,
+        "conflict": stale == Err(PutError::Conflict),
+        "blob": back,
+        "keys": storage::keys("")?,
+    })
+    .to_string())
+}
+
 fn profiles() -> Result<String, String> {
     let book = lumi::profiles()?;
     let active = book.active_profile().map(|p| p.name.clone());

@@ -1,0 +1,533 @@
+/* The panel, drawn after Lumi's leader menu (lumi `src/leader/leader.css`):
+   a breadcrumb headed by Lumi's mark, amber key-caps, a quiet footer of
+   keys. Surfaces are Lumi's tokens with a fallback each, so the page also
+   reads under `pnpm dev`, with no Lumi; the key-cap colours are the leader
+   menu's own, which lumi.css does not carry. */
+
+:root {
+  /* `Canvas`, not white: under `pnpm dev` there is no lumi.css to say
+     which theme is on, and a white fallback under dark CanvasText drew
+     white on white. */
+  --cb-raised: var(--raised, Canvas);
+  --cb-line: var(--border, rgba(128, 128, 128, 0.28));
+  --cb-card: var(--card, rgba(128, 128, 128, 0.08));
+  --cb-hover: var(--row-hover, rgba(128, 128, 128, 0.16));
+  --cb-accent: var(--accent, #378add);
+  --cb-muted: color-mix(in srgb, CanvasText 55%, transparent);
+  --cb-faint: color-mix(in srgb, CanvasText 38%, transparent);
+  /* The leader menu's key-cap, light. */
+  --cb-bolt: #ffab00;
+  --cb-key: color-mix(in srgb, var(--cb-bolt) 20%, #fff);
+  --cb-key-edge: color-mix(in srgb, var(--cb-bolt) 55%, rgba(0, 0, 0, 0.12));
+  --cb-key-ink: #7a5300;
+  color-scheme: light dark;
+}
+
+/* And dark: by Lumi's theme when lumi.css set one, else by the system. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --cb-bolt: #f0a500;
+  --cb-key: rgba(255, 255, 255, 0.12);
+  --cb-key-edge: var(--cb-line);
+  --cb-key-ink: var(--cb-bolt);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --cb-bolt: #f0a500;
+    --cb-key: rgba(255, 255, 255, 0.12);
+    --cb-key-edge: var(--cb-line);
+    --cb-key-ink: var(--cb-bolt);
+  }
+}
+
+html, body, #root { height: 100%; }
+/* Clear: the panel is glass (`material = "popover"`), and whatever this
+   page paints covers it. Washes, not colours, from here down. */
+body {
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  color: CanvasText;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.glyph {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Key-caps: `.cap` is the leader menu's amber key, `.quiet` its footer
+   one — also the filter chips, which are keys of a sort (⇥). */
+.cap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--cb-key-edge);
+  border-radius: 5px;
+  background: var(--cb-key);
+  color: var(--cb-key-ink);
+  font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* A little air between ⌘ and its key, so ⌘K reads as two. Tracking
+     also trails the last glyph, so the right padding gives that back. */
+  letter-spacing: 0.15em;
+  padding-right: calc(5px - 0.15em);
+}
+.cap.blank { visibility: hidden; }
+/* A row's key, ⌘ and one character: one width for all, so titles line up. */
+.row .cap { min-width: 32px; }
+/* Amber for a pin, plain for the rest. */
+.row .cap:not(.pin) {
+  border-color: var(--cb-line);
+  background: var(--cb-card);
+  color: var(--cb-muted);
+}
+.cap.quiet {
+  height: 18px;
+  min-width: 18px;
+  border-color: var(--cb-line);
+  background: transparent;
+  color: var(--cb-muted);
+  font-size: 11px;
+}
+
+/* The breadcrumb: Lumi's mark, whose panel this is, then which kinds. */
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px 8px 14px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cb-muted);
+}
+.crumbs { touch-action: none; }
+.crumbs .mark { flex: none; }
+.crumbs .sep { opacity: 0.6; }
+/* Lumi's name, first: the panel is Lumi's before it is this extension's. */
+.crumbs .brand { font-weight: 600; color: CanvasText; }
+
+.filters {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.filters .cap {
+  font-family: inherit;
+  letter-spacing: 0;
+  padding-right: 5px;
+  cursor: default;
+}
+.filters .cap:hover { color: CanvasText; }
+.filters .cap .glyph { width: 13px; height: 13px; }
+.filters .cap:not(:first-child) { padding: 0 4px; }
+.filters .cap.on {
+  border-color: var(--cb-key-edge);
+  background: var(--cb-key);
+  color: var(--cb-key-ink);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin: 0 12px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--cb-card);
+}
+.search .glyph { width: 14px; height: 14px; color: var(--cb-faint); }
+.search input {
+  flex: 1;
+  height: 28px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-size: 14px;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.body-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  padding-top: 6px;
+}
+
+.list {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 6px 6px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 7px;
+}
+.row:hover { background: var(--cb-hover); }
+/* A macOS source list's selection: the accent, white on it. */
+.row[aria-selected="true"] {
+  background: var(--cb-accent);
+  color: #fff;
+}
+.row[aria-selected="true"] :is(.app, .dot, .when) { color: rgba(255, 255, 255, 0.8); }
+/* Amber on the accent reads as a stain; the key goes white with the row. */
+.row[aria-selected="true"] .cap.cap {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.divider {
+  height: 1px;
+  margin: 5px 8px;
+  background: var(--cb-line);
+}
+
+/* The kind slot: a glyph, a colour, or a picture, all 16px. */
+.lead {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--cb-faint);
+}
+.lead .glyph { width: 14px; height: 14px; }
+.row[aria-selected="true"] .lead { color: rgba(255, 255, 255, 0.85); }
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+.thumb {
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--cb-card);
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The end of a row: the app it came from, a dot, then how long ago —
+   each its own column, the time a fixed four characters wide (`12mo` at
+   most), so the app and the dot stay straight down the list whatever the
+   numbers are. */
+.app,
+.when {
+  flex: none;
+  font-size: 11px;
+  color: var(--cb-faint);
+  white-space: nowrap;
+  text-align: right;
+}
+.app {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Between the two, closer than the row's gap would set it. */
+.dot {
+  flex: none;
+  margin: 0 -4px;
+  font-size: 11px;
+  color: var(--cb-faint);
+}
+/* Left in its fixed column, so it sits right after the dot however
+   short it is; the column's width is what keeps the dot and app still. */
+.when {
+  width: 4ch;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+.when:has(.glyph) { text-align: right; }
+.when .glyph { width: 12px; height: 12px; vertical-align: -2px; }
+
+/* A pin landing: in from small and tilted, a touch past, then settled. */
+@keyframes pin-pop {
+  0% { transform: scale(0.3) rotate(-35deg); opacity: 0; }
+  60% { transform: scale(1.3) rotate(8deg); opacity: 1; }
+  100% { transform: none; }
+}
+.when.pop .glyph { animation: pin-pop 320ms cubic-bezier(.2, .8, .2, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .when.pop .glyph { animation: none; }
+}
+
+/* A folding row's height closes; nothing inside may spill out meanwhile. */
+.row { overflow: hidden; }
+
+.empty {
+  padding: 48px 12px;
+  text-align: center;
+  color: var(--cb-faint);
+}
+
+.notice {
+  margin: 0 12px;
+  padding: 6px 0;
+  font-size: 12px;
+  color: var(--denied, #b3261e);
+  border-top: 1px solid var(--cb-line);
+}
+
+/* The leader menu's footer: keys, then `esc close` against the right. */
+.hints {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 12px;
+  padding: 7px 2px 8px;
+  border-top: 1px solid var(--cb-line);
+  font-size: 11px;
+  color: var(--cb-muted);
+}
+.hints span { display: inline-flex; align-items: center; gap: 5px; }
+.hints .exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: default;
+}
+.hints .exit:hover { color: CanvasText; }
+
+/* ⌘K: a macOS menu, raised above the footer's right end. */
+.menu {
+  position: absolute;
+  right: 10px;
+  bottom: 34px;
+  z-index: 2;
+  width: 264px;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cb-line);
+  border-radius: 10px;
+  /* Glass on glass, as a macOS menu over a popover: mostly opaque, so the
+     rows under it do not read through, and blurred for the rest. */
+  background: color-mix(in srgb, var(--cb-raised) 86%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: menu-in 140ms cubic-bezier(.2, .8, .2, 1);
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu { animation: none; }
+}
+.menu-filter {
+  margin: 6px 6px 2px;
+  height: 26px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--cb-card);
+  font-size: 13px;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.menu-list {
+  overflow-y: auto;
+  padding: 4px 5px 5px;
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.menu-item .glyph { width: 14px; height: 14px; color: var(--cb-muted); }
+.menu-label { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.menu-item[aria-selected="true"] { background: var(--cb-accent); color: #fff; }
+.menu-item[aria-selected="true"] .glyph,
+.menu-item[aria-selected="true"] .cap { color: rgba(255, 255, 255, 0.85); border-color: rgba(255, 255, 255, 0.4); }
+.menu-item.danger { color: var(--denied, #d93025); }
+.menu-item.danger .glyph { color: inherit; }
+.menu-item.danger[aria-selected="true"] { background: var(--denied, #d93025); color: #fff; }
+.menu-item.armed .menu-label { font-weight: 600; }
+.menu-line { height: 1px; margin: 4px 8px; background: var(--cb-line); }
+.menu-empty { padding: 12px 8px; font-size: 12px; color: var(--cb-faint); }
+
+.preview-slot {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+/* The preview's left edge, dragged to resize it. Wider than it looks, so
+   it is easy to catch; a hairline shows on hover. */
+.grip {
+  position: absolute;
+  top: 0;
+  bottom: 10px;
+  left: -3px;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 1;
+  touch-action: none;
+}
+.grip::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--cb-accent);
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.grip:hover::after,
+.grip:active::after { opacity: 0.6; }
+
+.preview {
+  height: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0 12px 10px 0;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--cb-line);
+  border-radius: 10px;
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--cb-muted);
+}
+.card-head .glyph { width: 12px; height: 12px; }
+.card-foot {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--cb-faint);
+}
+
+.card .body {
+  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 0;
+  overflow: hidden;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.card .body.rich { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 13px; }
+/* A rich copy's formatting (richText.tsx), on the glass like the rest. */
+.card .body.rich-html {
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  white-space: normal;
+  /* Long copies scroll inside the card; the foot stays put. */
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.rich-html :is(p, ul, ol, pre, blockquote, table, h1, h2, h3, h4, h5, h6) { margin: 0 0 0.5em; }
+.rich-html :is(ul, ol) { padding-left: 1.4em; }
+.rich-html h1 { font-size: 1.35em; }
+.rich-html h2 { font-size: 1.2em; }
+.rich-html :is(h3, h4, h5, h6) { font-size: 1.05em; }
+.rich-html :is(pre, code, kbd) { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+.rich-html pre { white-space: pre-wrap; }
+.rich-html blockquote { padding-left: 0.8em; border-left: 2px solid var(--cb-line); }
+.rich-html .link { color: var(--cb-accent, #3478f6); text-decoration: underline; }
+.rich-html mark { color: inherit; background: color-mix(in srgb, #ffd60a 45%, transparent); }
+.rich-html :is(td, th) { padding: 2px 6px; border: 1px solid var(--cb-line); }
+.rich-html table { border-collapse: collapse; }
+.rich-html hr { border: 0; border-top: 1px solid var(--cb-line); }
+.card .picture {
+  max-height: 180px;
+  border-radius: 6px;
+  background: var(--cb-card);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+/* The text Lumi read in the image, under it; long reads scroll. */
+.card .body.ocr {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font: 12px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  padding-top: 8px;
+  border-top: 1px solid var(--cb-line);
+}
+.card .picture img { max-width: 100%; max-height: 180px; object-fit: contain; }
+.card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); }
+
+/* `pnpm dev` only (`?glass`, set by dev/mock.ts): a busy wallpaper and a
+   CSS stand-in for AppKit's popover glass, to judge the page on it. Lumi
+   draws the real glass; nothing ships with this class set. */
+html.glass-preview {
+  background:
+    radial-gradient(circle at 15% 20%, #ffb86b 0 18%, transparent 19%),
+    radial-gradient(circle at 70% 30%, #7fb4ff 0 22%, transparent 23%),
+    radial-gradient(circle at 40% 85%, #ff7aa8 0 20%, transparent 21%),
+    #e9e4f5;
+}
+html.glass-preview #root {
+  background: color-mix(in srgb, Canvas 62%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  border-radius: 14px;
+}
+html.glass-preview[data-material="hud"] #root { background: rgba(28, 28, 30, 0.58); }
+html.glass-preview[data-material="sidebar"] #root {
+  background: color-mix(in srgb, Canvas 80%, transparent);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  backdrop-filter: blur(40px) saturate(200%);
+}
