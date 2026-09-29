@@ -41,7 +41,7 @@ function Lead({ row }: { row: Entry }) {
   if (row.kind === "file") {
     return (
       <span className="lead">
-        <FileGlyph family={fileFamily(row.fileExt)} />
+        <FileGlyph family={fileFamily(row.fileExt)} many={(row.fileCount ?? 0) > 1} />
       </span>
     );
   }

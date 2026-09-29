@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { blobUrl, call, fileUrl } from "./bridge";
+import { blobUrl, call, fileUrl, type FileItem } from "./bridge";
 import { AppMark } from "./AppMark";
 import { CollapseGlyph, ExpandGlyph, FileGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
-import { fileFamily, isTextFile, type FileFamily } from "./fileType";
+import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { PdfViewer } from "./PdfViewer";
 import { TextFile } from "./TextFile";
 import { RichText } from "./richText";
@@ -20,7 +20,16 @@ const SETTLE_MS = 90;
  *  goes straight to the formatted text instead of flashing plain first. */
 const HOLD_MS = 400;
 
-type Full = { id: string; text: string; html?: string | null; ocr?: string | null; fileSize?: number | null; fileToken?: string | null };
+type Full = {
+  id: string;
+  text: string;
+  html?: string | null;
+  ocr?: string | null;
+  fileSize?: number | null;
+  fileToken?: string | null;
+  files?: FileItem[] | null;
+  fileCount?: number;
+};
 
 /** Previews already asked for, by row — and by whether the row has read
  *  text yet, since OCR lands after the copy. The page is thrown away each
@@ -58,12 +67,12 @@ export function Preview({ row }: { row: Entry | undefined }) {
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
-        const { text, html, ocr, fileSize, fileToken } = await call({ kind: "preview", id: row.id });
+        const { text, html, ocr, fileSize, fileToken, files, fileCount } = await call({ kind: "preview", id: row.id });
         if (!(text || html || ocr)) {
           if (live) setGaveUp(row.id);
           return;
         }
-        const answer = { id: row.id, text, html, ocr, fileSize, fileToken };
+        const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount };
         seen.delete(key);
         seen.set(key, answer);
         if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
@@ -102,7 +111,11 @@ export function Preview({ row }: { row: Entry | undefined }) {
     <aside className="preview" aria-live="polite">
       <div className="card">
         <header className="card-head">
-          {row.kind === "file" ? <FileGlyph family={fileFamily(row.fileExt)} /> : <KindGlyph kind={row.kind} />}
+          {row.kind === "file" ? (
+            <FileGlyph family={fileFamily(row.fileExt)} many={(row.fileCount ?? 0) > 1} />
+          ) : (
+            <KindGlyph kind={row.kind} />
+          )}
           <span>
             {KIND_WORDS[row.kind]}
             {from ? " · " : ""}
@@ -142,7 +155,11 @@ export function Preview({ row }: { row: Entry | undefined }) {
             <div className="body ocr">{ocr}</div>
           </section>
         )}
-        {row.kind === "file" && (MEDIA_FAMILIES.has(fileFamily(row.fileExt)) || isTextFile(row.fileExt)) && (
+        {row.kind === "file" &&
+          // One file only: several sharing an extension are the list below.
+          (row.fileCount ?? 0) <= 1 &&
+          !mine?.files?.length &&
+          (MEDIA_FAMILIES.has(fileFamily(row.fileExt)) || isTextFile(row.fileExt)) && (
           <FileMedia
             key={row.id}
             family={fileFamily(row.fileExt)}
@@ -156,7 +173,9 @@ export function Preview({ row }: { row: Entry | undefined }) {
         {row.kind === "color" && HEX.test(row.title) && (
           <div className="chip" style={{ background: row.title }} />
         )}
-        {waiting ? (
+        {mine?.files?.length ? (
+          <FileList files={mine.files} count={mine.fileCount || mine.files.length} />
+        ) : waiting ? (
           <div className="body rich" />
         ) : html ? (
           <RichText key={row.id} html={html} fallback={<div className="body rich">{text}</div>} />
@@ -197,7 +216,7 @@ function FileMedia({
   const address = useMemo(() => (token ? fileUrl(token) : null), [token]);
   const src = failed ? null : address;
   if (src && text) {
-    return <TextFile src={src} json={ext === "json"} onFail={() => setFailed(true)} />;
+    return <TextFile src={src} json={ext === "json"} language={codeLanguage(ext)} onFail={() => setFailed(true)} />;
   }
   if (src && family === "image") {
     // The file itself, drawn by the webview: a type it cannot draw (HEIC
@@ -302,6 +321,60 @@ function VideoPlayer({ src, onError }: { src: string; onError: () => void }) {
       </div>
     </div>
   );
+}
+
+/** A copy of several files, one to a line: its icon, its name, the folder
+ *  it is in (home as ~) and its size — in place of a column of paths. */
+function FileList({ files, count }: { files: FileItem[]; count: number }) {
+  const folders = files.filter((file) => file.folder).length;
+  const plain = files.length - folders;
+  const parts = [
+    plain && `${plain} ${plain === 1 ? "file" : "files"}`,
+    folders && `${folders} ${folders === 1 ? "folder" : "folders"}`,
+  ].filter(Boolean);
+  return (
+    <section className="file-list" aria-label={`${count} files`}>
+      <header className="file-list-head">
+        {parts.join(" · ")}
+        {count > files.length && ` · first ${files.length} of ${count}`}
+      </header>
+      <ul>
+        {files.map((file, i) => (
+          <li key={i} title={file.dir ? `${file.dir}/${file.name}` : file.name}>
+            <FileGlyph family={file.folder ? "folder" : fileFamily(extension(file.name))} />
+            <span className="file-list-text">
+              <FileName name={file.name} folder={!!file.folder} />
+              {file.dir && <span className="file-list-dir">{home(file.dir)}</span>}
+            </span>
+            {file.size != null && <span className="file-list-size">{bytes(file.size)}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** A name cut in its middle when too long, its extension kept: "brag-vert….mp4". */
+function FileName({ name, folder }: { name: string; folder: boolean }) {
+  const dot = folder ? -1 : name.lastIndexOf(".");
+  if (dot <= 0) return <span className="file-list-name"><span className="file-list-stem">{name}</span></span>;
+  return (
+    <span className="file-list-name">
+      <span className="file-list-stem">{name.slice(0, dot)}</span>
+      <span className="file-list-ext">{name.slice(dot)}</span>
+    </span>
+  );
+}
+
+/** "mp4" of "brag.MP4"; nothing for ".zshrc" or "README". */
+function extension(name: string): string | undefined {
+  const dot = name.lastIndexOf(".");
+  return dot > 0 ? name.slice(dot + 1).toLowerCase() : undefined;
+}
+
+/** A folder under someone's home written the way Finder's Go menu does: ~/Desktop. */
+function home(dir: string): string {
+  return dir.replace(/^\/Users\/[^/]+(?=\/|$)/, "~");
 }
 
 /** 0:07, 12:03, 1:02:03. */

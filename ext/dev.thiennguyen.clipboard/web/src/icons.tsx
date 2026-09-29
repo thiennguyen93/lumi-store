@@ -80,7 +80,26 @@ const CORNER = "M14 2v4a2 2 0 0 0 2 2h4";
 
 /** A file row's glyph: the page every file gets, with what marks its
  *  family drawn inside — tinted by `data-family` in the stylesheet. */
-export function FileGlyph({ family }: { family: FileFamily }) {
+/** A file row's icon: its family's, or — `many` — a stack of pages (or of
+ *  folders) for a copy of several, tinted by their family when they share one. */
+export function FileGlyph({ family, many = false }: { family: FileFamily; many?: boolean }) {
+  if (many && family === "folder") {
+    return (
+      <svg className="glyph" data-family={family} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 17a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.9a2 2 0 0 1-1.69-.9l-.81-1.2a2 2 0 0 0-1.67-.9H8a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2Z" />
+        <path d="M2 8v11a2 2 0 0 0 2 2h14" />
+      </svg>
+    );
+  }
+  if (many) {
+    return (
+      <svg className="glyph" data-family={family} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 7h-3a2 2 0 0 1-2-2V2" />
+        <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z" />
+        <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8" />
+      </svg>
+    );
+  }
   if (family === "folder") {
     return (
       <svg className="glyph" data-family={family} viewBox="0 0 24 24" aria-hidden="true">

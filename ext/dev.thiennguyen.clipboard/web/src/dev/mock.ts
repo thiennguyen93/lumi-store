@@ -52,11 +52,33 @@ let rows: Entry[] = [
   entry({ id: "m4", kind: "file", title: "/Users/me/Pictures/IMG_0042.heic", fileExt: "heic", appName: "Finder", last: now - 26 * 60 * min - 3 }),
   entry({ id: "n", kind: "file", title: "/Users/me/Movies/demo.mp4", fileExt: "mp4", appName: "Finder", last: now - 27 * 60 * min }),
   entry({ id: "o", kind: "file", title: "/Users/me/Music/song.mp3", fileExt: "mp3", appName: "Finder", last: now - 28 * 60 * min }),
+  entry({ id: "p4", kind: "file", title: "/Users/me/Projects/api/main.go", fileExt: "go", appName: "Finder", last: now - 29 * 60 * min + 3 }),
+  entry({ id: "p5", kind: "file", title: "/Users/me/Projects/web/App.tsx", fileExt: "tsx", appName: "Finder", last: now - 29 * 60 * min + 4 }),
   entry({ id: "p3", kind: "file", title: "/Users/me/Projects/lumi/package.json", fileExt: "json", appName: "Finder", last: now - 29 * 60 * min + 2 }),
   entry({ id: "p2", kind: "file", title: "/Users/me/Documents/notes.md", fileExt: "md", appName: "Finder", last: now - 29 * 60 * min + 1 }),
   entry({ id: "p", kind: "file", title: "/Users/me/Sites/index.html", fileExt: "html", appName: "Finder", last: now - 29 * 60 * min }),
   entry({ id: "q", kind: "file", title: "/Users/me/Projects/", fileExt: "/", appName: "Finder", last: now - 30 * 60 * min }),
+  entry({ id: "r1", kind: "file", title: "brag-vertical.mp4 + 2 more", fileCount: 3, appName: "Finder", last: now - 31 * 60 * min }),
+  entry({ id: "r2", kind: "file", title: "brag2.mp4 + 1 more", fileExt: "mp4", fileCount: 2, appName: "Finder", last: now - 32 * 60 * min }),
+  entry({ id: "r3", kind: "file", title: "Projects + 1 more", fileExt: "/", fileCount: 2, appName: "Finder", last: now - 33 * 60 * min }),
 ];
+
+// The mock's copies of several files, as `preview` lists them.
+const MOCK_FILES: Record<string, { name: string; dir?: string; size?: number; folder?: boolean }[]> = {
+  r1: [
+    { name: "brag-vertical.mp4", dir: "/Users/me/Desktop", size: 18_912_004 },
+    { name: "brag5.mp4", dir: "/Users/me/Downloads", size: 3_402_118 },
+    { name: "lumi (2).log", dir: "/Users/me/Downloads", size: 84_210 },
+  ],
+  r2: [
+    { name: "brag2.mp4", dir: "/Users/me/Movies", size: 12_004_550 },
+    { name: "brag3-with-a-much-longer-name-than-fits-the-pane.mp4", dir: "/Users/me/Movies/Screen Recordings/2026/September", size: 9_880 },
+  ],
+  r3: [
+    { name: "Projects", dir: "/Users/me", folder: true },
+    { name: "Archive", dir: "/Volumes/Backup", folder: true },
+  ],
+};
 
 let previewWidth: number | null = null;
 // What Lumi keeps for `GET /__lumi__/settings`, as text the way it stores it.
@@ -112,8 +134,9 @@ function answer(request: Request): unknown {
           : null;
       const ocr = row?.ocr && settings.ocr !== "false" ? ["Lumi", "Clipboard History", "Search history", ...Array.from({ length: 60 }, (_, i) => `Line ${i + 1} of a long read`)].join("\n") : null;
       const fileSize = row?.kind === "file" ? (row.title.endsWith(".pdf") ? 1_234_567 : 48_213_904) : null;
-      const fileToken = row?.kind === "file" && /\.(pdf|png|heic|mp3|mp4|html|md|json)$/.test(row.title) ? row.title : null;
-      return { text, html, ocr, fileSize, fileToken };
+      const fileToken = row?.kind === "file" && /\.(pdf|png|heic|mp3|mp4|html|md|json|go|tsx)$/.test(row.title) ? row.title : null;
+      const files = row ? MOCK_FILES[row.id] : undefined;
+      return { text, html, ocr, fileSize, fileToken, files: files ?? null, fileCount: files?.length ?? 0 };
     }
     case "paste":
       say(`would close the panel and paste ${request.plain ? "plain text of " : ""}${request.id}`);
@@ -321,6 +344,53 @@ setFileUrl((token) => {
   if (token.endsWith(".html")) {
     const page = '<!doctype html>\n<html>\n  <body>\n    <h1>Hello</h1>\n    <script>document.title = "ran!"; alert("ran")</script>\n  </body>\n</html>\n';
     return URL.createObjectURL(new Blob([page], { type: "text/plain" }));
+  }
+  if (token.endsWith(".go")) {
+    const go = `package main
+
+import (
+\t"fmt"
+\t"net/http"
+)
+
+// Server answers health checks.
+type Server struct {
+\tAddr  string
+\tDebug bool
+}
+
+func (s *Server) health(w http.ResponseWriter, _ *http.Request) {
+\tfmt.Fprintf(w, "ok %d\\n", 200) // always fine
+}
+
+func main() {
+\ts := &Server{Addr: ":8080", Debug: true}
+\thttp.HandleFunc("/health", s.health)
+\t_ = http.ListenAndServe(s.Addr, nil)
+}
+`;
+    return URL.createObjectURL(new Blob([go], { type: "text/plain" }));
+  }
+  if (token.endsWith(".tsx")) {
+    const tsx = [
+      'import { useState } from "react";',
+      "",
+      "/** A counter, with a <script> in a string that must stay text. */",
+      "export function App({ start = 0 }: { start?: number }) {",
+      "  const [count, setCount] = useState<number>(start);",
+      "  const label = `clicked ${count} times`;",
+      '  const trap = "<script>alert(1)</script>";',
+      "  const re = /^[a-z]+\\d*$/i;",
+      "  return (",
+      '    <button className="primary" onClick={() => setCount(count + 1)} title={trap}>',
+      "      {label} {re.test(label) ? null : true}",
+      "    </button>",
+      "  );",
+      "}",
+      // A head cut mid-token, as a 64 KB read may be.
+      "const unfinished = `still open",
+    ].join("\n");
+    return URL.createObjectURL(new Blob([tsx], { type: "text/plain" }));
   }
   if (token.endsWith(".json")) {
     const data = {

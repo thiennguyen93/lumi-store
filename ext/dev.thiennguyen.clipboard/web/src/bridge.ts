@@ -9,6 +9,8 @@
 
 import type { Entry, ListAnswer, Request, Stats } from "./types";
 
+export type FileItem = { name: string; dir?: string; size?: number; folder?: boolean };
+
 type Answers = {
   list: ListAnswer;
   /** `html`: a rich copy's markup, to draw in a sandbox. */
@@ -17,6 +19,9 @@ type Answers = {
     text: string; html?: string | null; ocr?: string | null; fileSize?: number | null;
     /** A lone PDF, sound or film's grant for `fileUrl`; Lumi 1.26. */
     fileToken?: string | null;
+    /** A copy of several files, one by one (at most 200), and how many in all. */
+    files?: FileItem[] | null;
+    fileCount?: number;
   };
   paste: Record<string, never>;
   pin: { pin: string | null };

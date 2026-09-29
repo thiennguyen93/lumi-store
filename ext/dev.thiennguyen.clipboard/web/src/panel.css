@@ -23,6 +23,9 @@
   --cb-json-string: #2f7d32;
   --cb-json-number: #1f63b0;
   --cb-json-word: #9b3f9a;
+  --cb-code-keyword: #c0283a;
+  --cb-code-type: #9a4a00;
+  --cb-code-fn: #7447c9;
   color-scheme: light dark;
 }
 
@@ -36,6 +39,9 @@
   --cb-json-string: #8fcf92;
   --cb-json-number: #7db8f5;
   --cb-json-word: #dba2e6;
+  --cb-code-keyword: #ff7b72;
+  --cb-code-type: #ffa657;
+  --cb-code-fn: #d2a8ff;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
@@ -46,6 +52,9 @@
     --cb-json-string: #8fcf92;
     --cb-json-number: #7db8f5;
     --cb-json-word: #dba2e6;
+    --cb-code-keyword: #ff7b72;
+    --cb-code-type: #ffa657;
+    --cb-code-fn: #d2a8ff;
   }
 }
 
@@ -656,6 +665,33 @@ body {
   -webkit-user-select: text;
   user-select: text;
 }
+/* A code file: line numbers beside the code, one scroller for both. */
+.card .code-scroll {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.card .code-scroll pre { flex: 1 0 auto; min-height: 0; overflow: visible; padding-left: 8px; }
+.card .code-scroll .gutter {
+  position: sticky;
+  left: 0;
+  flex: none;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 6px 6px 6px 8px;
+  border-right: 1px solid var(--cb-line);
+  background: var(--cb-raised);
+  color: var(--cb-faint);
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: pre;
+  -webkit-user-select: none;
+  user-select: none;
+}
 .card .file-text-more {
   display: flex;
   align-items: center;
@@ -701,6 +737,84 @@ body {
 .card .json-number { color: var(--cb-json-number); }
 .card .json-bool, .card .json-null { color: var(--cb-json-word); }
 .card .json-more { color: var(--cb-accent); }
+/* A code file's colours: highlight.js' scopes (highlight.ts), mapped onto a few
+   theme colours; everything unnamed keeps the text colour. */
+.card pre.code .hljs-keyword,
+.card pre.code .hljs-selector-tag,
+.card pre.code .hljs-tag,
+.card pre.code .hljs-name { color: var(--cb-code-keyword); }
+.card pre.code .hljs-string,
+.card pre.code .hljs-regexp,
+.card pre.code .hljs-char,
+.card pre.code .hljs-template-tag,
+.card pre.code .hljs-subst .hljs-string { color: var(--cb-json-string); }
+.card pre.code .hljs-number,
+.card pre.code .hljs-attr,
+.card pre.code .hljs-attribute,
+.card pre.code .hljs-property,
+.card pre.code .hljs-variable,
+.card pre.code .hljs-template-variable,
+.card pre.code .hljs-selector-class,
+.card pre.code .hljs-selector-id { color: var(--cb-json-number); }
+.card pre.code .hljs-literal,
+.card pre.code .hljs-symbol,
+.card pre.code .hljs-bullet { color: var(--cb-json-word); }
+.card pre.code .hljs-type,
+.card pre.code .hljs-built_in,
+.card pre.code .hljs-title.class_,
+.card pre.code .hljs-section { color: var(--cb-code-type); }
+.card pre.code .hljs-title.function_,
+.card pre.code .hljs-title:not(.class_) { color: var(--cb-code-fn); }
+.card pre.code .hljs-comment,
+.card pre.code .hljs-quote,
+.card pre.code .hljs-meta { color: var(--cb-faint); }
+.card pre.code .hljs-comment { font-style: italic; }
+.card pre.code .hljs-emphasis { font-style: italic; }
+.card pre.code .hljs-strong { font-weight: 600; }
+.card pre.code .hljs-deletion { color: var(--cb-code-keyword); }
+.card pre.code .hljs-addition { color: var(--cb-json-string); }
+/* A copy of several files: one line each, the list scrolls, the foot stays. */
+.card .file-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  border-radius: 6px;
+  border: 1px solid var(--cb-line);
+  background: var(--cb-card);
+  overflow: hidden;
+}
+.card .file-list-head {
+  flex: none;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--cb-line);
+  font-size: 11px;
+  color: var(--cb-muted);
+}
+.card .file-list ul {
+  flex: 1 1 0;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 0;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.card .file-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+}
+.card .file-list li + li { border-top: 1px solid color-mix(in srgb, var(--cb-line) 55%, transparent); }
+.card .file-list li > .glyph { flex: none; width: 16px; height: 16px; }
+.card .file-list-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.card .file-list-name { display: flex; min-width: 0; font-size: 12px; white-space: nowrap; -webkit-user-select: text; user-select: text; }
+.card .file-list-stem,
+.card .file-list-dir { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; -webkit-user-select: text; user-select: text; }
+.card .file-list-ext { flex: none; }
+.card .file-list-dir { font-size: 10.5px; color: var(--cb-faint); }
+.card .file-list-size { flex: none; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--cb-muted); }
 .card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); }
 
 /* `pnpm dev` only (`?glass`, set by dev/mock.ts): a busy wallpaper and a

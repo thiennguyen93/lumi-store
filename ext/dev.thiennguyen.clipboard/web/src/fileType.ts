@@ -48,3 +48,21 @@ const TEXT = new Set(
 export function isTextFile(ext: string | undefined): boolean {
   return !!ext && TEXT.has(ext);
 }
+
+/** The grammar a code file is coloured with (a key of `highlight.ts`'s
+ *  table), or `null` for text that is only text — notes, logs, tables. */
+const LANGUAGES: Record<string, string> = {
+  ts: "typescript", tsx: "typescript",
+  js: "javascript", jsx: "javascript", mjs: "javascript", cjs: "javascript",
+  go: "go", rs: "rust", py: "python", rb: "ruby", java: "java", kt: "kotlin", swift: "swift",
+  c: "c", h: "c", cc: "cpp", cpp: "cpp", hpp: "cpp", cs: "csharp", php: "php",
+  sh: "bash", zsh: "bash", bash: "bash", fish: "bash", sql: "sql", lua: "lua",
+  css: "css", html: "xml", htm: "xml", xml: "xml", vue: "xml", svelte: "xml",
+  json: "json", yaml: "yaml", yml: "yaml", toml: "ini", ini: "ini", cfg: "ini", conf: "ini",
+  graphql: "graphql", proto: "protobuf", dart: "dart", scala: "scala", ex: "elixir", exs: "elixir",
+  md: "markdown", markdown: "markdown",
+};
+
+export function codeLanguage(ext: string | undefined): string | null {
+  return (ext && LANGUAGES[ext]) || null;
+}

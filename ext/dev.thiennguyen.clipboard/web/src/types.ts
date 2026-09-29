@@ -23,6 +23,8 @@ export interface Entry {
   /** A file row's files' shared extension ("pdf"), "/" for folders; absent
    *  when they differ, have none, or the row is older than this field. */
   fileExt?: string;
+  /** How many files a file row holds, when more than one. */
+  fileCount?: number;
 }
 
 export interface ListAnswer {

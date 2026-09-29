@@ -174,10 +174,19 @@ pub struct Entry {
     /// all folders. Empty for anything else, and for rows kept before this.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub file_ext: String,
+    /// How many files a file row holds, when more than one — so its row can
+    /// look like several. 0 for one file, anything else, and rows kept before
+    /// this (`lib::count_file_rows` fills those in).
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub file_count: u32,
 }
 
 fn is_false(b: &bool) -> bool {
     !*b
+}
+
+fn is_zero(n: &u32) -> bool {
+    *n == 0
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
@@ -313,6 +322,7 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
         ocr_search: copy.ocr.as_deref().map(ocr_search_of).unwrap_or_default(),
         ocr: copy.ocr.as_deref().is_some_and(|text| !text.trim().is_empty()),
         file_ext: if kind == Kind::File { file_ext_of(&copy.items) } else { String::new() },
+        file_count: if kind == Kind::File { file_count_of(&copy.items) } else { 0 },
         thumb: copy
             .items
             .iter()
@@ -743,6 +753,59 @@ pub fn file_ext_of(items: &[Vec<Rep>]) -> String {
     if exts.all(|ext| ext == first) { first } else { String::new() }
 }
 
+/// One of several copied files, as the preview lists it.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FileItem {
+    pub name: String,
+    /// The folder it is in, when Lumi knew where it was.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dir: Option<String>,
+    /// Its size in bytes, as Lumi measured it at the copy; a folder has none.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub size: Option<u64>,
+    #[serde(skip_serializing_if = "is_false")]
+    pub folder: bool,
+}
+
+/// The most files the preview lists; the rest are only counted.
+pub const FILES_LISTED: usize = 200;
+
+/// A copy of several files, one by one, for the preview's list — empty for
+/// a copy of one file (or none), which the preview shows its own way.
+pub fn files_list_of(items: &[Vec<Rep>]) -> Vec<FileItem> {
+    let reps: Vec<&Rep> = items.iter().flatten().filter(|rep| rep.uti == uti::FILE_URL && rep.text.is_some()).collect();
+    if reps.len() < 2 {
+        return Vec::new();
+    }
+    let names = file_names(items);
+    files_of(items)
+        .into_iter()
+        .zip(reps)
+        .enumerate()
+        .take(FILES_LISTED)
+        .map(|(i, ((path, folder), rep))| {
+            let trimmed = path.as_deref().map(|p| p.trim_end_matches('/'));
+            let dir = trimmed.and_then(|p| p.rsplit_once('/')).map(|(dir, _)| if dir.is_empty() { "/" } else { dir }.to_string());
+            let name = names
+                .get(i)
+                .cloned()
+                .or_else(|| trimmed.and_then(|p| p.rsplit('/').next()).map(str::to_string))
+                .unwrap_or_else(|| "A file".to_string());
+            FileItem { name, dir, size: rep.file_size, folder }
+        })
+        .collect()
+}
+
+/// How many files a copy holds, for `Entry::file_count`: the count when it
+/// is more than one, else 0.
+pub fn file_count_of(items: &[Vec<Rep>]) -> u32 {
+    match u32::try_from(files_of(items).len()).unwrap_or(u32::MAX) {
+        0 | 1 => 0,
+        n => n,
+    }
+}
+
 pub fn kind_of(items: &[Vec<Rep>]) -> Kind {
     let utis: Vec<&str> = items.iter().flatten().map(|r| r.uti.as_str()).collect();
     if utis.contains(&uti::FILE_URL) {
@@ -1093,6 +1156,34 @@ mod tests {
         assert_eq!(ext(&["file:///a/.zshrc"]), "");
         assert_eq!(ext(&["file:///.file/id=1.2"]), "");
         assert_eq!(ext(&["file:///a/README"]), "");
+    }
+
+    #[test]
+    fn several_files_are_listed_by_name_folder_and_size() {
+        let file = |url: &str, path: Option<&str>, size: Option<u64>| vec![Rep { uti: uti::FILE_URL.into(), text: Some(url.into()), blob: None, bytes: 0, file_size: size, path: path.map(str::to_string), file_token: None }];
+        assert!(files_list_of(&[file("file:///a/x.mp4", None, Some(1))]).is_empty());
+        let list = files_list_of(&[
+            file("file:///.file/id=1.2", Some("/Users/me/Desktop/brag.mp4"), Some(2_000)),
+            file("file:///Users/me/Downloads/lumi%20(2).log", None, Some(10)),
+            file("file:///Users/me/Projects/", None, None),
+            file("file:///top.txt", None, None),
+        ]);
+        assert_eq!(list.len(), 4);
+        assert_eq!(list[0], FileItem { name: "brag.mp4".into(), dir: Some("/Users/me/Desktop".into()), size: Some(2_000), folder: false });
+        assert_eq!(list[1].name, "lumi (2).log");
+        assert_eq!(list[1].dir.as_deref(), Some("/Users/me/Downloads"));
+        assert_eq!(list[2], FileItem { name: "Projects".into(), dir: Some("/Users/me".into()), size: None, folder: true });
+        assert_eq!(list[3].dir.as_deref(), Some("/"));
+    }
+
+    #[test]
+    fn only_several_files_are_counted() {
+        let file = |url: &str| vec![Rep { uti: uti::FILE_URL.into(), text: Some(url.into()), blob: None, bytes: 0, file_size: None, path: None, file_token: None }];
+        let count = |urls: &[&str]| file_count_of(&urls.iter().map(|u| file(u)).collect::<Vec<_>>());
+        assert_eq!(count(&["file:///a/x.mp4"]), 0);
+        assert_eq!(count(&["file:///a/x.mp4", "file:///b/y.mp4", "file:///c/z.log"]), 3);
+        assert_eq!(count(&["file:///a/", "file:///b/"]), 2);
+        assert_eq!(file_count_of(&[vec![text("x")]]), 0);
     }
 
     #[test]

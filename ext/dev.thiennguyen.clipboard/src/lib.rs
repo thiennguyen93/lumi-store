@@ -310,6 +310,34 @@ fn rename_file_rows(host: &impl Host) -> Result<(), String> {
     })
 }
 
+/// File rows kept before `file_count` hold several files with nothing to say
+/// so but their title ("a.mp4 + 2 more"). Only those are read again, from
+/// their records, and counted — once, since a counted row has a count.
+fn count_file_rows(host: &impl Host) -> Result<(), String> {
+    let (index, _) = read_index(host)?;
+    let mut counted = std::collections::HashMap::new();
+    let several = |e: &history::Entry| e.kind == history::Kind::File && e.file_count == 0 && e.title.contains(" + ") && e.title.ends_with(" more");
+    for entry in index.items.iter().filter(|e| several(e)) {
+        if let Ok(record) = read_record(host, &entry.id) {
+            let count = history::file_count_of(&record.items);
+            if count > 0 {
+                counted.insert(entry.id.clone(), count);
+            }
+        }
+    }
+    if counted.is_empty() {
+        return Ok(());
+    }
+    update_index(host, |index| {
+        for entry in &mut index.items {
+            if let Some(count) = counted.get(&entry.id) {
+                entry.file_count = *count;
+            }
+        }
+        Ok(())
+    })
+}
+
 /// Delete what an evicted or removed row held. Best effort: a record or
 /// blob left behind is storage wasted, not a history that is wrong, and a
 /// failure here must not undo the index write that already happened.
@@ -448,6 +476,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 expire(host, &prefs)?;
                 // Best effort: a stale title is only a title.
                 let _ = rename_file_rows(host);
+                let _ = count_file_rows(host);
             }
             let (index, _) = read_index(host)?;
             let mut items = history::sorted(&index, prefs.order);
@@ -489,6 +518,9 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "ocr": ocr,
                 "fileSize": history::files_size_of(&record.items),
                 "fileToken": history::file_token_of(&record.items),
+                // Several files: each one, for the list the preview draws.
+                "files": Some(history::files_list_of(&record.items)).filter(|files| !files.is_empty()),
+                "fileCount": history::file_count_of(&record.items),
             }))
         }
         "paste" => {
