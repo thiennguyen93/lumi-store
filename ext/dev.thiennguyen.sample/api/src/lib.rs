@@ -440,6 +440,16 @@ pub mod storage {
         wit::blob_delete(id)
     }
 
+    /// Offer a blob to the person as a file, through Lumi's Save panel with
+    /// `name` filled in. Your panels close first; the call returns once the
+    /// Save panel is up, and does not say where the file went. Only while
+    /// answering a press — a command or one of your windows.
+    ///
+    /// Needs Lumi 1.26.0 or later.
+    pub fn blob_save(id: &str, name: &str) -> Result<(), String> {
+        wit::blob_save(id, name)
+    }
+
     /// Every blob and its size in bytes, sorted by id.
     pub fn blobs() -> Result<Vec<(String, u64)>, String> {
         wit::blobs()
