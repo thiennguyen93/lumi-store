@@ -9,6 +9,10 @@
 #                            # project (package.json with "packageManager": "pnpm@…",
 #                            # pnpm-lock.yaml, a build script writing dist/) whose
 #                            # output ships as ui/. ui/ itself is then not committed.
+# category = "Productivity"  # the store's shelf for it, one of Productivity,
+#                            # Writing, Windows, Design, Developer, Utilities —
+#                            # decided in review, not by the author
+# featured = true            # optional: the one plate at the top of Discover
 
 # First-party and in-tree — a third-party entry is a pinned submodule
 # instead; ext/dev.thiennguyen.sample/README.md carries the distinction.
@@ -16,6 +20,7 @@
 id = "dev.thiennguyen.sample"
 path = "ext/dev.thiennguyen.sample"
 subdir = "sample"
+category = "Developer"
 
 
 # First-party and in-tree, for the sample's reason.
@@ -23,6 +28,7 @@ subdir = "sample"
 id = "dev.thiennguyen.keytest"
 path = "ext/dev.thiennguyen.keytest"
 subdir = "."
+category = "Developer"
 
 
 # First-party and in-tree, for the sample's reason. Its panel is React +
@@ -32,3 +38,5 @@ id = "dev.thiennguyen.clipboard"
 path = "ext/dev.thiennguyen.clipboard"
 subdir = "."
 web = "web"
+category = "Productivity"
+featured = true
