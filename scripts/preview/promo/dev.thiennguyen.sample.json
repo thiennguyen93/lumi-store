@@ -1,0 +1,32 @@
+{
+  "color": "#6366f1",
+  "shots": [
+    {
+      "headline": "One of everything an extension can do",
+      "sub": "A command, a flow node, a setting, a window and a page of its own — each small enough to read in one sitting.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Sample",
+      "page": "about.html",
+      "theme": "light",
+      "callout": {
+        "title": "Sample",
+        "label": "Built for extension developers",
+        "body": "Read the source end to end, then copy the part you need into <b>your own extension</b>."
+      }
+    },
+    {
+      "headline": "Settings that talk to your extension",
+      "sub": "A page of the extension's own, answered by its WebAssembly through Lumi's bridge — no network, no Lumi internals.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Sample › Settings",
+      "page": "index.html",
+      "theme": "light",
+      "inset": "0",
+      "callout": {
+        "title": "Translate selection",
+        "label": "Would open",
+        "body": "translate.google.com — <b>Good morning</b>, into Vietnamese."
+      }
+    }
+  ]
+}

@@ -55,8 +55,11 @@ after review.
    screenshots = ["shots/panel.png", "shots/settings.png"]
    ```
 
-   At most 4, each a PNG or JPEG of at most 1 MB. Lumi's installer
-   ignores the key; the store publishes the files beside your package.
+   At most 4, each a PNG or JPEG of at most 1 MB, made at 16:10 (1280×800)
+   so Lumi's frames show them whole. Lumi's installer ignores the key; the
+   store publishes the files beside your package. The first-party
+   extensions' pictures are made with `scripts/preview_ui.py` (its
+   `/__promo__/` page) and `scripts/screenshot.mjs` — see the top of each.
 
 3. Review is human, of source: the manifest's capabilities against what
    the code actually calls, nothing phoning home, no misbehaviour shipped

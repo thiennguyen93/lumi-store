@@ -1,12 +1,19 @@
-// A store screenshot, taken the same way every time: headless Chrome at a
-// fixed size (800×480, the 5:3 of the store's frames, at 2x), the page
-// served by scripts/preview_ui.py, and a scene script run in it first —
-// keys pressed, a tab picked — so the picture shows the extension in use.
-// THEME=dark for prefers-color-scheme: dark.
+// A store picture, taken the same way every time: headless Chrome at a
+// fixed size, a page served by scripts/preview_ui.py, and a scene script
+// run in it first — keys pressed, a field filled — so the picture shows the
+// extension in use. THEME=dark for prefers-color-scheme: dark.
 //
 //   node scripts/screenshot.mjs <url> <out.png> [scene.js] [width] [height] [scale]
 //
-// The scenes for each shot live in scripts/preview/shots/<id>-<n>.js.
+// The store's pictures are the promo pages, at 1280×800 and scale 1:
+//
+//   node scripts/screenshot.mjs "http://127.0.0.1:5191/__promo__/?shot=1" \
+//     ext/dev.thiennguyen.keytest/shots/1-keyboard.png \
+//     scripts/preview/shots/dev.thiennguyen.keytest-1.js 1280 800 1
+//
+// Headline, callout and page for each shot are in
+// scripts/preview/promo/<id>.json; the scenes in scripts/preview/shots/.
+
 import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
