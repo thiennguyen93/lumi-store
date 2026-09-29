@@ -1,0 +1,45 @@
+{
+  "color": "#7c3aed",
+  "shots": [
+    {
+      "headline": "Everything you copy, one shortcut away",
+      "sub": "Search your clipboard history, see each copy before you use it, and paste it back where you were typing.",
+      "frame": "panel",
+      "width": 820,
+      "height": 520,
+      "page": "panel.html",
+      "theme": "light",
+      "inset": "0",
+      "callout": {
+        "title": "Clipboard Manager",
+        "label": "⇧⌘C, in any app",
+        "body": "Colours, links, files and screenshots — each <b>previewed as what it is</b>.",
+        "side": "left"
+      }
+    },
+    {
+      "headline": "Private by design",
+      "sub": "Your history stays on this Mac, stored encrypted, and nothing leaves it — the extension has no network access.",
+      "window": "Welcome to Clipboard Manager",
+      "width": 560,
+      "height": 498,
+      "page": "welcome.html",
+      "theme": "light",
+      "inset": "0",
+      "callout": {
+        "title": "Clipboard Manager",
+        "label": "Never recorded",
+        "body": "Anything a password manager marks as secret — Lumi drops it <b>before the extension hears of it</b>."
+      }
+    },
+    {
+      "headline": "Keep it your way",
+      "sub": "How long to keep, how to search, whether to read text in images — and one key to bring it all back.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Clipboard Manager › Settings",
+      "page": "settings.html",
+      "theme": "dark",
+      "inset": "16px 20px"
+    }
+  ]
+}

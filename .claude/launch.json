@@ -71,6 +71,19 @@
         "5191"
       ],
       "port": 5191
+    },
+    {
+      "name": "clipboard-promo",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "scripts/preview_ui.py",
+        "ext/dev.thiennguyen.clipboard",
+        "--port",
+        "5192",
+        "--proxy",
+        "http://localhost:5178"
+      ],
+      "port": 5192
     }
   ]
 }

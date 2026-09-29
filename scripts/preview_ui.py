@@ -21,8 +21,13 @@ photographed for the store's `screenshots` without a Lumi build:
                             colour, the page in a Lumi window, a callout —
                             for scripts/screenshot.mjs to take at 1280×800
 
-Everything else is a file under the crate's ui/. Bound to 127.0.0.1: it is a
-preview, never something to reach from another machine.
+Everything else is a file under the crate's ui/ — or, with --proxy, whatever
+a dev server answers for it: an extension with a built front end (a `web`
+entry) runs its own dev server with its own stand-in for the bridge, and the
+promo page has to share its origin for a scene script to reach into it.
+
+Bound to 127.0.0.1: it is a preview, never something to reach from another
+machine.
 
   python3 scripts/preview_ui.py ext/dev.thiennguyen.sample/sample --port 5190
 
@@ -34,6 +39,8 @@ import argparse
 import http.server
 import json
 import tomllib
+import urllib.error
+import urllib.request
 from functools import partial
 from pathlib import Path
 
@@ -84,8 +91,8 @@ PROMO = """<!doctype html>
     font-size: 26px; line-height: 1.45; color: rgba(255, 255, 255, 0.88);
   }}
   .window {{
-    position: absolute; left: 140px; top: 300px; width: 1000px; height: 560px;
-    border-radius: 12px; overflow: hidden;
+    position: absolute; left: {left}px; top: 300px; width: {width}px; height: {height}px;
+    border-radius: {radius}px; overflow: hidden;
     background: {canvas};
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
   }}
@@ -97,7 +104,7 @@ PROMO = """<!doctype html>
   .dot {{ width: 12px; height: 12px; border-radius: 50%; }}
   .bar .title {{ margin-left: 10px; }}
   .bar .tab {{ margin-left: auto; font-weight: 400; opacity: 0.6; }}
-  iframe {{ border: 0; width: 100%; height: calc(100% - 38px); display: block; padding: {inset}; }}
+  iframe {{ border: 0; width: 100%; height: calc(100% - {bar_height}px); display: block; padding: {inset}; }}
   .callout {{
     position: absolute; right: 60px; bottom: 44px; width: 440px;
     border-radius: 16px; padding: 18px 20px;
@@ -115,21 +122,21 @@ PROMO = """<!doctype html>
   <h1>{headline}</h1>
   <p class="sub">{sub}</p>
   <div class="window">
-    <div class="bar">
+    <div class="bar" {bar_hidden}>
       <span class="dot" style="background:#ff5f57"></span>
       <span class="dot" style="background:#febc2e"></span>
       <span class="dot" style="background:#28c840"></span>
       <span class="title">{name}</span>
       <span class="tab">{window_title}</span>
     </div>
-    <iframe src="/{page}?theme={theme}"></iframe>
+    <iframe src="/{page}"></iframe>
   </div>
   {callout}
-  <img class="mark" src="/__icon__" alt="">
+  <img class="mark" src="/__icon__" alt="" style="{mark_side}">
 </body></html>
 """
 
-CALLOUT = """<div class="callout">
+CALLOUT = """<div class="callout" style="{side}">
     <div class="head"><img src="/__icon__" alt="">{title}</div>
     <div class="label">{label}</div>
     <div class="body">{body}</div>
@@ -143,19 +150,36 @@ def promo_page(spec: dict, n: int, name: str) -> str:
     shot = spec["shots"][n - 1]
     dark = shot.get("theme") == "dark"
     callout = shot.get("callout")
+    # A panel (`kind = "panel"` in a manifest) has no title bar and floats:
+    # narrower, rounder, and the page draws its own header.
+    panel = shot.get("frame") == "panel"
+    width = int(shot.get("width", 820 if panel else 1000))
+    page = shot["page"]
+    page += ("&" if "?" in page else "?") + f"theme={'dark' if dark else 'light'}"
     return PROMO.format(
+        # The window leans away from the callout, so the card covers less
+        # of what the picture is showing.
+        left=(1280 - width) // 2
+        + (0 if not callout else 60 if callout.get("side") == "left" else -60 if panel else 0),
+        width=width,
+        height=int(shot.get("height", 560)),
+        radius=16 if panel else 12,
+        bar_hidden='style="display: none"' if panel else "",
+        bar_height=0 if panel else 38,
         headline=shot["headline"],
         sub=shot.get("sub", ""),
         color=spec.get("color", "#378add"),
-        canvas="#1e1e1e" if dark else "#ffffff",
-        bar="#2a2a2c" if dark else "#f4f4f5",
+        # A dark page's own Canvas, so its inset and the window are one colour.
+        canvas="#121212" if dark else "#ffffff",
+        mark_side="left: auto; right: 28px" if callout and callout.get("side") == "left" else "",
+        bar="#1c1c1e" if dark else "#f4f4f5",
         ink="#e8e8e8" if dark else "#1d1d1f",
         name=shot.get("window", name),
         window_title=shot.get("tab", ""),
-        page=shot["page"],
-        theme="dark" if dark else "light",
+        page=page,
         inset=shot.get("inset", "20px 24px"),
         callout=CALLOUT.format(
+            side="left: 60px; right: auto" if callout.get("side") == "left" else "",
             title=callout.get("title", name),
             label=callout.get("label", ""),
             body=callout.get("body", ""),
@@ -165,7 +189,16 @@ def promo_page(spec: dict, n: int, name: str) -> str:
     )
 
 
-def handler_for(ui_dir: Path, lumi_css: bytes, settings: dict, calls: dict, promo: dict, name: str, icon: bytes):
+def handler_for(
+    ui_dir: Path,
+    lumi_css: bytes,
+    settings: dict,
+    calls: dict,
+    promo: dict,
+    name: str,
+    icon: bytes,
+    proxy: str,
+):
     class Bridge(http.server.SimpleHTTPRequestHandler):
         def _json(self, body, status=200):
             data = json.dumps(body).encode()
@@ -234,7 +267,7 @@ def handler_for(ui_dir: Path, lumi_css: bytes, settings: dict, calls: dict, prom
                 self.send_header("Content-Length", str(len(data)))
                 self.end_headers()
                 self.wfile.write(data)
-            elif path.endswith(".html") and "theme=" in self.path:
+            elif path.endswith(".html") and "theme=" in self.path and not proxy:
                 # A pane page, as Lumi serves one: lumi.css first (so every
                 # rule of the page's own wins) and the theme on the root.
                 file = (ui_dir / path.lstrip("/")).resolve()
@@ -255,8 +288,28 @@ def handler_for(ui_dir: Path, lumi_css: bytes, settings: dict, calls: dict, prom
                 self.send_header("Content-Length", str(len(data)))
                 self.end_headers()
                 self.wfile.write(data)
+            elif proxy:
+                self._forward()
             else:
                 super().do_GET()
+
+        def _forward(self):
+            """The dev server's answer for this path, passed through as is."""
+            try:
+                with urllib.request.urlopen(proxy + self.path, timeout=30) as upstream:
+                    data = upstream.read()
+                    status = upstream.status
+                    kind = upstream.headers.get("Content-Type", "application/octet-stream")
+            except urllib.error.HTTPError as err:
+                data, status, kind = err.read(), err.code, err.headers.get("Content-Type", "text/plain")
+            except urllib.error.URLError as err:
+                self.send_error(502, f"the dev server at {proxy} did not answer: {err.reason}")
+                return
+            self.send_response(status)
+            self.send_header("Content-Type", kind)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
 
         def do_PUT(self):
             if self.path.split("?", 1)[0] == "/__lumi__/settings":
@@ -279,8 +332,16 @@ def main():
     parser.add_argument("crate", help="the directory holding manifest.toml and ui/")
     parser.add_argument("--port", type=int, default=5190)
     parser.add_argument("--lumi-css", type=Path, default=DEFAULT_LUMI_CSS)
+    parser.add_argument(
+        "--proxy",
+        default="",
+        help="a local dev server (http://127.0.0.1:PORT) to answer every page and asset from",
+    )
     args = parser.parse_args()
 
+    # A local dev server and nothing else: this is a preview, not a proxy.
+    if args.proxy and not args.proxy.startswith(("http://127.0.0.1:", "http://localhost:")):
+        parser.error("--proxy is a dev server on this machine: http://127.0.0.1:PORT")
     crate = (ROOT / args.crate).resolve()
     with open(crate / "manifest.toml", "rb") as f:
         manifest = tomllib.load(f)
@@ -302,7 +363,7 @@ def main():
         print(f"note: no lumi.css at {args.lumi_css}; pages draw without Lumi's look")
 
     server = http.server.ThreadingHTTPServer(
-        ("127.0.0.1", args.port), handler_for(crate / "ui", lumi_css, settings, calls, promo, name, icon)
+        ("127.0.0.1", args.port), handler_for(crate / "ui", lumi_css, settings, calls, promo, name, icon, args.proxy.rstrip("/"))
     )
     print(f"serving {crate / 'ui'} at http://127.0.0.1:{args.port}/")
     server.serve_forever()

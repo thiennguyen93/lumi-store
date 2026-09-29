@@ -26,7 +26,7 @@ capabilities = ["clipboard", "clipboard-history", "input", "accessibility"]
 events = ["clipboard", "clipboard-ocr"]
 # Pictures for this extension's page in Lumi's Extension Store. The store
 # publishes them beside the package; Lumi's installer ignores the key.
-screenshots = ["shots/1-history.jpg", "shots/2-preview.jpg", "shots/3-settings.jpg"]
+screenshots = ["shots/1-history.png", "shots/2-welcome.png", "shots/3-settings.png"]
 # The Settings tab is drawn by web/settings.html rather than from the
 # [[settings]] below — which still decide what it can save.
 settings-page = "settings.html"
