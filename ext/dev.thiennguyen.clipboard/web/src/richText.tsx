@@ -61,13 +61,20 @@ function styleOf(el: Element): CSSProperties | undefined {
   return Object.keys(style).length ? style : undefined;
 }
 
-export function RichText({ html }: { html: string }) {
+/** The copy's formatting, or `fallback` when nothing of it would show —
+ *  markup whose words all sit in tags dropped above, or none at all — so
+ *  a rich row's pane is never blank while its plain text has something. */
+export function RichText({ html, fallback }: { html: string; fallback: ReactNode }) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   let nodes = 0;
+  let shown = false;
 
   const walk = (node: Node, depth: number, key: number): ReactNode => {
     if (++nodes > MAX_NODES) return null;
-    if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+    if (node.nodeType === Node.TEXT_NODE) {
+      if (node.textContent?.trim()) shown = true;
+      return node.textContent;
+    }
     if (node.nodeType !== Node.ELEMENT_NODE || depth > MAX_DEPTH) return null;
     const el = node as Element;
     const name = el.tagName.toLowerCase();
@@ -82,5 +89,6 @@ export function RichText({ html }: { html: string }) {
     return createElement(tag, props, ...kids);
   };
 
-  return <div className="body rich-html">{walk(doc.body, 0, 0)}</div>;
+  const drawn = walk(doc.body, 0, 0);
+  return shown ? <div className="body rich-html">{drawn}</div> : fallback;
 }

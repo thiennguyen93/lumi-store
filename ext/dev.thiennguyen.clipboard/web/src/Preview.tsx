@@ -11,10 +11,27 @@ import type { Entry } from "./types";
  *  is a fresh instantiation of the extension. */
 const SETTLE_MS = 90;
 
+/** How long a rich row's body stays blank for its formatting before the
+ *  plain title stands in. Most answers land well inside it, so the pane
+ *  goes straight to the formatted text instead of flashing plain first. */
+const HOLD_MS = 400;
+
+type Full = { id: string; text: string; html?: string | null; ocr?: string | null };
+
+/** Previews already asked for, by row — and by whether the row has read
+ *  text yet, since OCR lands after the copy. The page is thrown away each
+ *  time the panel closes, so this lives exactly as long as one browse. */
+const seen = new Map<string, Full>();
+const SEEN_MAX = 64;
+const seenKey = (row: Entry) => `${row.id}:${row.ocr ? 1 : 0}`;
+
 export function Preview({ row }: { row: Entry | undefined }) {
   // The full text, keyed by the row it belongs to, so a late answer for a
   // row the selection has already left is never drawn under another.
-  const [full, setFull] = useState<{ id: string; text: string; html?: string | null; ocr?: string | null } | null>(null);
+  const [full, setFull] = useState<Full | null>(null);
+  // The rich row that has waited long enough for its formatting: past
+  // `HOLD_MS`, or with the ask failed, its plain title is drawn after all.
+  const [gaveUp, setGaveUp] = useState<string | null>(null);
   // The row whose read text is drawn over the whole card, picture hidden.
   // Leaving the row puts its picture back, coming back included.
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -26,18 +43,36 @@ export function Preview({ row }: { row: Entry | undefined }) {
   useEffect(() => {
     // An image has no text to ask for, unless Lumi read some in it.
     if (!row || (row.kind === "image" && !row.ocr)) return;
+    const key = seenKey(row);
+    const known = seen.get(key);
+    if (known) {
+      // Back on a row already shown: drawn at once, no call.
+      setFull(known);
+      return;
+    }
     let live = true;
+    const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
         const { text, html, ocr } = await call({ kind: "preview", id: row.id });
-        if (live && (text || html || ocr)) setFull({ id: row.id, text, html, ocr });
+        if (!(text || html || ocr)) {
+          if (live) setGaveUp(row.id);
+          return;
+        }
+        const answer = { id: row.id, text, html, ocr };
+        seen.delete(key);
+        seen.set(key, answer);
+        if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
+        if (live) setFull(answer);
       } catch {
         // The title stays in the pane; a preview is not worth an error.
+        if (live) setGaveUp(row.id);
       }
     }, SETTLE_MS);
     return () => {
       live = false;
       clearTimeout(timer);
+      clearTimeout(hold);
     };
   }, [row]);
 
@@ -45,7 +80,10 @@ export function Preview({ row }: { row: Entry | undefined }) {
 
   // The title until the full text arrives, so the pane is never empty
   // while the extension is asked.
-  const mine = full?.id === row.id ? full : null;
+  const mine = full?.id === row.id ? full : (seen.get(seenKey(row)) ?? null);
+  // Still waiting on a rich row's formatting: the body keeps its place,
+  // blank, rather than drawing the title plain for a moment.
+  const waiting = row.kind === "rich" && !mine && gaveUp !== row.id;
   const text = mine?.text || row.title;
   const html = row.kind === "rich" ? mine?.html : null;
   const ocr = row.kind === "image" ? mine?.ocr : null;
@@ -101,8 +139,10 @@ export function Preview({ row }: { row: Entry | undefined }) {
         {row.kind === "color" && HEX.test(row.title) && (
           <div className="chip" style={{ background: row.title }} />
         )}
-        {html ? (
-          <RichText key={row.id} html={html} />
+        {waiting ? (
+          <div className="body rich" />
+        ) : html ? (
+          <RichText key={row.id} html={html} fallback={<div className="body rich">{text}</div>} />
         ) : (
           row.kind !== "image" && <div className={row.kind === "rich" ? "body rich" : "body"}>{text}</div>
         )}
