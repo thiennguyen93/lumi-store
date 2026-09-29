@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { blobUrl, call, fileUrl } from "./bridge";
 import { AppMark } from "./AppMark";
 import { CollapseGlyph, ExpandGlyph, FileGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
-import { fileFamily, type FileFamily } from "./fileType";
+import { fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { PdfViewer } from "./PdfViewer";
+import { TextFile } from "./TextFile";
 import { RichText } from "./richText";
 import { HEX, KIND_WORDS } from "./Row";
 import { ago } from "./search";
@@ -141,11 +142,12 @@ export function Preview({ row }: { row: Entry | undefined }) {
             <div className="body ocr">{ocr}</div>
           </section>
         )}
-        {row.kind === "file" && MEDIA_FAMILIES.has(fileFamily(row.fileExt)) && (
+        {row.kind === "file" && (MEDIA_FAMILIES.has(fileFamily(row.fileExt)) || isTextFile(row.fileExt)) && (
           <FileMedia
             key={row.id}
             family={fileFamily(row.fileExt)}
             ext={row.fileExt ?? ""}
+            text={isTextFile(row.fileExt)}
             token={mine?.fileToken ?? null}
             name={row.title}
             onSize={(w, h) => setSize({ id: row.id, w, h })}
@@ -169,8 +171,8 @@ export function Preview({ row }: { row: Entry | undefined }) {
   );
 }
 
-/** A copied PDF, picture, sound or film: its player or viewer once Lumi has
- *  given a grant for it (pictures from Lumi 1.26 too), and until then — or when Lumi cannot serve it, an older Lumi
+/** A copied PDF, picture, text file, sound or film: its player or viewer
+ *  once Lumi has given a grant for it, and until then — or when Lumi cannot serve it, an older Lumi
  *  or a file moved since — a tile that says what it is. Never plays by
  *  itself: `controls` and no `autoPlay`, and audio loads nothing until asked.
  *  Keyed by row, so choosing another row takes the player away and stops it. */
@@ -179,10 +181,13 @@ function FileMedia({
   ext,
   token,
   name,
+  text,
   onSize,
 }: {
   family: FileFamily;
   ext: string;
+  /** A text or code file: its start, as plain text. */
+  text: boolean;
   token: string | null;
   name: string;
   onSize: (w: number, h: number) => void;
@@ -191,6 +196,9 @@ function FileMedia({
   // Once per grant: a new address for the same file would reload the player.
   const address = useMemo(() => (token ? fileUrl(token) : null), [token]);
   const src = failed ? null : address;
+  if (src && text) {
+    return <TextFile src={src} json={ext === "json"} onFail={() => setFailed(true)} />;
+  }
   if (src && family === "image") {
     // The file itself, drawn by the webview: a type it cannot draw (HEIC
     // before macOS 14), or one too big for Lumi to send whole, is the tile.

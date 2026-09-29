@@ -52,6 +52,8 @@ let rows: Entry[] = [
   entry({ id: "m4", kind: "file", title: "/Users/me/Pictures/IMG_0042.heic", fileExt: "heic", appName: "Finder", last: now - 26 * 60 * min - 3 }),
   entry({ id: "n", kind: "file", title: "/Users/me/Movies/demo.mp4", fileExt: "mp4", appName: "Finder", last: now - 27 * 60 * min }),
   entry({ id: "o", kind: "file", title: "/Users/me/Music/song.mp3", fileExt: "mp3", appName: "Finder", last: now - 28 * 60 * min }),
+  entry({ id: "p3", kind: "file", title: "/Users/me/Projects/lumi/package.json", fileExt: "json", appName: "Finder", last: now - 29 * 60 * min + 2 }),
+  entry({ id: "p2", kind: "file", title: "/Users/me/Documents/notes.md", fileExt: "md", appName: "Finder", last: now - 29 * 60 * min + 1 }),
   entry({ id: "p", kind: "file", title: "/Users/me/Sites/index.html", fileExt: "html", appName: "Finder", last: now - 29 * 60 * min }),
   entry({ id: "q", kind: "file", title: "/Users/me/Projects/", fileExt: "/", appName: "Finder", last: now - 30 * 60 * min }),
 ];
@@ -110,7 +112,7 @@ function answer(request: Request): unknown {
           : null;
       const ocr = row?.ocr && settings.ocr !== "false" ? ["Lumi", "Clipboard History", "Search history", ...Array.from({ length: 60 }, (_, i) => `Line ${i + 1} of a long read`)].join("\n") : null;
       const fileSize = row?.kind === "file" ? (row.title.endsWith(".pdf") ? 1_234_567 : 48_213_904) : null;
-      const fileToken = row?.kind === "file" && /\.(pdf|png|heic|mp3|mp4)$/.test(row.title) ? row.title : null;
+      const fileToken = row?.kind === "file" && /\.(pdf|png|heic|mp3|mp4|html|md|json)$/.test(row.title) ? row.title : null;
       return { text, html, ocr, fileSize, fileToken };
     }
     case "paste":
@@ -313,6 +315,29 @@ setFileUrl((token) => {
     view.setUint32(40, samples.length, true);
     wav.set(samples, 44);
     return URL.createObjectURL(new Blob([wav], { type: "audio/wav" }));
+  }
+  // Text: a page whose script must show as text, never run, and notes
+  // longer than the 64 KB the preview reads.
+  if (token.endsWith(".html")) {
+    const page = '<!doctype html>\n<html>\n  <body>\n    <h1>Hello</h1>\n    <script>document.title = "ran!"; alert("ran")</script>\n  </body>\n</html>\n';
+    return URL.createObjectURL(new Blob([page], { type: "text/plain" }));
+  }
+  if (token.endsWith(".json")) {
+    const data = {
+      name: "lumi",
+      version: "1.26.0",
+      private: true,
+      scripts: { dev: "tauri dev", build: "tauri build", "<script>alert(1)</script>": "must show as text" },
+      engines: { node: ">=22" },
+      tags: ["clipboard", "launcher", null, 42, 3.14, false],
+      contributors: Array.from({ length: 250 }, (_, i) => ({ id: i + 1, name: `Person ${i + 1}`, admin: i % 50 === 0 })),
+      empty: { list: [], map: {} },
+    };
+    return URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "text/plain" }));
+  }
+  if (token.endsWith(".md")) {
+    const notes = Array.from({ length: 3000 }, (_, i) => `- [${i % 3 ? " " : "x"}] Note ${i + 1}: chuyển tính năng sang extension\tgiảm rủi ro`).join("\n");
+    return URL.createObjectURL(new Blob([`# Notes\n\n${notes}\n`], { type: "text/plain" }));
   }
   // A picture file: a drawn sunset; the HEIC one draws nothing, for the tile.
   if (token.endsWith(".png")) {

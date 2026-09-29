@@ -37,3 +37,14 @@ export function fileFamily(ext: string | undefined): FileFamily {
   if (ext === "/") return "folder";
   return BY_EXT.get(ext) ?? "file";
 }
+
+/** Extensions Lumi serves as plain text (lumi `events::playable_type`), so a
+ *  file row can show its start. Word, Pages and RTF are documents, not text. */
+const TEXT = new Set(
+  ("txt md markdown log csv tsv ini cfg conf html htm css js mjs cjs jsx ts tsx json xml yaml yml toml rs py rb go " +
+    "java kt swift c cc cpp h hpp cs php sh zsh bash fish sql lua vue svelte graphql proto dart scala ex exs zig").split(" "),
+);
+
+export function isTextFile(ext: string | undefined): boolean {
+  return !!ext && TEXT.has(ext);
+}

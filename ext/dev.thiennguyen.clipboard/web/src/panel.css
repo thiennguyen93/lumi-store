@@ -20,6 +20,9 @@
   --cb-key: color-mix(in srgb, var(--cb-bolt) 20%, #fff);
   --cb-key-edge: color-mix(in srgb, var(--cb-bolt) 55%, rgba(0, 0, 0, 0.12));
   --cb-key-ink: #7a5300;
+  --cb-json-string: #2f7d32;
+  --cb-json-number: #1f63b0;
+  --cb-json-word: #9b3f9a;
   color-scheme: light dark;
 }
 
@@ -30,6 +33,9 @@
   --cb-key: rgba(255, 255, 255, 0.12);
   --cb-key-edge: var(--cb-line);
   --cb-key-ink: var(--cb-bolt);
+  --cb-json-string: #8fcf92;
+  --cb-json-number: #7db8f5;
+  --cb-json-word: #dba2e6;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
@@ -37,6 +43,9 @@
     --cb-key: rgba(255, 255, 255, 0.12);
     --cb-key-edge: var(--cb-line);
     --cb-key-ink: var(--cb-bolt);
+    --cb-json-string: #8fcf92;
+    --cb-json-number: #7db8f5;
+    --cb-json-word: #dba2e6;
   }
 }
 
@@ -474,14 +483,16 @@ body {
 .card-head {
   display: flex;
   flex: none;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 2px 6px;
   font-size: 11px;
   color: var(--cb-muted);
 }
 .card-head .glyph { width: 12px; height: 12px; }
-/* The kind and app give way first; the pixel size stays whole. */
-.card-head > span:not(.dims) { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* Too narrow for both, the size moves to a line of its own, kept to the
+   right; the kind and app are cut only when they alone do not fit. */
+.card-head > span:not(.dims) { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .card-head .dims { margin-left: auto; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--cb-faint); }
 .card-foot {
   flex: none;
@@ -621,6 +632,75 @@ body {
 .card .player.audio { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 8px 8px; background: none; border: 1px solid var(--cb-line); }
 .card .player.audio .glyph { width: 36px; height: 36px; stroke-width: 1.5; }
 .card .player.audio audio { width: 100%; height: 32px; }
+/* A text or code file's start: scrolls inside the card, the path and foot stay. */
+.card .file-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 96px;
+  border-radius: 6px;
+  border: 1px solid var(--cb-line);
+  background: var(--cb-card);
+  overflow: hidden;
+}
+.card .file-text pre {
+  flex: 1 1 0;
+  min-height: 0;
+  margin: 0;
+  padding: 6px 8px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+  tab-size: 4;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.card .file-text-more {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 3px 8px;
+  border-top: 1px solid var(--cb-line);
+  font-size: 10px;
+  color: var(--cb-faint);
+}
+.card .file-text-modes { display: flex; margin-left: auto; }
+.card .file-text-modes button {
+  padding: 1px 6px;
+  border: 1px solid var(--cb-line);
+  background: none;
+  color: var(--cb-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.card .file-text-modes button:first-child { border-radius: 4px 0 0 4px; }
+.card .file-text-modes button:last-child { border-radius: 0 4px 4px 0; border-left: 0; }
+.card .file-text-modes button[aria-pressed="true"] { background: var(--cb-hover); color: CanvasText; }
+/* A JSON file as a tree: one line a row, wide values scroll sideways. */
+.card .json-tree {
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 6px 8px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  font: 11px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: nowrap;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.card .json-row { width: max-content; }
+.card .json-branch, .card .json-more { cursor: pointer; }
+.card .json-branch:hover, .card .json-more:hover { background: var(--cb-hover); }
+.card .json-caret { display: inline-block; width: 12px; color: var(--cb-faint); }
+.card .json-key { color: CanvasText; }
+.card .json-punct, .card .json-count { color: var(--cb-faint); }
+.card .json-count { margin: 0 4px; font-style: italic; }
+.card .json-string { color: var(--cb-json-string); }
+.card .json-number { color: var(--cb-json-number); }
+.card .json-bool, .card .json-null { color: var(--cb-json-word); }
+.card .json-more { color: var(--cb-accent); }
 .card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); }
 
 /* `pnpm dev` only (`?glass`, set by dev/mock.ts): a busy wallpaper and a
