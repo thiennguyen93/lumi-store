@@ -20,6 +20,9 @@ export interface Entry {
   blobs: string[];
   /** Lumi read text in this item's image: Copy text in image is offered. */
   ocr?: boolean;
+  /** A file row's files' shared extension ("pdf"), "/" for folders; absent
+   *  when they differ, have none, or the row is older than this field. */
+  fileExt?: string;
 }
 
 export interface ListAnswer {

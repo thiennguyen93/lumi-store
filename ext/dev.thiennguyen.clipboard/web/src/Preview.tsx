@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { blobUrl, call } from "./bridge";
 import { AppMark } from "./AppMark";
-import { CollapseGlyph, ExpandGlyph, KindGlyph } from "./icons";
+import { CollapseGlyph, ExpandGlyph, FileGlyph, KindGlyph } from "./icons";
+import { fileFamily } from "./fileType";
 import { RichText } from "./richText";
 import { HEX, KIND_WORDS } from "./Row";
 import { ago } from "./search";
@@ -99,7 +100,7 @@ export function Preview({ row }: { row: Entry | undefined }) {
     <aside className="preview" aria-live="polite">
       <div className="card">
         <header className="card-head">
-          <KindGlyph kind={row.kind} />
+          {row.kind === "file" ? <FileGlyph family={fileFamily(row.fileExt)} /> : <KindGlyph kind={row.kind} />}
           <span>
             {KIND_WORDS[row.kind]}
             {from ? " · " : ""}

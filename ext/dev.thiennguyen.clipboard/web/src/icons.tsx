@@ -2,6 +2,7 @@
 // off-origin, and a glyph is too small to be worth a package.
 
 import type { ReactNode } from "react";
+import type { FileFamily } from "./fileType";
 import type { Kind } from "./types";
 
 function Glyph({ children }: { children: ReactNode }) {
@@ -72,6 +73,81 @@ export function KindGlyph({ kind }: { kind: Kind }) {
         </Glyph>
       );
   }
+}
+
+const PAGE = "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z";
+const CORNER = "M14 2v4a2 2 0 0 0 2 2h4";
+
+/** A file row's glyph: the page every file gets, with what marks its
+ *  family drawn inside — tinted by `data-family` in the stylesheet. */
+export function FileGlyph({ family }: { family: FileFamily }) {
+  if (family === "folder") {
+    return (
+      <svg className="glyph" data-family={family} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg className="glyph" data-family={family} viewBox="0 0 24 24" aria-hidden="true">
+      <path d={PAGE} />
+      <path d={CORNER} />
+      {family === "pdf" && (
+        <>
+          <path d="M8 17v-5h1.6a1.5 1.5 0 0 1 0 3H8" />
+          <path d="M13 17v-5" />
+          <path d="M16.5 12H14.5v5" />
+        </>
+      )}
+      {family === "doc" && (
+        <>
+          <path d="M10 9H8" />
+          <path d="M16 13H8" />
+          <path d="M16 17H8" />
+        </>
+      )}
+      {family === "sheet" && (
+        <>
+          <path d="M8 13h8" />
+          <path d="M8 17h8" />
+          <path d="M12 12v8" />
+        </>
+      )}
+      {family === "slides" && (
+        <>
+          <rect x="8" y="12" width="8" height="5" rx="1" />
+          <path d="M12 17v2.5" />
+        </>
+      )}
+      {family === "code" && (
+        <>
+          <path d="m10 13-2 2.5 2 2.5" />
+          <path d="m14 13 2 2.5-2 2.5" />
+        </>
+      )}
+      {family === "audio" && (
+        <>
+          <circle cx="9.5" cy="17" r="1.5" />
+          <circle cx="14.5" cy="16" r="1.5" />
+          <path d="M11 17v-5l5-1v5" />
+        </>
+      )}
+      {family === "video" && <path d="m10 12.5 5 3-5 3Z" />}
+      {family === "image" && (
+        <>
+          <circle cx="10" cy="13" r="1" />
+          <path d="m18 19-2.6-2.6a1.5 1.5 0 0 0-2.1 0L8 19.5" />
+        </>
+      )}
+      {family === "archive" && (
+        <>
+          <path d="M12 11v1" />
+          <path d="M12 14v1" />
+          <path d="M12 17v1" />
+        </>
+      )}
+    </svg>
+  );
 }
 
 export function PinGlyph() {

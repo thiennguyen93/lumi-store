@@ -32,13 +32,17 @@ let rows: Entry[] = [
   entry({ id: "d", kind: "text", title: "Chuyển tính năng sang extension giảm rủi ro", appName: "Notes", last: now - min }),
   entry({ id: "e", kind: "image", title: "Image", thumb: "shot", appName: "Screenshot", last: now - 4 * min, search: "lumi · clipboard · search history", ocr: true }),
   entry({ id: "f", kind: "color", title: "#378ADD", appName: "Figma", count: 2, last: now - 9 * min }),
-  entry({ id: "g", kind: "file", title: "/Users/me/Downloads/lumi-1.23.0.dmg", appName: "Finder", last: now - 12 * min }),
+  entry({ id: "g", kind: "file", title: "/Users/me/Downloads/lumi-1.23.0.dmg", fileExt: "dmg", appName: "Finder", last: now - 12 * min }),
   entry({ id: "h", kind: "rich", title: "Every guest call instantiates a fresh store", appName: "Chrome", last: now - 20 * min }),
   entry({ id: "i", kind: "text", title: "cargo clippy --all-targets -- -D warnings", appName: "Terminal", count: 5, last: now - 60 * min }),
   entry({ id: "j", kind: "text", title: "pnpm tauri dev", appName: "Terminal", count: 9, last: now - 120 * min }),
   entry({ id: "k", kind: "text", title: "thiennguyen.dev/lumi-store/extensions/index.json", appName: "Chrome", last: now - 180 * min }),
   entry({ id: "l", kind: "link", title: "https://developer.apple.com/design/human-interface-guidelines", appName: "Safari", last: now - 240 * min }),
-  entry({ id: "m", kind: "file", title: "/Users/me/Desktop/invoice-2041.pdf", appName: "Finder", last: now - 26 * 60 * min }),
+  entry({ id: "m", kind: "file", title: "/Users/me/Desktop/invoice-2041.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min }),
+  entry({ id: "n", kind: "file", title: "/Users/me/Movies/demo.mp4", fileExt: "mp4", appName: "Finder", last: now - 27 * 60 * min }),
+  entry({ id: "o", kind: "file", title: "/Users/me/Music/song.mp3", fileExt: "mp3", appName: "Finder", last: now - 28 * 60 * min }),
+  entry({ id: "p", kind: "file", title: "/Users/me/Sites/index.html", fileExt: "html", appName: "Finder", last: now - 29 * 60 * min }),
+  entry({ id: "q", kind: "file", title: "/Users/me/Projects/", fileExt: "/", appName: "Finder", last: now - 30 * 60 * min }),
 ];
 
 let previewWidth: number | null = null;

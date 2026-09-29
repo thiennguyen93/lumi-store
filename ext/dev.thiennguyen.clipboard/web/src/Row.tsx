@@ -1,5 +1,6 @@
 import { blobUrl } from "./bridge";
-import { KindGlyph, PinGlyph } from "./icons";
+import { FileGlyph, KindGlyph, PinGlyph } from "./icons";
+import { fileFamily } from "./fileType";
 import { AppMark } from "./AppMark";
 import { since } from "./search";
 import type { Entry } from "./types";
@@ -34,6 +35,13 @@ function Lead({ row }: { row: Entry }) {
     return (
       <span className="lead thumb">
         <img alt="" src={blobUrl(row.thumb)} />
+      </span>
+    );
+  }
+  if (row.kind === "file") {
+    return (
+      <span className="lead">
+        <FileGlyph family={fileFamily(row.fileExt)} />
       </span>
     );
   }

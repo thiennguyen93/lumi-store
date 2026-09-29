@@ -223,6 +223,19 @@ body {
 }
 .lead .glyph { width: 14px; height: 14px; }
 .row[aria-selected="true"] .lead { color: rgba(255, 255, 255, 0.85); }
+/* A file's family shows in its colour, until the row is selected and the
+   lead goes white with the rest. */
+.glyph[data-family="pdf"] { color: #e5484d; }
+.glyph[data-family="doc"] { color: #3e7bfa; }
+.glyph[data-family="sheet"] { color: #30a46c; }
+.glyph[data-family="slides"] { color: #f76b15; }
+.glyph[data-family="code"] { color: #8e4ec6; }
+.glyph[data-family="audio"] { color: #d6409f; }
+.glyph[data-family="video"] { color: #7c5cf0; }
+.glyph[data-family="image"] { color: #12a594; }
+.glyph[data-family="archive"] { color: #ab6400; }
+.glyph[data-family="folder"] { color: #3e9bff; }
+.row[aria-selected="true"] .glyph[data-family] { color: inherit; }
 .swatch {
   width: 12px;
   height: 12px;
