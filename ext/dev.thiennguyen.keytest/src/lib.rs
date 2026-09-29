@@ -40,6 +40,11 @@ impl lumi::Guest for KeyTest {
     fn on_lifecycle(_event: lumi::Lifecycle) -> Result<(), String> {
         Ok(())
     }
+
+    /// Keyboard Test asks to hear no events, so this is never called.
+    fn on_event(_name: String, _payload: String) -> Result<(), String> {
+        Ok(())
+    }
 }
 
 lumi::register!(KeyTest);

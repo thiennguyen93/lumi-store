@@ -1,4 +1,4 @@
-package lumi:ext@0.2.0;
+package lumi:ext@0.3.0;
 
 /// What an extension may be handed, cut into interfaces by capability.
 ///
@@ -8,19 +8,21 @@ package lumi:ext@0.2.0;
 /// reach through the same capability — never more, and never by a
 /// different road.
 ///
-/// v0.2, the first break: `on-lifecycle` joined the exports, and a world's
-/// exports are what the host requires, so a component built against 0.1 —
-/// which has no such export — does not fit this one and is refused at
-/// install with a sentence saying to rebuild it. v0.1 was stamped the day
-/// the store's first release went out and kept every promise it made
-/// until this; from here 0.2 is the wire commitment, not a moving target. The world still
-/// imports every interface unconditionally, and Lumi still checks the
-/// grant at every call rather than refusing to load a component that
-/// imports an interface its manifest did not ask for — a Rust guest built
-/// from one SDK crate declares the whole world whether or not its code
-/// touches an interface, so a load-time refusal would fire on extensions
-/// that never call the thing being refused. The enforcement is the same
-/// either way: in Lumi, at the call, not in the review sheet. A breaking
+/// v0.3, the second break: `on-event` joined the exports. A world's exports
+/// are what the host requires, so a component built against 0.2 — which
+/// has no such export — does not fit this one and is refused at install
+/// with a sentence saying to rebuild it, exactly as 0.1 was when 0.2 added
+/// `on-lifecycle`. `on-event` is built so that it is the last export this
+/// shape of change needs: a new kind of event is a new name and a JSON
+/// payload with a `"v"` field, never another export. From here 0.3 is the
+/// wire commitment, not a moving target.
+///
+/// Lumi checks the grant at every call rather than refusing to load a
+/// component that imports an interface its manifest did not ask for: a
+/// component imports what its code calls, and an interface imported is not
+/// yet an interface used, so a load-time refusal would say nothing a call
+/// would not say better. The enforcement is in Lumi, at the call, not in
+/// the review sheet. A breaking
 /// change to an interface bumps this version and adds a new world Lumi
 /// keeps loadable alongside it — Zed's model, per `extensions/STORE.md`.
 
@@ -42,13 +44,49 @@ interface selection {
     read: func() -> result<found, string>;
 }
 
-/// The general pasteboard. Costs `clipboard`, both directions.
+/// The general pasteboard. Costs `clipboard`, both directions — and
+/// `paste` costs more, because it presses a key in somebody else's app.
 interface clipboard {
     /// The board's plain text, or none when it holds no text — an image, a
     /// file, or nothing at all are one answer here: no text.
     read-text: func() -> result<option<string>, string>;
 
     write-text: func(text: string) -> result<_, string>;
+
+    /// The bytes of one representation.
+    variant data {
+        text(string),
+        bytes(list<u8>),
+        /// A blob in this extension's own `storage`, by id — so an image
+        /// the extension keeps goes back on the board without crossing
+        /// into the component and out again.
+        blob(string),
+    }
+
+    /// One representation of one pasteboard item: its type, as a uniform
+    /// type identifier (`public.utf8-plain-text`, `public.png`, …), and
+    /// its bytes. An item is a list of these — the same thing in several
+    /// types, the richest first.
+    record rep {
+        uti: string,
+        data: data,
+    }
+
+    /// Replace the board with these items. At most 32 MB in all. Lumi
+    /// marks the board as written by this extension, so the extension can
+    /// tell its own writes apart when it hears a copy. Added in 0.3.
+    write-all: func(items: list<list<rep>>) -> result<_, string>;
+
+    /// `write-all`, then ⌘V into the app in front: what a clipboard
+    /// history does when a row is picked. Closes this extension's panels
+    /// first, so the keystroke lands where the caret was. The board keeps
+    /// what was pasted; it is not put back.
+    ///
+    /// Costs `clipboard`, `input` and `accessibility`. Answers only
+    /// something the person did — a command or one of the extension's
+    /// windows — and is refused from `on-event` and `on-lifecycle`, where
+    /// nobody asked for a keystroke. Added in 0.3.
+    paste: func(items: list<list<rep>>) -> result<_, string>;
 }
 
 /// Lumi's own alert overlay, styled from Settings. Costs nothing: it draws
@@ -64,11 +102,19 @@ interface alert {
 /// of values it read off the desk, so it gets the same narrow allowlist
 /// Lumi keeps for a URL whose scheme came out of another application's
 /// window, rather than the any-scheme door of a URL the person typed
-/// themselves. Costs
-/// `applications`; a web address costs `network` too, the same split Lumi's
-/// own Open URL action makes.
+/// themselves. Costs `applications`; a web address costs `network` too, the
+/// same split Lumi's own Open URL action makes — except for a URL opened for
+/// a press (a command, or the extension's own window), which the person is
+/// opening themselves and costs nothing but the call.
 interface open {
     url: func(target: string) -> result<_, string>;
+
+    /// Select one file in Finder, bringing Finder forward. `target` is a
+    /// `file:` URL — Finder's file-reference form included, which is what a
+    /// copied file carries — or an absolute path. Only for something the
+    /// person did: a command they pressed or a press in one of the
+    /// extension's windows. Costs no capability. Added in 0.3.
+    reveal: func(target: string) -> result<_, string>;
 }
 
 /// The extension's own settings, as saved in the Extensions pane.
@@ -218,6 +264,37 @@ interface config {
 interface ui {
     /// Open (or focus) one declared window by its manifest `name`.
     open-window: func(name: string) -> result<_, string>;
+
+    /// Close one declared window by its manifest `name`. One that is not
+    /// open is not an error. Added in 0.3.
+    close-window: func(name: string) -> result<_, string>;
+
+    /// Bring up Lumi's Settings on this extension's own Settings tab — a
+    /// panel's "Settings…". Only for something the person did. Added in 0.3.
+    open-settings: func() -> result<_, string>;
+
+    /// Choose the glass one of your panels opens on from now on:
+    /// "popover", "hud" or "sidebar" — for a setting that lets the person
+    /// pick. Only a panel whose manifest declares a `material`. Takes effect
+    /// the next time the panel is shown. Added in 0.3.
+    set-material: func(name: string, material: string) -> result<_, string>;
+
+    /// Choose light or dark for one of your panels: "light", "dark", or
+    /// "system" to follow macOS again — for a theme setting. The panel's
+    /// glass and its page's `prefers-color-scheme` both follow. Takes effect
+    /// at once if the panel is up, and every time it is shown. Added in 0.3.
+    set-theme: func(name: string, theme: string) -> result<_, string>;
+
+    /// Send `message`, JSON text, to one of this extension's own windows
+    /// or embedded pages: a declared window by its manifest `name`, or a
+    /// page by `:about`, `:settings` or `:page:<name>`. It arrives as a
+    /// `lumi:message` event on the page's `window`, its `detail` the parsed
+    /// JSON. `false` when that window or page is not on screen, so nothing
+    /// was sent — a post is not queued. The one way to reach a page while
+    /// Lumi is not in front, from `on-event` included: data flows to the
+    /// page and nothing flows back. Refused over 64 KiB or when `message`
+    /// is not JSON. Added in 0.3.
+    post: func(window: string, message: string) -> result<bool, string>;
 }
 
 /// One HTTP request. Costs `network`.
@@ -244,6 +321,55 @@ interface net {
     fetch: func(request: request) -> result<response, string>;
 }
 
+/// This extension's own storage: a small key–value store and a store of
+/// blobs, kept by Lumi on this Mac and encrypted with a key Lumi holds in
+/// the Keychain — the component never sees it.
+///
+/// Costs no capability: it reaches nothing outside this extension, and no
+/// other extension can read it. It survives updates, is removed when the
+/// extension is uninstalled, and is not part of a Lumi backup.
+///
+/// Key names are **not** encrypted — they are file names. Put what matters
+/// in the value, and use random ids where a name would say something.
+/// Names are 1–128 lowercase letters, digits, `.`, `-` or `_`, not starting
+/// with `.`. A value is at most 1 MB; the whole store, 512 MB.
+///
+/// Added in 0.3.
+interface storage {
+    record entry {
+        value: string,
+        /// Bumped by every write. Hand it back to `put` to write only if
+        /// nothing else wrote in between.
+        rev: u64,
+    }
+
+    record space {
+        /// Bytes on disk, encryption included.
+        bytes: u64,
+        limit: u64,
+    }
+
+    get: func(key: string) -> result<option<entry>, string>;
+    /// Write `value` if `key` is still at `if-rev` — `none` meaning it must
+    /// not exist yet. Answers the new revision. Fails with exactly
+    /// `"conflict"` when something else wrote first: read again, reapply,
+    /// write again.
+    put: func(key: string, value: string, if-rev: option<u64>) -> result<u64, string>;
+    /// Removing a key that is not there is not an error.
+    delete: func(key: string) -> result<_, string>;
+    /// Every key starting with `prefix`, sorted.
+    keys: func(prefix: string) -> result<list<string>, string>;
+    /// Store bytes (at most 4 MB from a component) and answer their id.
+    blob-write: func(bytes: list<u8>) -> result<string, string>;
+    /// A blob by id. Lumi may write larger blobs than a component can read
+    /// back; those are for pages to show, not for the component to load.
+    blob-read: func(id: string) -> result<list<u8>, string>;
+    blob-delete: func(id: string) -> result<_, string>;
+    /// Every blob and its size in bytes, sorted by id.
+    blobs: func() -> result<list<tuple<string, u64>>, string>;
+    usage: func() -> result<space, string>;
+}
+
 world extension {
     import selection;
     import clipboard;
@@ -255,6 +381,7 @@ world extension {
     import app;
     import config;
     import ui;
+    import storage;
 
     /// Run one of the commands the manifest declares.
     ///
@@ -321,4 +448,17 @@ world extension {
     /// package has landed, so a Welcome window opened from here comes up
     /// after the install has finished rather than holding it.
     export on-lifecycle: func(event: lifecycle) -> result<_, string>;
+
+    /// Something happened outside the extension that it asked to hear,
+    /// by `name`. `payload` is a JSON object with a `"v"` field for its
+    /// own version; a new kind of event is a new name, never a new world.
+    /// An extension that listens to nothing answers `Ok` and is never
+    /// called.
+    ///
+    /// Heard under the same rules as `on-lifecycle`'s `installed`: only
+    /// while switched on, on a thread of its own, the answer written to
+    /// Lumi's log and shown to nobody. No window opens from here, and
+    /// `clipboard.paste` is refused — both would be the extension acting
+    /// on its own, and the person did not press anything. Added in 0.3.
+    export on-event: func(name: string, payload: string) -> result<_, string>;
 }

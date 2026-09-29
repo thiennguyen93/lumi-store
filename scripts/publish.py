@@ -6,6 +6,7 @@ laptop run identically:
 
   extensions.toml -> for each entry:
       cargo build --target wasm32-wasip2 (from the pinned submodule)
+      pnpm build of the entry's web/ into ui/, when the entry has one
       validate manifest.toml (the checks Lumi's installer re-runs)
       pack manifest.toml + extension.wasm into a reproducible .tar.gz
       minisign the tarball with the store key
@@ -23,17 +24,24 @@ must hold nothing worth stealing — and the job that signs must run
 nothing it did not review:
 
   --list              the listed ids, for the build matrix
-  --build ID OUT      validate and build one entry; write OUT/extension.wasm
-                      and nothing else (no key, read-only token, one entry
-                      per runner, so one submission's build cannot touch
+  --build ID OUT      validate and build one entry; write OUT/extension.wasm,
+                      plus OUT/ui/ for an entry with a web/ build, and
+                      nothing else (no key, read-only token, one entry per
+                      runner, so one submission's build cannot touch
                       another's output)
   --sign-built DIR    for every listed entry, take DIR/wasm-<id>/extension.wasm
-                      and nothing else from the build; pack the manifest,
-                      icon and ui/ from the reviewed source here; sign; index
+                      (and DIR/wasm-<id>/ui/ for a web entry) and nothing
+                      else from the build; pack the manifest and icon from
+                      the reviewed source here; sign; index
 
-The wasm is the one thing a build produces, so it is the one thing that
-crosses from the untrusted half — a package whose manifest or ui/ came
-out of a build job could have been rewritten by that build. A plain
+What a build *compiles* is the one thing that crosses from the untrusted
+half — a package whose manifest came out of a build job could have been
+rewritten by that build. The wasm is compiled from reviewed Rust; a web
+entry's ui/ is compiled from reviewed TypeScript by `pnpm build`, and
+crosses on the same terms: the author's code by definition, compiled on a
+machine that holds nothing, held here to the installer's alphabet and
+ceilings. A plain ui/ — hand-written, no build — is still packed from the
+reviewed source, as before. A plain
 `python3 scripts/publish.py` still does all of it in one process, for a
 maintainer's laptop, where the key and the build share a machine anyway.
 
@@ -71,7 +79,13 @@ BASE_URL = os.environ.get(
 KEY_FILE = os.environ.get("STORE_KEY_FILE", "")
 
 # What Lumi lets an extension declare.
-CAPABILITIES = {"accessibility", "applications", "clipboard", "config", "network"}
+CAPABILITIES = {
+    "accessibility", "applications", "clipboard", "clipboard-history", "config", "input", "network",
+}
+# What Lumi sends through `on-event`, and the capability hearing each costs —
+# `manifest::Event::needs`. Checked one way only, as Lumi checks it: an event
+# without its capability is refused, the capability alone is not.
+EVENTS = {"clipboard": "clipboard-history", "clipboard-ocr": "clipboard-history"}
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
     "template", "app", "keys", "multiselect",
@@ -83,6 +97,28 @@ CHOICE_KINDS = {"select", "segmented", "multiselect"}
 # an installed id was a takeover of its directory.
 ID_RE = re.compile(r"^[a-z0-9._-]{1,100}$")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+def suggested_key_problem(text):
+    """`manifest::suggested_accelerator`'s refusals, word for word: a
+    `[[command]] suggested-key` like "cmd+shift+c"."""
+    parts = [p.strip().lower() for p in text.split("+")]
+    key, mods = parts[-1], parts[:-1]
+    known = {"ctrl", "control", "alt", "opt", "option", "shift", "cmd", "command"}
+    for part in mods:
+        if part not in known:
+            return f"the suggested key \"{text}\" has \"{part}\" — use cmd, alt, ctrl and shift"
+    ok_key = (
+        (len(key) == 1 and (key.isascii() and (key.islower() or key.isdigit())))
+        or key == "space"
+        or (key.startswith("f") and key[1:].isdigit() and 1 <= int(key[1:]) <= 12)
+    )
+    if not ok_key:
+        return f"the suggested key \"{text}\" ends in \"{key}\" — a letter, a digit, space or F1–F12"
+    if not any(m in mods for m in ("ctrl", "control", "alt", "opt", "option", "cmd", "command")):
+        return (f"the suggested key \"{text}\" needs cmd, alt or ctrl — a global shortcut without one "
+                "would take that key away from typing")
+    return None
+
+
 # A command icon that is not an .svg is a Lucide name: lowercase words and
 # digits joined by single hyphens — Lumi's `manifest::command_icon`.
 LUCIDE_RE = re.compile(r"^(?=.{1,64}$)[a-z0-9]+(-[a-z0-9]+)*$")
@@ -189,6 +225,13 @@ def check_manifest(entry_id: str, manifest: dict):
     for word in ext.get("capabilities", []):
         if word not in CAPABILITIES:
             fail(entry_id, f"capability {word!r} is not one the host offers ({sorted(CAPABILITIES)})")
+    for name in ext.get("events", []):
+        if name not in EVENTS:
+            fail(entry_id, f"unknown event {name!r} — Lumi sends {sorted(EVENTS)}")
+        if EVENTS[name] not in ext.get("capabilities", []):
+            fail(entry_id, f"hearing {name!r} needs the {EVENTS[name]} capability — add it to capabilities")
+    if "clipboard-ocr" in ext.get("events", []) and "clipboard" not in ext.get("events", []):
+        fail(entry_id, 'hearing "clipboard-ocr" needs "clipboard" too — the text names a copy the extension has to have heard')
     seen = set()
     for command in manifest.get("command", []):
         name = command.get("name", "")
@@ -198,6 +241,11 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"two commands are named {name}")
         seen.add(name)
         check_params(entry_id, name, command.get("params", []))
+        suggested = str(command.get("suggested-key", "")).strip()
+        if suggested:
+            why = suggested_key_problem(suggested)
+            if why:
+                fail(entry_id, f"command {name}: {why}")
     seen = set()
     for node in manifest.get("node", []):
         name = node.get("name", "")
@@ -219,6 +267,22 @@ def check_manifest(entry_id: str, manifest: dict):
         path = window.get("path", "") or "index.html"
         if not is_valid_ui_path(path):
             fail(entry_id, f"window {name} points at {path!r}, which is not a plain relative path")
+        # `manifest.rs`'s kind and position rules, same sentences.
+        kind = str(window.get("kind", "")).strip() or "window"
+        if kind not in ("window", "panel"):
+            fail(entry_id, f'the window {name} asks for kind {kind!r}; a window is "window" or "panel"')
+        position = str(window.get("position", "")).strip()
+        # "cursor" is the default, so saying it on a plain window is allowed.
+        if position not in ("", "cursor") and kind == "window":
+            fail(entry_id, f"the window {name} sets a position, which only a panel has")
+        if position not in ("", "cursor", "center"):
+            fail(entry_id, f'the panel {name} asks for position {position!r}; a panel opens at "cursor" or "center"')
+        # `manifest.rs`'s material rule, same sentences.
+        material = str(window.get("material", "")).strip()
+        if material and kind == "window":
+            fail(entry_id, f"the window {name} sets a material, which only a panel has")
+        if material not in ("", "popover", "hud", "sidebar"):
+            fail(entry_id, f'the panel {name} asks for material {material!r}; a panel\'s material is "popover", "hud" or "sidebar"')
     check_page_tabs(entry_id, manifest)
     settings_tab = ext.get("settings-tab", ext.get("settings_tab", True))
     if not isinstance(settings_tab, bool):
@@ -328,6 +392,85 @@ def build_wasm(entry_id: str, crate: Path) -> Path:
     return wasm
 
 
+def build_web(entry_id: str, crate: Path, entry: dict) -> Path:
+    """An entry's `web = "<dir>"`: a front end written in a framework and
+    compiled, the way the Rust is. Reviewers read the TypeScript; the
+    bundle Lumi runs is built from exactly that source, here, rather than
+    committed — a committed minified bundle is a binary swapped past
+    review, which is why the store refused framework front ends until it
+    could build them itself.
+
+    The build is held to three things that make it the reviewed build:
+    - the lockfile, `--frozen-lockfile`: dependencies are the pinned ones
+      the pull request showed, never whatever the registry resolves today;
+    - `--ignore-scripts`: no dependency's install script runs, only the
+      entry's own `build` script, which is reviewed source;
+    - pnpm itself pinned through the `packageManager` field, via corepack,
+      so the tool that reads the lockfile is the one that wrote it.
+    It still runs the author's build and the build tool's code, which is
+    why it happens only in a job that holds nothing (see publish.yml).
+
+    Answers the built tree: `<web>/dist`, the Vite default, copied to a
+    fresh directory so nothing from an earlier build survives into this
+    one."""
+    if not isinstance(entry["web"], str):
+        fail(entry_id, "web must be a directory name")
+    web = (crate / entry["web"]).resolve()
+    # `is_relative_to`, not a string prefix: `ext/a` is a prefix of `ext/ab`.
+    if web == crate or not web.is_relative_to(crate):
+        fail(entry_id, f"web escapes the extension's directory: {web}")
+    for needed in ("package.json", "pnpm-lock.yaml"):
+        if not (web / needed).is_file():
+            fail(entry_id, f"web/ has no {needed}; a store build installs from the lockfile only")
+    with open(web / "package.json", "rb") as f:
+        package = json.load(f)
+    if not str(package.get("packageManager", "")).startswith("pnpm@"):
+        fail(entry_id, 'web/package.json must pin pnpm: "packageManager": "pnpm@<version>"')
+    if "build" not in package.get("scripts", {}):
+        fail(entry_id, "web/package.json has no build script")
+    committed = crate / "ui"
+    if committed.exists():
+        fail(
+            entry_id,
+            "ui/ is built from web/ for this entry and must not be committed — "
+            "a committed bundle is exactly what the build exists to replace",
+        )
+    dist = web / "dist"
+    if dist.exists():
+        import shutil
+
+        shutil.rmtree(dist)
+    subprocess.run(["corepack", "pnpm", "install", "--frozen-lockfile", "--ignore-scripts"], cwd=web, check=True)
+    subprocess.run(["corepack", "pnpm", "run", "build"], cwd=web, check=True)
+    if not dist.is_dir():
+        fail(entry_id, "the web build produced no dist/")
+    out = BUILD / entry_id / "ui"
+    copy_tree(entry_id, dist, out)
+    return out
+
+
+def copy_tree(entry_id: str, source: Path, dest: Path):
+    """Copy a built ui/ tree file by file, refusing anything that is not a
+    plain file or directory. A symlink here would be packed as a link — or
+    followed, reading a file from outside the tree into the package."""
+    import shutil
+
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True)
+    for path in sorted(source.rglob("*")):
+        rel = path.relative_to(source)
+        if path.is_symlink():
+            fail(entry_id, f"the built ui/{rel.as_posix()} is a symlink")
+        if path.is_dir():
+            (dest / rel).mkdir(parents=True, exist_ok=True)
+        elif path.is_file():
+            (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, dest / rel)
+        else:
+            fail(entry_id, f"the built ui/{rel.as_posix()} is not a plain file")
+
+
 def ui_members(entry_id: str, ui_dir: Path) -> list:
     """Every file under ui/, as (arcname, path), sorted for the
     reproducible pack — and held to the installer's own alphabet and
@@ -338,9 +481,13 @@ def ui_members(entry_id: str, ui_dir: Path) -> list:
     members = []
     total = 0
     for path in sorted(ui_dir.rglob("*")):
+        rel = path.relative_to(ui_dir).as_posix()
+        # Checked before `is_file`, which follows a link: `gettarinfo` in
+        # `pack` would record the link itself, pointing wherever it points.
+        if path.is_symlink():
+            fail(entry_id, f"ui/{rel} is a symlink; a package holds plain files only")
         if not path.is_file():
             continue
-        rel = path.relative_to(ui_dir).as_posix()
         if not is_valid_ui_path(rel):
             fail(entry_id, f"ui/{rel} is not a plain relative path Lumi would accept")
         size = path.stat().st_size
@@ -415,7 +562,8 @@ def listed_entries() -> list:
 
 def sources(entry: dict):
     """One entry's reviewed source, validated: where it lives, its
-    manifest, and the icon and ui/ that ship beside the wasm."""
+    manifest, and the icon that ships beside the wasm. The ui/ is checked
+    separately (`check_ui`), once it is known which tree is packed."""
     entry_id = entry["id"]
     crate = (ROOT / entry["path"] / entry.get("subdir", ".")).resolve()
     # A submodule path that escapes the checkout is a listing lying
@@ -433,9 +581,14 @@ def sources(entry: dict):
     # the page shows a claim, the app reads the verified copy.
     icon_path = crate / "icon.svg"
     icon = icon_path if icon_path.exists() else None
-    # Windows have to point at files that ship — the same cross-check
-    # Lumi's installer runs at the stage, made here first.
-    ui_dir = crate / "ui"
+    return crate, manifest_path, manifest, ext, icon
+
+
+def check_ui(entry_id: str, manifest: dict, ui_dir: Path):
+    """Windows and pages have to point at files that ship — the same
+    cross-check Lumi's installer runs at the stage, made here first. Run
+    against the tree that is packed, so for a web entry that is the build's
+    output, not the (absent) ui/ in the source."""
     for window in manifest.get("window", []):
         declared = window.get("path", "") or "index.html"
         if not (ui_dir / declared).is_file():
@@ -454,7 +607,28 @@ def sources(entry: dict):
             if mark_path.stat().st_size > MAX_ICON:
                 fail(entry_id, f"the command {command.get('name')}'s icon ui/{mark} is past {MAX_ICON} bytes")
     ui_members(entry_id, ui_dir)
-    return crate, manifest_path, manifest, ext, icon, ui_dir
+
+
+def ui_of(entry_id: str, entry: dict, crate: Path, manifest: dict) -> Path:
+    """The ui/ tree to pack when this process builds: the web build's
+    output for a web entry, the reviewed ui/ otherwise. Checked either way."""
+    ui_dir = build_web(entry_id, crate, entry) if entry.get("web") else crate / "ui"
+    check_ui(entry_id, manifest, ui_dir)
+    return ui_dir
+
+
+def built_ui(entry_id: str, entry: dict, crate: Path, manifest: dict, built: Path) -> Path:
+    """`--sign-built`'s ui/: from the build job for a web entry — held to
+    the same checks as any ui/ — and from the reviewed source otherwise,
+    in which case whatever a build job left beside the wasm is ignored."""
+    if not entry.get("web"):
+        ui_dir = crate / "ui"
+    else:
+        ui_dir = built / f"wasm-{entry_id}" / "ui"
+        if not ui_dir.is_dir() or ui_dir.is_symlink():
+            fail(entry_id, f"the build handed over no ui/ at {ui_dir}")
+    check_ui(entry_id, manifest, ui_dir)
+    return ui_dir
 
 
 def built_wasm(entry_id: str, built: Path) -> Path:
@@ -480,10 +654,12 @@ def build_one(entry_id: str, out: Path):
     entry = next((e for e in listed_entries() if e["id"] == entry_id), None)
     if entry is None:
         sys.exit(f"error: {entry_id} is not in extensions.toml")
-    crate = sources(entry)[0]
+    crate, _, manifest, _, _ = sources(entry)
     wasm = build_wasm(entry_id, crate)
     out.mkdir(parents=True, exist_ok=True)
     (out / "extension.wasm").write_bytes(wasm.read_bytes())
+    if entry.get("web"):
+        copy_tree(entry_id, ui_of(entry_id, entry, crate, manifest), out / "ui")
     print(f"built {entry_id} into {out}")
 
 
@@ -493,11 +669,16 @@ def main(check: bool = False, built: "Path | None" = None):
     index = []
     for entry in listed:
         entry_id = entry["id"]
-        crate, manifest_path, manifest, ext, icon, ui_dir = sources(entry)
+        crate, manifest_path, manifest, ext, icon = sources(entry)
         # From a build job when the halves are split, built here when they
-        # are not — and in both cases every other member of the package is
-        # packed from the reviewed source by this process.
-        wasm = build_wasm(entry_id, crate) if built is None else built_wasm(entry_id, built)
+        # are not — and in both cases the manifest and icon are packed from
+        # the reviewed source by this process.
+        if built is None:
+            wasm = build_wasm(entry_id, crate)
+            ui_dir = ui_of(entry_id, entry, crate, manifest)
+        else:
+            wasm = built_wasm(entry_id, built)
+            ui_dir = built_ui(entry_id, entry, crate, manifest, built)
         package = pack(entry_id, manifest_path, wasm, icon, ui_dir)
         package_name = f"{entry_id}-{ext['version']}.tar.gz"
         package_path = DIST / package_name
