@@ -109,6 +109,39 @@
   --cb-hit-on-ink: color-mix(in srgb, var(--cb-accent) 65%, #000);
 }
 
+/* A copied link under the pointer, per glass and theme like the marks
+   above. It starts from Lumi's own link ink, which already follows the
+   theme (darker than the accent in light, lighter in dark); Frosted is
+   "less colour", so its link leans toward the text's grey; Dark glass is
+   darkest and takes the brightest. The greys are spelled out rather than
+   `CanvasText`, which follows the system, not the panel's own theme. The
+   underline is the same hue, half as strong. */
+:root {
+  --cb-link-ink: var(--accent-ink, color-mix(in srgb, var(--cb-accent) 74%, #000));
+  --cb-link: var(--cb-link-ink);
+}
+:root[data-material="sidebar"] {
+  --cb-link: color-mix(in srgb, var(--cb-link-ink) 72%, #3a3a3c);
+}
+:root[data-theme="dark"] {
+  --cb-link-ink: var(--accent-ink, color-mix(in srgb, var(--cb-accent) 72%, #fff));
+}
+:root[data-material="sidebar"][data-theme="dark"] {
+  --cb-link: color-mix(in srgb, var(--cb-link-ink) 72%, #e5e5ea);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --cb-link-ink: var(--accent-ink, color-mix(in srgb, var(--cb-accent) 72%, #fff));
+  }
+  :root[data-material="sidebar"]:not([data-theme]) {
+    --cb-link: color-mix(in srgb, var(--cb-link-ink) 72%, #e5e5ea);
+  }
+}
+/* Dark glass is always dark (`wear` sets the theme), whatever the system. */
+:root[data-material="hud"] {
+  --cb-link: color-mix(in srgb, var(--cb-accent) 58%, #fff);
+}
+
 html, body, #root { height: 100%; }
 /* Clear: the panel is glass (`material = "popover"`), and whatever this
    page paints covers it. Washes, not colours, from here down. */
@@ -603,6 +636,18 @@ body {
   overflow: hidden;
   -webkit-user-select: text;
   user-select: text;
+}
+/* A copied link: plain until the pointer is on it, then a link — the
+   theme's link ink, underlined, a hand — and a click opens it in the
+   browser. */
+.card .body.link { align-self: flex-start; cursor: default; }
+.card .body.link:hover {
+  color: var(--cb-link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--cb-link) 50%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 .card .body.rich { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 13px; }
 /* A rich copy's formatting (richText.tsx), on the glass like the rest. */

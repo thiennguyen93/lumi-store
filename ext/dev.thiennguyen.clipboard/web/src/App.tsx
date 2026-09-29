@@ -536,7 +536,7 @@ export function App() {
             title="Drag to resize · double-click to reset"
             {...preview.grip}
           />
-          <Preview row={current} />
+          <Preview row={current} onOpen={(id) => void act(() => call({ kind: "open", id }))} />
         </div>
       </section>
       {notice && (

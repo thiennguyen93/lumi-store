@@ -39,7 +39,7 @@ const seen = new Map<string, Full>();
 const SEEN_MAX = 64;
 const seenKey = (row: Entry) => `${row.id}:${row.ocr ? 1 : 0}`;
 
-export function Preview({ row }: { row: Entry | undefined }) {
+export function Preview({ row, onOpen }: { row: Entry | undefined; onOpen?: (id: string) => void }) {
   // The full text, keyed by the row it belongs to, so a late answer for a
   // row the selection has already left is never drawn under another.
   const [full, setFull] = useState<Full | null>(null);
@@ -184,13 +184,40 @@ export function Preview({ row }: { row: Entry | undefined }) {
         ) : html ? (
           <RichText key={row.id} html={html} fallback={<div className="body rich">{text}</div>} />
         ) : (
-          row.kind !== "image" && <div className={row.kind === "rich" ? "body rich" : "body"}>{text}</div>
+          row.kind === "link" && onOpen ? (
+            <LinkBody text={text} onOpen={() => onOpen(row.id)} />
+          ) : (
+            row.kind !== "image" && <div className={row.kind === "rich" ? "body rich" : "body"}>{text}</div>
+          )
         )}
         <footer className="card-foot">
           Copied {ago(row.last)} · {times}
         </footer>
       </div>
     </aside>
+  );
+}
+
+/** A copied link: the address as plain text, which reads as a link under
+ *  the pointer and opens in the browser on a click. The page never hands
+ *  the address over itself — `onOpen` sends the row's id, and the extension
+ *  reads the address out of the stored item, so a click opens only what was
+ *  copied. A drag across the text still selects it: a click that ends a
+ *  selection opens nothing. */
+function LinkBody({ text, onOpen }: { text: string; onOpen: () => void }) {
+  return (
+    <div
+      className="body link"
+      role="link"
+      tabIndex={-1}
+      title="Open in browser"
+      onClick={() => {
+        if (window.getSelection()?.isCollapsed === false) return;
+        onOpen();
+      }}
+    >
+      {text}
+    </div>
   );
 }
 
