@@ -140,6 +140,19 @@ MAX_PAGES = 4
 MAX_PAGE_LABEL = 24
 RESERVED_PAGE_LABELS = {"about", "settings", "permissions", "shortcuts"}
 MAX_ICON = 64 * 1024
+# The store's shelves: an entry's `category` in extensions.toml is one of
+# these, and Lumi's Extension Store filters Discover by them. The store's
+# word rather than the author's, like `featured` — both are decided in
+# review, which is why neither is a manifest key.
+CATEGORIES = ["Productivity", "Writing", "Windows", "Design", "Developer", "Utilities"]
+# `[extension] screenshots`: a few pictures for the extension's page in
+# Lumi's Extension Store. Store-only — Lumi's manifest reader ignores the
+# key — so the ceilings are the store's: few enough to download on a
+# page open, small enough that Lumi can hand each one to its webview
+# inline (it serves them as data: URIs; the CSP takes no remote images).
+MAX_SCREENSHOTS = 4
+MAX_SCREENSHOT = 1024 * 1024
+SCREENSHOT_KINDS = {b"\x89PNG\r\n\x1a\n": "png", b"\xff\xd8\xff": "jpg"}
 MAX_UI_FILE = 5 * 1024 * 1024
 MAX_UI_FILES = 200
 MAX_UI_TOTAL = 24 * 1024 * 1024
@@ -592,6 +605,11 @@ def listed_entries() -> list:
         entry_id = entry.get("id", "") or sys.exit("error: an entry has no id")
         if not ID_RE.match(entry_id) or entry_id.startswith("."):
             fail(entry_id, "the listed id is not one Lumi would accept")
+        category = entry.get("category", "")
+        if category not in CATEGORIES:
+            fail(entry_id, f"category {category!r} is not one of the store's: {', '.join(CATEGORIES)}")
+        if not isinstance(entry.get("featured", False), bool):
+            fail(entry_id, "featured is true or false")
     return listed
 
 
@@ -617,6 +635,35 @@ def sources(entry: dict):
     icon_path = crate / "icon.svg"
     icon = icon_path if icon_path.exists() else None
     return crate, manifest_path, manifest, ext, icon
+
+
+def screenshots_of(entry_id: str, crate: Path, ext: dict) -> list:
+    """`[extension] screenshots`, as (path, kind) pairs, read from the
+    reviewed crate — never from a web build's output, the way icon.svg is
+    read. Held to the store's ceilings and to what the bytes actually are,
+    not to what the file is called."""
+    declared = ext.get("screenshots", [])
+    if not isinstance(declared, list) or not all(isinstance(one, str) for one in declared):
+        fail(entry_id, "screenshots is a list of paths")
+    if len(declared) > MAX_SCREENSHOTS:
+        fail(entry_id, f"{len(declared)} screenshots; the store shows at most {MAX_SCREENSHOTS}")
+    shots = []
+    for declared_path in declared:
+        if not is_valid_ui_path(declared_path):
+            fail(entry_id, f"the screenshot {declared_path!r} is not a plain relative path")
+        path = crate / declared_path
+        if not path.is_file() or path.is_symlink():
+            fail(entry_id, f"the screenshot {declared_path} does not exist")
+        size = path.stat().st_size
+        if size > MAX_SCREENSHOT:
+            fail(entry_id, f"the screenshot {declared_path} is {size} bytes; the store takes {MAX_SCREENSHOT}")
+        with open(path, "rb") as f:
+            head = f.read(8)
+        kind = next((k for magic, k in SCREENSHOT_KINDS.items() if head.startswith(magic)), None)
+        if kind is None:
+            fail(entry_id, f"the screenshot {declared_path} is not a PNG or a JPEG")
+        shots.append((path, kind))
+    return shots
 
 
 def check_ui(entry_id: str, manifest: dict, ui_dir: Path):
@@ -723,6 +770,14 @@ def main(check: bool = False, built: "Path | None" = None):
         if not check:
             sign(entry_id, package_path)
 
+        # Beside the package, named for its version like the icon: the
+        # index is cached for a year, so a new picture needs a new name.
+        shot_urls = []
+        for n, (shot, kind) in enumerate(screenshots_of(entry_id, crate, ext), start=1):
+            shot_name = f"{entry_id}-{ext['version']}-shot-{n}.{kind}"
+            (DIST / shot_name).write_bytes(shot.read_bytes())
+            shot_urls.append(f"{BASE_URL}/{shot_name}")
+
         icon_url = ""
         if icon is not None:
             icon_name = f"{entry_id}-{ext['version']}.svg"
@@ -756,6 +811,30 @@ def main(check: bool = False, built: "Path | None" = None):
                     for w in manifest.get("window", [])
                 ],
                 "icon": icon_url,
+                # The Extension Store's shelf copy. The store's own words
+                # (category, featured, from extensions.toml) and the
+                # author's (screenshots, and what the manifest adds), for a
+                # page drawn before anything is downloaded. Browse copy like
+                # the rest: the review sheet reads the verified package.
+                "category": entry["category"],
+                "featured": entry.get("featured", False),
+                "screenshots": shot_urls,
+                "size": len(package),
+                "commands": [c.get("label") or c.get("name", "") for c in manifest.get("command", [])],
+                "shortcuts": [
+                    {
+                        "command": s.get("command", ""),
+                        "label": next(
+                            (c.get("label") or c.get("name", "")
+                             for c in manifest.get("command", [])
+                             if c.get("name") == s.get("command")),
+                            s.get("command", ""),
+                        ),
+                        "key": s.get("key", ""),
+                    }
+                    for s in manifest.get("shortcut", [])
+                ],
+                "pages": [p.get("label") or p.get("name", "") for p in manifest.get("page", [])],
                 "package": f"{BASE_URL}/{package_name}",
                 "signature": f"{BASE_URL}/{package_name}.sig",
                 # Extra context the app tolerates and future surfaces can

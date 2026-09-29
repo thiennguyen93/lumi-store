@@ -1,0 +1,26 @@
+{
+  "color": "#2563eb",
+  "shots": [
+    {
+      "headline": "Test every key on your Mac",
+      "sub": "Press each key and watch it light up — Keyboard Test counts what you've covered and shows what's held.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Keyboard Test",
+      "page": "keytest.html",
+      "theme": "light",
+      "callout": {
+        "title": "Keyboard Test",
+        "label": "Double-typed",
+        "body": "<b>E</b> registered twice from one press — the chatter a worn or dusty switch makes."
+      }
+    },
+    {
+      "headline": "ANSI or ISO, light or dark",
+      "sub": "The board matches the MacBook in front of you, and the theme matches Lumi.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Keyboard Test",
+      "page": "keytest.html",
+      "theme": "dark"
+    }
+  ]
+}

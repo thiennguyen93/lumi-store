@@ -132,7 +132,7 @@ function Welcome() {
 }
 
 const ROWS: { kind: Kind; text: string; from: string }[] = [
-  { kind: "link", text: "github.com/thiennguyen/lumi", from: "Safari" },
+  { kind: "link", text: "https://lumikeys.app", from: "Safari" },
   { kind: "color", text: "#534AB7", from: "Figma" },
   { kind: "text", text: "npm install --save-dev vite", from: "Terminal" },
   { kind: "file", text: "Invoice-September.pdf", from: "Finder" },

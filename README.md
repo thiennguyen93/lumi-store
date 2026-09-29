@@ -38,7 +38,28 @@ after review.
    path = "ext/dev.you.thing" # the submodule
    subdir = "."               # where the crate + manifest live inside it
    web = "web"                # optional — see "A built front end" below
+   category = "Productivity"  # the shelf in Lumi's Extension Store
    ```
+
+   `category` is one of Productivity, Writing, Windows, Design,
+   Developer or Utilities. It is the store's word for the extension,
+   settled in review, and so is `featured = true`, which puts it on the
+   plate at the top of Discover — neither is a manifest key, because
+   neither is the author's to claim.
+
+   Pictures for your extension's page in the store go in your manifest,
+   from your own source (not a built front end):
+
+   ```toml
+   [extension]
+   screenshots = ["shots/panel.png", "shots/settings.png"]
+   ```
+
+   At most 4, each a PNG or JPEG of at most 1 MB, made at 16:10 (1280×800)
+   so Lumi's frames show them whole. Lumi's installer ignores the key; the
+   store publishes the files beside your package. The first-party
+   extensions' pictures are made with `scripts/preview_ui.py` (its
+   `/__promo__/` page) and `scripts/screenshot.mjs` — see the top of each.
 
 3. Review is human, of source: the manifest's capabilities against what
    the code actually calls, nothing phoning home, no misbehaviour shipped
