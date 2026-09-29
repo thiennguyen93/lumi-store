@@ -2,7 +2,7 @@
 // the requests src/lib.rs answers, over a history held in memory. Paste and
 // close have nowhere to go in a browser, so they say what Lumi would do.
 
-import { setAppIconUrl, setBlobUrl } from "../bridge";
+import { setAppIconUrl, setBlobUrl, setFileUrl } from "../bridge";
 import type { Entry, Request } from "../types";
 
 const now = Date.now();
@@ -47,6 +47,7 @@ let rows: Entry[] = [
   entry({ id: "k", kind: "text", title: "thiennguyen.dev/lumi-store/extensions/index.json", appName: "Chrome", last: now - 180 * min }),
   entry({ id: "l", kind: "link", title: "https://developer.apple.com/design/human-interface-guidelines", appName: "Safari", last: now - 240 * min }),
   entry({ id: "m", kind: "file", title: "/Users/me/Desktop/invoice-2041.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min }),
+  entry({ id: "m2", kind: "file", title: "/Users/me/Desktop/broken.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min - 1 }),
   entry({ id: "n", kind: "file", title: "/Users/me/Movies/demo.mp4", fileExt: "mp4", appName: "Finder", last: now - 27 * 60 * min }),
   entry({ id: "o", kind: "file", title: "/Users/me/Music/song.mp3", fileExt: "mp3", appName: "Finder", last: now - 28 * 60 * min }),
   entry({ id: "p", kind: "file", title: "/Users/me/Sites/index.html", fileExt: "html", appName: "Finder", last: now - 29 * 60 * min }),
@@ -107,7 +108,8 @@ function answer(request: Request): unknown {
           : null;
       const ocr = row?.ocr && settings.ocr !== "false" ? ["Lumi", "Clipboard History", "Search history", ...Array.from({ length: 60 }, (_, i) => `Line ${i + 1} of a long read`)].join("\n") : null;
       const fileSize = row?.kind === "file" ? (row.title.endsWith(".pdf") ? 1_234_567 : 48_213_904) : null;
-      return { text, html, ocr, fileSize };
+      const fileToken = row?.kind === "file" && /\.(pdf|mp3|mp4)$/.test(row.title) ? row.title : null;
+      return { text, html, ocr, fileSize, fileToken };
     }
     case "paste":
       say(`would close the panel and paste ${request.plain ? "plain text of " : ""}${request.id}`);
@@ -284,3 +286,69 @@ setAppIconUrl((bundleId) => {
     )
   );
 });
+
+// The mock's "token" is the file's name: a second of a tone for a sound, a
+// twelve-page PDF (a broken one for `broken.pdf`), and nothing for a film — which shows the tile it falls back to.
+setFileUrl((token) => {
+  if (token.endsWith(".mp3")) {
+    const rate = 8000;
+    const samples = new Uint8Array(rate);
+    samples.forEach((_, i) => (samples[i] = 128 + Math.round(60 * Math.sin((2 * Math.PI * 440 * i) / rate))));
+    const wav = new Uint8Array(44 + samples.length);
+    const view = new DataView(wav.buffer);
+    const text = (at: number, word: string) => [...word].forEach((c, i) => (wav[at + i] = c.charCodeAt(0)));
+    text(0, "RIFF");
+    view.setUint32(4, 36 + samples.length, true);
+    text(8, "WAVEfmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, rate, true);
+    view.setUint32(28, rate, true);
+    view.setUint16(32, 1, true);
+    view.setUint16(34, 8, true);
+    text(36, "data");
+    view.setUint32(40, samples.length, true);
+    wav.set(samples, 44);
+    return URL.createObjectURL(new Blob([wav], { type: "audio/wav" }));
+  }
+  if (token.endsWith(".pdf")) {
+    // Not a PDF at all: pdf.js refuses it and the tile stands in.
+    if (token.includes("broken")) return URL.createObjectURL(new Blob(["%PDF-1.4 nothing here"], { type: "application/pdf" }));
+    return URL.createObjectURL(new Blob([invoicePdf(12)], { type: "application/pdf" }));
+  }
+  return "data:,missing";
+});
+
+/** An A4 PDF of `pages` pages, each with a heading, a few lines and a box,
+ *  written out with a real cross-reference table so pdf.js reads it the way
+ *  it reads a file off disk rather than rebuilding it. */
+function invoicePdf(pages: number): string {
+  const objects: string[] = [];
+  const add = (body: string) => objects.push(body) + 2; // 1 is the catalog, 2 the page tree
+  const font = add("<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>");
+  const kids: number[] = [];
+  for (let n = 1; n <= pages; n++) {
+    const lines = Array.from({ length: 24 }, (_, i) => `BT /F1 11 Tf 56 ${700 - i * 24} Td (Line ${i + 1} of page ${n} - item ${n * 100 + i}) Tj ET`);
+    const content = [
+      `0.22 0.54 0.87 rg 40 760 515 50 re f`,
+      `1 1 1 rg BT /F1 24 Tf 56 775 Td (Invoice 2041 - page ${n} / ${pages}) Tj ET`,
+      `0 0 0 rg`,
+      ...lines,
+      `0.9 0.3 0.2 RG 3 w 40 60 515 40 re S`,
+    ].join("\n");
+    const stream = add(`<</Length ${content.length}>>stream\n${content}\nendstream`);
+    kids.push(add(`<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Contents ${stream} 0 R/Resources<</Font<</F1 ${font} 0 R>>>>>>`));
+  }
+  const all = ["<</Type/Catalog/Pages 2 0 R>>", `<</Type/Pages/Kids[${kids.map((k) => `${k} 0 R`).join(" ")}]/Count ${pages}>>`, ...objects];
+  let pdf = "%PDF-1.4\n";
+  const offsets = all.map((body, i) => {
+    const at = pdf.length;
+    pdf += `${i + 1} 0 obj\n${body}\nendobj\n`;
+    return at;
+  });
+  const xref = pdf.length;
+  pdf += `xref\n0 ${all.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, "0")} 00000 n \n`).join("")}`;
+  pdf += `trailer<</Size ${all.length + 1}/Root 1 0 R>>\nstartxref\n${xref}\n%%EOF`;
+  return pdf;
+}

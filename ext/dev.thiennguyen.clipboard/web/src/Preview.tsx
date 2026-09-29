@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { blobUrl, call } from "./bridge";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { blobUrl, call, fileUrl } from "./bridge";
 import { AppMark } from "./AppMark";
-import { CollapseGlyph, ExpandGlyph, FileGlyph, KindGlyph } from "./icons";
+import { CollapseGlyph, ExpandGlyph, FileGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
 import { fileFamily, type FileFamily } from "./fileType";
+import { PdfViewer } from "./PdfViewer";
 import { RichText } from "./richText";
 import { HEX, KIND_WORDS } from "./Row";
 import { ago } from "./search";
@@ -18,7 +19,7 @@ const SETTLE_MS = 90;
  *  goes straight to the formatted text instead of flashing plain first. */
 const HOLD_MS = 400;
 
-type Full = { id: string; text: string; html?: string | null; ocr?: string | null; fileSize?: number | null };
+type Full = { id: string; text: string; html?: string | null; ocr?: string | null; fileSize?: number | null; fileToken?: string | null };
 
 /** Previews already asked for, by row — and by whether the row has read
  *  text yet, since OCR lands after the copy. The page is thrown away each
@@ -56,12 +57,12 @@ export function Preview({ row }: { row: Entry | undefined }) {
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
-        const { text, html, ocr, fileSize } = await call({ kind: "preview", id: row.id });
+        const { text, html, ocr, fileSize, fileToken } = await call({ kind: "preview", id: row.id });
         if (!(text || html || ocr)) {
           if (live) setGaveUp(row.id);
           return;
         }
-        const answer = { id: row.id, text, html, ocr, fileSize };
+        const answer = { id: row.id, text, html, ocr, fileSize, fileToken };
         seen.delete(key);
         seen.set(key, answer);
         if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
@@ -141,11 +142,13 @@ export function Preview({ row }: { row: Entry | undefined }) {
           </section>
         )}
         {row.kind === "file" && MEDIA_FAMILIES.has(fileFamily(row.fileExt)) && (
-          // Stands where a player will be once Lumi can serve the file.
-          <div className="file-tile" data-family={fileFamily(row.fileExt)}>
-            <FileGlyph family={fileFamily(row.fileExt)} />
-            <span>{(row.fileExt ?? "").toUpperCase()}</span>
-          </div>
+          <FileMedia
+            key={row.id}
+            family={fileFamily(row.fileExt)}
+            ext={row.fileExt ?? ""}
+            token={mine?.fileToken ?? null}
+            name={row.title}
+          />
         )}
         {row.kind === "color" && HEX.test(row.title) && (
           <div className="chip" style={{ background: row.title }} />
@@ -163,6 +166,112 @@ export function Preview({ row }: { row: Entry | undefined }) {
       </div>
     </aside>
   );
+}
+
+/** A copied PDF, sound or film: its player or viewer once Lumi has given a
+ *  grant for it, and until then — or when Lumi cannot serve it, an older Lumi
+ *  or a file moved since — a tile that says what it is. Never plays by
+ *  itself: `controls` and no `autoPlay`, and audio loads nothing until asked.
+ *  Keyed by row, so choosing another row takes the player away and stops it. */
+function FileMedia({ family, ext, token, name }: { family: FileFamily; ext: string; token: string | null; name: string }) {
+  const [failed, setFailed] = useState(false);
+  // Once per grant: a new address for the same file would reload the player.
+  const address = useMemo(() => (token ? fileUrl(token) : null), [token]);
+  const src = failed ? null : address;
+  if (src && family === "video") {
+    return <VideoPlayer src={src} onError={() => setFailed(true)} />;
+  }
+  if (src && family === "audio") {
+    return (
+      <div className="player audio">
+        <FileGlyph family={family} />
+        <audio src={src} controls preload="none" onError={() => setFailed(true)} />
+      </div>
+    );
+  }
+  if (src && family === "pdf") {
+    return <PdfViewer src={src} name={name} onFail={() => setFailed(true)} />;
+  }
+  return (
+    <div className="file-tile" data-family={family}>
+      <FileGlyph family={family} />
+      <span>{ext.toUpperCase()}</span>
+    </div>
+  );
+}
+
+/** A film with a small bar of its own — play, seek, time, sound — in place of
+ *  the webview's controls, which are drawn at the size of the video and take
+ *  most of a pane this narrow. Starts muted and never by itself; the sound is
+ *  the person's to turn on. */
+function VideoPlayer({ src, onError }: { src: string; onError: () => void }) {
+  const video = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [time, setTime] = useState(0);
+  const [length, setLength] = useState(0);
+  // The caret stays in the search field, as it does for a row.
+  const keepFocus = (event: { preventDefault: () => void }) => event.preventDefault();
+  const toggle = () => {
+    const el = video.current;
+    if (el) void (el.paused ? el.play().catch(onError) : el.pause());
+  };
+  return (
+    <div className="player video">
+      <video
+        ref={video}
+        src={src}
+        muted
+        playsInline
+        preload="metadata"
+        onClick={toggle}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+        onTimeUpdate={(event) => setTime(event.currentTarget.currentTime)}
+        onLoadedMetadata={(event) => setLength(event.currentTarget.duration || 0)}
+        onVolumeChange={(event) => setMuted(event.currentTarget.muted)}
+        onError={onError}
+      />
+      <div className="vbar">
+        <button type="button" className="vbtn" aria-label={playing ? "Pause" : "Play"} onMouseDown={keepFocus} onClick={toggle}>
+          {playing ? <PauseGlyph /> : <PlayGlyph />}
+        </button>
+        <input
+          type="range"
+          className="seek"
+          aria-label="Seek"
+          min={0}
+          max={length || 0}
+          step="any"
+          value={Math.min(time, length || 0)}
+          disabled={!length}
+          onChange={(event) => {
+            if (video.current) video.current.currentTime = Number(event.target.value);
+          }}
+        />
+        <span className="clock">{clock(time)} / {clock(length)}</span>
+        <button
+          type="button"
+          className="vbtn"
+          aria-label={muted ? "Unmute" : "Mute"}
+          onMouseDown={keepFocus}
+          onClick={() => video.current && (video.current.muted = !video.current.muted)}
+        >
+          <VolumeGlyph muted={muted} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** 0:07, 12:03, 1:02:03. */
+function clock(seconds: number): string {
+  const whole = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0));
+  const h = Math.floor(whole / 3600);
+  const m = Math.floor((whole % 3600) / 60);
+  const s = String(whole % 60).padStart(2, "0");
+  return h ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
 }
 
 /** The families that get a tile of their own above the paths. */

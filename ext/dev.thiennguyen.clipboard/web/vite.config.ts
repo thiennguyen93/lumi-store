@@ -23,8 +23,15 @@ export default defineConfig({
     // WKWebView on the oldest macOS Lumi supports.
     target: "safari16",
     modulePreload: { polyfill: false },
+    // pdf.js' standard fonts are fetched, and a `data:` URL is not 'self':
+    // they are always files. Their licences keep a `.txt` name beside them.
+    assetsInlineLimit: (file) => (file.includes("/pdfjs-dist/standard_fonts/") ? false : undefined),
     rollupOptions: {
       input: { panel: "panel.html", dashboard: "dashboard.html", settings: "settings.html" },
+      output: {
+        assetFileNames: ({ names }) =>
+          names[0]?.startsWith("LICENSE_") ? "assets/[name]-[hash].txt" : "assets/[name]-[hash][extname]",
+      },
     },
   },
 });

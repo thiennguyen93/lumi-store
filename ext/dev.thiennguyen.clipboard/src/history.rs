@@ -77,6 +77,11 @@ pub struct Rep {
     /// and nothing this component can resolve. From Lumi 1.26.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
+    /// A grant to play or show the file — `/__lumi__/file/<token>` — that
+    /// Lumi gives a PDF, sound or film it copied, from Lumi 1.26. Opaque
+    /// here, and no path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub file_token: Option<String>,
 }
 
 /// Where a copy came from: the application in front when it happened.
@@ -488,6 +493,18 @@ pub fn file_url_of(items: &[Vec<Rep>]) -> Option<String> {
         .and_then(|rep| rep.text.clone())
 }
 
+/// The token to play the copied file with — of a copy of exactly one file,
+/// since a preview plays one thing; `None` for several, for a file Lumi gave
+/// no grant, and for a copy from before Lumi did.
+pub fn file_token_of(items: &[Vec<Rep>]) -> Option<String> {
+    let mut files = items.iter().flatten().filter(|rep| rep.uti == uti::FILE_URL);
+    let only = files.next()?;
+    if files.next().is_some() {
+        return None;
+    }
+    only.file_token.clone()
+}
+
 /// How much the copied files weigh together, as Lumi measured them — `None`
 /// unless every file has a size (a folder, or a copy from before Lumi
 /// measured, has none), since a total missing a part would be wrong.
@@ -855,7 +872,7 @@ mod tests {
             blob: None,
             bytes: t.len() as u64,
             file_size: None,
-            path: None,
+            path: None, file_token: None,
         }
     }
 
@@ -866,7 +883,7 @@ mod tests {
             blob: Some(id.into()),
             bytes: 10,
             file_size: None,
-            path: None,
+            path: None, file_token: None,
         }
     }
 
@@ -989,10 +1006,10 @@ mod tests {
         assert_eq!(kind_of(&[vec![text("see https://x.y")]]), Kind::Text);
         assert_eq!(kind_of(&[vec![blob(uti::PNG, "p")]]), Kind::Image);
         assert_eq!(
-            kind_of(&[vec![text("b"), Rep { uti: uti::HTML.into(), text: Some("<b>b</b>".into()), blob: None, bytes: 8, file_size: None, path: None }]]),
+            kind_of(&[vec![text("b"), Rep { uti: uti::HTML.into(), text: Some("<b>b</b>".into()), blob: None, bytes: 8, file_size: None, path: None, file_token: None }]]),
             Kind::Rich
         );
-        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///Users/me/a%20b.txt".into()), blob: None, bytes: 0, file_size: None, path: None };
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///Users/me/a%20b.txt".into()), blob: None, bytes: 0, file_size: None, path: None, file_token: None };
         assert_eq!(kind_of(&[vec![file.clone()]]), Kind::File);
         assert_eq!(title_of(&[vec![file]], Kind::File), "a b.txt");
     }
@@ -1026,6 +1043,7 @@ mod tests {
             bytes: 30,
             file_size: None,
             path: path.map(str::to_string),
+            file_token: None,
         };
         let resolved = [vec![reference("1", Some("/Users/me/Movies/brag2.mp4"))]];
         assert_eq!(title_of(&resolved, Kind::File), "brag2.mp4");
@@ -1048,8 +1066,25 @@ mod tests {
     }
 
     #[test]
+    fn only_a_lone_file_with_a_grant_is_played() {
+        let file = |token: Option<&str>| Rep {
+            uti: uti::FILE_URL.into(),
+            text: Some("file:///a/x.mp4".into()),
+            blob: None,
+            bytes: 0,
+            file_size: None,
+            path: None,
+            file_token: token.map(str::to_string),
+        };
+        assert_eq!(file_token_of(&[vec![file(Some("t1"))]]), Some("t1".to_string()));
+        assert_eq!(file_token_of(&[vec![file(None)]]), None);
+        assert_eq!(file_token_of(&[vec![file(Some("t1"))], vec![file(Some("t2"))]]), None);
+        assert_eq!(file_token_of(&[vec![text("x")]]), None);
+    }
+
+    #[test]
     fn files_share_an_extension_or_have_none() {
-        let file = |url: &str| vec![Rep { uti: uti::FILE_URL.into(), text: Some(url.into()), blob: None, bytes: 0, file_size: None, path: None }];
+        let file = |url: &str| vec![Rep { uti: uti::FILE_URL.into(), text: Some(url.into()), blob: None, bytes: 0, file_size: None, path: None, file_token: None }];
         let ext = |urls: &[&str]| file_ext_of(&urls.iter().map(|u| file(u)).collect::<Vec<_>>());
         assert_eq!(ext(&["file:///a/Talk%20Final.PDF"]), "pdf");
         assert_eq!(ext(&["file:///a/x.mp4", "file:///b/y.MP4"]), "mp4");
@@ -1062,9 +1097,9 @@ mod tests {
 
     #[test]
     fn plain_keeps_text_or_files_only() {
-        let html = Rep { uti: uti::HTML.into(), text: Some("<b>x</b>".into()), blob: None, bytes: 8, file_size: None, path: None };
+        let html = Rep { uti: uti::HTML.into(), text: Some("<b>x</b>".into()), blob: None, bytes: 8, file_size: None, path: None, file_token: None };
         assert_eq!(plain(&[vec![text("x"), html.clone()]]), vec![vec![text("x")]]);
-        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///a".into()), blob: None, bytes: 0, file_size: None, path: None };
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///a".into()), blob: None, bytes: 0, file_size: None, path: None, file_token: None };
         assert_eq!(plain(&[vec![file.clone(), blob(uti::PNG, "p")]]), vec![vec![file]]);
         assert!(plain(&[vec![html]]).is_empty());
     }
@@ -1086,7 +1121,7 @@ mod tests {
     fn a_link_and_a_file_are_found_for_their_actions() {
         assert_eq!(link_of(&[vec![text(" https://a.b/c ")]]), Some("https://a.b/c".to_string()));
         assert_eq!(link_of(&[vec![text("see https://a.b")]]), None);
-        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///.file/id=1.2".into()), blob: None, bytes: 0, file_size: None, path: None };
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///.file/id=1.2".into()), blob: None, bytes: 0, file_size: None, path: None, file_token: None };
         assert_eq!(file_url_of(&[vec![file]]), Some("file:///.file/id=1.2".to_string()));
         assert_eq!(file_url_of(&[vec![text("x")]]), None);
     }

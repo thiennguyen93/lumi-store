@@ -488,6 +488,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "html": history::preview_html(&record.items),
                 "ocr": ocr,
                 "fileSize": history::files_size_of(&record.items),
+                "fileToken": history::file_token_of(&record.items),
             }))
         }
         "paste" => {
@@ -591,7 +592,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 .ocr
                 .filter(|text| prefs(host).ocr && !text.trim().is_empty())
                 .ok_or_else(|| "Lumi read no text in that image.".to_string())?;
-            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None, path: None };
+            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None, path: None, file_token: None };
             host.paste(&[vec![rep]], false)?;
             Ok(json!({}))
         }

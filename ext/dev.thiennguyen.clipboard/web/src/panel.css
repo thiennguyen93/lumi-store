@@ -580,6 +580,47 @@ body {
   color: var(--cb-faint);
 }
 .card .file-tile .glyph { width: 36px; height: 36px; stroke-width: 1.5; }
+.card .player { width: 100%; border-radius: 6px; background: rgba(0, 0, 0, 0.25); }
+.card .player.video { position: relative; overflow: hidden; }
+.card .player.video video { display: block; width: 100%; max-height: 200px; background: #000; }
+.card .vbar {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 6px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  color: #fff;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.card .vbtn { display: grid; place-items: center; flex: none; width: 18px; height: 18px; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+.card .vbtn .glyph { width: 12px; height: 12px; }
+.card .seek { flex: 1; min-width: 0; height: 12px; margin: 0; accent-color: #fff; }
+.card .clock { flex: none; white-space: nowrap; opacity: 0.85; }
+.card .player.pdf { display: flex; flex-direction: column; height: 280px; overflow: hidden; background: none; border: 1px solid var(--cb-line); }
+.card .pdf-sheet { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; background: var(--cb-card); }
+/* White under the page: a PDF with no background of its own is drawn on paper, in either theme. */
+.card .pdf-sheet canvas { display: block; background: #fff; }
+.card .pdf-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 6px;
+  border-top: 1px solid var(--cb-line);
+  color: var(--cb-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.card .pdf-bar .vbtn:disabled { opacity: 0.35; cursor: default; }
+.card .pdf-bar .vbtn:not(:disabled):hover { color: CanvasText; }
+.card .pdf-gap { flex: 1; }
+.card .player.audio { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 8px 8px; background: none; border: 1px solid var(--cb-line); }
+.card .player.audio .glyph { width: 36px; height: 36px; stroke-width: 1.5; }
+.card .player.audio audio { width: 100%; height: 32px; }
 .card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); }
 
 /* `pnpm dev` only (`?glass`, set by dev/mock.ts): a busy wallpaper and a

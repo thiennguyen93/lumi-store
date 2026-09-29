@@ -150,6 +150,72 @@ export function FileGlyph({ family }: { family: FileFamily }) {
   );
 }
 
+export function PlayGlyph() {
+  return (
+    <Glyph>
+      <path d="M6 4l13 8-13 8z" />
+    </Glyph>
+  );
+}
+
+export function PauseGlyph() {
+  return (
+    <Glyph>
+      <path d="M8 5v14" />
+      <path d="M16 5v14" />
+    </Glyph>
+  );
+}
+
+export function VolumeGlyph({ muted }: { muted: boolean }) {
+  return (
+    <Glyph>
+      <path d="M11 5 6 9H2v6h4l5 4z" />
+      {muted ? (
+        <>
+          <path d="m22 9-6 6" />
+          <path d="m16 9 6 6" />
+        </>
+      ) : (
+        <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+      )}
+    </Glyph>
+  );
+}
+
+export function ChevronLeftGlyph() {
+  return (
+    <Glyph>
+      <path d="m15 18-6-6 6-6" />
+    </Glyph>
+  );
+}
+
+export function ChevronRightGlyph() {
+  return (
+    <Glyph>
+      <path d="m9 18 6-6-6-6" />
+    </Glyph>
+  );
+}
+
+export function PlusGlyph() {
+  return (
+    <Glyph>
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </Glyph>
+  );
+}
+
+export function MinusGlyph() {
+  return (
+    <Glyph>
+      <path d="M5 12h14" />
+    </Glyph>
+  );
+}
+
 export function PinGlyph() {
   return (
     <Glyph>

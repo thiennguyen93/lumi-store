@@ -13,7 +13,11 @@ type Answers = {
   list: ListAnswer;
   /** `html`: a rich copy's markup, to draw in a sandbox. */
   /** `fileSize`: a file row's files together, in bytes, when Lumi measured them. */
-  preview: { text: string; html?: string | null; ocr?: string | null; fileSize?: number | null };
+  preview: {
+    text: string; html?: string | null; ocr?: string | null; fileSize?: number | null;
+    /** A lone PDF, sound or film's grant for `fileUrl`; Lumi 1.26. */
+    fileToken?: string | null;
+  };
   paste: Record<string, never>;
   pin: { pin: string | null };
   delete: Record<string, never>;
@@ -53,6 +57,14 @@ export let blobUrl = (id: string): string => `/__lumi__/blob/${encodeURIComponen
 
 export function setBlobUrl(resolve: (id: string) => string) {
   blobUrl = resolve;
+}
+
+/** Where a copied file is served for a player or a viewer, by the grant
+ *  Lumi gave with the copy — never a path. Swappable for the dev mock. */
+export let fileUrl = (token: string): string => `/__lumi__/file/${encodeURIComponent(token)}`;
+
+export function setFileUrl(resolve: (token: string) => string) {
+  fileUrl = resolve;
 }
 
 /** Where an application's icon is served, by bundle id — Lumi draws it.

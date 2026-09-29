@@ -4,8 +4,28 @@
     {
       "name": "clipboard-web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["-C", "ext/dev.thiennguyen.clipboard/web", "dev", "--port", "5178", "--strictPort"],
+      "runtimeArgs": [
+        "-C",
+        "ext/dev.thiennguyen.clipboard/web",
+        "dev",
+        "--port",
+        "5178",
+        "--strictPort"
+      ],
       "port": 5178
+    },
+    {
+      "name": "clipboard-web-2",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "ext/dev.thiennguyen.clipboard/web",
+        "dev",
+        "--port",
+        "5179",
+        "--strictPort"
+      ],
+      "port": 5179
     }
   ]
 }
