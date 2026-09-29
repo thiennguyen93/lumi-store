@@ -13,6 +13,7 @@
 import { type KeyboardEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { call, message } from "./bridge";
 import {
+  ClipboardGlyph,
   CopyGlyph,
   ExternalGlyph,
   DownloadGlyph,
@@ -438,6 +439,8 @@ export function App() {
     event.preventDefault();
   };
 
+  const empty = rows !== null && !shown.length;
+
   return (
     // Focusable itself, so a click on what is not — the preview's text,
     // which stays selectable — leaves the focus in here rather than on the
@@ -489,10 +492,18 @@ export function App() {
           aria-activedescendant={current ? `row-${selected}` : undefined}
         />
       </div>
-      <section className="body-grid" style={{ gridTemplateColumns: `minmax(0, 1fr) min(${preview.width}px, calc(100% - ${MIN_LIST}px))` }}>
+      <section
+        className="body-grid"
+        // Nothing to preview: the list takes the width, so the empty note
+        // sits in the middle of the panel rather than of the list.
+        style={{ gridTemplateColumns: empty ? "minmax(0, 1fr)" : `minmax(0, 1fr) min(${preview.width}px, calc(100% - ${MIN_LIST}px))` }}
+      >
         <div ref={list} id="list" className="list" role="listbox" aria-label="Clipboard history">
-          {rows !== null && !shown.length && (
-            <div className="empty">{emptyText(rows.length, query, filter, mode)}</div>
+          {rows !== null && empty && (
+            <div className="empty">
+              {rows.length > 0 && query ? <SearchGlyph /> : <ClipboardGlyph />}
+              <span>{emptyText(rows.length, query, filter, mode)}</span>
+            </div>
           )}
           {shown.map((row, index) => [
             // One hairline where the pins end — only when rows follow them.
@@ -515,7 +526,7 @@ export function App() {
             />,
           ])}
         </div>
-        <div className="preview-slot">
+        <div className="preview-slot" hidden={empty}>
           <div
             className="grip"
             role="separator"
