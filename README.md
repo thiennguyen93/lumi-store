@@ -61,6 +61,15 @@ after review.
    extensions' pictures are made with `scripts/preview_ui.py` (its
    `/__promo__/` page) and `scripts/screenshot.mjs` — see the top of each.
 
+   The longer words for that page go in a `STORE.md` beside your
+   manifest. Without one, the page shows your manifest's one-line
+   `description`. Lumi draws a small part of markdown: `#` headings,
+   paragraphs, `-` and `1.` lists, **bold**, *italic*, `code`, fenced
+   code, `---`, and links that start with `https://` (they open in the
+   browser). Anything else, HTML included, is shown as the characters it
+   is. UTF-8, at most 16 KB. The store publishes it named by its content,
+   so an edit is picked up without bumping the version.
+
 3. Review is human, of source: the manifest's capabilities against what
    the code actually calls, nothing phoning home, no misbehaviour shipped
    as a feature. Updates are PRs that bump the submodule commit and the

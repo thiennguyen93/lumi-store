@@ -153,6 +153,12 @@ CATEGORIES = ["Productivity", "Writing", "Windows", "Design", "Developer", "Util
 MAX_SCREENSHOTS = 4
 MAX_SCREENSHOT = 1024 * 1024
 SCREENSHOT_KINDS = {b"\x89PNG\r\n\x1a\n": "png", b"\xff\xd8\xff": "jpg"}
+# `STORE.md` beside the manifest: the longer words for the extension's
+# page in Lumi's Extension Store, in the small markdown Lumi draws
+# (headings, lists, emphasis, code, https links). Store-only, like the
+# screenshots — Lumi's installer never reads it. Lumi downloads it on a
+# page open, so it is held to a page's worth of text.
+MAX_DETAILS = 16 * 1024
 MAX_UI_FILE = 5 * 1024 * 1024
 MAX_UI_FILES = 200
 MAX_UI_TOTAL = 24 * 1024 * 1024
@@ -666,6 +672,29 @@ def screenshots_of(entry_id: str, crate: Path, ext: dict) -> list:
     return shots
 
 
+def details_of(entry_id: str, crate: Path):
+    """`STORE.md`'s bytes, from the reviewed crate, or None when it has
+    none. Text the page will draw, so it is held to being text: UTF-8,
+    no NUL, under the ceiling."""
+    path = crate / "STORE.md"
+    if not path.exists():
+        return None
+    if not path.is_file() or path.is_symlink():
+        fail(entry_id, "STORE.md is not a plain file")
+    data = path.read_bytes()
+    if len(data) > MAX_DETAILS:
+        fail(entry_id, f"STORE.md is {len(data)} bytes; the store takes {MAX_DETAILS}")
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        fail(entry_id, "STORE.md is not UTF-8")
+    if "\x00" in text:
+        fail(entry_id, "STORE.md has a NUL byte in it")
+    if not text.strip():
+        fail(entry_id, "STORE.md is empty; leave it out instead")
+    return data
+
+
 def check_ui(entry_id: str, manifest: dict, ui_dir: Path):
     """Windows and pages have to point at files that ship — the same
     cross-check Lumi's installer runs at the stage, made here first. Run
@@ -778,6 +807,16 @@ def main(check: bool = False, built: "Path | None" = None):
             (DIST / shot_name).write_bytes(shot.read_bytes())
             shot_urls.append(f"{BASE_URL}/{shot_name}")
 
+        # Named by its content rather than its version: the text is edited
+        # more often than the package is bumped, and the index is cached
+        # for a year, so a changed page needs a new name of its own.
+        details_url = ""
+        details = details_of(entry_id, crate)
+        if details is not None:
+            details_name = f"{entry_id}-{hashlib.sha256(details).hexdigest()[:12]}.md"
+            (DIST / details_name).write_bytes(details)
+            details_url = f"{BASE_URL}/{details_name}"
+
         icon_url = ""
         if icon is not None:
             icon_name = f"{entry_id}-{ext['version']}.svg"
@@ -819,6 +858,7 @@ def main(check: bool = False, built: "Path | None" = None):
                 "category": entry["category"],
                 "featured": entry.get("featured", False),
                 "screenshots": shot_urls,
+                "details": details_url,
                 "size": len(package),
                 "commands": [c.get("label") or c.get("name", "") for c in manifest.get("command", [])],
                 "shortcuts": [
