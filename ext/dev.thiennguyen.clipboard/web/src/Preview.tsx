@@ -14,15 +14,16 @@ const SETTLE_MS = 90;
 export function Preview({ row }: { row: Entry | undefined }) {
   // The full text, keyed by the row it belongs to, so a late answer for a
   // row the selection has already left is never drawn under another.
-  const [full, setFull] = useState<{ id: string; text: string; html?: string | null } | null>(null);
+  const [full, setFull] = useState<{ id: string; text: string; html?: string | null; ocr?: string | null } | null>(null);
 
   useEffect(() => {
-    if (!row || row.kind === "image") return;
+    // An image has no text to ask for, unless Lumi read some in it.
+    if (!row || (row.kind === "image" && !row.ocr)) return;
     let live = true;
     const timer = setTimeout(async () => {
       try {
-        const { text, html } = await call({ kind: "preview", id: row.id });
-        if (live && (text || html)) setFull({ id: row.id, text, html });
+        const { text, html, ocr } = await call({ kind: "preview", id: row.id });
+        if (live && (text || html || ocr)) setFull({ id: row.id, text, html, ocr });
       } catch {
         // The title stays in the pane; a preview is not worth an error.
       }
@@ -40,6 +41,7 @@ export function Preview({ row }: { row: Entry | undefined }) {
   const mine = full?.id === row.id ? full : null;
   const text = mine?.text || row.title;
   const html = row.kind === "rich" ? mine?.html : null;
+  const ocr = row.kind === "image" ? mine?.ocr : null;
 
   const from = row.appName || row.app;
   const times = row.count > 1 ? `${row.count}×` : "once";
@@ -59,6 +61,7 @@ export function Preview({ row }: { row: Entry | undefined }) {
             <img alt="Copied image" src={blobUrl(row.thumb)} />
           </div>
         )}
+        {ocr && <div className="body ocr">{ocr}</div>}
         {row.kind === "color" && HEX.test(row.title) && (
           <div className="chip" style={{ background: row.title }} />
         )}

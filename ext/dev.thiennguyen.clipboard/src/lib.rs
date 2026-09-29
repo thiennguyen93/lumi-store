@@ -151,6 +151,9 @@ struct Prefs {
     keep: &'static str,
     order: Order,
     paste_on_select: bool,
+    /// "Search text in images": Lumi reads text in copied images, and the
+    /// preview shows what it read.
+    ocr: bool,
     /// The panel's glass: "popover", "hud" or "sidebar".
     appearance: &'static str,
     /// "light", "dark" or "system".
@@ -202,6 +205,11 @@ fn prefs(host: &impl Host) -> Prefs {
         keep,
         order: Order::parse(s["sort"].as_str().unwrap_or("last")),
         paste_on_select: match &s["pasteOnSelect"] {
+            Value::Bool(b) => *b,
+            Value::String(t) => t != "false",
+            _ => true,
+        },
+        ocr: match &s["ocr"] {
             Value::Bool(b) => *b,
             Value::String(t) => t != "false",
             _ => true,
@@ -427,10 +435,13 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             // The index carries a one-line title and lowercased search text,
             // neither of which is what the preview pane should show; the
             // record is. Asked per selected row, not per keystroke.
+            // An image's text as Lumi read it, while reading is on.
             let record = read_record(host, &id()?)?;
+            let ocr = record.ocr.as_deref().filter(|text| prefs(host).ocr && !text.trim().is_empty());
             Ok(json!({
                 "text": history::preview_text(&record.items),
                 "html": history::preview_html(&record.items),
+                "ocr": ocr,
             }))
         }
         "paste" => {
@@ -906,6 +917,11 @@ mod tests {
         ui(&host, &json!({"kind": "copyText", "id": "id1"})).unwrap();
         let pasted = host.pasted.borrow();
         assert_eq!(pasted[0][0][0].text.as_deref(), Some("Invoice TOTAL 42"));
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["ocr"], "Invoice TOTAL 42");
+        *host.settings.borrow_mut() = json!({ "ocr": "false" });
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["ocr"], Value::Null, "reading turned off hides the text");
     }
 
     #[test]
