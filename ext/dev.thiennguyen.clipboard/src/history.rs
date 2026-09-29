@@ -68,6 +68,10 @@ pub struct Rep {
     pub blob: Option<String>,
     #[serde(default)]
     pub bytes: u64,
+    /// A copied file's size on disk, as Lumi measured it at the copy —
+    /// on a `public.file-url` rep only, from Lumi 1.26.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub file_size: Option<u64>,
 }
 
 /// Where a copy came from: the application in front when it happened.
@@ -473,6 +477,17 @@ pub fn file_url_of(items: &[Vec<Rep>]) -> Option<String> {
         .and_then(|rep| rep.text.clone())
 }
 
+/// How much the copied files weigh together, as Lumi measured them — `None`
+/// unless every file has a size (a folder, or a copy from before Lumi
+/// measured, has none), since a total missing a part would be wrong.
+pub fn files_size_of(items: &[Vec<Rep>]) -> Option<u64> {
+    let files: Vec<&Rep> = items.iter().flatten().filter(|rep| rep.uti == uti::FILE_URL).collect();
+    if files.is_empty() {
+        return None;
+    }
+    files.iter().map(|rep| rep.file_size).sum()
+}
+
 /// The image an image row carries, as the blob Lumi stored it in and the
 /// file extension its type is saved under — for Save image as….
 pub fn image_file_of(items: &[Vec<Rep>]) -> Option<(String, &'static str)> {
@@ -755,6 +770,7 @@ mod tests {
             text: Some(t.into()),
             blob: None,
             bytes: t.len() as u64,
+            file_size: None,
         }
     }
 
@@ -764,6 +780,7 @@ mod tests {
             text: None,
             blob: Some(id.into()),
             bytes: 10,
+            file_size: None,
         }
     }
 
@@ -886,10 +903,10 @@ mod tests {
         assert_eq!(kind_of(&[vec![text("see https://x.y")]]), Kind::Text);
         assert_eq!(kind_of(&[vec![blob(uti::PNG, "p")]]), Kind::Image);
         assert_eq!(
-            kind_of(&[vec![text("b"), Rep { uti: uti::HTML.into(), text: Some("<b>b</b>".into()), blob: None, bytes: 8 }]]),
+            kind_of(&[vec![text("b"), Rep { uti: uti::HTML.into(), text: Some("<b>b</b>".into()), blob: None, bytes: 8, file_size: None }]]),
             Kind::Rich
         );
-        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///Users/me/a%20b.txt".into()), blob: None, bytes: 0 };
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///Users/me/a%20b.txt".into()), blob: None, bytes: 0, file_size: None };
         assert_eq!(kind_of(&[vec![file.clone()]]), Kind::File);
         assert_eq!(title_of(&[vec![file]], Kind::File), "/Users/me/a b.txt");
     }
@@ -913,9 +930,9 @@ mod tests {
 
     #[test]
     fn plain_keeps_text_or_files_only() {
-        let html = Rep { uti: uti::HTML.into(), text: Some("<b>x</b>".into()), blob: None, bytes: 8 };
+        let html = Rep { uti: uti::HTML.into(), text: Some("<b>x</b>".into()), blob: None, bytes: 8, file_size: None };
         assert_eq!(plain(&[vec![text("x"), html.clone()]]), vec![vec![text("x")]]);
-        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///a".into()), blob: None, bytes: 0 };
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///a".into()), blob: None, bytes: 0, file_size: None };
         assert_eq!(plain(&[vec![file.clone(), blob(uti::PNG, "p")]]), vec![vec![file]]);
         assert!(plain(&[vec![html]]).is_empty());
     }
@@ -937,7 +954,7 @@ mod tests {
     fn a_link_and_a_file_are_found_for_their_actions() {
         assert_eq!(link_of(&[vec![text(" https://a.b/c ")]]), Some("https://a.b/c".to_string()));
         assert_eq!(link_of(&[vec![text("see https://a.b")]]), None);
-        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///.file/id=1.2".into()), blob: None, bytes: 0 };
+        let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///.file/id=1.2".into()), blob: None, bytes: 0, file_size: None };
         assert_eq!(file_url_of(&[vec![file]]), Some("file:///.file/id=1.2".to_string()));
         assert_eq!(file_url_of(&[vec![text("x")]]), None);
     }

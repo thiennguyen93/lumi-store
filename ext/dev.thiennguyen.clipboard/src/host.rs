@@ -207,6 +207,7 @@ mod tests {
             text: text.map(str::to_string),
             blob: blob.map(str::to_string),
             bytes: 0,
+            file_size: None,
         }
     }
 

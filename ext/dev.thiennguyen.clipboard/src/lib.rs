@@ -456,6 +456,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "text": history::preview_text(&record.items),
                 "html": history::preview_html(&record.items),
                 "ocr": ocr,
+                "fileSize": history::files_size_of(&record.items),
             }))
         }
         "paste" => {
@@ -559,7 +560,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 .ocr
                 .filter(|text| prefs(host).ocr && !text.trim().is_empty())
                 .ok_or_else(|| "Lumi read no text in that image.".to_string())?;
-            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None };
+            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None };
             host.paste(&[vec![rep]], false)?;
             Ok(json!({}))
         }
@@ -928,6 +929,26 @@ mod tests {
 
         ui(&host, &json!({"kind": "copy", "id": "id2"})).unwrap();
         assert_eq!(*host.keystrokes.borrow(), [false], "copy is no ⌘V");
+    }
+
+    #[test]
+    fn a_file_row_previews_its_size_when_lumi_measured_it() {
+        let host = Memory::default();
+        let files = |reps: Value| json!({ "v": 1, "at": 1, "hash": "h1", "items": reps }).to_string();
+        on_event(&host, "clipboard", &files(json!([
+            [{ "uti": "public.file-url", "text": "file:///a.pdf", "bytes": 13, "fileSize": 1234 }],
+            [{ "uti": "public.file-url", "text": "file:///b.pdf", "bytes": 13, "fileSize": 766 }],
+        ]))).unwrap();
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["fileSize"], 2000);
+
+        let host = Memory::default();
+        on_event(&host, "clipboard", &files(json!([
+            [{ "uti": "public.file-url", "text": "file:///a.pdf", "bytes": 13, "fileSize": 1234 }],
+            [{ "uti": "public.file-url", "text": "file:///folder/", "bytes": 15 }],
+        ]))).unwrap();
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["fileSize"], Value::Null, "a folder has no size, so no total");
     }
 
     #[test]

@@ -89,7 +89,8 @@ function answer(request: Request): unknown {
           ? `<meta charset="utf-8"><div style="color: rgb(0, 0, 0); font-family: Georgia;">${row.title.replace(/</g, "&lt;")} 🎉</div><p style="color: rgb(34, 34, 34)">Some <b>bold</b>, <i>italic</i>, <s>struck</s>, <u>under</u> and <span style="color: rgb(220, 38, 38)">red</span> <span style="font-family: Menlo">mono</span> <a href="https://x.test">link</a>.</p><ul><li>one ✅</li><li>two</li></ul><img src="https://x.test/a.png"><script>parent.document.body.remove()</script>`
           : null;
       const ocr = row?.ocr && settings.ocr !== "false" ? ["Lumi", "Clipboard History", "Search history", ...Array.from({ length: 60 }, (_, i) => `Line ${i + 1} of a long read`)].join("\n") : null;
-      return { text, html, ocr };
+      const fileSize = row?.kind === "file" ? (row.title.endsWith(".pdf") ? 1_234_567 : 48_213_904) : null;
+      return { text, html, ocr, fileSize };
     }
     case "paste":
       say(`would close the panel and paste ${request.plain ? "plain text of " : ""}${request.id}`);

@@ -16,7 +16,7 @@ const SETTLE_MS = 90;
  *  goes straight to the formatted text instead of flashing plain first. */
 const HOLD_MS = 400;
 
-type Full = { id: string; text: string; html?: string | null; ocr?: string | null };
+type Full = { id: string; text: string; html?: string | null; ocr?: string | null; fileSize?: number | null };
 
 /** Previews already asked for, by row — and by whether the row has read
  *  text yet, since OCR lands after the copy. The page is thrown away each
@@ -54,12 +54,12 @@ export function Preview({ row }: { row: Entry | undefined }) {
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
-        const { text, html, ocr } = await call({ kind: "preview", id: row.id });
+        const { text, html, ocr, fileSize } = await call({ kind: "preview", id: row.id });
         if (!(text || html || ocr)) {
           if (live) setGaveUp(row.id);
           return;
         }
-        const answer = { id: row.id, text, html, ocr };
+        const answer = { id: row.id, text, html, ocr, fileSize };
         seen.delete(key);
         seen.set(key, answer);
         if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
@@ -90,6 +90,7 @@ export function Preview({ row }: { row: Entry | undefined }) {
   const wide = !!ocr && expanded === row.id;
   const pixels = size?.id === row.id ? `${size.w} × ${size.h} px` : null;
 
+  const weight = row.kind === "file" && mine?.fileSize != null ? bytes(mine.fileSize) : null;
   const from = row.appName || row.app;
   const times = row.count > 1 ? `${row.count}×` : "once";
 
@@ -102,7 +103,7 @@ export function Preview({ row }: { row: Entry | undefined }) {
             {KIND_WORDS[row.kind]}
             {from ? ` · ${from}` : ""}
           </span>
-          {pixels && <span className="dims">{pixels}</span>}
+          {(pixels || weight) && <span className="dims">{pixels ?? weight}</span>}
         </header>
         {row.kind === "image" && row.thumb && !wide && (
           <div className="picture">
@@ -152,4 +153,19 @@ export function Preview({ row }: { row: Entry | undefined }) {
       </div>
     </aside>
   );
+}
+
+/** A size the way Finder writes one: decimal units, whole kilobytes, one
+ *  decimal from a megabyte up — "812 bytes", "234 KB", "1.2 MB". */
+function bytes(n: number): string {
+  if (n < 1000) return `${n} ${n === 1 ? "byte" : "bytes"}`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let value = n / 1000;
+  let unit = 0;
+  while (value >= 1000 && unit < units.length - 1) {
+    value /= 1000;
+    unit++;
+  }
+  const digits = unit === 0 ? 0 : 1;
+  return `${value.toLocaleString(undefined, { maximumFractionDigits: digits })} ${units[unit]}`;
 }

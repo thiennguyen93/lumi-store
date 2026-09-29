@@ -12,7 +12,8 @@ import type { Entry, ListAnswer, Request, Stats } from "./types";
 type Answers = {
   list: ListAnswer;
   /** `html`: a rich copy's markup, to draw in a sandbox. */
-  preview: { text: string; html?: string | null; ocr?: string | null };
+  /** `fileSize`: a file row's files together, in bytes, when Lumi measured them. */
+  preview: { text: string; html?: string | null; ocr?: string | null; fileSize?: number | null };
   paste: Record<string, never>;
   pin: { pin: string | null };
   delete: Record<string, never>;
