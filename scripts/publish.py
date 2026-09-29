@@ -133,11 +133,12 @@ UI_SEGMENT_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 MAX_WASM = 48 * 1024 * 1024
 COMPONENT_HEADER = b"\x00asm\x0d\x00\x01\x00"
 # Lumi's `manifest::MAX_PAGES`, `MAX_PAGE_LABEL` and `RESERVED_PAGE_LABELS`:
-# how many [[page]] tabs fit, how long a tab's label may be, and the three
-# labels that are Lumi's own tabs.
+# how many [[page]] tabs fit, how long a tab's label may be, and the four
+# labels that are Lumi's own tabs — Shortcuts is the tab Lumi draws for
+# [[shortcut]], reserved whether or not a manifest declares one.
 MAX_PAGES = 4
 MAX_PAGE_LABEL = 24
-RESERVED_PAGE_LABELS = {"about", "settings", "permissions"}
+RESERVED_PAGE_LABELS = {"about", "settings", "permissions", "shortcuts"}
 MAX_ICON = 64 * 1024
 MAX_UI_FILE = 5 * 1024 * 1024
 MAX_UI_FILES = 200
@@ -284,6 +285,7 @@ def check_manifest(entry_id: str, manifest: dict):
         if material not in ("", "popover", "hud", "sidebar"):
             fail(entry_id, f'the panel {name} asks for material {material!r}; a panel\'s material is "popover", "hud" or "sidebar"')
     check_page_tabs(entry_id, manifest)
+    check_shortcuts(entry_id, manifest)
     settings_tab = ext.get("settings-tab", ext.get("settings_tab", True))
     if not isinstance(settings_tab, bool):
         fail(entry_id, f"settings-tab = {settings_tab!r} is not true or false")
@@ -309,6 +311,39 @@ def check_manifest(entry_id: str, manifest: dict):
                 "name (lowercase words joined by '-') nor an .svg file under ui/",
             )
     return ext
+
+
+def check_shortcuts(entry_id: str, manifest: dict):
+    """The [[shortcut]] declarations, held to Lumi's `manifest::parse`: each
+    names a [[command]] of this manifest, once, with a key spelled the way
+    `suggested-key` is and distinct from every other's; and `shortcuts-tab
+    = false` only beside at least one of them, since a tab that would not be
+    drawn cannot be hidden."""
+    commands = {c.get("name", "") for c in manifest.get("command", [])}
+    named, keys = set(), set()
+    for shortcut in manifest.get("shortcut", []):
+        command = str(shortcut.get("command", "")).strip()
+        if not command:
+            fail(entry_id, "a [[shortcut]] names no command")
+        if command not in commands:
+            fail(entry_id, f"a [[shortcut]] names the command {command!r}, which this manifest does not declare")
+        if command in named:
+            fail(entry_id, f"two [[shortcut]]s name the command {command}")
+        named.add(command)
+        key = str(shortcut.get("key", "")).strip()
+        why = suggested_key_problem(key)
+        if why:
+            fail(entry_id, f"shortcut for {command}: {why}")
+        spelled = "+".join(sorted(p.strip().lower() for p in key.split("+")))
+        if spelled in keys:
+            fail(entry_id, f"two [[shortcut]]s ask for {key} — one combination runs one command")
+        keys.add(spelled)
+    ext = manifest.get("extension", {})
+    shortcuts_tab = ext.get("shortcuts-tab", ext.get("shortcuts_tab", True))
+    if not isinstance(shortcuts_tab, bool):
+        fail(entry_id, f"shortcuts-tab = {shortcuts_tab!r} is not true or false")
+    if not shortcuts_tab and not manifest.get("shortcut"):
+        fail(entry_id, "shortcuts-tab = false hides the tab [[shortcut]] draws in, and this manifest declares none")
 
 
 def check_page_tabs(entry_id: str, manifest: dict):

@@ -284,6 +284,30 @@ interface config {
     /// Shortcuts held on the Fn key: the switch, plus the rows it arms
     /// under `bindings`, picked out the same way.
     fn-key: func() -> result<string, string>;
+
+    /// Your own `[[shortcut]]`s, as Lumi holds them: a list, one per
+    /// declaration in manifest order, each `{"command", "label", "key",
+    /// "declared", "state", "reason", "holder"}`. `key` is the accelerator
+    /// armed now or null; `declared` the manifest's; `state` is
+    /// "registered", "taken" (something held `declared` at install —
+    /// `holder` says what, `reason` says it in a sentence), "invalid" (a
+    /// key Lumi cannot register) or "cleared". Costs nothing: they are
+    /// yours, and you learn nothing of anybody else's. Lumi tries each
+    /// key once, at install, and never chooses between your key and a
+    /// row of the person's — read this, and decide.
+    extension-shortcuts: func() -> result<string, string>;
+
+    /// Arm, change or clear one of your own `[[shortcut]]`s: the answer
+    /// to what `extension-shortcuts` reported, or a change the person
+    /// asked for in a window of yours. `key` is an accelerator in the
+    /// recorder's spelling (`Shift+Super+KeyC`), or none to clear. When
+    /// something holds the key the call is refused with a sentence
+    /// naming it, unless `replace` — which takes the key off the
+    /// person's row (in whichever profile) or Lumi's own; another
+    /// extension's key is never taken. Answers the entry as it now
+    /// stands, in `extension-shortcuts`' shape. Costs nothing, for the
+    /// same reason: only a command of yours can be named.
+    set-extension-shortcut: func(command: string, key: option<string>, replace: bool) -> result<string, string>;
 }
 
 /// The extension's own windows, as declared under `[[window]]`.
