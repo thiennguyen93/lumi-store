@@ -87,6 +87,29 @@ interface clipboard {
     /// windows — and is refused from `on-event` and `on-lifecycle`, where
     /// nobody asked for a keystroke. Added in 0.3.
     paste: func(items: list<list<rep>>) -> result<_, string>;
+
+    /// What a `drag` does once the items are dropped.
+    record drag-options {
+        /// Take this extension's panels down after a drop that took the
+        /// items. A drag given up — dropped back, or on nothing that wants
+        /// it — never closes anything.
+        close-on-drop: bool,
+    }
+
+    /// Start a drag of these items out of the extension's window that the
+    /// person is pressing in, into whatever application they drop it on —
+    /// Finder, a browser's upload field, a chat. An item with a file URL
+    /// carries the file; an image with no file becomes a PNG file where a
+    /// file is wanted (Finder, the desktop) and stays an image everywhere
+    /// else; anything else goes as its types, like `write-all`. The board
+    /// the person copies with is not touched. At most 32 MB in all.
+    ///
+    /// Costs `clipboard`. Answers only one of the extension's windows the
+    /// person is using, and only while the mouse button is still down in
+    /// it: refused otherwise, so an extension cannot start a drag nobody is
+    /// making. Call it from the page when a press on an item starts to move.
+    /// Added in Lumi 1.26.
+    drag: func(items: list<list<rep>>, options: drag-options) -> result<_, string>;
 }
 
 /// Lumi's own alert overlay, styled from Settings. Costs no capability,

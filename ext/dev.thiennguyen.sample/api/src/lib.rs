@@ -198,6 +198,24 @@ pub fn paste(items: &[Vec<Rep>]) -> Result<(), String> {
     lumi::ext::clipboard::paste(items)
 }
 
+/// Drag whole items out of the window the person is pressing in, into
+/// whatever app they drop them on — Finder, a browser's upload field, a
+/// chat. A file URL carries the file; an image with no file becomes a PNG
+/// file where a file is wanted (Finder, the desktop) and stays an image
+/// elsewhere; anything else goes as its types, like [`write_clipboard`]. The
+/// board the person copies with is not touched.
+///
+/// `close_on_drop` takes your panels down after a drop that took the items;
+/// a drag given up never closes anything.
+///
+/// Needs `clipboard`. Call it from a request your page sends when a press
+/// on an item starts to move: Lumi refuses it unless one of your windows is
+/// key and the mouse button is still down in it. Needs Lumi 1.26.0 or
+/// later — say so with `min-lumi-version`.
+pub fn drag(items: &[Vec<Rep>], close_on_drop: bool) -> Result<(), String> {
+    lumi::ext::clipboard::drag(items, lumi::ext::clipboard::DragOptions { close_on_drop })
+}
+
 /// One HTTP request, through the host — which is where the user's own
 /// local-network setting is enforced, whatever this request asks for.
 pub fn fetch(request: &Request) -> Result<Response, String> {
