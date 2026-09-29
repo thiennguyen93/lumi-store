@@ -15,3 +15,6 @@ ext/*/web/dist/
 
 # Local agent handoff notes: kept on disk, never committed.
 HANDOFF.md
+
+# Finder's folder settings.
+.DS_Store

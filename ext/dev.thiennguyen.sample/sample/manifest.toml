@@ -38,7 +38,7 @@ capabilities = ["accessibility", "applications", "clipboard", "network"]
 # Pictures for this extension's page in Lumi's Extension Store: its About
 # page and its Settings page. The store publishes them beside the package;
 # Lumi's installer ignores the key.
-screenshots = ["shots/1-about.jpg", "shots/2-settings.jpg"]
+screenshots = ["shots/1-about.png", "shots/2-settings.png"]
 
 [[command]]
 name = "translate"
