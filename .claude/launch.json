@@ -49,6 +49,17 @@
       ],
       "port": 5181,
       "autoPort": true
+    },
+    {
+      "name": "sample-ui",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "scripts/preview_ui.py",
+        "ext/dev.thiennguyen.sample/sample",
+        "--port",
+        "5190"
+      ],
+      "port": 5190
     }
   ]
 }
