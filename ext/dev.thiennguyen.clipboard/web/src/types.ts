@@ -58,6 +58,9 @@ export type Request =
   | { kind: "list"; opening?: boolean }
   | { kind: "preview"; id: string }
   | { kind: "paste"; id: string; plain: boolean }
+  /** A press that started to move: Lumi drags the item (or its `file`-th
+   *  file) out of the panel. Refused once the button is up. */
+  | { kind: "drag"; id: string; file?: number }
   | { kind: "pin"; id: string }
   | { kind: "delete"; id: string }
   | { kind: "delete"; ids: string[] }

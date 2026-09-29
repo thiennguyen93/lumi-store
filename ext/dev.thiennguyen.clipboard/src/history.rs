@@ -797,6 +797,19 @@ pub fn files_list_of(items: &[Vec<Rep>]) -> Vec<FileItem> {
         .collect()
 }
 
+/// The `at`-th file of a copy of several, as an item of its own — its
+/// `public.file-url` and the name Finder wrote beside it, nothing that
+/// belongs to the other files — in `files_list_of`'s order, for a drag of
+/// one line of the preview's list.
+pub fn file_item_at(items: &[Vec<Rep>], at: usize) -> Option<Vec<Rep>> {
+    let rep = items
+        .iter()
+        .flatten()
+        .filter(|rep| rep.uti == uti::FILE_URL && rep.text.is_some())
+        .nth(at)?;
+    Some(vec![rep.clone()])
+}
+
 /// How many files a copy holds, for `Entry::file_count`: the count when it
 /// is more than one, else 0.
 pub fn file_count_of(items: &[Vec<Rep>]) -> u32 {
@@ -1174,6 +1187,16 @@ mod tests {
         assert_eq!(list[1].dir.as_deref(), Some("/Users/me/Downloads"));
         assert_eq!(list[2], FileItem { name: "Projects".into(), dir: Some("/Users/me".into()), size: None, folder: true });
         assert_eq!(list[3].dir.as_deref(), Some("/"));
+    }
+
+    #[test]
+    fn one_file_of_several_is_its_own_item() {
+        let file = |url: &str| Rep { uti: uti::FILE_URL.into(), text: Some(url.into()), blob: None, bytes: 0, file_size: None, path: None, file_token: None };
+        let items = [vec![file("file:///a/x.mp4"), text("x.mp4\ry.log")], vec![file("file:///b/y.log")]];
+        assert_eq!(file_item_at(&items, 0), Some(vec![file("file:///a/x.mp4")]));
+        assert_eq!(file_item_at(&items, 1), Some(vec![file("file:///b/y.log")]));
+        assert_eq!(file_item_at(&items, 2), None);
+        assert_eq!(file_item_at(&[vec![text("x")]], 0), None);
     }
 
     #[test]

@@ -32,6 +32,10 @@ pub trait Host {
     /// is key while it is up, so a ⌘V sent before it goes would land in the
     /// panel's own search field.
     fn paste(&self, items: &[Vec<Rep>], keystroke: bool) -> Result<(), String>;
+    /// Drag `items` out of the panel the person is pressing in, into the
+    /// application they drop them on; Lumi refuses unless the button is still
+    /// down. `close_on_drop`: put the panel away after a drop that took them.
+    fn drag(&self, items: &[Vec<Rep>], close_on_drop: bool) -> Result<(), String>;
     fn close_panel(&self) -> Result<(), String>;
     fn open_panel(&self) -> Result<(), String>;
     /// The glass the panel opens on next.
@@ -150,6 +154,10 @@ impl Host for Lumi {
         }
     }
 
+    fn drag(&self, items: &[Vec<Rep>], close_on_drop: bool) -> Result<(), String> {
+        lumi::drag(&board(items), close_on_drop)
+    }
+
     fn close_panel(&self) -> Result<(), String> {
         lumi::close_window(crate::PANEL)
     }
@@ -246,6 +254,8 @@ pub mod memory {
         pub blobs: RefCell<BTreeSet<String>>,
         pub pasted: RefCell<Vec<Vec<Vec<Rep>>>>,
         pub keystrokes: RefCell<Vec<bool>>,
+        /// Every `drag`, as (items, close_on_drop).
+        pub dragged: RefCell<Vec<(Vec<Vec<Rep>>, bool)>>,
         pub closed: Cell<u32>,
         /// Every `post`, as (window, message).
         pub posts: RefCell<Vec<(String, String)>>,
@@ -297,6 +307,11 @@ pub mod memory {
         fn paste(&self, items: &[Vec<Rep>], keystroke: bool) -> Result<(), String> {
             self.pasted.borrow_mut().push(items.to_vec());
             self.keystrokes.borrow_mut().push(keystroke);
+            Ok(())
+        }
+
+        fn drag(&self, items: &[Vec<Rep>], close_on_drop: bool) -> Result<(), String> {
+            self.dragged.borrow_mut().push((items.to_vec(), close_on_drop));
             Ok(())
         }
 

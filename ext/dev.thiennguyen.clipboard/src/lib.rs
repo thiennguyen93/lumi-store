@@ -151,6 +151,9 @@ struct Prefs {
     keep: &'static str,
     order: Order,
     paste_on_select: bool,
+    /// "Close the panel after dragging an item out"; off, so several items
+    /// can be dragged out one after another.
+    close_after_drag: bool,
     /// "Search text in images": Lumi reads text in copied images, and the
     /// preview shows what it read.
     ocr: bool,
@@ -208,6 +211,11 @@ fn prefs(host: &impl Host) -> Prefs {
             Value::Bool(b) => *b,
             Value::String(t) => t != "false",
             _ => true,
+        },
+        close_after_drag: match &s["closeAfterDrag"] {
+            Value::Bool(b) => *b,
+            Value::String(t) => t == "true",
+            _ => false,
         },
         ocr: match &s["ocr"] {
             Value::Bool(b) => *b,
@@ -604,6 +612,20 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             tell_dashboard(host);
             Ok(json!({ "ids": ids }))
         }
+        // A press on a row (or on one file of a row's list) that started to
+        // move: Lumi drags the item out, from the panel, into wherever it is
+        // dropped. The pasteboard is not touched.
+        "drag" => {
+            let record = read_record(host, &id()?)?;
+            let items = match request["file"].as_u64() {
+                Some(at) => history::file_item_at(&record.items, at as usize)
+                    .map(|item| vec![item])
+                    .ok_or("That file is not in the item.")?,
+                None => record.items,
+            };
+            host.drag(&items, prefs(host).close_after_drag)?;
+            Ok(json!({}))
+        }
         // Put an item on the pasteboard and put the panel away — no ⌘V.
         "copy" => {
             let record = read_record(host, &id()?)?;
@@ -940,6 +962,45 @@ mod tests {
         on_event(&host, "clipboard", &event("h1", 1, "one")).unwrap();
         ui(&host, &json!({"kind": "paste", "id": "id1"})).unwrap();
         assert_eq!(*host.keystrokes.borrow(), [false]);
+    }
+
+    #[test]
+    fn drag_hands_the_whole_record_to_the_host_and_touches_nothing_else() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "one")).unwrap();
+        ui(&host, &json!({"kind": "drag", "id": "id1"})).unwrap();
+        let dragged = host.dragged.borrow();
+        assert_eq!(dragged.len(), 1);
+        assert_eq!(dragged[0].0[0][0].text.as_deref(), Some("one"));
+        assert!(host.pasted.borrow().is_empty(), "the pasteboard is not touched");
+        assert_eq!(host.closed.get(), 0, "the panel stays up while the drag is made");
+    }
+
+    #[test]
+    fn drag_of_one_file_hands_only_that_file() {
+        let host = Memory::default();
+        let files = json!({ "v": 1, "at": 1, "hash": "h1", "items": [
+            [{ "uti": "public.file-url", "text": "file:///a.mp4", "bytes": 13 }],
+            [{ "uti": "public.file-url", "text": "file:///b.log", "bytes": 13 }],
+        ]}).to_string();
+        on_event(&host, "clipboard", &files).unwrap();
+        ui(&host, &json!({"kind": "drag", "id": "id1", "file": 1})).unwrap();
+        let dragged = host.dragged.borrow();
+        assert_eq!(dragged[0].0.len(), 1);
+        assert_eq!(dragged[0].0[0][0].text.as_deref(), Some("file:///b.log"));
+        drop(dragged);
+        assert!(ui(&host, &json!({"kind": "drag", "id": "id1", "file": 2})).is_err());
+    }
+
+    #[test]
+    fn drag_closes_the_panel_only_when_the_setting_says_so() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "one")).unwrap();
+        ui(&host, &json!({"kind": "drag", "id": "id1"})).unwrap();
+        *host.settings.borrow_mut() = json!({ "closeAfterDrag": "true" });
+        ui(&host, &json!({"kind": "drag", "id": "id1"})).unwrap();
+        let closes: Vec<bool> = host.dragged.borrow().iter().map(|(_, close)| *close).collect();
+        assert_eq!(closes, [false, true], "off unless asked for");
     }
 
     #[test]

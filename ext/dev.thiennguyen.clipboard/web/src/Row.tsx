@@ -1,4 +1,5 @@
-import { blobUrl } from "./bridge";
+import { blobUrl, call } from "./bridge";
+import { useItemDrag } from "./itemDrag";
 import { FileGlyph, KindGlyph, PinGlyph } from "./icons";
 import { fileFamily } from "./fileType";
 import { AppMark } from "./AppMark";
@@ -70,6 +71,13 @@ export function Row({
   onPick: (index: number) => void;
   onPaste: (plain: boolean) => void;
 }) {
+  // Pulled out of the panel, the row goes where it is dropped. Picked as it
+  // goes, so the preview shows what is being dragged. A refusal — the button
+  // already up — is nothing to tell anyone.
+  const drag = useItemDrag(() => {
+    onPick(index);
+    call({ kind: "drag", id: row.id }).catch(() => {});
+  });
   return (
     <div
       id={`row-${index}`}
@@ -82,6 +90,7 @@ export function Row({
       onMouseDown={(event) => event.preventDefault()}
       onClick={() => onPick(index)}
       onDoubleClick={(event) => onPaste(event.altKey)}
+      {...drag}
     >
       {/* The row's key: ⌘ + this pastes it. A pin's is amber, as Lumi's
           leader menu draws a key; the rest are plain. A row without one

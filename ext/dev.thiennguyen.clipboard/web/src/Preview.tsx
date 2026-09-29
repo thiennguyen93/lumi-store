@@ -3,6 +3,7 @@ import { blobUrl, call, fileUrl, type FileItem } from "./bridge";
 import { AppMark } from "./AppMark";
 import { CollapseGlyph, ExpandGlyph, FileGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
+import { useItemDrag } from "./itemDrag";
 import { PdfViewer } from "./PdfViewer";
 import { TextFile } from "./TextFile";
 import { RichText } from "./richText";
@@ -174,7 +175,7 @@ export function Preview({ row }: { row: Entry | undefined }) {
           <div className="chip" style={{ background: row.title }} />
         )}
         {mine?.files?.length ? (
-          <FileList files={mine.files} count={mine.fileCount || mine.files.length} />
+          <FileList id={row.id} files={mine.files} count={mine.fileCount || mine.files.length} />
         ) : waiting ? (
           <div className="body rich" />
         ) : html ? (
@@ -325,7 +326,7 @@ function VideoPlayer({ src, onError }: { src: string; onError: () => void }) {
 
 /** A copy of several files, one to a line: its icon, its name, the folder
  *  it is in (home as ~) and its size — in place of a column of paths. */
-function FileList({ files, count }: { files: FileItem[]; count: number }) {
+function FileList({ id, files, count }: { id: string; files: FileItem[]; count: number }) {
   const folders = files.filter((file) => file.folder).length;
   const plain = files.length - folders;
   const parts = [
@@ -340,17 +341,33 @@ function FileList({ files, count }: { files: FileItem[]; count: number }) {
       </header>
       <ul>
         {files.map((file, i) => (
-          <li key={i} title={file.dir ? `${file.dir}/${file.name}` : file.name}>
-            <FileGlyph family={file.folder ? "folder" : fileFamily(extension(file.name))} />
-            <span className="file-list-text">
-              <FileName name={file.name} folder={!!file.folder} />
-              {file.dir && <span className="file-list-dir">{home(file.dir)}</span>}
-            </span>
-            {file.size != null && <span className="file-list-size">{bytes(file.size)}</span>}
-          </li>
+          <FileLine key={i} id={id} at={i} file={file} />
         ))}
       </ul>
     </section>
+  );
+}
+
+/** One line of the list; pulled out of the panel, that one file goes where
+ *  it is dropped. */
+function FileLine({ id, at, file }: { id: string; at: number; file: FileItem }) {
+  const drag = useItemDrag(() => {
+    call({ kind: "drag", id, file: at }).catch(() => {});
+  });
+  return (
+    <li
+      title={file.dir ? `${file.dir}/${file.name}` : file.name}
+      // The caret stays in the search field, as it does for a row.
+      onMouseDown={(event) => event.preventDefault()}
+      {...drag}
+    >
+      <FileGlyph family={file.folder ? "folder" : fileFamily(extension(file.name))} />
+      <span className="file-list-text">
+        <FileName name={file.name} folder={!!file.folder} />
+        {file.dir && <span className="file-list-dir">{home(file.dir)}</span>}
+      </span>
+      {file.size != null && <span className="file-list-size">{bytes(file.size)}</span>}
+    </li>
   );
 }
 

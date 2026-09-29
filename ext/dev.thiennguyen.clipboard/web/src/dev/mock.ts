@@ -138,6 +138,9 @@ function answer(request: Request): unknown {
       const files = row ? MOCK_FILES[row.id] : undefined;
       return { text, html, ocr, fileSize, fileToken, files: files ?? null, fileCount: files?.length ?? 0 };
     }
+    case "drag":
+      say(`would drag ${request.id}${request.file != null ? ` (file ${request.file})` : ""} out of the panel`);
+      return {};
     case "paste":
       say(`would close the panel and paste ${request.plain ? "plain text of " : ""}${request.id}`);
       return {};

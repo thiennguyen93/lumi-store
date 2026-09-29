@@ -801,6 +801,7 @@ body {
   overscroll-behavior: contain;
 }
 .card .file-list li {
+  cursor: grab;
   display: flex;
   align-items: center;
   gap: 8px;

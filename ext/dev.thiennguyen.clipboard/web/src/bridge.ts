@@ -24,6 +24,7 @@ type Answers = {
     fileCount?: number;
   };
   paste: Record<string, never>;
+  drag: Record<string, never>;
   pin: { pin: string | null };
   delete: Record<string, never>;
   restore: { restored: boolean; count: number };

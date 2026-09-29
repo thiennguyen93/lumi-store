@@ -26,6 +26,7 @@ interface Values {
   search: Search;
   pinKey: string;
   pasteOnSelect: boolean;
+  closeAfterDrag: boolean;
   ocr: boolean;
   sort: Order;
   appearance: Glass;
@@ -86,6 +87,7 @@ function read(raw: Record<string, unknown>): Values {
     search: (SEARCHES.some((m) => m.value === search) ? search : "mixed") as Search,
     pinKey: pin && !refusal(pin) ? comboText(pin) : DEFAULT_PIN_KEY,
     pasteOnSelect: text(raw.pasteOnSelect, "true") !== "false",
+    closeAfterDrag: text(raw.closeAfterDrag, "false") === "true",
     ocr: text(raw.ocr, "true") !== "false",
     sort: (["last", "first", "used"].includes(text(raw.sort, "")) ? raw.sort : "last") as Order,
     appearance: (["popover", "hud", "sidebar"].includes(text(raw.appearance, "")) ? raw.appearance : "popover") as Glass,
@@ -105,6 +107,7 @@ function written(v: Values): Record<string, string> {
     search: v.search,
     pinKey: v.pinKey,
     pasteOnSelect: String(v.pasteOnSelect),
+    closeAfterDrag: String(v.closeAfterDrag),
     ocr: String(v.ocr),
     sort: v.sort,
     appearance: v.appearance,
@@ -211,13 +214,23 @@ function Settings() {
       </section>
 
       <section>
-        <h3>Pasting</h3>
+        <h3>Pasting &amp; dragging</h3>
         <div className="group">
           <Row label="Paste the item you pick" hint="Off: picking only puts it on the clipboard">
             <Toggle
               on={values.pasteOnSelect}
               label="Paste the item you pick"
               onChange={(pasteOnSelect) => change({ pasteOnSelect }, true)}
+            />
+          </Row>
+          <Row
+            label="Close the panel after dragging an item out"
+            hint="Off: the panel stays up, to drag several items one after another"
+          >
+            <Toggle
+              on={values.closeAfterDrag}
+              label="Close the panel after dragging an item out"
+              onChange={(closeAfterDrag) => change({ closeAfterDrag }, true)}
             />
           </Row>
         </div>
