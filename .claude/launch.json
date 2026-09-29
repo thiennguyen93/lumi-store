@@ -60,6 +60,17 @@
         "5190"
       ],
       "port": 5190
+    },
+    {
+      "name": "keytest-ui",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "scripts/preview_ui.py",
+        "ext/dev.thiennguyen.keytest",
+        "--port",
+        "5191"
+      ],
+      "port": 5191
     }
   ]
 }
