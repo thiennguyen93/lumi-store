@@ -48,6 +48,8 @@ let rows: Entry[] = [
   entry({ id: "l", kind: "link", title: "https://developer.apple.com/design/human-interface-guidelines", appName: "Safari", last: now - 240 * min }),
   entry({ id: "m", kind: "file", title: "/Users/me/Desktop/invoice-2041.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min }),
   entry({ id: "m2", kind: "file", title: "/Users/me/Desktop/broken.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min - 1 }),
+  entry({ id: "m3", kind: "file", title: "/Users/me/Pictures/sunset.png", fileExt: "png", appName: "Finder", last: now - 26 * 60 * min - 2 }),
+  entry({ id: "m4", kind: "file", title: "/Users/me/Pictures/IMG_0042.heic", fileExt: "heic", appName: "Finder", last: now - 26 * 60 * min - 3 }),
   entry({ id: "n", kind: "file", title: "/Users/me/Movies/demo.mp4", fileExt: "mp4", appName: "Finder", last: now - 27 * 60 * min }),
   entry({ id: "o", kind: "file", title: "/Users/me/Music/song.mp3", fileExt: "mp3", appName: "Finder", last: now - 28 * 60 * min }),
   entry({ id: "p", kind: "file", title: "/Users/me/Sites/index.html", fileExt: "html", appName: "Finder", last: now - 29 * 60 * min }),
@@ -108,7 +110,7 @@ function answer(request: Request): unknown {
           : null;
       const ocr = row?.ocr && settings.ocr !== "false" ? ["Lumi", "Clipboard History", "Search history", ...Array.from({ length: 60 }, (_, i) => `Line ${i + 1} of a long read`)].join("\n") : null;
       const fileSize = row?.kind === "file" ? (row.title.endsWith(".pdf") ? 1_234_567 : 48_213_904) : null;
-      const fileToken = row?.kind === "file" && /\.(pdf|mp3|mp4)$/.test(row.title) ? row.title : null;
+      const fileToken = row?.kind === "file" && /\.(pdf|png|heic|mp3|mp4)$/.test(row.title) ? row.title : null;
       return { text, html, ocr, fileSize, fileToken };
     }
     case "paste":
@@ -311,6 +313,15 @@ setFileUrl((token) => {
     view.setUint32(40, samples.length, true);
     wav.set(samples, 44);
     return URL.createObjectURL(new Blob([wav], { type: "audio/wav" }));
+  }
+  // A picture file: a drawn sunset; the HEIC one draws nothing, for the tile.
+  if (token.endsWith(".png")) {
+    return (
+      "data:image/svg+xml;utf8," +
+      encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><defs><linearGradient id="s" x2="0" y2="1"><stop offset="0" stop-color="#f6a04d"/><stop offset="1" stop-color="#b8386e"/></linearGradient></defs><rect width="1600" height="900" fill="url(#s)"/><circle cx="800" cy="620" r="180" fill="#ffd27a"/><rect y="640" width="1600" height="260" fill="#2a2350"/></svg>',
+      )
+    );
   }
   if (token.endsWith(".pdf")) {
     // Not a PDF at all: pdf.js refuses it and the tile stands in.

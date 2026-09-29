@@ -107,7 +107,7 @@ export function Preview({ row }: { row: Entry | undefined }) {
             {from ? " · " : ""}
             <AppMark key={row.app ?? ""} app={row.app} name={row.appName} withName />
           </span>
-          {(pixels || weight) && <span className="dims">{pixels ?? weight}</span>}
+          {(pixels || weight) && <span className="dims">{[pixels, weight].filter(Boolean).join(" · ")}</span>}
         </header>
         {row.kind === "image" && row.thumb && !wide && (
           <div className="picture">
@@ -148,6 +148,7 @@ export function Preview({ row }: { row: Entry | undefined }) {
             ext={row.fileExt ?? ""}
             token={mine?.fileToken ?? null}
             name={row.title}
+            onSize={(w, h) => setSize({ id: row.id, w, h })}
           />
         )}
         {row.kind === "color" && HEX.test(row.title) && (
@@ -168,16 +169,46 @@ export function Preview({ row }: { row: Entry | undefined }) {
   );
 }
 
-/** A copied PDF, sound or film: its player or viewer once Lumi has given a
- *  grant for it, and until then — or when Lumi cannot serve it, an older Lumi
+/** A copied PDF, picture, sound or film: its player or viewer once Lumi has
+ *  given a grant for it (pictures from Lumi 1.26 too), and until then — or when Lumi cannot serve it, an older Lumi
  *  or a file moved since — a tile that says what it is. Never plays by
  *  itself: `controls` and no `autoPlay`, and audio loads nothing until asked.
  *  Keyed by row, so choosing another row takes the player away and stops it. */
-function FileMedia({ family, ext, token, name }: { family: FileFamily; ext: string; token: string | null; name: string }) {
+function FileMedia({
+  family,
+  ext,
+  token,
+  name,
+  onSize,
+}: {
+  family: FileFamily;
+  ext: string;
+  token: string | null;
+  name: string;
+  onSize: (w: number, h: number) => void;
+}) {
   const [failed, setFailed] = useState(false);
   // Once per grant: a new address for the same file would reload the player.
   const address = useMemo(() => (token ? fileUrl(token) : null), [token]);
   const src = failed ? null : address;
+  if (src && family === "image") {
+    // The file itself, drawn by the webview: a type it cannot draw (HEIC
+    // before macOS 14), or one too big for Lumi to send whole, is the tile.
+    return (
+      <div className="picture">
+        <img
+          alt={name}
+          src={src}
+          decoding="async"
+          onLoad={(event) => {
+            const { naturalWidth: w, naturalHeight: h } = event.currentTarget;
+            if (w && h) onSize(w, h);
+          }}
+          onError={() => setFailed(true)}
+        />
+      </div>
+    );
+  }
   if (src && family === "video") {
     return <VideoPlayer src={src} onError={() => setFailed(true)} />;
   }
@@ -275,7 +306,7 @@ function clock(seconds: number): string {
 }
 
 /** The families that get a tile of their own above the paths. */
-const MEDIA_FAMILIES = new Set<FileFamily>(["pdf", "audio", "video"]);
+const MEDIA_FAMILIES = new Set<FileFamily>(["pdf", "image", "audio", "video"]);
 
 /** A size the way Finder writes one: decimal units, whole kilobytes, one
  *  decimal from a megabyte up — "812 bytes", "234 KB", "1.2 MB". */
