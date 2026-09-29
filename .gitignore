@@ -12,3 +12,6 @@ __pycache__/
 # publish.py from the lockfile, never committed.
 node_modules/
 ext/*/web/dist/
+
+# Local agent handoff notes: kept on disk, never committed.
+HANDOFF.md
