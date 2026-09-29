@@ -36,7 +36,7 @@ function entry(partial: Partial<Entry> & Pick<Entry, "id" | "kind" | "title">): 
 let rows: Entry[] = [
   entry({ id: "a", kind: "text", title: "hello@example.com", pin: "b", appName: "Mail", count: 3, last: now - 2 * 86_400_000 }),
   entry({ id: "b", kind: "text", title: "ssh deploy@staging.example.com", pin: "d", appName: "Terminal", count: 12, last: now - 7 * 86_400_000 }),
-  entry({ id: "c", kind: "link", title: "https://github.com/example/project", appName: "Safari", last: now - 10_000 }),
+  entry({ id: "c", kind: "link", title: "https://lumikeys.app", appName: "Safari", last: now - 10_000 }),
   entry({ id: "d", kind: "text", title: "Meeting moved to Thursday, 3 pm", appName: "Notes", last: now - min }),
   entry({ id: "e", kind: "image", title: "Image", thumb: "shot", appName: "Screenshot", last: now - 4 * min, search: "lumi · clipboard · search history", ocr: true }),
   entry({ id: "f", kind: "color", title: "#378ADD", appName: "Figma", count: 2, last: now - 9 * min }),
