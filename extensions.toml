@@ -40,3 +40,16 @@ subdir = "."
 web = "web"
 category = "Productivity"
 featured = true
+
+
+# Waiting, not listed: closed source (thiennguyen93/lumi-screenshot is
+# private) and a skeleton until the Lumi release with the `screen`
+# interface. Uncomment once that ships and the submodule is fetched with a
+# read-only deploy key — publish.yml and check.yml do not do that yet, and a
+# listed entry CI cannot check out fails the whole store's publish.
+# [[extension]]
+# id = "dev.thiennguyen.screenshot"
+# path = "ext/dev.thiennguyen.screenshot"
+# subdir = "."
+# web = "web"
+# category = "Utilities"

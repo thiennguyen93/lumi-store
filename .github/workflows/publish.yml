@@ -35,6 +35,9 @@
 #          source itself — a build could have rewritten those on its own
 #          runner — signs, indexes, and pushes gh-pages.
 #          `publish.py --sign-built` is that step, and says why at length.
+#   discussions
+#          beside the others: one GitHub Discussion per extension, for
+#          hearts and feedback. `discussions: write` and nothing else.
 #
 # What this does not close: an extension's own build can still put whatever
 # it likes in its *own* wasm. That is the author's code by definition, and
@@ -114,8 +117,33 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  # One GitHub Discussion per extension, the thread Lumi reads hearts from
+  # (`scripts/discussions.py` says how). Its own job because it is the
+  # only one that needs `discussions: write`: no key here, no build, and
+  # the manifests are read as files. `continue-on-error` because a like
+  # button is not worth holding a release for — when this fails, the
+  # index carries `discussion: null` and Lumi hides the hearts until the
+  # next run.
+  discussions:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      discussions: write
+    outputs:
+      discussions: ${{ steps.sync.outputs.discussions }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - id: sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/discussions.py >> "$GITHUB_OUTPUT"
+
   sign:
-    needs: [plan, build]
+    needs: [plan, build, discussions]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -181,6 +209,8 @@ jobs:
           # redirect, and the one compiled into Lumi's store client.
           BASE_URL: https://thiennguyen.dev/lumi-store/extensions
           STORE_SIGNING_KEY: ${{ secrets.STORE_SIGNING_KEY }}
+          # `{id: {number, url}}`, or empty when that job failed.
+          DISCUSSIONS: ${{ needs.discussions.outputs.discussions }}
         run: |
           if [ -n "$STORE_SIGNING_KEY" ]; then
             printf '%s\n' "$STORE_SIGNING_KEY" > "$RUNNER_TEMP/store.key"
