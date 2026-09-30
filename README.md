@@ -266,3 +266,13 @@ rebuilding an unchanged extension publishes identical bytes.
    `https://thiennguyen.dev/lumi-store/extensions/index.json`, which is
    the URL compiled into Lumi's store client and the `BASE_URL` the
    index's own links carry. Moving hosts later is one flip of each.
+3. **Discussions** — done: enabled, with an **Extensions** category in
+   the Announcement format (only maintainers open threads; anyone can
+   reply and react). Every publish runs `scripts/discussions.py`, which
+   opens one thread per listed extension, keeps its title and body in
+   step with the manifest, and hands `{number, url}` to the index as the
+   entry's `discussion`. Lumi reads the ❤️ count on that thread live —
+   one unauthenticated `GET /repos/thiennguyen93/lumi-store/discussions`
+   covers every extension — so nothing about hearts is ever published
+   here. Renaming or deleting the category breaks the job, not the
+   release: the index then carries `discussion: null`.
