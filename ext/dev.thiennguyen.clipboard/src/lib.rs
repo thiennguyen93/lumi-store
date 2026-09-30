@@ -27,7 +27,7 @@ use serde_json::{json, Value};
 /// The panel's `[[window]]` name.
 pub const PANEL: &str = "history";
 
-/// The Welcome window's `[[window]]` name: a three-step tour opened by
+/// The Welcome window's `[[window]]` name: a five-step tour opened by
 /// `on_lifecycle` when the extension is installed or updated. Its own
 /// choice, not Lumi's — Lumi opens nothing on an install — and what it is
 /// for is the one thing an install can leave undone: the `[[shortcut]]`.

@@ -1,4 +1,4 @@
-/* The Welcome window: a small live panel on top acting out each of three
+/* The Welcome window: a small live panel on top acting out each of five
    steps, the words below. Lumi's lumi.css comes first and has no
    specificity, so these rules win without trying; its tokens are used with a
    fallback each, so `pnpm dev` reads too. */
@@ -183,8 +183,263 @@ p { margin: 0; }
 }
 .press.none { font-size: 11px; color: var(--wc-dim); animation: none; }
 .step-1 .press.none + .panel { animation: none; opacity: 0.45; }
-.panel { transition: opacity 0.3s ease; }
+.panel { transition: opacity 0.3s ease, width 0.45s ease; }
 
+/* Step four: the panel widens to what it really is, a list with the
+   selected item open beside it, and the selection walks through a video,
+   a song, a PDF and some JSON. */
+.step-3 .panel { width: 470px; }
+.split { display: flex; gap: 8px; height: 100%; }
+.split .list { flex: none; width: 176px; }
+.split .list .item:first-child { margin-top: 0; }
+.split .item { transition: background-color 0.25s ease; }
+.split .item svg[data-family="video"] { color: #7c5cf0; }
+.split .item svg[data-family="audio"] { color: #d6409f; }
+.split .item svg[data-family="pdf"] { color: #e5484d; }
+.split .item svg[data-family="code"] { color: #8e4ec6; }
+.pane {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border: 1px solid var(--wc-line);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: var(--wc-sunk);
+  animation: arrive 0.35s ease-out both;
+}
+.clock { margin-top: 5px; font-size: 10px; color: var(--wc-faint); font-variant-numeric: tabular-nums; }
+
+/* A video: a frame with a hill and a sun, playing along its scrub bar. */
+.film { display: flex; flex-direction: column; }
+.frame {
+  position: relative;
+  height: 84px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: linear-gradient(#7c6ff0, #d4537e);
+}
+.sun {
+  position: absolute;
+  top: 16px;
+  left: 30%;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffd27a;
+  animation: rise 2.6s ease-in-out both;
+}
+.hill {
+  position: absolute;
+  inset: auto -20% -40px -20%;
+  height: 80px;
+  border-radius: 50%;
+  background: #2b2560;
+}
+.frame .play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-out 0.6s ease 0.4s both;
+}
+.frame .play svg { width: 22px; height: 22px; color: #fff; fill: #fff; }
+.scrub { height: 3px; margin-top: 6px; border-radius: 2px; background: var(--wc-line); overflow: hidden; }
+.scrub span { display: block; height: 100%; width: 16%; background: var(--wc-mark); animation: play 2.6s linear both; }
+
+/* A song: its waveform, the played part in colour, swept by the playhead. */
+.song { display: flex; flex-direction: column; align-items: center; }
+.song > svg { width: 26px; height: 26px; margin: 4px 0 8px; color: #d6409f; stroke-width: 1.5; }
+.wave { display: flex; align-items: center; gap: 2px; width: 100%; height: 40px; }
+.wave i {
+  flex: 1;
+  border-radius: 1px;
+  background: var(--wc-line);
+  /* Each bar lights as the playhead reaches it; the delay is per bar. */
+  animation: heard 0.2s ease both;
+}
+
+/* A PDF: a page, headed, lined, with a small table. */
+.pages { display: flex; flex-direction: column; align-items: center; }
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 92px;
+  height: 104px;
+  padding: 10px 9px;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  animation: turn 2.6s ease-in-out both;
+}
+.page b { width: 55%; height: 6px; border-radius: 1px; background: #e5484d; }
+.page i { height: 3px; border-radius: 1px; background: #d9d6e3; }
+.page i.short { width: 60%; }
+.page .table { display: grid; grid-template-columns: 2fr 1fr; gap: 3px; margin: 3px 0; }
+.page .table i { background: #ebe9f1; height: 5px; }
+
+/* JSON: keys and values in the panel's own colours, a branch folding open. */
+.json {
+  margin: 0;
+  font: 10px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+  overflow: hidden;
+}
+.json .line { display: block; }
+.json .k { color: CanvasText; }
+.json .s { color: #2f7d32; }
+.json .n { color: #1f63b0; }
+.json .w { color: #9b3f9a; }
+.json .caret { color: var(--wc-faint); font-family: -apple-system, system-ui, sans-serif; }
+.json .inner { animation: unfold 2.6s ease both; }
+@media (prefers-color-scheme: dark) {
+  .json .s { color: #8fcf92; }
+  .json .n { color: #7db8f5; }
+  .json .w { color: #dba2e6; }
+}
+
+@keyframes rise { from { transform: translateY(10px); } to { transform: translateY(-4px); } }
+@keyframes heard { to { background: var(--wc-mark); } }
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes play { from { width: 16%; } to { width: 70%; } }
+@keyframes turn { 0%, 70% { transform: none; } 85%, 100% { transform: translateY(-3px); } }
+@keyframes unfold {
+  0%, 25% { opacity: 0; max-height: 0; }
+  45%, 100% { opacity: 1; max-height: 15px; }
+}
+
+/* Step five: the found row is picked up, carried out of the panel and
+   dropped into a mail beside it. The mail sits beside the panel the way
+   the key does on step two: always there, grown in on this step only. */
+.drop {
+  align-self: flex-start;
+  flex: none;
+  box-sizing: border-box;
+  width: 150px;
+  max-width: 0;
+  margin-left: 0;
+  overflow: hidden;
+  opacity: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: var(--wc-raised);
+  font-size: 10px;
+  transition:
+    max-width 0.45s ease,
+    margin-left 0.45s ease,
+    opacity 0.25s ease,
+    border-color 0.25s ease;
+}
+.drop.shown {
+  max-width: 150px;
+  margin-left: 28px;
+  opacity: 1;
+  border-color: var(--wc-line);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  transition-delay: 0s, 0s, 0.2s, 0.2s;
+}
+.drop .bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 22px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--wc-line);
+  color: var(--wc-dim);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lights { display: flex; gap: 3px; }
+.lights i { width: 6px; height: 6px; border-radius: 50%; background: var(--wc-line); }
+.drop .lines { display: flex; flex-direction: column; gap: 5px; padding: 8px 8px 0; }
+.drop .lines i { height: 4px; border-radius: 2px; background: var(--wc-sunk); }
+.drop .lines i:nth-child(1) { width: 60%; }
+.drop .lines i:nth-child(3) { width: 80%; }
+.well {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  margin: 8px;
+  border: 1px dashed var(--wc-line);
+  border-radius: 6px;
+}
+.landed {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 120px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: var(--wc-mark-wash);
+  color: var(--wc-mark-ink);
+  opacity: 0;
+  white-space: nowrap;
+}
+.landed svg { width: 11px; height: 11px; }
+.landed .text { overflow: hidden; text-overflow: ellipsis; }
+
+/* The row as it is carried: a chip under the pointer, lifted off the row
+   and flown to the mail's well. */
+.item { position: relative; }
+.ghost {
+  position: absolute;
+  top: 1px;
+  left: 120px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 140px;
+  box-sizing: border-box;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--wc-raised);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 1;
+}
+.ghost svg { color: var(--wc-mark-ink); }
+.ghost .text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ghost .pointer {
+  position: absolute;
+  right: -6px;
+  bottom: -12px;
+  width: 12px;
+  height: 15px;
+  fill: #000;
+  stroke: #fff;
+  stroke-width: 1.2;
+}
+.step-4 .ghost { animation: carry 3.8s ease-in-out 0.6s infinite; }
+.step-4 .item.first { animation: lift 3.8s ease-in-out 0.6s infinite; }
+.drop.shown .well { animation: take 3.8s ease-in-out 0.6s infinite; }
+.drop.shown .landed { animation: land 3.8s ease-out 0.6s infinite; }
+
+@keyframes carry {
+  0%, 8% { opacity: 0; transform: none; }
+  14% { opacity: 1; transform: none; }
+  20% { opacity: 1; transform: translate(4px, -3px) scale(1.04); }
+  52% { opacity: 1; transform: translate(258px, 32px) scale(0.92); }
+  58%, 100% { opacity: 0; transform: translate(258px, 32px) scale(0.8); }
+}
+@keyframes lift {
+  0%, 14%, 62%, 100% { opacity: 1; }
+  20%, 56% { opacity: 0.55; }
+}
+@keyframes take {
+  0%, 36%, 64%, 100% { border-color: var(--wc-line); background: transparent; }
+  44%, 56% { border-color: var(--wc-mark); background: var(--wc-mark-wash); }
+}
+@keyframes land {
+  0%, 54% { opacity: 0; transform: scale(0.85); }
+  60%, 90% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
 @keyframes arrive { from { opacity: 0; transform: translateY(-6px); } }
 /* One loop: shown, slides away, the key is pressed, slides back. It starts
    and ends shown, so neither entering the step nor looping jumps. */
@@ -201,6 +456,91 @@ p { margin: 0; }
 @keyframes blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .preview *, .preview { animation: none !important; }
+  /* No flight: the file is simply in the mail. */
+  .drop.shown .landed { opacity: 1; }
+}
+
+/* ---- The finish ------------------------------------------------------- */
+
+/* The whole window, on the preview's stage, so the end looks like the end
+   and not a sixth step. */
+.finish {
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 40px;
+  text-align: center;
+  background:
+    radial-gradient(circle, var(--wc-dot) 1px, transparent 1.4px) 0 0 / 14px 14px,
+    radial-gradient(60% 60% at 20% 15%, var(--wc-glow-a), transparent 70%),
+    radial-gradient(55% 55% at 85% 25%, var(--wc-glow-b), transparent 70%),
+    radial-gradient(70% 60% at 50% 110%, var(--wc-glow-c), transparent 70%),
+    var(--wc-stage);
+}
+.finish h1 { font-size: 22px; margin-top: 6px; }
+.finish p { max-width: 360px; line-height: 1.6; }
+.finish .caps.small { vertical-align: -4px; }
+.finish .row { justify-content: center; margin-top: 8px; }
+.finish .again { font-size: 12px; margin-top: 2px; }
+
+.mark { position: relative; width: 76px; height: 76px; }
+.badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #8b7ff5, #534ab7);
+  box-shadow: 0 10px 30px rgba(83, 74, 183, 0.35);
+  color: #fff;
+  animation: pop-in 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.badge svg { width: 38px; height: 38px; stroke-width: 1.8; }
+.tick {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 3px solid var(--wc-stage);
+  border-radius: 50%;
+  background: var(--wc-ok);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  animation: pop-in 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) 0.3s both;
+}
+/* Confetti: once, out from behind the mark, falling as it fades. */
+.mark i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 11px;
+  margin: -5px 0 0 -3px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: burst 1.3s cubic-bezier(0.15, 0.7, 0.3, 1) 0.15s both;
+}
+.mark i:nth-child(3n) { width: 8px; height: 8px; border-radius: 50%; }
+
+@keyframes pop-in { from { opacity: 0; transform: scale(0.4); } }
+@keyframes burst {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--x), calc(var(--y) + 40px)) rotate(var(--turn)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .finish *, .finish { animation: none !important; }
 }
 
 /* ---- The words --------------------------------------------------------- */

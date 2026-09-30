@@ -10,7 +10,7 @@
 // uses dangerouslySetInnerHTML. A rich copy's HTML is parsed inert and
 // rebuilt from a short list of tags and styles (richText.tsx).
 
-import { type KeyboardEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, type MouseEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { call, message } from "./bridge";
 import {
   ClipboardGlyph,
@@ -388,7 +388,31 @@ export function App() {
     );
   };
 
+  /** The field a letter belongs in: the menu's own filter while it is up,
+   *  the search otherwise. */
+  const field = () => document.querySelector<HTMLInputElement>(".menu-filter") ?? input.current;
+
+  /** A click that leaves the focus on no field — the list's gaps, the
+   *  preview's padding, the crumbs — hands it back to the search, so the
+   *  next key is typed rather than sent to a page with nothing to type in.
+   *  A drag that selected preview text keeps its selection until a key. */
+  const onClick = (event: MouseEvent) => {
+    const target = event.target as Element;
+    if (target.closest("input, textarea, select, video, audio, .menu")) return;
+    if (window.getSelection()?.isCollapsed === false) return;
+    field()?.focus();
+  };
+
   const onKeyDown = (event: KeyboardEvent) => {
+    // A key typed with the focus on no field — after a click on the
+    // preview's text, say — is the search's. Moved there before the key is
+    // taken, so the character lands in the field; a key with nowhere to be
+    // typed used to leave the panel blank.
+    const typing = !event.metaKey && !event.ctrlKey && (event.key.length === 1 || event.keyCode === 229);
+    if (typing && !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)) {
+      field()?.focus();
+    }
+
     // While an input method is composing — Telex turning `aa` into `â` —
     // Return and the arrows belong to it: taking Return here would paste a
     // row in the middle of somebody spelling a search word.
@@ -445,7 +469,7 @@ export function App() {
     // Focusable itself, so a click on what is not — the preview's text,
     // which stays selectable — leaves the focus in here rather than on the
     // body, where no key reaches `onKeyDown`.
-    <main className="panel" tabIndex={-1} onKeyDown={onKeyDown}>
+    <main className="panel" tabIndex={-1} onKeyDown={onKeyDown} onClick={onClick}>
       {/* The breadcrumb is the panel's title bar: drag it to move the panel. */}
       <header className="crumbs" {...windowDrag}>
         <LumiMark />

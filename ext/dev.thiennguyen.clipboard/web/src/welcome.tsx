@@ -1,6 +1,8 @@
-// Clipboard Manager's Welcome window — the three-step tour `on_lifecycle`
+// Clipboard Manager's Welcome window — the five-step tour `on_lifecycle`
 // opens on an install and on an update. The top half is a small, live
-// picture of the panel acting out each step; the bottom half says it.
+// picture of the panel acting out each step; the bottom half says it. After
+// the last step comes the finish: not a sixth step but the whole window,
+// so nobody pressing Continue expects another one after it.
 //
 // Its own choice: Lumi opens nothing on an install, and the one thing an
 // install can leave undone is the shortcut. Lumi tries ⌘⇧C once and, when
@@ -12,9 +14,10 @@
 import { StrictMode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { call, Held, message, setShortcut, shortcuts } from "./bridge";
-import { KindGlyph, SearchGlyph } from "./icons";
+import { ClipboardGlyph, FileGlyph, KindGlyph, PlayGlyph, SearchGlyph } from "./icons";
 import { acceleratorGlyphs, acceleratorOf, acceleratorRefusal } from "./keys";
 import { fuzzyScore } from "./search";
+import type { FileFamily } from "./fileType";
 import type { ExtensionShortcut, Kind, ShortcutHolder } from "./types";
 import "./welcome.css";
 
@@ -34,7 +37,7 @@ const TIPS: [string, string][] = [
   ["⌘⌥⌫", "Delete"],
 ];
 
-const STEPS = 3;
+const STEPS = 5;
 
 function Welcome() {
   const [step, setStep] = useState(0);
@@ -42,6 +45,7 @@ function Welcome() {
   const [failed, setFailed] = useState("");
   // The key the preview wears on the shortcut step: whatever is armed.
   const [armed, setArmed] = useState<string | null>(null);
+  const [finished, setFinished] = useState(false);
 
   useEffect(() => {
     call({ kind: "welcome" })
@@ -56,6 +60,22 @@ function Welcome() {
 
   const last = step === STEPS - 1;
 
+  if (finished) {
+    return (
+      <Finish
+        armed={armed}
+        failed={failed}
+        onAgain={() => {
+          setFailed("");
+          setStep(0);
+          setFinished(false);
+        }}
+        onOpen={() => act(() => call({ kind: "openPanel" }))}
+        onDone={() => act(() => call({ kind: "close" }))}
+      />
+    );
+  }
+
   return (
     <main className="tour">
       <Preview step={step} armed={armed} />
@@ -65,8 +85,8 @@ function Welcome() {
             <>
               <h1>Clipboard Manager was updated</h1>
               <p className="dim">
-                From {from}. Your history and pins are where they were. New: one shortcut that
-                opens the panel in every profile.
+                From {from}. Your history and pins are where they were. New: drag any item out
+                of the panel into another app — a file lands as the file itself.
               </p>
             </>
           ) : (
@@ -95,6 +115,26 @@ function Welcome() {
             </div>
           </>
         )}
+        {step === 3 && (
+          <>
+            <h1>Look before you paste</h1>
+            <p className="dim">
+              The item you are on opens beside the list. Videos and songs play, a PDF pages
+              through, JSON folds open, code is highlighted — no app to open, and nothing leaves
+              this Mac. <Caps glyphs="↑" small /> <Caps glyphs="↓" small /> to move along.
+            </p>
+          </>
+        )}
+        {step === 4 && (
+          <>
+            <h1>Drag it where it goes</h1>
+            <p className="dim">
+              Drag any item out of the panel into another app. A file lands as the file itself —
+              attached to a mail, dropped in a folder — a screenshot as an image, text as text.
+              Settings can close the panel after each drop.
+            </p>
+          </>
+        )}
         {failed && <p className="failed" role="alert">{failed}</p>}
         <div className="actions">
           <span className="dots" aria-hidden="true">
@@ -111,22 +151,96 @@ function Welcome() {
               Back
             </button>
           )}
-          {last ? (
-            <>
-              <button type="button" onClick={() => act(() => call({ kind: "openPanel" }))}>
-                Try it
-              </button>
-              <button type="button" className="primary" onClick={() => act(() => call({ kind: "close" }))}>
-                Done
-              </button>
-            </>
-          ) : (
-            <button type="button" className="primary" onClick={() => setStep(step + 1)}>
-              Continue
-            </button>
-          )}
+          <button
+            type="button"
+            className="primary"
+            onClick={() => {
+              setFailed("");
+              if (last) setFinished(true);
+              else setStep(step + 1);
+            }}
+          >
+            Continue
+          </button>
         </div>
       </div>
+    </main>
+  );
+}
+
+/** Where each piece of confetti flies to from the middle of the mark, in
+ *  px, and how far it turns. Fixed, so every finish bursts the same. */
+const CONFETTI: [number, number, number][] = [
+  [-150, -70, 200], [-120, -110, -140], [-80, -130, 260], [-40, -120, -90],
+  [10, -140, 180], [55, -125, -220], [95, -115, 120], [135, -90, -160],
+  [165, -50, 240], [-170, -20, -120], [-135, 25, 200], [150, 10, -200],
+  [120, 50, 150], [-95, 60, -260], [80, 70, 90], [-30, 80, 210],
+];
+const CONFETTI_COLOURS = ["#7c6ff0", "#378add", "#d4537e", "#e0a300", "#2f8a3e"];
+
+/**
+ * The end of the tour: the whole window, no preview and no dots, so it
+ * reads as the end rather than one more step. Says what is now true — it is
+ * recording, and which key opens it — and offers the panel and the door.
+ */
+function Finish({
+  armed,
+  failed,
+  onAgain,
+  onOpen,
+  onDone,
+}: {
+  armed: string | null;
+  failed: string;
+  onAgain: () => void;
+  onOpen: () => void;
+  onDone: () => void;
+}) {
+  const done = useRef<HTMLButtonElement>(null);
+  useEffect(() => done.current?.focus(), []);
+
+  return (
+    <main className="finish">
+      <div className="mark" aria-hidden="true">
+        {CONFETTI.map(([x, y, turn], at) => (
+          <i
+            key={at}
+            style={{
+              ["--x" as string]: `${x}px`,
+              ["--y" as string]: `${y}px`,
+              ["--turn" as string]: `${turn}deg`,
+              background: CONFETTI_COLOURS[at % CONFETTI_COLOURS.length],
+              animationDelay: `${(at % 4) * 0.04}s`,
+            }}
+          />
+        ))}
+        <span className="badge">
+          <ClipboardGlyph />
+          <span className="tick">✓</span>
+        </span>
+      </div>
+      <h1>You’re all set 🎉</h1>
+      <p className="dim">
+        Clipboard Manager is keeping what you copy from now on.
+        <br />
+        {armed ? (
+          <>
+            Press <Caps glyphs={acceleratorGlyphs(armed)} small /> in any app to open it.
+          </>
+        ) : (
+          <>Give it a key in Settings to open it from anywhere.</>
+        )}
+      </p>
+      {failed && <p className="failed" role="alert">{failed}</p>}
+      <div className="row">
+        <button type="button" onClick={onOpen}>Open the panel</button>
+        <button type="button" className="primary" ref={done} onClick={onDone}>
+          Done
+        </button>
+      </div>
+      <button type="button" className="link again" onClick={onAgain}>
+        Take the tour again
+      </button>
     </main>
   );
 }
@@ -180,7 +294,8 @@ function Marked({ text, marks }: { text: string; marks: number[] }) {
 /**
  * A small, pretend panel acting out the step on screen: things arriving as
  * they are copied; the panel popping up at the key; a few letters typed
- * narrowing the list down to one row.
+ * narrowing the list down to one row; files opening beside the list; a
+ * row dragged out into a mail.
  */
 function Preview({ step, armed }: { step: number; armed: string | null }) {
   const [typed, setTyped] = useState(0);
@@ -215,7 +330,8 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
     return () => window.clearInterval(tick);
   }, [step]);
 
-  const query = step === 2 ? QUERY.slice(0, typed) : "";
+  // The drag step picks up where the search left off: the invoice found.
+  const query = step === 2 ? QUERY.slice(0, typed) : step === 4 ? QUERY : "";
   const rows = found(query);
   const done = step === 2 && query === QUERY;
 
@@ -227,6 +343,7 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
         {armed ? <Caps glyphs={acceleratorGlyphs(armed)} small /> : "No key yet"}
       </span>
       <div className="panel" ref={panel}>
+        {step === 3 ? <Looking /> : <>
         <div className="search">
           <SearchGlyph />
           {query ? <span>{query}</span> : <span className="placeholder">Search</span>}
@@ -237,10 +354,149 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
             {row.kind === "color" ? <span className="swatch" /> : <KindGlyph kind={row.kind} />}
             <span className="text"><Marked text={row.text} marks={marks} /></span>
             <span className="meta">{at === 0 && done ? "↩ paste" : row.from}</span>
+            {step === 4 && at === 0 && (
+              <span className="ghost">
+                <KindGlyph kind={row.kind} />
+                <span className="text">{row.text}</span>
+                <Pointer />
+              </span>
+            )}
+          </div>
+        ))}
+        </>}
+      </div>
+      {/* Always mounted, grown in on the drag step only, like the key: the
+          panel glides aside for it and back. */}
+      <div className={step === 4 ? "drop shown" : "drop"}>
+        <div className="bar">
+          <span className="lights"><i /><i /><i /></span>
+          New Message
+        </div>
+        <div className="lines"><i /><i /><i /></div>
+        <div className="well">
+          <span className="landed">
+            <KindGlyph kind="file" />
+            <span className="text">Invoice-September.pdf</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const FILES: { family: FileFamily; name: string; size: string }[] = [
+  { family: "video", name: "Product-demo.mov", size: "0:42" },
+  { family: "audio", name: "Voice memo.m4a", size: "1:15" },
+  { family: "pdf", name: "Invoice-September.pdf", size: "2 pages" },
+  { family: "code", name: "package.json", size: "1 KB" },
+];
+
+/** How long each file stays selected, in ms. */
+const DWELL = 2600;
+
+/**
+ * The preview step: the panel as it really is, a list with the selected
+ * item open beside it. The selection walks down the files, one kind of
+ * preview each, and starts again.
+ */
+function Looking() {
+  const [on, setOn] = useState(0);
+
+  useEffect(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const tick = window.setInterval(() => setOn((was) => (was + 1) % FILES.length), DWELL);
+    return () => window.clearInterval(tick);
+  }, []);
+
+  const file = FILES[on] ?? FILES[0]!;
+  return (
+    <div className="split">
+      <div className="list">
+        {FILES.map((one, at) => (
+          <div key={one.name} className={at === on ? "item first" : "item"}>
+            <FileGlyph family={one.family} />
+            <span className="text">{one.name}</span>
           </div>
         ))}
       </div>
+      {/* Keyed, so each file's pane comes in fresh and its loop starts over. */}
+      <div key={file.name} className={`pane ${file.family}`}>
+        {file.family === "video" && <Film length={file.size} />}
+        {file.family === "audio" && <Song length={file.size} />}
+        {file.family === "pdf" && <Pages />}
+        {file.family === "code" && <Json />}
+      </div>
     </div>
+  );
+}
+
+function Film({ length }: { length: string }) {
+  return (
+    <div className="film">
+      <div className="frame">
+        <span className="sun" />
+        <span className="hill" />
+        <span className="play"><PlayGlyph /></span>
+      </div>
+      <div className="scrub"><span /></div>
+      <span className="clock">0:07 / {length}</span>
+    </div>
+  );
+}
+
+/** Bar heights for the waveform, as fractions of the tallest. */
+const WAVE = [0.3, 0.5, 0.8, 0.6, 0.9, 0.45, 0.7, 1, 0.65, 0.4, 0.75, 0.55, 0.85, 0.35, 0.6, 0.9, 0.5, 0.7, 0.3, 0.55, 0.8, 0.45, 0.65, 0.35];
+
+function Song({ length }: { length: string }) {
+  return (
+    <div className="song">
+      <FileGlyph family="audio" />
+      <div className="wave">
+        {WAVE.map((tall, at) => (
+          <i key={at} style={{ height: `${tall * 100}%`, animationDelay: `${0.2 + at * 0.09}s` }} />
+        ))}
+      </div>
+      <span className="clock">0:24 / {length}</span>
+    </div>
+  );
+}
+
+function Pages() {
+  return (
+    <div className="pages">
+      <div className="page">
+        <b />
+        <i /><i /><i />
+        <span className="table"><i /><i /><i /><i /><i /><i /></span>
+        <i className="short" />
+      </div>
+      <span className="clock">1 / 2</span>
+    </div>
+  );
+}
+
+function Json() {
+  return (
+    <pre className="json">
+      <span className="line">{"{"}</span>
+      <span className="line">  <span className="k">"name"</span>: <span className="s">"lumi-clipboard"</span>,</span>
+      <span className="line">  <span className="k">"version"</span>: <span className="s">"2.1.0"</span>,</span>
+      <span className="line">  <span className="k">"private"</span>: <span className="w">true</span>,</span>
+      <span className="line open">  <span className="caret">▾</span> <span className="k">"scripts"</span>: {"{"}</span>
+      <span className="line inner">    <span className="k">"dev"</span>: <span className="s">"vite"</span>,</span>
+      <span className="line inner">    <span className="k">"build"</span>: <span className="s">"vite build"</span></span>
+      <span className="line inner">  {"}"},</span>
+      <span className="line">  <span className="k">"workers"</span>: <span className="n">4</span></span>
+    </pre>
+  );
+}
+
+/** The mouse pointer carrying a dragged row. */
+function Pointer() {
+  return (
+    <svg className="pointer" viewBox="0 0 16 20">
+      <path d="M1.5 1.5v14.2l3.6-3.4 2.4 5.6 2.6-1.1-2.4-5.5h5z" />
+    </svg>
   );
 }
 
