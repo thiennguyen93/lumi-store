@@ -348,6 +348,28 @@ export function skipped(found: Found, skip: number): Found {
   };
 }
 
+/**
+ * `found` ended at `at` with an ellipsis of its own, outside every mark: a
+ * mark the end falls in keeps only its letters before it. What a row draws
+ * instead of letting CSS's ellipsis land inside a mark — which hides the
+ * mark's last letters but still paints its background to the edge, an
+ * empty highlighted box.
+ */
+export function cut(found: Found, at: number): Found {
+  if (at >= found.text.length) return found;
+  // Never between the halves of a surrogate pair.
+  const unit = found.text.charCodeAt(at - 1);
+  const end = unit >= 0xd800 && unit <= 0xdbff ? at - 1 : at;
+  const text = found.text.slice(0, end).trimEnd();
+  return {
+    text: `${text}…`,
+    marks: found.marks
+      .filter(([from]) => from < text.length)
+      .map(([from, to]) => [from, Math.min(to, text.length)] as Span),
+    note: found.note,
+  };
+}
+
 /** The next `skip` for `skipped`: past one more word of the lead, never
  *  past the first mark. `null` when the text already starts at the mark. */
 export function nextSkip(found: Found, skip: number): number | null {

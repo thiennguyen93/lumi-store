@@ -973,6 +973,61 @@ mod tests {
         on_event(&host, "clipboard-ocr", &stray).unwrap();
     }
 
+    #[test]
+    fn rows_kept_lowercased_get_their_text_back_as_copied_once() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", FIXTURE).unwrap();
+        on_event(&host, "clipboard-ocr", OCR_FIXTURE).unwrap();
+        let (index, _) = read_index(&host).unwrap();
+        assert!(index.search_as_copied, "a history started now starts as copied");
+        let copied = index.items[0].search.clone();
+        let read = index.items[0].ocr_search.clone();
+        assert_ne!(copied, copied.to_lowercase(), "the fixture has capitals to lose");
+
+        // As an older build kept it: lowercased, and nothing to say it was.
+        update_index(&host, |index| {
+            index.search_as_copied = false;
+            for entry in &mut index.items {
+                entry.search = entry.search.to_lowercase();
+                entry.ocr_search = entry.ocr_search.to_lowercase();
+            }
+            Ok(())
+        })
+        .unwrap();
+
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        let (index, _) = read_index(&host).unwrap();
+        assert_eq!(index.items[0].search, copied);
+        assert_eq!(index.items[0].ocr_search, read);
+        assert!(index.search_as_copied);
+
+        // Done once: what the index holds now is left as it is.
+        update_index(&host, |index| {
+            index.items[0].search = "left alone".into();
+            Ok(())
+        })
+        .unwrap();
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        assert_eq!(read_index(&host).unwrap().0.items[0].search, "left alone");
+    }
+
+    #[test]
+    fn a_copy_before_the_panel_opens_does_not_skip_reading_old_rows_again() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", FIXTURE).unwrap();
+        update_index(&host, |index| {
+            index.search_as_copied = false;
+            index.items[0].search = index.items[0].search.to_lowercase();
+            Ok(())
+        })
+        .unwrap();
+        // A new copy lands on the old index before anyone opens the panel.
+        let mut other: Value = serde_json::from_str(FIXTURE).unwrap();
+        other["hash"] = json!("another");
+        on_event(&host, "clipboard", &other.to_string()).unwrap();
+        assert!(!read_index(&host).unwrap().0.search_as_copied);
+    }
+
     fn list(host: &Memory) -> Vec<Value> {
         ui(host, &json!({"kind": "list"})).unwrap()["items"]
             .as_array()

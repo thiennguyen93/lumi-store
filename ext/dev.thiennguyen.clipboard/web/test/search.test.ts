@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { found, fuzzyScore, highlights, keptInSight, nextSkip, oneLine, searchWith, skipped, type Found } from "../src/search.ts";
+import { cut, found, fuzzyScore, highlights, keptInSight, nextSkip, oneLine, searchWith, skipped, type Found } from "../src/search.ts";
 import type { Entry } from "../src/types.ts";
 
 function row(id: string, title: string, appName = "Claude", search = title): Entry {
@@ -195,4 +195,32 @@ test("the row starts at the thickest cluster of marks, not the first one", () =>
   const shown = found(textRow(text), "alpha beta gamma", "exact");
   assert.ok(shown.text.includes("alpha beta gamma"), shown.text);
   assert.ok(shown.text.indexOf("alpha beta") <= 32, shown.text);
+});
+
+// ---- cut: a row's own ellipsis, outside every mark -----------------------
+
+test("an end inside a mark keeps the mark's letters before it, and the ellipsis outside", () => {
+  const shown: Found = { text: "…culpa qui officia deserunt mollit", marks: [[1, 6], [7, 10], [11, 18], [19, 27]], note: null };
+  const ended = cut(shown, 24);
+  assert.equal(ended.text, "…culpa qui officia deser…");
+  assert.deepEqual(marked(ended), ["culpa", "qui", "officia", "deser"]);
+  // The ellipsis is past the last mark, never in it.
+  assert.ok(ended.marks.every(([, to]) => to < ended.text.length));
+});
+
+test("an end in the space before a mark leaves that mark out, not an empty one", () => {
+  const shown: Found = { text: "one two three", marks: [[8, 13]], note: null };
+  const ended = cut(shown, 8);
+  assert.equal(ended.text, "one two…");
+  assert.deepEqual(ended.marks, []);
+});
+
+test("an end past the text leaves it as it is", () => {
+  const shown: Found = { text: "short", marks: [[0, 5]], note: null };
+  assert.equal(cut(shown, 99), shown);
+});
+
+test("an end never splits a letter outside the basic plane", () => {
+  const shown: Found = { text: "go 🚀 now", marks: [], note: null };
+  assert.equal(cut(shown, 4).text, "go…");
 });

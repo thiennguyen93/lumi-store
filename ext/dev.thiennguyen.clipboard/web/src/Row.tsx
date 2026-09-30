@@ -4,7 +4,7 @@ import { useItemDrag } from "./itemDrag";
 import { FileGlyph, KindGlyph, PinGlyph } from "./icons";
 import { fileFamily } from "./fileType";
 import { AppMark } from "./AppMark";
-import { type Found, keptInSight, nextSkip, since, skipped, type Span } from "./search";
+import { cut, type Found, keptInSight, nextSkip, since, skipped, type Span } from "./search";
 import type { Entry } from "./types";
 
 export const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -78,20 +78,57 @@ function ellipsisWidth(box: HTMLElement): number {
   return measure.measureText("…").width;
 }
 
+/** How many characters of the text drawn in `box` end before `edge` — the
+ *  most whose range, from the start, stays left of it. */
+function fitting(box: HTMLElement, edge: number): number {
+  const nodes: Text[] = [];
+  const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) nodes.push(node as Text);
+  const total = nodes.reduce((sum, node) => sum + node.data.length, 0);
+  const range = document.createRange();
+  const endsBefore = (count: number) => {
+    let left = count;
+    for (const node of nodes) {
+      if (left <= node.data.length) {
+        range.setStart(nodes[0]!, 0);
+        range.setEnd(node, left);
+        return range.getBoundingClientRect().right <= edge;
+      }
+      left -= node.data.length;
+    }
+    return true;
+  };
+  let low = 0;
+  let high = total;
+  while (low < high) {
+    const mid = (low + high + 1) >> 1;
+    if (endsBefore(mid)) low = mid;
+    else high = mid - 1;
+  }
+  return low;
+}
+
 /**
- * `found`, fitted to the row as drawn: when the match — with the marks just
+ * `found`, fitted to the row as drawn. When the match — with the marks just
  * after it — runs past the title's right edge, the lead before it loses a
- * word at a time until it is in sight, or starts right at the match. The
- * width is measured, not guessed: a row beside a wide preview shows far
- * fewer letters than one on its own.
+ * word at a time until it is in sight, or starts right at the match. Then,
+ * if the text still runs past the edge, it is ended where it stops fitting
+ * with an ellipsis of its own, outside any mark, rather than CSS's, which
+ * would land inside a mark and leave it an empty box. The width is
+ * measured, not guessed: a row beside a wide preview shows far fewer
+ * letters than one on its own.
  */
 function useFitted(found: Found) {
   const title = useRef<HTMLSpanElement>(null);
   const [skip, setSkip] = useState(0);
+  const [end, setEnd] = useState<number | null>(null);
   const [width, setWidth] = useState(0);
 
   // A new text, or a new width, starts from the whole lead again.
-  useLayoutEffect(() => setSkip(0), [found.text, width]);
+  useLayoutEffect(() => {
+    setSkip(0);
+    setEnd(null);
+  }, [found.text, width]);
 
   useLayoutEffect(() => {
     const box = title.current;
@@ -101,19 +138,25 @@ function useFitted(found: Found) {
     return () => watch.disconnect();
   }, []);
 
-  const shown = skipped(found, skip);
+  const lead = skipped(found, skip);
+  const shown = end === null ? lead : cut(lead, end);
   useLayoutEffect(() => {
     const box = title.current;
-    if (!box || !found.marks.length) return;
+    if (!box || !found.marks.length || end !== null) return;
+    const overflows = box.scrollWidth > box.clientWidth;
+    // An overflowing title ends in an ellipsis: the marks have to end
+    // before it, not just before the edge.
+    const edge = box.getBoundingClientRect().right - (overflows ? ellipsisWidth(box) : 0);
     const marks = box.querySelectorAll("mark");
-    const last = marks[Math.min(keptInSight(shown), marks.length) - 1];
-    if (!last) return;
-    // An overflowing title ends in an ellipsis, drawn over its last letters:
-    // the mark has to end before it, not just before the edge.
-    const edge = box.getBoundingClientRect().right - (box.scrollWidth > box.clientWidth ? ellipsisWidth(box) : 0);
-    if (last.getBoundingClientRect().right <= edge + 0.5) return;
-    const next = nextSkip(found, skip);
-    if (next !== null) setSkip(next);
+    const last = marks[Math.min(keptInSight(lead), marks.length) - 1];
+    if (last && last.getBoundingClientRect().right > edge + 0.5) {
+      const next = nextSkip(found, skip);
+      if (next !== null) {
+        setSkip(next);
+        return;
+      }
+    }
+    if (overflows) setEnd(fitting(box, edge + 0.5));
   });
 
   return { title, shown };
