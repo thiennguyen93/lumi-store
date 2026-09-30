@@ -256,25 +256,57 @@ const SHOWN = 240;
 export function found(row: Entry, query: string, used: Used): Found {
   const title = row.title;
   if (!words(query).length) return { text: title, marks: [], note: null };
-  const marks = highlights(title, query, used);
-  if (marks.length) return near(title, marks, null);
   if (row.kind === "file") {
+    const marks = highlights(title, query, used);
+    if (marks.length) return near(title, marks, null);
     return { text: title, marks: [], note: highlights(row.search, query, used).length ? "in its path" : null };
   }
-  const own = oneLine(row.search);
-  const ownMarks = highlights(own, query, used);
-  if (ownMarks.length) return near(own, ownMarks, null);
-  const read = oneLine(row.ocrSearch ?? "");
-  const readMarks = highlights(read, query, used);
-  if (readMarks.length) return near(read, readMarks, "in image");
-  return { text: title, marks: [], note: null };
+  // Whichever shows the most of the query: the title, unless the text
+  // behind it (or the words in its image) has words of it the title lacks
+  // — "id est laborum" finds a stray "id" early in a title, and the whole
+  // of it at the end of the text.
+  const sources: [string, string | null][] = [
+    [title, null],
+    [oneLine(row.search), null],
+    [oneLine(row.ocrSearch ?? ""), "in image"],
+  ];
+  let best: { text: string; note: string | null; marks: Span[]; covers: number } | null = null;
+  for (const [text, note] of sources) {
+    if (!text) continue;
+    const covers = covered(text, query, used);
+    if (!covers || (best && covers <= best.covers)) continue;
+    best = { text, note, marks: highlights(text, query, used), covers };
+  }
+  return best?.marks.length ? near(best.text, best.marks, best.note) : { text: title, marks: [], note: null };
+}
+
+/** How many of the query's words `text` shows — for a regexp, whether it
+ *  shows the pattern at all. */
+function covered(text: string, query: string, used: Used): number {
+  if (used === "regexp") return highlights(text, query, used).length ? 1 : 0;
+  return words(query).filter((word) => highlights(text, word, used).length).length;
+}
+
+/** Which mark starts the thickest cluster: the most marks starting within
+ *  `REACH` of it, the earliest of equals. */
+function densest(marks: Span[]): number {
+  let best = 0;
+  let most = 0;
+  marks.forEach(([from], at) => {
+    const count = marks.filter(([other]) => other >= from && other - from <= REACH).length;
+    if (count > most) {
+      most = count;
+      best = at;
+    }
+  });
+  return best;
 }
 
 /** `text` from a little before its first mark — at the start of a word
  *  when one starts close enough — with a leading ellipsis; as it is when
  *  the first mark is already in sight. */
 function near(text: string, marks: Span[], note: string | null): Found {
-  const first = marks[0]![0];
+  const first = marks[densest(marks)]![0];
   if (first <= SEEN) return { text: text.slice(0, SHOWN), marks: clip(marks, 0, SHOWN, 0), note };
   let start = first - LEAD;
   // The first word boundary in the lead, so the row starts on a word.
@@ -285,6 +317,47 @@ function near(text: string, marks: Span[], note: string | null): Found {
   if (unit >= 0xdc00 && unit <= 0xdfff) start += 1;
   const end = start + SHOWN;
   return { text: `…${text.slice(start, end)}`, marks: clip(marks, start, end, 1), note };
+}
+
+/** How far past the first mark the marks a row tries to keep in sight may
+ *  start: `fort portal` is one thing found, not a word and a stray. */
+export const REACH = 48;
+
+/** How many of `found`'s marks, from its first, the row wants in sight:
+ *  up to the end of its thickest cluster. */
+export function keptInSight(found: Found): number {
+  if (!found.marks.length) return 0;
+  const first = found.marks[densest(found.marks)]![0];
+  return found.marks.filter(([from]) => from - first <= REACH).length;
+}
+
+/**
+ * `found` with the first `skip` characters of its text dropped — after its
+ * ellipsis, when it has one — and an ellipsis put in front instead: what a
+ * row draws when its lead did not leave room for the match. Marks move with
+ * the text.
+ */
+export function skipped(found: Found, skip: number): Found {
+  if (skip <= 0) return found;
+  const lead = found.text.startsWith("…") ? 1 : 0;
+  const start = lead + skip;
+  return {
+    text: `…${found.text.slice(start)}`,
+    marks: found.marks.filter(([from]) => from >= start).map(([from, to]) => [from - start + 1, to - start + 1] as Span),
+    note: found.note,
+  };
+}
+
+/** The next `skip` for `skipped`: past one more word of the lead, never
+ *  past the first mark. `null` when the text already starts at the mark. */
+export function nextSkip(found: Found, skip: number): number | null {
+  const lead = found.text.startsWith("…") ? 1 : 0;
+  const anchor = found.marks[densest(found.marks)];
+  const first = (anchor?.[0] ?? lead) - lead;
+  if (skip >= first) return null;
+  const body = found.text.slice(lead);
+  const space = body.slice(skip, first).search(/\s/u);
+  return space < 0 ? first : Math.min(first, skip + space + 1);
 }
 
 /** `marks` inside `[start, end)`, moved to where they fall once the text is

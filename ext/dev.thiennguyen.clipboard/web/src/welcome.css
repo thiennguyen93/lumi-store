@@ -145,11 +145,11 @@ p { margin: 0; }
 
 /* Step one: things arrive as they are copied. */
 .step-0 .item { animation: arrive 0.5s ease-out both; }
-/* Step two: the panel pops up at the key, again and again — once it has
+/* Step three: the panel pops up at the key, again and again — once it has
    slid aside for the key. */
-.step-1 .panel { animation: pop 3.6s ease-in-out 0.5s infinite; }
+.step-2 .panel { animation: pop 3.6s ease-in-out 0.5s infinite; }
 /* The key sits beside the panel, never on it. It is always there and only
-   grows in on step two, so the panel glides aside and back instead of
+   grows in on step three, so the panel glides aside and back instead of
    jumping; the key lines up with the panel's search field. */
 .press {
   align-self: flex-start;
@@ -182,13 +182,13 @@ p { margin: 0; }
   animation: press 3.6s ease-out 0.5s infinite;
 }
 .press.none { font-size: 11px; color: var(--wc-dim); animation: none; }
-.step-1 .press.none + .panel { animation: none; opacity: 0.45; }
+.step-2 .press.none + .panel { animation: none; opacity: 0.45; }
 .panel { transition: opacity 0.3s ease, width 0.45s ease; }
 
-/* Step four: the panel widens to what it really is, a list with the
+/* Step five: the panel widens to what it really is, a list with the
    selected item open beside it, and the selection walks through a video,
    a song, a PDF and some JSON. */
-.step-3 .panel { width: 470px; }
+.step-4 .panel { width: 470px; }
 .split { display: flex; gap: 8px; height: 100%; }
 .split .list { flex: none; width: 176px; }
 .split .list .item:first-child { margin-top: 0; }
@@ -311,7 +311,7 @@ p { margin: 0; }
   45%, 100% { opacity: 1; max-height: 15px; }
 }
 
-/* Step six: the history as it is kept. The panel's search field becomes
+/* Step two: the history as it is kept. The panel's search field becomes
    a header saying where; the first row seals into ciphertext and opens
    again; a password manager's copy arrives and is turned away. */
 .vault .seal-head { gap: 6px; color: var(--wc-dim); font-weight: 500; }
@@ -325,13 +325,13 @@ p { margin: 0; }
   font-size: 10px;
   font-weight: 600;
 }
-.step-5 .item { animation: arrive 0.5s ease-out both; }
+.step-1 .item { animation: arrive 0.5s ease-out both; }
 .vault .mono { font: 11px/1.4 ui-monospace, "SF Mono", Menlo, monospace; }
 .vault .cipher { color: var(--wc-mark-ink); }
 .vault .item.first svg { transition: color 0.2s ease; }
 .vault .item.shut svg { color: var(--wc-ok); }
 .vault .item.shut .meta { color: var(--wc-ok); }
-.step-5 .item.refused { animation: arrive 0.5s ease-out 0.7s both, refuse 4s ease-in-out 1.4s infinite; }
+.step-1 .item.refused { animation: arrive 0.5s ease-out 0.7s both, refuse 4s ease-in-out 1.4s infinite; }
 .item.refused .secret { position: relative; }
 .item.refused .secret::after {
   /* The strike through a copy that is never recorded. */
@@ -357,9 +357,9 @@ p { margin: 0; }
   100% { width: 0; }
 }
 
-/* Step five: the found row is picked up, carried out of the panel and
+/* Step six: the found row is picked up, carried out of the panel and
    dropped into a mail beside it. The mail sits beside the panel the way
-   the key does on step two: always there, grown in on this step only. */
+   the key does on step three: always there, grown in on this step only. */
 .drop {
   align-self: flex-start;
   flex: none;
@@ -461,8 +461,8 @@ p { margin: 0; }
   stroke: #fff;
   stroke-width: 1.2;
 }
-.step-4 .ghost { animation: carry 3.8s ease-in-out 0.6s infinite; }
-.step-4 .item.first { animation: lift 3.8s ease-in-out 0.6s infinite; }
+.step-5 .ghost { animation: carry 3.8s ease-in-out 0.6s infinite; }
+.step-5 .item.first { animation: lift 3.8s ease-in-out 0.6s infinite; }
 .drop.shown .well { animation: take 3.8s ease-in-out 0.6s infinite; }
 .drop.shown .landed { animation: land 3.8s ease-out 0.6s infinite; }
 
@@ -506,7 +506,7 @@ p { margin: 0; }
   .drop.shown .landed { opacity: 1; }
   /* The secret simply struck out. */
   .item.refused .secret::after { width: 100%; }
-  .step-5 .item.refused { opacity: 0.4; }
+  .step-1 .item.refused { opacity: 0.4; }
 }
 
 /* ---- The finish ------------------------------------------------------- */

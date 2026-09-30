@@ -33,7 +33,7 @@ pub const PANEL: &str = "history";
 /// for is the one thing an install can leave undone: the `[[shortcut]]`.
 /// Lumi tries ⌘⇧C once at install and, when something holds it, arms
 /// nothing and says who (`GET /__lumi__/shortcuts`' `ess`); the tour's
-/// second step is where the person hears that and decides.
+/// third step is where the person hears that and decides.
 pub const WELCOME: &str = "welcome";
 
 /// Storage key of the version an update replaced, written by `on_lifecycle`
@@ -385,6 +385,37 @@ fn rename_file_rows(host: &impl Host) -> Result<(), String> {
     })
 }
 
+/// Rows kept before search text was kept as copied hold it lowercased, so
+/// a row found far into its text shows that stretch in lower case. Every
+/// row is read again from its record and given its text as copied — once:
+/// the index says when it is done. A record that cannot be read keeps what
+/// it had, which still finds it. Trashed rows too, since ⌘Z brings them back.
+fn recase_search(host: &impl Host) -> Result<(), String> {
+    let (index, _) = read_index(host)?;
+    if index.search_as_copied {
+        return Ok(());
+    }
+    let mut fresh = std::collections::HashMap::new();
+    for entry in index.items.iter().chain(&index.trash) {
+        if let Ok(record) = read_record(host, &entry.id) {
+            let read = record.ocr.as_deref().map(history::ocr_search_of);
+            fresh.insert(entry.id.clone(), (history::search_of(&record.items), read));
+        }
+    }
+    update_index(host, |index| {
+        for entry in index.items.iter_mut().chain(index.trash.iter_mut()) {
+            if let Some((search, read)) = fresh.get(&entry.id) {
+                entry.search = search.clone();
+                if let Some(read) = read {
+                    entry.ocr_search = read.clone();
+                }
+            }
+        }
+        index.search_as_copied = true;
+        Ok(())
+    })
+}
+
 /// File rows kept before `file_count` hold several files with nothing to say
 /// so but their title ("a.mp4 + 2 more"). Only those are read again, from
 /// their records, and counted — once, since a counted row has a count.
@@ -552,6 +583,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 // Best effort: a stale title is only a title.
                 let _ = rename_file_rows(host);
                 let _ = count_file_rows(host);
+                let _ = recase_search(host);
             }
             let (index, _) = read_index(host)?;
             let mut items = history::sorted(&index, prefs.order);

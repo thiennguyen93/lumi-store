@@ -7,7 +7,7 @@
 // Its own choice: Lumi opens nothing on an install, and the one thing an
 // install can leave undone is the shortcut. Lumi tries ⌘⇧C once and, when
 // something holds it, arms nothing and writes down who (`GET
-// /__lumi__/shortcuts`' `ess`); the second step reads that and asks the
+// /__lumi__/shortcuts`' `ess`); the third step reads that and asks the
 // person what to do — take it off the row that holds it, another key, or
 // later. Lumi never decides that on its own.
 
@@ -109,13 +109,24 @@ function Welcome() {
               </p>
             </>
           ))}
+        {step === 1 && (
+          <>
+            <h1>Private by design</h1>
+            <p className="dim">
+              Your history stays on this Mac — the extension has no network access. What it keeps
+              is encrypted with XChaCha20-Poly1305, under a key Lumi holds in your Keychain. Anything
+              a password manager marks as secret is dropped before it arrives, and Settings can
+              skip whole apps, text that matches a pattern, and forget copies after a time you pick.
+            </p>
+          </>
+        )}
         {/* Kept mounted so the answer is read once and the key it arms
             stays on the preview whichever step is showing. */}
-        <div className="shortcut" hidden={step !== 1}>
+        <div className="shortcut" hidden={step !== 2}>
           <h1>One key opens this panel</h1>
           <Shortcut onArmed={setArmed} />
         </div>
-        {step === 2 && (
+        {step === 3 && (
           <>
             <h1>Find it with a few letters</h1>
             <div className="tips">
@@ -125,7 +136,7 @@ function Welcome() {
             </div>
           </>
         )}
-        {step === 3 && (
+        {step === 4 && (
           <>
             <h1>Look before you paste</h1>
             <p className="dim">
@@ -135,24 +146,13 @@ function Welcome() {
             </p>
           </>
         )}
-        {step === 4 && (
+        {step === 5 && (
           <>
             <h1>Drag it where it goes</h1>
             <p className="dim">
               Drag any item out of the panel into another app. A file lands as the file itself —
               attached to a mail, dropped in a folder — a screenshot as an image, text as text.
               Settings can close the panel after each drop.
-            </p>
-          </>
-        )}
-        {step === 5 && (
-          <>
-            <h1>Private by design</h1>
-            <p className="dim">
-              Your history stays on this Mac — the extension has no network access. What it keeps
-              is encrypted with XChaCha20-Poly1305, under a key Lumi holds in your Keychain. Anything
-              a password manager marks as secret is dropped before it arrives, and Settings can
-              skip whole apps, text that matches a pattern, and forget copies after a time you pick.
             </p>
           </>
         )}
@@ -314,9 +314,9 @@ function Marked({ text, marks }: { text: string; marks: number[] }) {
 
 /**
  * A small, pretend panel acting out the step on screen: things arriving as
- * they are copied; the panel popping up at the key; a few letters typed
- * narrowing the list down to one row; files opening beside the list; a
- * row dragged out into a mail; the history sealed where it is kept.
+ * they are copied; the history sealed where it is kept; the panel popping
+ * up at the key; a few letters typed narrowing the list down to one row;
+ * files opening beside the list; a row dragged out into a mail.
  */
 function Preview({ step, armed }: { step: number; armed: string | null }) {
   const [typed, setTyped] = useState(0);
@@ -329,7 +329,7 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
   // where it was while the old class is still on it (the render before the
   // commit), then carry it home from there once the new class is in.
   if (shown.current !== step) {
-    if (shown.current === 1 && panel.current) {
+    if (shown.current === 2 && panel.current) {
       const now = getComputedStyle(panel.current);
       if (Number(now.opacity) < 0.99) handoff.current = { opacity: now.opacity, transform: now.transform };
     }
@@ -344,7 +344,7 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
   }, [step]);
 
   useEffect(() => {
-    if (step !== 2) return;
+    if (step !== 3) return;
     setTyped(0);
     // Type the query, hold it a moment, start again.
     const tick = window.setInterval(() => setTyped((was) => (was >= QUERY.length + 12 ? 0 : was + 1)), 140);
@@ -352,30 +352,30 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
   }, [step]);
 
   // The drag step picks up where the search left off: the invoice found.
-  const query = step === 2 ? QUERY.slice(0, typed) : step === 4 ? QUERY : "";
+  const query = step === 3 ? QUERY.slice(0, typed) : step === 5 ? QUERY : "";
   const rows = found(query);
-  const done = step === 2 && query === QUERY;
+  const done = step === 3 && query === QUERY;
 
   return (
     <div className={`preview step-${step}`} aria-hidden="true">
       {/* Always mounted, grown in on the shortcut step only: the panel
           glides aside for it and back rather than jumping. */}
-      <span className={["press", step === 1 && "shown", !armed && "none"].filter(Boolean).join(" ")}>
+      <span className={["press", step === 2 && "shown", !armed && "none"].filter(Boolean).join(" ")}>
         {armed ? <Caps glyphs={acceleratorGlyphs(armed)} small /> : "No key yet"}
       </span>
       <div className="panel" ref={panel}>
-        {step === 3 ? <Looking /> : step === 5 ? <Vault /> : <>
+        {step === 4 ? <Looking /> : step === 1 ? <Vault /> : <>
         <div className="search">
           <SearchGlyph />
           {query ? <span>{query}</span> : <span className="placeholder">Search</span>}
-          {step === 2 && <span className="caret" />}
+          {step === 3 && <span className="caret" />}
         </div>
         {rows.map(({ row, marks }, at) => (
           <div key={row.text} className={at === 0 ? "item first" : "item"} style={{ animationDelay: `${at * 0.35}s` }}>
             {row.kind === "color" ? <span className="swatch" /> : <KindGlyph kind={row.kind} />}
             <span className="text"><Marked text={row.text} marks={marks} /></span>
             <span className="meta">{at === 0 && done ? "↩ paste" : row.from}</span>
-            {step === 4 && at === 0 && (
+            {step === 5 && at === 0 && (
               <span className="ghost">
                 <KindGlyph kind={row.kind} />
                 <span className="text">{row.text}</span>
@@ -388,7 +388,7 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
       </div>
       {/* Always mounted, grown in on the drag step only, like the key: the
           panel glides aside for it and back. */}
-      <div className={step === 4 ? "drop shown" : "drop"}>
+      <div className={step === 5 ? "drop shown" : "drop"}>
         <div className="bar">
           <span className="lights"><i /><i /><i /></span>
           New Message

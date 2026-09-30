@@ -9,7 +9,7 @@
 [extension]
 id = "dev.thiennguyen.clipboard"
 name = "Clipboard Manager"
-version = "0.51.0"
+version = "0.51.1"
 description = "Keep what you copy — text, links, images and files — and paste it back from a panel."
 author = "Thien Nguyen"
 summary = "Remembers what you copy on this Mac and brings it back with one shortcut: search, pick, and it is pasted into the app you were typing in. Text, rich text, links, colours, files and images, with pins for what you keep reaching for. Anything a password manager marks as secret is never recorded — Lumi drops it before this extension hears of it — and the history is stored encrypted with a key Lumi keeps in your Keychain. Nothing leaves your Mac: the extension has no network access."
@@ -46,9 +46,9 @@ command = "open"
 key = "cmd+shift+c"
 
 # The six-step tour `on_lifecycle` opens when the extension is installed
-# or updated: what it keeps, its shortcut (armed, or not — and then what
-# to do), the keys inside the panel, the preview, dragging out, and how
-# the history is kept private. An ordinary declared window: the
+# or updated: what it keeps, how it is kept private, its shortcut (armed,
+# or not — and then what to do), the keys inside the panel, the preview,
+# and dragging out. An ordinary declared window: the
 # declaration is the grant, and the review sheet lists it.
 [[window]]
 name = "welcome"

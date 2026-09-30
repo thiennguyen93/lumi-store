@@ -200,6 +200,12 @@ pub struct Index {
     /// and what they held deleted for good, when the panel next opens.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub trash: Vec<Entry>,
+    /// Every row's `search` and `ocr_search` are kept as copied, case and
+    /// all. Rows kept before that hold them lowercased; `lib`'s
+    /// `recase_search` reads those again from their records, once, and sets
+    /// this. An index that starts empty starts with it set.
+    #[serde(default, rename = "searchAsCopied", skip_serializing_if = "is_false")]
+    pub search_as_copied: bool,
 }
 
 /// An item's full content, stored under `item.<id>`.
@@ -207,7 +213,7 @@ pub struct Index {
 pub struct Record {
     pub items: Vec<Vec<Rep>>,
     /// The text Lumi read in the item's image, as read — the index keeps
-    /// only a lowercased, shortened copy for searching.
+    /// only a shortened copy for searching.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ocr: Option<String>,
 }
@@ -333,6 +339,10 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
         blobs,
     };
     index.v = INDEX_VERSION;
+    // Nothing kept yet: nothing kept the old way, so nothing to read again.
+    if index.items.is_empty() && index.trash.is_empty() {
+        index.search_as_copied = true;
+    }
     index.items.push(entry);
     let evicted = evict(index, rules.size, rules.keep_ms, copy_at);
 
@@ -878,11 +888,11 @@ pub fn title_of(items: &[Vec<Rep>], kind: Kind) -> String {
 
 /// Kept as read, case and all: the panel folds it to search, and shows a
 /// stretch of it on a row whose match is past its title.
-fn ocr_search_of(text: &str) -> String {
+pub fn ocr_search_of(text: &str) -> String {
     text.chars().take(SEARCH_CHARS).collect()
 }
 
-fn search_of(items: &[Vec<Rep>]) -> String {
+pub fn search_of(items: &[Vec<Rep>]) -> String {
     let mut text = String::new();
     if let Some(plain) = plain_text(items) {
         text.push_str(plain);

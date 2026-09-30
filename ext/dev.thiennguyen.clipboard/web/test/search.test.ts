@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { found, fuzzyScore, highlights, oneLine, searchWith, type Found } from "../src/search.ts";
+import { found, fuzzyScore, highlights, keptInSight, nextSkip, oneLine, searchWith, skipped, type Found } from "../src/search.ts";
 import type { Entry } from "../src/types.ts";
 
 function row(id: string, title: string, appName = "Claude", search = title): Entry {
@@ -138,4 +138,61 @@ test("a file found by its folder keeps its name, and says where", () => {
 test("a row found only by its app says nothing extra", () => {
   const row = textRow("hello there", { appName: "Safari" });
   assert.deepEqual(found(row, "safari", "exact"), { text: "hello there", marks: [], note: null });
+});
+
+// ---- fitting a row: dropping lead words until the match is in sight ------
+
+const PORTAL =
+  "Điểm thú vị ⏎🏔️ Nằm gần dãy Rwenzori — di sản thiên nhiên thế giới UNESCO, với đỉnh cao nhất là Margherita (5.109m). ⏎🦍 Gần Vườn quốc gia Bwindi — nơi bảo tồn khỉ đột núi nổi tiếng. ⏎🌋 Có hệ thống hồ miệng núi lửa (crater lakes) tuyệt đẹp ở vùng Fort Portal.";
+
+test("both words of a two-word search are kept in sight together", () => {
+  const shown = found(textRow(PORTAL), "Fort Portal", "exact");
+  assert.deepEqual(marked(shown), ["Fort", "Portal"]);
+  assert.equal(keptInSight(shown), 2);
+});
+
+test("dropping lead words keeps the marks on the words they marked", () => {
+  const shown = found(textRow(PORTAL), "Fort Portal", "exact");
+  let skip = 0;
+  const seen: string[] = [];
+  for (let next = nextSkip(shown, skip); next !== null; next = nextSkip(shown, skip)) {
+    assert.ok(next > skip, "always forward");
+    skip = next;
+    const fitted = skipped(shown, skip);
+    assert.ok(fitted.text.startsWith("…"), fitted.text);
+    assert.deepEqual(marked(fitted), ["Fort", "Portal"], fitted.text);
+    seen.push(fitted.text);
+  }
+  // A word at a time, ending on the match itself.
+  assert.ok(seen.length >= 2, `${seen.length} steps`);
+  assert.ok(seen.at(-1)!.startsWith("…Fort Portal"), seen.at(-1));
+});
+
+test("a text with no lead to drop is left as it is", () => {
+  const row = textRow("Fort Portal is in Uganda");
+  const shown = found(row, "fort", "exact");
+  assert.equal(nextSkip(shown, 0), null);
+  assert.equal(skipped(shown, 0), shown);
+});
+
+test("an untrimmed title gains an ellipsis once its start is dropped", () => {
+  const shown: Found = { text: "one two three four", marks: [[14, 18]], note: null };
+  const fitted = skipped(shown, nextSkip(shown, 0)!);
+  assert.equal(fitted.text, "…two three four");
+  assert.deepEqual(marked(fitted), ["four"]);
+});
+
+test("a stray word early in the title does not hide the whole match later on", () => {
+  // "id" is in "incididunt", in the title; "id est laborum" is at the end.
+  const shown = found(textRow(LOREM), "id est laborum", "exact");
+  assert.ok(shown.text.includes("id est laborum"), shown.text);
+  assert.deepEqual(marked(shown).slice(-3), ["id", "est", "laborum"]);
+  assert.equal(keptInSight(shown), shown.marks.length);
+});
+
+test("the row starts at the thickest cluster of marks, not the first one", () => {
+  const text = `${"lorem ".repeat(10)}alpha ${"filler ".repeat(20)}alpha beta gamma`;
+  const shown = found(textRow(text), "alpha beta gamma", "exact");
+  assert.ok(shown.text.includes("alpha beta gamma"), shown.text);
+  assert.ok(shown.text.indexOf("alpha beta") <= 32, shown.text);
 });
