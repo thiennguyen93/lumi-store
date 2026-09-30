@@ -39,5 +39,8 @@ jobs:
           rustup target add wasm32-wasip2
           corepack enable
 
+      - name: Store script tests
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
       - name: Validate, build, pack
         run: python3 scripts/publish.py --check

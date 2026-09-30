@@ -8,6 +8,7 @@ laptop run identically:
       cargo build --target wasm32-wasip2 (from the pinned submodule)
       pnpm build of the entry's web/ into ui/, when the entry has one
       validate manifest.toml (the checks Lumi's installer re-runs)
+      validate CHANGELOG.md (a section for the version it ships)
       pack manifest.toml + extension.wasm into a reproducible .tar.gz
       minisign the tarball with the store key
   -> dist/extensions/{index.json, *.tar.gz, *.tar.gz.sig}
@@ -159,6 +160,46 @@ SCREENSHOT_KINDS = {b"\x89PNG\r\n\x1a\n": "png", b"\xff\xd8\xff": "jpg"}
 # screenshots — Lumi's installer never reads it. Lumi downloads it on a
 # page open, so it is held to a page's worth of text.
 MAX_DETAILS = 16 * 1024
+# `CHANGELOG.md` beside the manifest: required, one `## <version>` section
+# per release, the newest on top and equal to the manifest's `version` —
+# so a bump without notes, or notes without a bump, fails the PR. The
+# author's words, for developers; store-only like STORE.md. The source
+# keeps the whole history; the store publishes the newest few, since Lumi
+# downloads them on a page open.
+MAX_CHANGELOG_SOURCE = 256 * 1024
+MAX_CHANGE_NOTES = 4 * 1024
+MAX_CHANGES = 32 * 1024
+MAX_CHANGES_VERSIONS = 20
+# The headings Keep a Changelog, release-please, git-cliff and changesets
+# write, so whatever an author already uses is accepted as it is:
+# `## 1.2.0`, `## v1.2.0`, `## [1.2.0] - 2026-09-30`,
+# `## [1.2.0](https://…) (2026-09-30)`, `## 1.2.0 (2026-09-30)`.
+VERSION_HEADING_RE = re.compile(
+    r"^##\s+\[?v?(?P<version>[0-9][^\]\s()]*)\]?(?:\([^)]*\))?"
+    r"(?:\s+(?:[-–—]\s*)?\(?(?P<date>[^)\s]+)\)?)?\s*$"
+)
+UNRELEASED_HEADING_RE = re.compile(r"^##\s+\[?unreleased\]?\s*$", re.IGNORECASE)
+SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?$")
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# `release-notes/<id>.json` at the root: the store's own short summary of
+# each version, in English and Vietnamese, for Lumi's update list and the
+# website. The store's words rather than the author's, like `category` —
+# proposed as a PR after a release merges, edited there like any other
+# file. The shape is Lumi's "What's new" envelope (`lumi_notes`), so one
+# reader serves both; the limits are that reader's.
+RELEASE_NOTES_DIR = ROOT / "release-notes"
+SUMMARY_ENVELOPE = 1
+SUMMARY_LOCALES = ["en", "vi"]
+MAX_SUMMARY_HEADLINE = 70
+MAX_SUMMARY_ITEM = 110
+MAX_SUMMARY_ITEMS = 6
+# Plain sentences only: the reader draws each field as text, and anything
+# that looks like markup or a link is a summary that quoted its input.
+SUMMARY_NOT_PLAIN = [
+    (re.compile(r"https?://|\]\("), "a link"),
+    (re.compile(r"<[a-z/][^>]*>", re.IGNORECASE), "an HTML tag"),
+    (re.compile(r"\*\*|`|^#|^[-*•]\s"), "markdown formatting"),
+]
 MAX_UI_FILE = 5 * 1024 * 1024
 MAX_UI_FILES = 200
 MAX_UI_TOTAL = 24 * 1024 * 1024
@@ -680,27 +721,192 @@ def screenshots_of(entry_id: str, crate: Path, ext: dict) -> list:
     return shots
 
 
-def details_of(entry_id: str, crate: Path):
-    """`STORE.md`'s bytes, from the reviewed crate, or None when it has
-    none. Text the page will draw, so it is held to being text: UTF-8,
+def store_text(entry_id: str, path: Path, most: int):
+    """A store-only text file's contents, or None when it is absent. Text
+    a page will draw, so it is held to being text: a plain file, UTF-8,
     no NUL, under the ceiling."""
-    path = crate / "STORE.md"
+    name = path.name
     if not path.exists():
         return None
     if not path.is_file() or path.is_symlink():
-        fail(entry_id, "STORE.md is not a plain file")
+        fail(entry_id, f"{name} is not a plain file")
     data = path.read_bytes()
-    if len(data) > MAX_DETAILS:
-        fail(entry_id, f"STORE.md is {len(data)} bytes; the store takes {MAX_DETAILS}")
+    if len(data) > most:
+        fail(entry_id, f"{name} is {len(data)} bytes; the store takes {most}")
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError:
-        fail(entry_id, "STORE.md is not UTF-8")
+        fail(entry_id, f"{name} is not UTF-8")
     if "\x00" in text:
-        fail(entry_id, "STORE.md has a NUL byte in it")
+        fail(entry_id, f"{name} has a NUL byte in it")
+    return text
+
+
+def details_of(entry_id: str, crate: Path):
+    """`STORE.md`'s bytes, from the reviewed crate, or None when it has
+    none."""
+    text = store_text(entry_id, crate / "STORE.md", MAX_DETAILS)
+    if text is None:
+        return None
     if not text.strip():
         fail(entry_id, "STORE.md is empty; leave it out instead")
-    return data
+    return text.encode("utf-8")
+
+
+def semver_key(version: str):
+    """A version as something that sorts the way versions do: numerically
+    by part, and a pre-release before its release. Only for versions
+    `SEMVER_RE` accepted."""
+    major, minor, patch, pre = SEMVER_RE.match(version).groups()
+    tail = (1,) if pre is None else (0, *((0, int(p)) if p.isdigit() else (1, p) for p in pre.split(".")))
+    return (int(major), int(minor), int(patch), tail)
+
+
+def parse_changelog(text: str) -> list:
+    """`CHANGELOG.md` as `[{version, date, notes}]`, newest first, each
+    `notes` the section's markdown between its heading and the next.
+    What sits above the first `##` (a title, a preface) and an Unreleased
+    section are not releases and are left out. Raises ValueError with a
+    sentence naming the line, for `changelog_of` to report."""
+    releases = []
+    current = None
+    for number, line in enumerate(text.replace("\r\n", "\n").split("\n"), 1):
+        if not line.startswith("## ") and line.rstrip() != "##":
+            if current is not None:
+                current["lines"].append(line)
+            continue
+        if UNRELEASED_HEADING_RE.match(line):
+            current = {"lines": []}  # read and dropped
+            continue
+        heading = VERSION_HEADING_RE.match(line)
+        if not heading:
+            raise ValueError(f"line {number}: {line.strip()!r} is not a version heading (`## 1.2.0`) or `## Unreleased`")
+        version, date = heading["version"], heading["date"] or ""
+        if not SEMVER_RE.match(version):
+            raise ValueError(f"line {number}: {version!r} is not a version like 1.2.0")
+        if date and not DATE_RE.match(date):
+            raise ValueError(f"line {number}: {date!r} is not a date like 2026-09-30")
+        current = {"version": version, "date": date, "lines": [], "line": number}
+        releases.append(current)
+    if not releases:
+        raise ValueError("it has no `## <version>` section")
+    out = []
+    for release in releases:
+        notes = "\n".join(release["lines"]).strip("\n").rstrip()
+        where = f"line {release['line']}: {release['version']}"
+        if not notes.strip():
+            raise ValueError(f"{where} has no notes under it")
+        if len(notes.encode("utf-8")) > MAX_CHANGE_NOTES:
+            raise ValueError(f"{where} is {len(notes.encode('utf-8'))} bytes; a version's notes are at most {MAX_CHANGE_NOTES}")
+        if out and semver_key(release["version"]) >= semver_key(out[-1]["version"]):
+            raise ValueError(f"{where} is not older than {out[-1]['version']} above it; newest goes first, each once")
+        out.append({"version": release["version"], "date": release["date"], "notes": notes})
+    return out
+
+
+def changelog_of(entry_id: str, crate: Path, version: str) -> list:
+    """`CHANGELOG.md` from the reviewed crate, required, parsed, and with
+    its newest section for the version the manifest ships."""
+    text = store_text(entry_id, crate / "CHANGELOG.md", MAX_CHANGELOG_SOURCE)
+    if text is None:
+        fail(entry_id, "no CHANGELOG.md beside the manifest; every release needs a `## <version>` section there (README: Release notes)")
+    try:
+        releases = parse_changelog(text)
+    except ValueError as why:
+        fail(entry_id, f"CHANGELOG.md: {why}")
+    if releases[0]["version"] != version:
+        fail(entry_id, f"CHANGELOG.md's newest section is {releases[0]['version']}, the manifest ships {version}; "
+                       "add the notes for this version on top (`python3 scripts/changelog.py draft <id>` starts one)")
+    return releases
+
+
+def notes_sha256(notes: str) -> str:
+    """What a summary is pinned to: a version's notes, byte for byte. An
+    edited section leaves its old summary unshown until it is redone."""
+    return hashlib.sha256(notes.encode("utf-8")).hexdigest()
+
+
+def check_summary(summary) -> list:
+    """What is wrong with one version's summary envelope, as sentences;
+    empty when nothing is."""
+    if not isinstance(summary, dict) or summary.get("lumi_notes") != SUMMARY_ENVELOPE:
+        return [f"summary is not a lumi_notes {SUMMARY_ENVELOPE} envelope"]
+    locales = summary.get("locales")
+    if not isinstance(locales, dict) or set(summary) != {"lumi_notes", "locales"}:
+        return ["summary holds lumi_notes and locales, nothing else"]
+    problems = []
+    if sorted(locales) != sorted(SUMMARY_LOCALES):
+        problems.append(f"summary locales are {sorted(locales)}; the store writes {SUMMARY_LOCALES}")
+    for locale in SUMMARY_LOCALES:
+        entry = locales.get(locale)
+        if not isinstance(entry, dict) or set(entry) != {"headline", "items"}:
+            problems.append(f"{locale}: holds a headline and items, nothing else")
+            continue
+        headline, items = entry["headline"], entry["items"]
+        fields = [("headline", headline, MAX_SUMMARY_HEADLINE)]
+        if not isinstance(items, list) or not 1 <= len(items) <= MAX_SUMMARY_ITEMS:
+            problems.append(f"{locale}: items is a list of 1 to {MAX_SUMMARY_ITEMS}")
+        else:
+            fields += [(f"item {n}", item, MAX_SUMMARY_ITEM) for n, item in enumerate(items, 1)]
+        for what, value, most in fields:
+            if not isinstance(value, str) or not value.strip():
+                problems.append(f"{locale}: {what} is empty")
+                continue
+            if len(value) > most:
+                problems.append(f"{locale}: {what} is {len(value)} characters; at most {most}")
+            for pattern, kind in SUMMARY_NOT_PLAIN:
+                if pattern.search(value):
+                    problems.append(f"{locale}: {what} has {kind} in it; plain sentences only")
+    return problems
+
+
+def summaries_of(entry_id: str, releases: list) -> dict:
+    """`release-notes/<id>.json`: `{version: {notesSha256, summary}}`, or
+    an empty map before the first one is written. The store's own file,
+    but edited by hand in review, so held to its shape here — and to
+    versions the changelog still has, so it cannot collect strays."""
+    text = store_text(entry_id, RELEASE_NOTES_DIR / f"{entry_id}.json", MAX_CHANGES * 4)
+    if text is None:
+        return {}
+    try:
+        stored = json.loads(text)
+    except json.JSONDecodeError as why:
+        fail(entry_id, f"release-notes/{entry_id}.json is not JSON: {why}")
+    if not isinstance(stored, dict):
+        fail(entry_id, f"release-notes/{entry_id}.json maps versions to summaries")
+    for version, one in stored.items():
+        where = f"release-notes/{entry_id}.json: {version}"
+        if version not in {release["version"] for release in releases}:
+            fail(entry_id, f"{where} is not a version in CHANGELOG.md")
+        if not isinstance(one, dict) or set(one) != {"notesSha256", "summary"}:
+            fail(entry_id, f"{where} holds notesSha256 and summary, nothing else")
+        if not re.fullmatch(r"[0-9a-f]{64}", str(one["notesSha256"])):
+            fail(entry_id, f"{where}: notesSha256 is a sha256 in hex")
+        problems = check_summary(one["summary"])
+        if problems:
+            fail(entry_id, f"{where}: " + "; ".join(problems))
+    return stored
+
+
+def changes_json(releases: list, summaries: dict) -> bytes:
+    """The published history: the newest releases that fit, each with the
+    hash of its notes and the store's summary when it was written for
+    exactly those notes — `null` otherwise, and readers show the notes.
+    Same bytes for the same input, so its content-hashed name only moves
+    when something in it does."""
+    out = []
+    for release in releases[:MAX_CHANGES_VERSIONS]:
+        sha = notes_sha256(release["notes"])
+        stored = summaries.get(release["version"])
+        summary = stored["summary"] if stored and stored["notesSha256"] == sha else None
+        out.append({**release, "notesSha256": sha, "summary": summary})
+    def encode(items):
+        return (json.dumps(items, ensure_ascii=False, indent=1) + "\n").encode("utf-8")
+    # Oldest dropped first; the newest always stays (it is at most
+    # MAX_CHANGE_NOTES plus a summary, well under the ceiling).
+    while len(out) > 1 and len(encode(out)) > MAX_CHANGES:
+        out.pop()
+    return encode(out)
 
 
 def check_ui(entry_id: str, manifest: dict, ui_dir: Path):
@@ -789,6 +995,10 @@ def main(check: bool = False, built: "Path | None" = None):
     for entry in listed:
         entry_id = entry["id"]
         crate, manifest_path, manifest, ext, icon = sources(entry)
+        # Before anything is built: a missing or out-of-step changelog is
+        # the cheapest thing to tell a PR about.
+        releases = changelog_of(entry_id, crate, ext["version"])
+        summaries = summaries_of(entry_id, releases)
         # From a build job when the halves are split, built here when they
         # are not — and in both cases the manifest and icon are packed from
         # the reviewed source by this process.
@@ -818,6 +1028,14 @@ def main(check: bool = False, built: "Path | None" = None):
         details = details_of(entry_id, crate)
         details_url = published(entry_id, details, "md") if details is not None else ""
         icon_url = published(entry_id, icon.read_bytes(), "svg") if icon is not None else ""
+        changelog_url = published(entry_id, changes_json(releases, summaries), "json")
+        if check:
+            newest = releases[0]
+            summarized = summaries.get(newest["version"], {}).get("notesSha256") == notes_sha256(newest["notes"])
+            print(f"{entry_id} {newest['version']}: what's new, as published —")
+            for line in newest["notes"].splitlines()[:12]:
+                print(f"    {line}")
+            print(f"    (summary: {'yes' if summarized else 'pending — proposed after merge'})")
         # Same two spellings the host's own manifest reader accepts
         # (`min-lumi-version`, aliased from `min_lumi_version`) — mirrored
         # into the index so Lumi's update check can word a recommendation
@@ -855,6 +1073,12 @@ def main(check: bool = False, built: "Path | None" = None):
                 "featured": entry.get("featured", False),
                 "screenshots": shot_urls,
                 "details": details_url,
+                # The release history: `[{version, date, notes, notesSha256,
+                # summary}]`, newest first — the author's CHANGELOG.md
+                # sections, and the store's short en/vi summary of each
+                # (`release-notes/<id>.json`, or null while none matches
+                # the notes). Named by its content, like `details`.
+                "changelog": changelog_url,
                 "size": len(package),
                 "commands": [c.get("label") or c.get("name", "") for c in manifest.get("command", [])],
                 "shortcuts": [
