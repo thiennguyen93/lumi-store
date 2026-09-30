@@ -342,6 +342,16 @@ interface ui {
     /// at once if the panel is up, and every time it is shown. Added in 0.3.
     set-theme: func(name: string, theme: string) -> result<_, string>;
 
+    /// Pin one of your panels, or let it go: a pinned panel stays up while
+    /// the person works in another application, instead of closing the
+    /// moment it loses the keyboard. A paste from it hands the keyboard
+    /// back and leaves it up; it sits above ordinary windows but under
+    /// menus. Escape, your shortcut pressed while it has the keyboard, and
+    /// `close-window` still put it away, and the pin goes with it — every
+    /// show starts unpinned. Only a panel that is up, and only for
+    /// something the person did in one of your windows. Added in Lumi 1.29.
+    set-pinned: func(name: string, pinned: bool) -> result<_, string>;
+
     /// Send `message`, JSON text, to one of this extension's own windows
     /// or embedded pages: a declared window by its manifest `name`, or a
     /// page by `:about`, `:settings` or `:page:<name>`. It arrives as a

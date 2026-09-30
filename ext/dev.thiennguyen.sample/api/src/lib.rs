@@ -265,6 +265,16 @@ pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
     lumi::ext::ui::set_theme(name, theme)
 }
 
+/// Pin one of your panels, or let it go. A pinned panel stays up while the
+/// person works in another app; a paste from it hands the keyboard back and
+/// leaves it up. Escape, your shortcut and [`close_window`] still put it
+/// away, pin and all — every show starts unpinned. Only a panel that is up,
+/// from a request your page sends on a press. Needs Lumi 1.29.0 or later —
+/// say so with `min-lumi-version`.
+pub fn set_pinned(name: &str, pinned: bool) -> Result<(), String> {
+    lumi::ext::ui::set_pinned(name, pinned)
+}
+
 /// Send `message` (JSON text) to one of your own windows or pages — a
 /// window by its manifest `name`, or `":about"`, `":settings"`,
 /// `":page:<name>"`. The page hears it as a `lumi:message` event whose
