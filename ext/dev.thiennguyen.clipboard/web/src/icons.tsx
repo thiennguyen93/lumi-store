@@ -315,6 +315,28 @@ export function ScanTextGlyph() {
   );
 }
 
+/** Lucide's move-horizontal: fit the page to the width. */
+export function FitWidthGlyph() {
+  return (
+    <Glyph>
+      <path d="m18 8 4 4-4 4" />
+      <path d="M2 12h20" />
+      <path d="m6 8-4 4 4 4" />
+    </Glyph>
+  );
+}
+
+/** Lucide's move-vertical: fit the whole page's height. */
+export function FitHeightGlyph() {
+  return (
+    <Glyph>
+      <path d="M12 2v20" />
+      <path d="m8 18 4 4 4-4" />
+      <path d="m8 6 4-4 4 4" />
+    </Glyph>
+  );
+}
+
 export function ExpandGlyph() {
   return (
     <Glyph>

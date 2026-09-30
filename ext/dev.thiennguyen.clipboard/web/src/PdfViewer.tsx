@@ -1,9 +1,23 @@
-import { useEffect, useRef, useState } from "react";
-import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from "pdfjs-dist/legacy/build/pdf.mjs";
-import { ChevronLeftGlyph, ChevronRightGlyph, MinusGlyph, PlusGlyph } from "./icons";
+import { type RefObject, useEffect, useRef, useState } from "react";
+import type { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, RenderTask } from "pdfjs-dist/legacy/build/pdf.mjs";
+import { ChevronLeftGlyph, ChevronRightGlyph, FitHeightGlyph, FitWidthGlyph, MinusGlyph, PlusGlyph } from "./icons";
+import { type Fit, fitFor, keepFit } from "./pdfFit";
 
-/** Zoom steps over the page fitted to the pane's width. */
+/** Zoom steps over the fitted page (`Fit`). */
 const ZOOMS = [1, 1.5, 2, 3];
+
+/* What 100% fits the page to (`Fit`): the sheet's width, or its height —
+   the whole page in view, and narrower than the sheet if the sheet is
+   narrower still. Picked on the bar and kept apart for the pane beside the
+   list and the zoomed panel (`pdfFit.ts`). */
+
+/** A page's box at 100% × `zoom`, from its shape (height over width), the
+ *  sheet's room and the fit. */
+function pageBox(shape: number, fit: Fit, room: { width: number; height: number }, zoom: number) {
+  const across = fit === "height" && room.height > 0 ? Math.min(room.width, room.height / shape) : room.width;
+  const width = Math.floor(across * zoom);
+  return { width, height: Math.floor(width * shape) };
+}
 
 /** The most pixels one page may take on its canvas; WebKit refuses (draws
  *  nothing) past about 16.7 M, and a page at 3× on a retina screen can ask
@@ -44,21 +58,23 @@ let closing: Promise<void> = Promise.resolve();
 /** A copied PDF, a page at a time, on a canvas: pdf.js draws it, with a bar
  *  of its own the size of the video's — the webview's PDF viewer puts a
  *  toolbar over the page that is too big for this pane and cannot be styled.
- *  Only the page on show is drawn, and the file is read by ranges, so a
- *  500-page PDF opens as fast as a one-page one. A file pdf.js cannot open
+ *  Only the page on show is drawn (in the zoomed panel, the pages near the
+ *  view), and the file is read by ranges, so a 500-page PDF opens as fast
+ *  as a one-page one. A file pdf.js cannot open
  *  — locked, broken, not a PDF — calls `onFail` and the tile stands in. */
 export function PdfViewer({
   src,
   name,
   onFail,
-  whole = false,
+  flow = false,
 }: {
   src: string;
   name: string;
   onFail: () => void;
-  /** The whole page in view — the zoomed panel, tall enough to read one —
-   *  rather than the page fitted to the width and scrolled. */
-  whole?: boolean;
+  /** Every page, one under the other, scrolled through at the width — the
+   *  zoomed panel, where the PDF is there to be read (`PdfFlow`) — rather
+   *  than one page at a time. */
+  flow?: boolean;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -67,6 +83,12 @@ export function PdfViewer({
   const [zoom, setZoom] = useState(0);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  const [fit, setFit] = useState<Fit>(() => fitFor(flow));
+  useEffect(() => setFit(fitFor(flow)), [flow]);
+  const pickFit = (next: Fit) => {
+    setFit(next);
+    keepFit(flow, next);
+  };
   // The latest `onFail`, so a new closure from the parent does not reload the file.
   const fail = useRef(onFail);
   fail.current = onFail;
@@ -132,12 +154,12 @@ export function PdfViewer({
     return () => observer.disconnect();
   }, []);
 
-  // The page on show, drawn at the pane's width × zoom and the screen's
-  // density. A draw still running when any of these change is cancelled
+  // The page on show beside the list, drawn at its fit × zoom and the
+  // screen's density. A draw still running when any of these change is cancelled
   // first: one canvas takes one draw at a time.
   useEffect(() => {
     const target = canvas.current;
-    if (!doc || !target || !width) return;
+    if (flow || !doc || !target || !width) return;
     let live = true;
     let task: RenderTask | null = null;
     void (async () => {
@@ -145,17 +167,8 @@ export function PdfViewer({
         const sheet = await doc.getPage(page);
         if (!live) return;
         const natural = sheet.getViewport({ scale: 1 });
-        const across = width / natural.width;
-        const fit = whole && height ? Math.min(across, height / natural.height) : across;
-        const fitted = fit * ZOOMS[zoom]!;
-        const css = sheet.getViewport({ scale: fitted });
-        const density = Math.min(window.devicePixelRatio || 1, Math.sqrt(MAX_PIXELS / (css.width * css.height)));
-        const viewport = sheet.getViewport({ scale: fitted * density });
-        target.width = Math.floor(viewport.width);
-        target.height = Math.floor(viewport.height);
-        target.style.width = `${Math.floor(css.width)}px`;
-        target.style.height = `${Math.floor(css.height)}px`;
-        task = sheet.render({ canvas: target, viewport });
+        const box = pageBox(natural.height / natural.width, fit, { width, height }, ZOOMS[zoom]!);
+        task = draw(sheet, target, box.width / natural.width);
         await task.promise;
         sheet.cleanup();
       } catch {
@@ -167,12 +180,32 @@ export function PdfViewer({
       live = false;
       task?.cancel();
     };
-  }, [doc, page, zoom, width, height, whole]);
+  }, [doc, page, zoom, width, height, flow, fit]);
+
+  // Into the flow, or zoomed within it, the page being read stays in view
+  // rather than the flow opening at its top. By ref: a page turned by
+  // scrolling is not a reason to scroll again.
+  const reading = useRef(page);
+  reading.current = page;
+  useEffect(() => {
+    const sheet = scroller.current;
+    if (!flow || !sheet || !doc) return;
+    const at = sheet.querySelector<HTMLElement>(`[data-page="${reading.current}"]`);
+    if (at && reading.current > 1) sheet.scrollTo(sheet.scrollLeft, at.offsetTop - FLOW_GAP);
+  }, [flow, zoom, doc, fit]);
 
   const pages = doc?.numPages ?? 0;
   const go = (by: number) => {
-    setPage((at) => Math.min(Math.max(at + by, 1), pages));
-    scroller.current?.scrollTo(0, 0);
+    const next = Math.min(Math.max(page + by, 1), pages);
+    setPage(next);
+    const sheet = scroller.current;
+    if (!sheet) return;
+    if (flow) {
+      const at = sheet.querySelector<HTMLElement>(`[data-page="${next}"]`);
+      sheet.scrollTo(sheet.scrollLeft, at ? at.offsetTop - FLOW_GAP : 0);
+    } else {
+      sheet.scrollTo(0, 0);
+    }
   };
   const zoomBy = (by: number) => setZoom((at) => Math.min(Math.max(at + by, 0), ZOOMS.length - 1));
   // The caret stays in the search field, as it does for a row.
@@ -180,8 +213,24 @@ export function PdfViewer({
 
   return (
     <div className="player pdf">
-      <div className="pdf-sheet" ref={scroller}>
-        <canvas ref={canvas} role="img" aria-label={doc ? `${name}, page ${page} of ${pages}` : name} hidden={!doc} />
+      <div className="pdf-sheet" ref={scroller} onScroll={flow ? () => setPage(pageAtTop(scroller.current)) : undefined}>
+        {flow ? (
+          doc &&
+          width > 0 && (
+            <PdfFlow
+              doc={doc}
+              // The flow's own padding comes off the height, so a page fitted
+              // to it shows whole between its gaps.
+              room={{ width, height: Math.max(0, height - 2 * FLOW_GAP) }}
+              fit={fit}
+              zoom={ZOOMS[zoom]!}
+              root={scroller}
+              name={name}
+            />
+          )
+        ) : (
+          <canvas ref={canvas} role="img" aria-label={doc ? `${name}, page ${page} of ${pages}` : name} hidden={!doc} />
+        )}
       </div>
       <div className="pdf-bar">
         <button type="button" className="vbtn" aria-label="Previous page" disabled={page <= 1} onMouseDown={keepFocus} onClick={() => go(-1)}>
@@ -192,6 +241,17 @@ export function PdfViewer({
           <ChevronRightGlyph />
         </button>
         <span className="pdf-gap" />
+        <button
+          type="button"
+          className="vbtn"
+          aria-label={fit === "width" ? "Fit height" : "Fit width"}
+          title={fit === "width" ? "Fit height: the whole page in view" : "Fit width"}
+          disabled={!doc}
+          onMouseDown={keepFocus}
+          onClick={() => pickFit(fit === "width" ? "height" : "width")}
+        >
+          {fit === "width" ? <FitHeightGlyph /> : <FitWidthGlyph />}
+        </button>
         <button type="button" className="vbtn" aria-label="Zoom out" disabled={!doc || zoom <= 0} onMouseDown={keepFocus} onClick={() => zoomBy(-1)}>
           <MinusGlyph />
         </button>
@@ -203,3 +263,166 @@ export function PdfViewer({
     </div>
   );
 }
+
+/** Space above and between pages in the flow; the CSS says the same. */
+const FLOW_GAP = 8;
+
+/** How far past the visible part of the flow a page is drawn ahead of being
+ *  scrolled to, and kept after — a page further off gives its canvas back. */
+const FLOW_AHEAD = "150% 0px";
+
+/** Draw one page on a canvas at `scale` of its own size, sharp for the
+ *  screen but held under `MAX_PIXELS`. */
+function draw(sheet: PDFPageProxy, target: HTMLCanvasElement, scale: number): RenderTask {
+  const css = sheet.getViewport({ scale });
+  const density = Math.min(window.devicePixelRatio || 1, Math.sqrt(MAX_PIXELS / (css.width * css.height)));
+  const viewport = sheet.getViewport({ scale: scale * density });
+  target.width = Math.floor(viewport.width);
+  target.height = Math.floor(viewport.height);
+  target.style.width = `${Math.floor(css.width)}px`;
+  target.style.height = `${Math.floor(css.height)}px`;
+  return sheet.render({ canvas: target, viewport });
+}
+
+/** The page at the top of the flow: the last one starting above a third of
+ *  the way down, so the counter turns as a page takes over the view. */
+function pageAtTop(sheet: HTMLDivElement | null): number {
+  if (!sheet) return 1;
+  const line = sheet.scrollTop + sheet.clientHeight / 3;
+  let at = 1;
+  for (const el of sheet.querySelectorAll<HTMLElement>("[data-page]")) {
+    if (el.offsetTop > line) break;
+    at = Number(el.dataset.page);
+  }
+  return at;
+}
+
+/** Every page of the document at `width`, one under the other, for the
+ *  zoomed panel. Each page holds its place from the first page's shape until
+ *  its own is known, and is drawn only while near the view (`FLOW_AHEAD`):
+ *  a 500-page PDF scrolls like a short one, and never holds 500 canvases. */
+function PdfFlow({
+  doc,
+  room,
+  fit,
+  zoom,
+  root,
+  name,
+}: {
+  doc: PDFDocumentProxy;
+  room: { width: number; height: number };
+  fit: Fit;
+  zoom: number;
+  root: RefObject<HTMLDivElement | null>;
+  name: string;
+}) {
+  const [shape, setShape] = useState(1.414);
+  useEffect(() => {
+    let live = true;
+    doc
+      .getPage(1)
+      .then((sheet) => {
+        const natural = sheet.getViewport({ scale: 1 });
+        if (live) setShape(natural.height / natural.width);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [doc]);
+  return (
+    <div className="pdf-flow">
+      {Array.from({ length: doc.numPages }, (_, i) => (
+        <FlowPage
+          key={i + 1}
+          doc={doc}
+          number={i + 1}
+          sizeOf={(own) => pageBox(own ?? shape, fit, room, zoom)}
+          root={root}
+          name={name}
+        />
+      ))}
+    </div>
+  );
+}
+
+function FlowPage({
+  doc,
+  number,
+  sizeOf,
+  root,
+  name,
+}: {
+  doc: PDFDocumentProxy;
+  number: number;
+  /** The page's box from its own shape — or, until that is known, the first
+   *  page's. */
+  sizeOf: (own: number | null) => { width: number; height: number };
+  root: RefObject<HTMLDivElement | null>;
+  name: string;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [near, setNear] = useState(false);
+  const [own, setOwn] = useState<number | null>(null);
+  const size = sizeOf(own);
+  // Read by the draw, which reruns only when the size does: the function is
+  // new on every render of the flow — each scroll — and the size is not.
+  const measure = useRef(sizeOf);
+  measure.current = sizeOf;
+
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => setNear(!!entry?.isIntersecting), {
+      root: root.current,
+      rootMargin: FLOW_AHEAD,
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [root]);
+
+  useEffect(() => {
+    const target = canvas.current;
+    if (!target) return;
+    if (!near) {
+      // Far off: the canvas gives back its pixels.
+      target.width = 0;
+      target.height = 0;
+      return;
+    }
+    let live = true;
+    let task: RenderTask | null = null;
+    void (async () => {
+      try {
+        const sheet = await doc.getPage(number);
+        if (!live) return;
+        const natural = sheet.getViewport({ scale: 1 });
+        setOwn(natural.height / natural.width);
+        task = draw(sheet, target, measure.current(natural.height / natural.width).width / natural.width);
+        await task.promise;
+        sheet.cleanup();
+      } catch {
+        // Cancelled by the next draw or by scrolling away, or a page pdf.js
+        // could not draw: its place stays blank and the rest still scroll.
+      }
+    })();
+    return () => {
+      live = false;
+      task?.cancel();
+    };
+    // `size.width` stands for the box: it changes with the fit, zoom and room.
+  }, [doc, number, size.width, near]);
+
+  return (
+    <div
+      ref={box}
+      className="pdf-page"
+      data-page={number}
+      style={{ width: size.width, height: size.height }}
+    >
+      <canvas ref={canvas} role="img" aria-label={`${name}, page ${number}`} hidden={!near} />
+    </div>
+  );
+}
+

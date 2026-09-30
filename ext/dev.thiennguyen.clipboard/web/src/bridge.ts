@@ -44,6 +44,7 @@ type Answers = {
   pinPanel: { pinned: boolean };
   stats: Stats;
   previewWidth: Record<string, never>;
+  pdfFit: Record<string, never>;
   apps: { apps: { id: string; name: string }[] };
   dress: Record<string, never>;
   tryPatterns: { errors: { line: number; error: string }[]; matched: number | null };

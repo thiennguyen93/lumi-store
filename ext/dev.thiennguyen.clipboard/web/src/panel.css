@@ -724,7 +724,10 @@ body {
 .panel.zoomed .card .player.video { flex: 1 1 0; min-height: 0; display: flex; }
 .panel.zoomed .card .player.video video { flex: 1; min-height: 0; max-height: none; object-fit: contain; }
 .panel.zoomed .card .player.pdf { flex: 1 1 0; height: auto; min-height: 0; }
-.panel.zoomed .card .pdf-sheet canvas { margin: 0 auto; }
+/* The zoomed PDF: every page at the width, one under the other. A page
+   wider than the sheet (zoomed in) scrolls sideways from its left edge. */
+.card .pdf-flow { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
+.card .pdf-page { flex: none; margin: 0 auto; background: #fff; }
 .panel.zoomed .card .file-tile { flex: 1 1 0; height: auto; min-height: 96px; }
 .panel.zoomed .card .file-tile .glyph { width: 64px; height: 64px; }
 .panel.zoomed .card .chip { flex: 1 1 0; height: auto; min-height: 72px; }
@@ -907,7 +910,7 @@ body {
 .card .player.pdf { display: flex; flex-direction: column; height: 280px; overflow: hidden; background: none; border: 1px solid var(--cb-line); }
 .card .pdf-sheet { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; background: var(--cb-card); }
 /* White under the page: a PDF with no background of its own is drawn on paper, in either theme. */
-.card .pdf-sheet canvas { display: block; background: #fff; }
+.card .pdf-sheet canvas { display: block; margin: 0 auto; background: #fff; }
 .card .pdf-bar {
   display: flex;
   align-items: center;

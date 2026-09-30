@@ -78,6 +78,11 @@ const INDEX: &str = "index";
 /// Storage key of the preview pane's width, as the person last dragged it.
 const PREVIEW_WIDTH: &str = "panel.previewWidth";
 
+/// Storage key of what a PDF's 100% fits, as last picked on its bar: one
+/// for the pane beside the list and one for the zoomed panel, as
+/// `{"pane": "height", "zoomed": "width"}` — either may be missing.
+const PDF_FIT: &str = "panel.pdfFit";
+
 /// What a stored width may be: a pane, not a sliver or a wall.
 const PREVIEW_WIDTHS: std::ops::RangeInclusive<u64> = 120..=2000;
 
@@ -608,6 +613,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "searchMode": prefs.search,
                 "pinKey": prefs.pin_key,
                 "previewWidth": preview_width(host),
+                "pdfFit": pdf_fit(host),
             }))
         }
         "preview" => {
@@ -808,6 +814,25 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             }
             Err("the width was busy; try again".to_string())
         }
+        "pdfFit" => {
+            let place = if request["zoomed"].as_bool() == Some(true) { "zoomed" } else { "pane" };
+            let fit = request["fit"]
+                .as_str()
+                .filter(|fit| matches!(*fit, "width" | "height"))
+                .ok_or_else(|| "a PDF fits its width or its height".to_string())?;
+            for _ in 0..CAS_ATTEMPTS {
+                let stored = host.get(PDF_FIT)?;
+                let rev = stored.as_ref().map(|s| s.rev);
+                let mut fits = pdf_fit(host);
+                fits[place] = json!(fit);
+                match host.put(PDF_FIT, &fits.to_string(), rev) {
+                    Ok(_) => return Ok(json!({})),
+                    Err(PutError::Conflict) => continue,
+                    Err(PutError::Failed(err)) => return Err(err),
+                }
+            }
+            Err("the fit was busy; try again".to_string())
+        }
         "close" => {
             host.close_window(PANEL)?;
             Ok(json!({}))
@@ -839,6 +864,25 @@ fn put_away(host: &impl Host, request: &Value) -> Result<(), String> {
 fn preview_width(host: &impl Host) -> Option<u64> {
     let stored = host.get(PREVIEW_WIDTH).ok()??;
     stored.value.parse().ok().filter(|w| PREVIEW_WIDTHS.contains(w))
+}
+
+/// What a PDF's 100% fits, beside the list (`pane`) and in the zoomed panel
+/// (`zoomed`), as last picked; a place never picked, or holding anything
+/// but a fit, is left out and the page's default stands.
+fn pdf_fit(host: &impl Host) -> Value {
+    let stored: Value = host
+        .get(PDF_FIT)
+        .ok()
+        .flatten()
+        .and_then(|s| serde_json::from_str(&s.value).ok())
+        .unwrap_or(Value::Null);
+    let mut fits = serde_json::Map::new();
+    for place in ["pane", "zoomed"] {
+        if let Some(fit) = stored[place].as_str().filter(|fit| matches!(*fit, "width" | "height")) {
+            fits.insert(place.to_string(), json!(fit));
+        }
+    }
+    Value::Object(fits)
 }
 
 /// The Dashboard's one request.
@@ -1511,6 +1555,21 @@ mod tests {
         let long = "a".repeat(MAX_TRY + 1);
         assert!(settings(&host, &json!({"kind": "tryPatterns", "patterns": long, "sample": ""})).is_err());
         assert!(settings(&host, &json!({"kind": "paste", "id": "x"})).is_err());
+    }
+
+    #[test]
+    fn a_pdf_fit_is_kept_for_the_pane_and_the_zoomed_panel_apart() {
+        let host = Memory::default();
+        assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["pdfFit"], json!({}));
+        ui(&host, &json!({"kind": "pdfFit", "zoomed": false, "fit": "width"})).unwrap();
+        ui(&host, &json!({"kind": "pdfFit", "zoomed": true, "fit": "height"})).unwrap();
+        assert_eq!(
+            ui(&host, &json!({"kind": "list"})).unwrap()["pdfFit"],
+            json!({"pane": "width", "zoomed": "height"})
+        );
+        ui(&host, &json!({"kind": "pdfFit", "zoomed": false, "fit": "height"})).unwrap();
+        assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["pdfFit"]["pane"], "height");
+        assert!(ui(&host, &json!({"kind": "pdfFit", "fit": "page"})).is_err());
     }
 
     #[test]

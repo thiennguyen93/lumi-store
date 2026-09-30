@@ -36,6 +36,9 @@ export interface ListAnswer {
   pasteOnSelect: boolean;
   /** The preview pane's width as last dragged, or null for never. */
   previewWidth: number | null;
+  /** What a PDF's 100% fits beside the list and in the zoomed panel, as
+   *  last picked; a place never picked is left out. */
+  pdfFit?: { pane?: "width" | "height"; zoomed?: "width" | "height" };
   /** The glass the panel is on (the Appearance setting). */
   appearance?: "popover" | "hud" | "sidebar";
   /** Light or dark as the panel is shown: "dark" for dark glass. */
@@ -130,6 +133,7 @@ export type Request =
   | { kind: "pinPanel"; pinned: boolean }
   | { kind: "stats" }
   | { kind: "previewWidth"; width: number }
+  | { kind: "pdfFit"; zoomed: boolean; fit: "width" | "height" }
   /** The Settings tab's: the apps seen in the history, and a pattern list
    *  tried against a sample. */
   | { kind: "apps" }

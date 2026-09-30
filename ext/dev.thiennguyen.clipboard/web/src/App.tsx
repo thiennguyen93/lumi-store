@@ -34,6 +34,7 @@ import {
 import { type Action, ActionsMenu } from "./ActionsMenu";
 import { foldAll, moving, slide, tops } from "./motion";
 import { canZoom, Preview } from "./Preview";
+import { adoptFits } from "./pdfFit";
 import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
@@ -98,6 +99,7 @@ export function App() {
     const answer = await call({ kind: "list", opening });
     setRows(answer.items);
     adoptWidth(answer.previewWidth);
+    adoptFits(answer.pdfFit);
     wear(answer.appearance, answer.theme);
     setPinKey(parseCombo(answer.pinKey ?? "") ?? parseCombo(DEFAULT_PIN_KEY)!);
     modeRef.current = answer.searchMode ?? "mixed";

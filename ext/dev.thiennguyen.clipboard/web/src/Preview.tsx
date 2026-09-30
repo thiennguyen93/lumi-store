@@ -335,7 +335,7 @@ function FileMedia({
   token: string | null;
   name: string;
   onSize: (w: number, h: number) => void;
-  /** The panel is zoomed: a PDF shows its whole page, a film plays. */
+  /** The panel is zoomed: a PDF scrolls through all its pages, a film plays. */
   whole?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
@@ -384,7 +384,7 @@ function FileMedia({
     );
   }
   if (src && family === "pdf") {
-    return <PdfViewer src={src} name={name} whole={whole} onFail={() => setFailed(true)} />;
+    return <PdfViewer src={src} name={name} flow={whole} onFail={() => setFailed(true)} />;
   }
   return (
     <Pulled id={id} className="file-tile" family={family}>

@@ -91,6 +91,7 @@ const MOCK_FILES: Record<string, { name: string; dir?: string; size?: number; fo
 };
 
 let previewWidth: number | null = null;
+let pdfFit: { pane?: "width" | "height"; zoomed?: "width" | "height" } = {};
 // What Lumi keeps for `GET /__lumi__/settings`, as text the way it stores it.
 let settings: Record<string, string> = {
   keep: "3mo",
@@ -133,6 +134,7 @@ function answer(request: Request): unknown {
         items: sorted(),
         pasteOnSelect: true,
         previewWidth,
+        pdfFit,
         pinKey: settings.pinKey ?? "cmd+p",
         searchMode: (settings.search ?? "mixed") as "exact" | "fuzzy" | "regexp" | "mixed",
         appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
@@ -228,6 +230,10 @@ function answer(request: Request): unknown {
     case "pinPanel":
       say(request.pinned ? "would keep the panel up while you work elsewhere" : "would let the panel close when you click away");
       return { pinned: request.pinned };
+    case "pdfFit":
+      pdfFit = { ...pdfFit, [request.zoomed ? "zoomed" : "pane"]: request.fit };
+      say(`would start ${request.zoomed ? "zoomed" : "side"} PDFs at the ${request.fit}`);
+      return {};
     case "previewWidth":
       previewWidth = request.width;
       say(`would keep the preview ${request.width}px wide`);
