@@ -1,6 +1,6 @@
 [package]
 name = "lumi-clipboard-ext"
-version = "0.54.6"
+version = "0.54.11"
 edition = "2021"
 publish = false
 

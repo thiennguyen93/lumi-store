@@ -367,11 +367,32 @@ body {
   padding-top: 6px;
 }
 
+/* How far each end of the list fades, when there is more past it
+   (`useScrollFade`). Registered, so the fade grows in rather than
+   snapping as the first scroll leaves the top. */
+@property --fade-above { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --fade-below { syntax: "<length>"; inherits: false; initial-value: 0px; }
 .list {
   min-height: 0;
   overflow-y: auto;
-  padding: 0 6px 6px;
+  padding: 0 6px;
+  /* A margin, not padding: padding scrolls with the rows, so mid-list they
+     ran right up to the footer's hairline. The box itself stops short of
+     it, and the rows with it, wherever the list is scrolled to. */
+  margin-bottom: 2px;
+  /* The arrow keys scroll a row clear of the fade, not into it. */
+  scroll-padding-block: 20px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--fade-above),
+    #000 calc(100% - var(--fade-below)),
+    transparent
+  );
+  transition: --fade-above 0.2s ease, --fade-below 0.2s ease;
 }
+.list[data-above] { --fade-above: 24px; }
+.list[data-below] { --fade-below: 24px; }
 
 .row {
   display: flex;
@@ -841,10 +862,11 @@ body {
   overflow: hidden;
 }
 /* The text Lumi read in the image, under it; long reads scroll. Its
-   expand button zooms the panel onto the read, the picture hidden. */
+   expand button zooms the panel onto the read, the picture hidden. Never
+   shorter than its heading and five lines of text (the body's floor): a
+   tall picture gives way down to its own 96px first. */
 .card .ocr-read {
   flex: 1 1 0;
-  min-height: 56px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -861,7 +883,8 @@ body {
 .ocr-head .bare { margin: -3px -4px -3px 0; }
 .card .body.ocr {
   flex: 1 1 0;
-  min-height: 0;
+  /* Five lines at the 1.5 line height below. */
+  min-height: calc(5 * 1.5em);
   overflow-y: auto;
   overscroll-behavior: contain;
   font: 12px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;

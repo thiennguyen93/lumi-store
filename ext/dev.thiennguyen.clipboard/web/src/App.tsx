@@ -36,6 +36,7 @@ import { foldAll, moving, slide, tops } from "./motion";
 import { canZoom, Preview } from "./Preview";
 import { adoptFits } from "./pdfFit";
 import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
+import { useScrollFade } from "./scrollFade";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
 import { type Combo, DEFAULT_PIN_KEY, glyphs, parseCombo, pressed } from "./keys";
@@ -66,6 +67,7 @@ export function App() {
   const preview = usePreviewWidth();
   const windowDrag = useWindowDrag();
   const list = useRef<HTMLDivElement>(null);
+  useScrollFade(list);
   // Where the rows were before a pin or unpin, for the next render to
   // slide them from; null for every other change (typing, filtering).
   const slideFrom = useRef<Map<string, number> | null>(null);
