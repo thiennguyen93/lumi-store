@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { blobUrl, call, fileUrl, type FileItem } from "./bridge";
 import { AppMark } from "./AppMark";
 import { CollapseGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
@@ -143,16 +143,17 @@ export function Preview({
           {(pixels || weight) && <span className="dims">{[pixels, weight].filter(Boolean).join(" · ")}</span>}
         </header>
         {row.kind === "image" && row.thumb && !wide && (
-          <div className="picture">
+          <Picture id={row.id}>
             <img
               alt="Copied image"
               src={blobUrl(row.thumb)}
+              draggable={false}
               onLoad={(event) => {
                 const { naturalWidth: w, naturalHeight: h } = event.currentTarget;
                 if (w && h) setSize({ id: row.id, w, h });
               }}
             />
-          </div>
+          </Picture>
         )}
         {reads && (
           <section className="ocr-read">
@@ -182,6 +183,7 @@ export function Preview({
           !mine?.files?.length && (
           <FileMedia
             key={row.id}
+            id={row.id}
             family={fileFamily(row.fileExt)}
             ext={row.fileExt ?? ""}
             text={isTextFile(row.fileExt)}
@@ -239,6 +241,24 @@ function LinkBody({ text, onOpen }: { text: string; onOpen: () => void }) {
   );
 }
 
+/** A picture in the preview, pulled out of the panel the way its row is:
+ *  through Lumi (`clipboard.drag`), never WebKit's own drag of an `<img>`.
+ *  That one is a session Lumi never hears of, so the panel stays at its
+ *  level over the drag image — the file macOS draws at the pointer sat
+ *  under the panel until the pointer left it — and it carries no PNG file
+ *  where one is wanted. Hence `draggable={false}` on the `<img>` inside.
+ *  An image row hands its image; a copied image file hands the file. */
+function Picture({ id, children }: { id: string; children: ReactNode }) {
+  const drag = useItemDrag(() => {
+    call({ kind: "drag", id }).catch(() => {});
+  });
+  return (
+    <div className="picture" {...drag}>
+      {children}
+    </div>
+  );
+}
+
 /** A copied file: for a PDF, picture, text file, sound or film its player
  *  or viewer once Lumi has given a grant for it; for anything else, and until
  *  then — or when Lumi cannot serve it, an older Lumi or a file moved since —
@@ -246,6 +266,7 @@ function LinkBody({ text, onOpen }: { text: string; onOpen: () => void }) {
  *  itself: `controls` and no `autoPlay`, and audio loads nothing until asked.
  *  Keyed by row, so choosing another row takes the player away and stops it. */
 function FileMedia({
+  id,
   family,
   ext,
   token,
@@ -253,6 +274,8 @@ function FileMedia({
   text,
   onSize,
 }: {
+  /** The row: what a drag of the picture takes out. */
+  id: string;
   family: FileFamily;
   ext: string;
   /** A text or code file: its start, as plain text. */
@@ -280,18 +303,19 @@ function FileMedia({
     // The file itself, drawn by the webview: a type it cannot draw (HEIC
     // before macOS 14), or one too big for Lumi to send whole, is the tile.
     return (
-      <div className="picture">
+      <Picture id={id}>
         <img
           alt={name}
           src={src}
           decoding="async"
+          draggable={false}
           onLoad={(event) => {
             const { naturalWidth: w, naturalHeight: h } = event.currentTarget;
             if (w && h) onSize(w, h);
           }}
           onError={() => setFailed(true)}
         />
-      </div>
+      </Picture>
     );
   }
   if (src && family === "video") {
