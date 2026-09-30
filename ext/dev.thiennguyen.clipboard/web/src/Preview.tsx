@@ -115,7 +115,11 @@ export function Preview({
   const text = mine?.text || row.title;
   const html = row.kind === "rich" ? mine?.html : null;
   const ocr = row.kind === "image" ? mine?.ocr : null;
-  const wide = !!ocr && expanded === row.id;
+  // The row says up front whether its image has text, so the section is
+  // drawn — and its room taken — with the picture, not a moment later when
+  // the text arrives, which would squeeze the picture after it was drawn.
+  const reads = row.kind === "image" && !!row.ocr;
+  const wide = reads && expanded === row.id;
   const pixels = size?.id === row.id ? `${size.w} × ${size.h} px` : null;
   const weight = row.kind === "file" && mine?.fileSize != null ? bytes(mine.fileSize) : null;
 
@@ -150,7 +154,7 @@ export function Preview({
             />
           </div>
         )}
-        {ocr && (
+        {reads && (
           <section className="ocr-read">
             <header className="ocr-head">
               <span>Text in image</span>
@@ -167,7 +171,7 @@ export function Preview({
                 {wide ? <CollapseGlyph /> : <ExpandGlyph />}
               </button>
             </header>
-            <div className="body ocr">{ocr}</div>
+            <div className="body ocr">{ocr ?? ""}</div>
           </section>
         )}
         {row.kind === "file" &&

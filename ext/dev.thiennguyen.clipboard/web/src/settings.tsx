@@ -4,7 +4,7 @@
 // can be stored; the extension is asked only things that read: how full the
 // history is, which apps it has seen, and what a pattern list would keep out.
 
-import { StrictMode, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { StrictMode, type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { acceleratorGlyphs, comboOf, comboText, DEFAULT_PIN_KEY, glyphs, parseCombo, refusal } from "./keys";
 import { shortcuts } from "./bridge";
@@ -484,25 +484,22 @@ function Recorder({ value, fallback, onChange }: { value: string; fallback: stri
 }
 
 /** The ignored apps as chips, named from the history where it knows them;
- *  added from the apps the history has seen, or by bundle id. */
+ *  added from a dropdown of the apps the history has seen, or by bundle id. */
 function Apps({ ids, onChange }: { ids: string[]; onChange: (ids: string[]) => void }) {
   const [seen, setSeen] = useState<App[]>([]);
   const [adding, setAdding] = useState(false);
-  const [typed, setTyped] = useState("");
+  const add = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     ask<{ apps: App[] }>({ kind: "apps" }).then((a) => setSeen(a.apps), () => {});
   }, []);
 
   const name = (id: string) => seen.find((a) => a.id === id)?.name ?? id;
-  const add = (id: string) => {
-    const clean = id.trim();
-    if (clean && !ids.includes(clean)) onChange([...ids, clean]);
-    setTyped("");
+  const close = useCallback((refocus: boolean) => {
     setAdding(false);
-  };
-  const offered = seen.filter((a) => !ids.includes(a.id));
-  const typedOk = /^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(typed.trim());
+    // Back to the button that opened it, as a menu's close does.
+    if (refocus) setTimeout(() => add.current?.focus());
+  }, []);
 
   return (
     <div className="chips">
@@ -517,50 +514,178 @@ function Apps({ ids, onChange }: { ids: string[]; onChange: (ids: string[]) => v
           </button>
         </span>
       ))}
-      {!adding ? (
-        <button type="button" className="add" onClick={() => setAdding(true)}>
+      {adding ? (
+        <AppPicker
+          offered={seen.filter((a) => !ids.includes(a.id))}
+          taken={ids}
+          onPick={(id) => {
+            onChange([...ids, id]);
+            close(true);
+          }}
+          onClose={close}
+        />
+      ) : (
+        <button ref={add} type="button" className="add" onClick={() => setAdding(true)}>
           + Add app…
         </button>
-      ) : (
-        <div className="picker">
-          <input
-            autoFocus
-            value={typed}
-            placeholder="Bundle id, e.g. com.apple.keychainaccess"
-            spellCheck={false}
-            onChange={(e) => setTyped(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && typedOk) add(typed);
-              if (e.key === "Escape") setAdding(false);
-            }}
-          />
-          {offered.length > 0 && (
-            <div className="offered">
-              <small>From your history</small>
-              {offered
-                .filter((a) => !typed || `${a.name} ${a.id}`.toLowerCase().includes(typed.toLowerCase()))
-                .slice(0, 8)
-                .map((a) => (
-                  <button key={a.id} type="button" onClick={() => add(a.id)}>
-                    <span className="initial" style={{ background: tint(a.id) }}>
-                      {a.name.slice(0, 1).toUpperCase()}
-                    </span>
-                    {a.name}
-                    <span className="id">{a.id}</span>
-                  </button>
-                ))}
-            </div>
-          )}
-          <div className="picker-foot">
-            <button type="button" onClick={() => setAdding(false)}>
-              Cancel
-            </button>
-            <button type="button" className="primary" disabled={!typedOk} onClick={() => add(typed)}>
-              Add
-            </button>
-          </div>
-        </div>
       )}
+    </div>
+  );
+}
+
+/** A bundle id as typed: dot-separated, letters, digits and dashes. */
+const BUNDLE_ID = /^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
+
+/** How many apps the dropdown lists at most; typing narrows it. */
+const LISTED = 50;
+
+type Choice = { id: string; name: string; typed?: boolean };
+
+/**
+ * A combobox, the macOS way: a field in the row of chips, and under it a
+ * list that floats over what follows instead of pushing it down — the apps
+ * the history has seen, narrowed as you type, and a typed bundle id of its
+ * own when it is one. ↑ ↓ move, ↩ picks, esc closes; so does clicking
+ * anywhere else. Opens upward when there is no room below.
+ */
+function AppPicker({
+  offered,
+  taken,
+  onPick,
+  onClose,
+}: {
+  offered: App[];
+  taken: string[];
+  onPick: (id: string) => void;
+  onClose: (refocus: boolean) => void;
+}) {
+  const [typed, setTyped] = useState("");
+  const [active, setActive] = useState(0);
+  const [up, setUp] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
+
+  const needle = typed.trim().toLowerCase();
+  const matching = offered.filter((a) => !needle || `${a.name} ${a.id}`.toLowerCase().includes(needle));
+  const clean = typed.trim();
+  const own = BUNDLE_ID.test(clean) && !taken.includes(clean) && !offered.some((a) => a.id === clean);
+  const choices: Choice[] = [...(own ? [{ id: clean, name: clean, typed: true }] : []), ...matching.slice(0, LISTED)];
+  const at = Math.min(active, Math.max(choices.length - 1, 0));
+
+  // A new narrowing starts at the top.
+  useEffect(() => setActive(0), [needle]);
+
+  // A press anywhere outside closes it, as a menu does — whether or not the
+  // field had focus to lose.
+  useEffect(() => {
+    const outside = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) onClose(false);
+    };
+    document.addEventListener("pointerdown", outside, true);
+    return () => document.removeEventListener("pointerdown", outside, true);
+  }, [onClose]);
+
+  // Downward unless the window has more room above the field than below.
+  useLayoutEffect(() => {
+    const field = box.current;
+    const menu = list.current;
+    if (!field || !menu) return;
+    const rect = field.getBoundingClientRect();
+    const below = window.innerHeight - rect.bottom;
+    setUp(below < menu.offsetHeight + 8 && rect.top > below);
+  }, [choices.length]);
+
+  // The active choice stays in sight as ↑ ↓ move past the list's edge.
+  useLayoutEffect(() => {
+    list.current?.querySelector<HTMLElement>(`[data-at="${at}"]`)?.scrollIntoView({ block: "nearest" });
+  }, [at]);
+
+  const pick = (choice: Choice | undefined) => {
+    if (choice) onPick(choice.id);
+  };
+
+  return (
+    <div
+      ref={box}
+      className="combo"
+      // Focus leaving the field and its list — a click elsewhere, ⇥ — closes.
+      onBlur={(e) => {
+        if (!box.current?.contains(e.relatedTarget as Node | null)) onClose(false);
+      }}
+    >
+      <input
+        autoFocus
+        role="combobox"
+        aria-expanded="true"
+        aria-controls="app-choices"
+        aria-activedescendant={choices.length ? `app-choice-${at}` : undefined}
+        aria-autocomplete="list"
+        value={typed}
+        placeholder="App name or bundle id"
+        spellCheck={false}
+        onChange={(e) => setTyped(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            if (!choices.length) return;
+            const step = e.key === "ArrowDown" ? 1 : -1;
+            setActive((at + step + choices.length) % choices.length);
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            pick(choices[at]);
+          } else if (e.key === "Escape") {
+            // The page's own Escape (closing Settings) is not this one's.
+            e.preventDefault();
+            e.stopPropagation();
+            onClose(true);
+          }
+        }}
+      />
+      <div ref={list} id="app-choices" role="listbox" aria-label="Apps" className={up ? "menu up" : "menu"}>
+        {!own && !matching.length ? (
+          <p className="none">
+            {taken.includes(clean)
+              ? "Already on the list."
+              : offered.length || needle
+                ? "No app matches. Type a bundle id, like com.apple.Notes."
+                : "Type a bundle id, like com.apple.Notes."}
+          </p>
+        ) : (
+          <>
+            {!needle && <small>From your history</small>}
+            {choices.map((choice, index) => (
+              <div
+                key={choice.id}
+                id={`app-choice-${index}`}
+                data-at={index}
+                role="option"
+                aria-selected={index === at}
+                className={index === at ? "choice on" : "choice"}
+                title={choice.id}
+                // Keeps the caret in the field, so the list stays open.
+                onMouseDown={(e) => e.preventDefault()}
+                onMouseMove={() => index !== at && setActive(index)}
+                onClick={() => pick(choice)}
+              >
+                {choice.typed ? (
+                  <>
+                    <span className="initial plus">+</span>
+                    <span className="name">Add “{choice.id}”</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="initial" style={{ background: tint(choice.id) }}>
+                      {choice.name.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span className="name">{choice.name}</span>
+                    <span className="id">{choice.id}</span>
+                  </>
+                )}
+              </div>
+            ))}
+          </>
+        )}
+      </div>
     </div>
   );
 }

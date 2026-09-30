@@ -630,15 +630,18 @@ body {
 .card-head {
   display: flex;
   flex: none;
-  flex-wrap: wrap;
+  /* One line, always: the size arrives after the card is drawn (a picture's
+     once it has loaded, a file's with the preview), and a head that wrapped
+     for it would push everything under it down. The kind and app give way
+     sideways instead. */
+  flex-wrap: nowrap;
   align-items: center;
   gap: 2px 6px;
   font-size: 11px;
   color: var(--cb-muted);
 }
 .card-head .glyph { width: 12px; height: 12px; }
-/* Too narrow for both, the size moves to a line of its own, kept to the
-   right; the kind and app are cut only when they alone do not fit. */
+/* Too narrow for both, the kind and app are cut; the size keeps its width. */
 .card-head > span:not(.dims) { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .card-head .dims { margin-left: auto; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--cb-faint); }
 .card-foot {
@@ -699,9 +702,12 @@ body {
    too short for both gives way, the picture down to 96px, so the foot is
    never pushed out of the card. */
 .card .picture {
-  flex: 0 1 auto;
+  /* A fixed box, not the picture's own height: that is only known once it
+     has loaded, and a box that grew then would move all that follows. The
+     picture is fitted inside; a short card shrinks the box at first draw. */
+  flex: 0 1 180px;
+  height: 180px;
   min-height: 96px;
-  max-height: 180px;
   border-radius: 6px;
   background: var(--cb-card);
   display: flex;
