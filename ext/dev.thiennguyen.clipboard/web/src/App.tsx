@@ -21,6 +21,7 @@ import {
   DownloadGlyph,
   FolderGlyph,
   GearGlyph,
+  InfoGlyph,
   KeepOpenGlyph,
   KindGlyph,
   LumiMark,
@@ -31,6 +32,7 @@ import {
   SearchGlyph,
   TrashGlyph,
 } from "./icons";
+import { About, type AboutLink } from "./About";
 import { type Action, ActionsMenu } from "./ActionsMenu";
 import { foldAll, moving, slide, tops } from "./motion";
 import { canZoom, Preview } from "./Preview";
@@ -63,6 +65,10 @@ export function App() {
   // cannot have it (`canZoom` — none today, or no row at all) ends it, so the
   // list is never back on screen with a zoom still waiting to take it away.
   const [zoom, setZoom] = useState(false);
+  // ⌘K › About: the extension's card in place of the list and the preview.
+  // The search stays mounted under it, so a letter typed puts the card
+  // away and lands in the search.
+  const [about, setAbout] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const preview = usePreviewWidth();
   const windowDrag = useWindowDrag();
@@ -300,6 +306,11 @@ export function App() {
     void act(() => call({ kind: "settings" }));
   }, [act]);
 
+  const followLink = useCallback(
+    (link: AboutLink) => void act(() => call(link === "tour" ? { kind: link } : { kind: link, pinned })),
+    [act, pinned],
+  );
+
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
@@ -316,7 +327,8 @@ export function App() {
     const all = rows?.length ?? 0;
     const textual = row && (row.kind === "text" || row.kind === "rich" || row.kind === "link");
     return [
-      ...(row
+      // With About up the row is out of sight, and so are its actions.
+      ...(row && !about
         ? [
             { id: "paste", label: "Paste", glyph: <PasteGlyph />, keys: "↩", run: () => paste(false, row) },
             ...(textual
@@ -361,7 +373,13 @@ export function App() {
           ]
         : []),
       { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
-      ...(row
+      {
+        id: "about",
+        label: about ? "Back to the history" : "About Clipboard Manager",
+        glyph: <InfoGlyph />,
+        run: () => setAbout(!about),
+      },
+      ...(row && !about
         ? [{ id: "delete", label: "Delete entry", glyph: <TrashGlyph />, keys: "⌘⌥⌫", danger: true, run: remove }]
         : []),
       ...(unpinned && unpinned < all
@@ -389,7 +407,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [act, current, openSettings, paste, pinKey, pinned, remove, removeAll, rows, togglePin, zoomed]);
+  }, [about, act, current, openSettings, paste, pinKey, pinned, remove, removeAll, rows, togglePin, zoomed]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -460,6 +478,19 @@ export function App() {
 
     const cmd = event.metaKey && !event.ctrlKey;
     const key = event.key;
+    // About up: ⎋ puts it away, ⌘K and ⌘, work, and nothing else here
+    // acts on the rows it hides. A letter goes on to the search, which
+    // puts the card away itself.
+    if (about) {
+      if (key === "Escape") {
+        if (menuOpen) closeMenu();
+        else setAbout(false);
+      } else if (cmd && key.toLowerCase() === "k") setMenuOpen(true);
+      else if (cmd && key === ",") openSettings();
+      else return;
+      event.preventDefault();
+      return;
+    }
     if (key === "ArrowDown") move(1, true);
     else if (key === "ArrowUp") move(-1, true);
     else if (key === "PageDown") move(8);
@@ -518,7 +549,7 @@ export function App() {
     // Focusable itself, so a click on what is not — the preview's text,
     // which stays selectable — leaves the focus in here rather than on the
     // body, where no key reaches `onKeyDown`.
-    <main className={zoomed ? "panel zoomed" : "panel"} tabIndex={-1} onKeyDown={onKeyDown} onClick={onClick}>
+    <main className={["panel", zoomed && !about ? "zoomed" : "", about ? "about-up" : ""].filter(Boolean).join(" ")} tabIndex={-1} onKeyDown={onKeyDown} onClick={onClick}>
       {/* The breadcrumb is the panel's title bar: drag it to move the panel. */}
       <header className="crumbs" {...windowDrag}>
         <LumiMark />
@@ -526,7 +557,7 @@ export function App() {
         <span className="sep">›</span>
         <span>Clipboard Manager</span>
         <span className="sep">›</span>
-        <span className="here">{FILTER_LABELS[filter]}</span>
+        <span className="here">{about ? "About" : FILTER_LABELS[filter]}</span>
         <nav className="filters" aria-label="Show">
           {FILTERS.map((f) => (
             <button
@@ -558,7 +589,7 @@ export function App() {
           <KeepOpenGlyph />
         </button>
       </header>
-      <div className="search">
+      <div className="search" aria-hidden={about || undefined}>
         <SearchGlyph />
         <input
           ref={input}
@@ -569,6 +600,7 @@ export function App() {
             setNotice("");
             // A search is typed to see the list, so it comes back.
             setZoom(false);
+            setAbout(false);
           }}
           placeholder="Search history"
           autoComplete="off"
@@ -578,6 +610,7 @@ export function App() {
           aria-activedescendant={current ? `row-${selected}` : undefined}
         />
       </div>
+      {about && <About onLink={followLink} />}
       <section
         className="body-grid"
         // Nothing to preview: the list takes the width, so the empty note
@@ -648,11 +681,17 @@ export function App() {
       )}
       {menuOpen && <ActionsMenu actions={actions} onClose={closeMenu} />}
       <footer className="hints">
-        <span><kbd className="cap quiet">↩</kbd> paste</span>
-        <span><kbd className="cap quiet">⌥↩</kbd> plain</span>
-        <span><kbd className="cap quiet">{glyphs(pinKey)}</kbd> pin</span>
-        <span><kbd className="cap quiet">⌘⌥⌫</kbd> delete</span>
-        <span><kbd className="cap quiet">⇥</kbd> filter</span>
+        {about ? (
+          <span><kbd className="cap quiet">⎋</kbd> back to the history</span>
+        ) : (
+          <>
+            <span><kbd className="cap quiet">↩</kbd> paste</span>
+            <span><kbd className="cap quiet">⌥↩</kbd> plain</span>
+            <span><kbd className="cap quiet">{glyphs(pinKey)}</kbd> pin</span>
+            <span><kbd className="cap quiet">⌘⌥⌫</kbd> delete</span>
+            <span><kbd className="cap quiet">⇥</kbd> filter</span>
+          </>
+        )}
         <button
           type="button"
           className="exit"

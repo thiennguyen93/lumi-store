@@ -39,6 +39,9 @@ type Answers = {
   saveImage: Record<string, never>;
   clearAll: { ids: string[] };
   settings: Record<string, never>;
+  openDocs: Record<string, never>;
+  openStore: Record<string, never>;
+  tour: Record<string, never>;
   setPin: { pin: string | null };
   clear: { ids: string[] };
   close: Record<string, never>;

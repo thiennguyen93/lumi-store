@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.58.3] - 2026-09-30
+
+### Changed
+
+- The extension's homepage is now its page on lumikeys.app.
+
+## [0.58.2] - 2026-09-30
+
+### Changed
+
+- About's Docs opens this extension's page on lumikeys.app, and Store page opens the extensions list there.
+
+## [0.58.1] - 2026-09-30
+
+### Changed
+
+- About's buttons stay at the bottom of the panel while the changelog scrolls above them.
+
+## [0.58.0] - 2026-09-30
+
+### Added
+
+- About in the ⌘K menu: the extension's version, what's new, the full changelog, and links to the docs, the store page and the Welcome tour, right in the panel.
+
 ## [0.57.0] - 2026-09-30
 
 ### Added

@@ -199,6 +199,13 @@ function answer(request: Request): unknown {
     case "settings":
       say("would close the panel and open Settings on this extension's tab");
       return {};
+    case "openDocs":
+    case "openStore":
+      say(`would open the ${request.kind === "openDocs" ? "docs" : "store page"} and ${request.pinned ? "stay up" : "close"}`);
+      return {};
+    case "tour":
+      say("would close the panel and open the Welcome tour");
+      return {};
     case "copyText":
       say(`would copy the text read in ${request.id} and ${request.pinned ? "stay up" : "close"}`);
       return {};
