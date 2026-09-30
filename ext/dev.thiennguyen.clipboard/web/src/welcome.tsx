@@ -113,10 +113,9 @@ function Welcome() {
           <>
             <h1>Private by design</h1>
             <p className="dim">
-              Your history stays on this Mac — the extension has no network access. What it keeps
-              is encrypted with XChaCha20-Poly1305, under a key Lumi holds in your Keychain. Anything
-              a password manager marks as secret is dropped before it arrives, and Settings can
-              skip whole apps, text that matches a pattern, and forget copies after a time you pick.
+              Your history never leaves this Mac, and it is stored encrypted. Passwords copied
+              from a password manager are never saved. In Settings you can skip apps, skip text
+              that matches a pattern, or forget copies after a while.
             </p>
           </>
         )}
