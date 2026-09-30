@@ -40,18 +40,12 @@ const seen = new Map<string, Full>();
 const SEEN_MAX = 64;
 const seenKey = (row: Entry) => `${row.id}:${row.ocr ? 1 : 0}`;
 
-/** Whether a row has something worth the whole panel: text, rich text or a
- *  link, read at full width; a copied picture; or one copied file a viewer
- *  draws — a picture, a PDF, a film, a text or code file. A colour is a
- *  swatch, a sound's player a bar, and a tile or a list of files is no
- *  bigger for the room. */
+/** Whether a row can have the whole panel: every one can — text read at
+ *  full width, a picture, a film, a PDF, a file's tile or a list of files,
+ *  a colour as a big swatch. Kept as the one place that answers, for the
+ *  button, ⌘Y and the menu, should a kind ever be left out again. */
 export function canZoom(row: Entry | undefined): boolean {
-  if (!row) return false;
-  if (row.kind === "text" || row.kind === "rich" || row.kind === "link") return true;
-  if (row.kind === "image") return !!row.thumb;
-  if (row.kind !== "file" || (row.fileCount ?? 0) > 1) return false;
-  const family = fileFamily(row.fileExt);
-  return family === "image" || family === "pdf" || family === "video" || isTextFile(row.fileExt);
+  return !!row;
 }
 
 export function Preview({
@@ -171,7 +165,7 @@ export function Preview({
               type="button"
               className="bare zoom"
               aria-pressed={zoomed}
-              title={zoomed ? "Back to the list (⎋)" : "Give it the whole panel"}
+              title={zoomed ? "Back to the list (⌘Y)" : "Give it the whole panel (⌘Y)"}
               aria-label={zoomed ? "Back to the list" : "Expand preview"}
               // The caret stays in the search field, as it does for a row.
               onMouseDown={(event) => event.preventDefault()}
@@ -341,7 +335,7 @@ function FileMedia({
   token: string | null;
   name: string;
   onSize: (w: number, h: number) => void;
-  /** The panel is zoomed: a PDF shows its whole page. */
+  /** The panel is zoomed: a PDF shows its whole page, a film plays. */
   whole?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
@@ -379,7 +373,7 @@ function FileMedia({
     );
   }
   if (src && family === "video") {
-    return <VideoPlayer src={src} onError={() => setFailed(true)} />;
+    return <VideoPlayer src={src} play={whole} onError={() => setFailed(true)} />;
   }
   if (src && family === "audio") {
     return (
@@ -402,9 +396,11 @@ function FileMedia({
 
 /** A film with a small bar of its own — play, seek, time, sound — in place of
  *  the webview's controls, which are drawn at the size of the video and take
- *  most of a pane this narrow. Starts muted and never by itself; the sound is
- *  the person's to turn on. */
-function VideoPlayer({ src, onError }: { src: string; onError: () => void }) {
+ *  most of a pane this narrow. Always starts muted; the sound is the
+ *  person's to turn on. Beside the list it waits to be played; in the zoomed
+ *  panel (`play`) it plays as soon as it is reached, the way Quick Look does,
+ *  still muted. */
+function VideoPlayer({ src, play = false, onError }: { src: string; play?: boolean; onError: () => void }) {
   const video = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -416,6 +412,21 @@ function VideoPlayer({ src, onError }: { src: string; onError: () => void }) {
     const el = video.current;
     if (el) void (el.paused ? el.play().catch(onError) : el.pause());
   };
+  // Zoomed onto it — arrived at with the arrows, or zoomed on it — it plays.
+  // Asked once now and once more when it can play: a play asked for while
+  // the film is still loading is cut off by the load (AbortError, measured
+  // on the first visit to a row). A refusal is not a broken film — the
+  // load's own error says that — so it is left paused with its play button.
+  useEffect(() => {
+    const el = video.current;
+    if (!play || !el) return;
+    const start = () => {
+      if (el.paused) void el.play().catch(() => {});
+    };
+    start();
+    el.addEventListener("canplay", start, { once: true });
+    return () => el.removeEventListener("canplay", start);
+  }, [play, src]);
   return (
     <div className="player video">
       <video

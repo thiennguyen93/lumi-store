@@ -112,7 +112,8 @@ export function refusal(combo: Combo): string | null {
 }
 
 /** ⌘-letters no row is given because something else answers them
- *  (`history::PIN_LETTERS`' own list) — all but `p`, kept for Pin. */
+ *  (`history::PIN_LETTERS`' own list) — all but `p`, kept for Pin. `y` is
+ *  the panel's own, as `p` is, but not one a person may take for Pin. */
 const CMD_LETTERS: Record<string, string> = {
   a: "⌘A is Select All",
   c: "⌘C is Copy",
@@ -120,6 +121,7 @@ const CMD_LETTERS: Record<string, string> = {
   v: "⌘V is Paste",
   w: "⌘W is Close",
   x: "⌘X is Cut",
+  y: "⌘Y expands the preview",
   z: "⌘Z is Undo",
 };
 

@@ -725,6 +725,9 @@ body {
 .panel.zoomed .card .player.video video { flex: 1; min-height: 0; max-height: none; object-fit: contain; }
 .panel.zoomed .card .player.pdf { flex: 1 1 0; height: auto; min-height: 0; }
 .panel.zoomed .card .pdf-sheet canvas { margin: 0 auto; }
+.panel.zoomed .card .file-tile { flex: 1 1 0; height: auto; min-height: 96px; }
+.panel.zoomed .card .file-tile .glyph { width: 64px; height: 64px; }
+.panel.zoomed .card .chip { flex: 1 1 0; height: auto; min-height: 72px; }
 .card-head .dims + .zoom { margin-left: 2px; }
 .card-head > span + .zoom { margin-left: auto; }
 /* The glyph, not the button's box, lines up with the card's right edge. */

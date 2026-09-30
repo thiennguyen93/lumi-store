@@ -12,7 +12,7 @@ test("the default Pin key is ⌘P, and it is allowed", () => {
 });
 
 test("⌘ with a row's digit or a pinned row's letter is refused", () => {
-  for (const key of ["cmd+1", "cmd+9", "cmd+b", "cmd+d", "cmd+y"]) {
+  for (const key of ["cmd+1", "cmd+9", "cmd+b", "cmd+d", "cmd+u"]) {
     assert.match(refused(key) ?? "", /pastes a row/, key);
   }
 });
@@ -21,6 +21,7 @@ test("⌘ with a letter something else answers says what answers it", () => {
   assert.equal(refused("cmd+a"), "⌘A is Select All");
   assert.equal(refused("cmd+v"), "⌘V is Paste");
   assert.equal(refused("cmd+z"), "⌘Z is Undo");
+  assert.equal(refused("cmd+y"), "⌘Y expands the preview");
 });
 
 test("⌘⇧P is the panel's pin, not the row's", () => {

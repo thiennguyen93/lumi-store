@@ -14,7 +14,9 @@ import { type KeyboardEvent, type MouseEvent, useCallback, useEffect, useLayoutE
 import { call, message } from "./bridge";
 import {
   ClipboardGlyph,
+  CollapseGlyph,
   CopyGlyph,
+  ExpandGlyph,
   ExternalGlyph,
   DownloadGlyph,
   FolderGlyph,
@@ -55,9 +57,9 @@ export function App() {
   // unpinned — Lumi takes the pin off when the panel goes.
   const [pinned, setPinned] = useState(false);
   // The preview has the whole panel, the list put aside. Kept while the
-  // arrow keys move between rows that can have it, the way Quick Look stays
-  // up; the first row that cannot (`canZoom`) ends it, so the list is never
-  // back on screen with a zoom still waiting to take it away again.
+  // arrow keys move between rows, the way Quick Look stays up; a row that
+  // cannot have it (`canZoom` — none today, or no row at all) ends it, so the
+  // list is never back on screen with a zoom still waiting to take it away.
   const [zoom, setZoom] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const preview = usePreviewWidth();
@@ -316,6 +318,17 @@ export function App() {
             ...(textual
               ? [{ id: "plain", label: "Paste as plain text", glyph: <PlainGlyph />, keys: "⌥↩", run: () => paste(true, row) }]
               : []),
+            ...(zoomed || canZoom(row)
+              ? [
+                  {
+                    id: "zoom",
+                    label: zoomed ? "Back to the list" : "Expand preview",
+                    glyph: zoomed ? <CollapseGlyph /> : <ExpandGlyph />,
+                    keys: "⌘Y",
+                    run: () => setZoom(!zoomed),
+                  },
+                ]
+              : []),
             { id: "copy", label: "Copy", glyph: <CopyGlyph />, run: run("copy") },
             ...(row.kind === "file"
               ? [
@@ -372,7 +385,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [act, current, openSettings, paste, pinKey, pinned, remove, removeAll, rows, togglePin]);
+  }, [act, current, openSettings, paste, pinKey, pinned, remove, removeAll, rows, togglePin, zoomed]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -479,7 +492,12 @@ export function App() {
     else if (pressed(event, pinKey)) togglePin();
     // Before ⌘+letter too, which would take ⌘⇧P as row P's.
     else if (cmd && event.shiftKey && !event.altKey && key.toLowerCase() === "p") togglePinned();
-    else if (cmd && /^[1-9a-z]$/i.test(key)) {
+    // ⌘Y, Quick Look's key in the Finder, Raycast and Alfred: the preview
+    // takes the whole panel, and back. No row is ever given `y`
+    // (`history::PIN_LETTERS`), so it never pastes one.
+    else if (cmd && !event.shiftKey && !event.altKey && key.toLowerCase() === "y") {
+      if (zoomed || canZoom(current)) setZoom(!zoomed);
+    } else if (cmd && /^[1-9a-z]$/i.test(key)) {
       const wanted = key.toLowerCase();
       const at = shown.findIndex((row) => keys.get(row.id) === wanted);
       // ⌘A, ⌘C, ⌘V and the rest stay the text field's when no row owns them.

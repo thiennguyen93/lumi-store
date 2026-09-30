@@ -35,8 +35,9 @@ pub const SEARCH_CHARS: usize = 1024;
 
 /// Pin letters, in the order they are handed out. Leaves out the letters
 /// the panel already answers with ⌘ held: `a` select all, `c` copy, `p`
-/// pin, `q` quit, `v` paste, `w` close, `x` cut, `z` undo.
-pub const PIN_LETTERS: &str = "bdefghijklmnorstuy";
+/// pin, `q` quit, `v` paste, `w` close, `x` cut, `y` expand the preview
+/// (Quick Look's key), `z` undo.
+pub const PIN_LETTERS: &str = "bdefghijklmnorstu";
 
 /// Uniform type identifiers the model reads. Everything else in an item is
 /// kept verbatim for the paste and never interpreted.
@@ -417,6 +418,30 @@ pub fn add_ocr(index: &mut Index, hash: &str, text: &str) -> bool {
     entry.ocr_search = ocr_search_of(text);
     entry.ocr |= !text.trim().is_empty();
     true
+}
+
+/// Move a pin off a letter no longer handed out — `y`, which pins used to
+/// get before ⌘Y became the preview's — onto the first free one, so every
+/// pin keeps a key that reaches it. Deterministic, so every read of the
+/// same index agrees; the move is written with the next change. With no
+/// letter free the pin keeps its old one: still pinned, and still first.
+pub fn settle_pins(index: &mut Index) {
+    let mut taken: Vec<char> = index
+        .items
+        .iter()
+        .filter_map(|e| e.pin)
+        .filter(|c| PIN_LETTERS.contains(*c))
+        .collect();
+    for entry in index.items.iter_mut() {
+        let Some(old) = entry.pin else { continue };
+        if PIN_LETTERS.contains(old) {
+            continue;
+        }
+        if let Some(free) = PIN_LETTERS.chars().find(|c| !taken.contains(c)) {
+            entry.pin = Some(free);
+            taken.push(free);
+        }
+    }
 }
 
 pub fn toggle_pin(index: &mut Index, id: &str) -> Result<Option<char>, String> {
@@ -1094,6 +1119,21 @@ mod tests {
         assert_eq!(toggle_pin(&mut index, "b").unwrap(), Some('d'));
         assert_eq!(toggle_pin(&mut index, "a").unwrap(), None);
         assert_eq!(toggle_pin(&mut index, "a").unwrap(), Some('b'));
+    }
+
+    #[test]
+    fn a_pin_on_a_letter_no_longer_handed_out_moves_to_a_free_one() {
+        let mut index = Index::default();
+        for (i, id) in ["a", "b", "c"].iter().enumerate() {
+            apply(&mut index, copy(&format!("h{i}"), i as i64, vec![text(id)]), &rules(10), (*id).into());
+        }
+        toggle_pin(&mut index, "a").unwrap(); // b
+        index.items.iter_mut().find(|e| e.id == "b").unwrap().pin = Some('y');
+        settle_pins(&mut index);
+        let pin = |id: &str| index.items.iter().find(|e| e.id == id).unwrap().pin;
+        assert_eq!(pin("a"), Some('b'), "a pin on a letter still handed out stays");
+        assert_eq!(pin("b"), Some('d'), "the pin on y takes the first free letter");
+        assert_eq!(pin("c"), None);
     }
 
     #[test]

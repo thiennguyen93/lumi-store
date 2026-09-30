@@ -313,8 +313,9 @@ fn read_index(host: &impl Host) -> Result<(Index, Option<u64>), String> {
     match host.get(INDEX)? {
         None => Ok((Index::default(), None)),
         Some(stored) => {
-            let index = serde_json::from_str(&stored.value)
+            let mut index = serde_json::from_str(&stored.value)
                 .map_err(|err| format!("the history index is unreadable: {err}"))?;
+            history::settle_pins(&mut index);
             Ok((index, Some(stored.rev)))
         }
     }

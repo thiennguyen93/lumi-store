@@ -106,7 +106,7 @@ let settings: Record<string, string> = {
 };
 let trash: Entry[] = [];
 
-const PIN_LETTERS = "bdefghijklmnorstuy";
+const PIN_LETTERS = "bdefghijklmnorstu";
 
 function sorted(): Entry[] {
   const pins = rows.filter((r) => r.pin).sort((a, b) => (a.pin! < b.pin! ? -1 : 1));
