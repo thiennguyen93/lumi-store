@@ -643,6 +643,14 @@ def sources(entry: dict):
     return crate, manifest_path, manifest, ext, icon
 
 
+def published(entry_id: str, data: bytes, ext: str) -> str:
+    """`data` written into the output as `<id>-<sha256[:12]>.<ext>`, and
+    its URL: a name that changes whenever the bytes do."""
+    name = f"{entry_id}-{hashlib.sha256(data).hexdigest()[:12]}.{ext}"
+    (DIST / name).write_bytes(data)
+    return f"{BASE_URL}/{name}"
+
+
 def screenshots_of(entry_id: str, crate: Path, ext: dict) -> list:
     """`[extension] screenshots`, as (path, kind) pairs, read from the
     reviewed crate — never from a web build's output, the way icon.svg is
@@ -799,29 +807,17 @@ def main(check: bool = False, built: "Path | None" = None):
         if not check:
             sign(entry_id, package_path)
 
-        # Beside the package, named for its version like the icon: the
-        # index is cached for a year, so a new picture needs a new name.
-        shot_urls = []
-        for n, (shot, kind) in enumerate(screenshots_of(entry_id, crate, ext), start=1):
-            shot_name = f"{entry_id}-{ext['version']}-shot-{n}.{kind}"
-            (DIST / shot_name).write_bytes(shot.read_bytes())
-            shot_urls.append(f"{BASE_URL}/{shot_name}")
-
-        # Named by its content rather than its version: the text is edited
-        # more often than the package is bumped, and the index is cached
-        # for a year, so a changed page needs a new name of its own.
-        details_url = ""
+        # The pictures, the page's text and the icon, beside the package,
+        # each named by its content rather than the version: they change
+        # without a bump, and what serves them caches a file for a year, so
+        # a changed one needs a new name of its own.
+        shot_urls = [
+            published(entry_id, shot.read_bytes(), kind)
+            for shot, kind in screenshots_of(entry_id, crate, ext)
+        ]
         details = details_of(entry_id, crate)
-        if details is not None:
-            details_name = f"{entry_id}-{hashlib.sha256(details).hexdigest()[:12]}.md"
-            (DIST / details_name).write_bytes(details)
-            details_url = f"{BASE_URL}/{details_name}"
-
-        icon_url = ""
-        if icon is not None:
-            icon_name = f"{entry_id}-{ext['version']}.svg"
-            (DIST / icon_name).write_bytes(icon.read_bytes())
-            icon_url = f"{BASE_URL}/{icon_name}"
+        details_url = published(entry_id, details, "md") if details is not None else ""
+        icon_url = published(entry_id, icon.read_bytes(), "svg") if icon is not None else ""
         # Same two spellings the host's own manifest reader accepts
         # (`min-lumi-version`, aliased from `min_lumi_version`) — mirrored
         # into the index so Lumi's update check can word a recommendation
