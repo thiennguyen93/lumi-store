@@ -42,7 +42,7 @@ export interface ListAnswer {
   theme?: "light" | "dark" | "system";
   /** How the search field reads a query (the Search setting). */
   searchMode?: "exact" | "fuzzy" | "regexp" | "mixed";
-  /** The panel's Pin key, as the setting spells it: "alt+p". */
+  /** The panel's Pin key, as the setting spells it: "cmd+p". */
   pinKey?: string;
 }
 
@@ -104,7 +104,9 @@ export type Request =
   | { kind: "welcome" }
   | { kind: "openPanel" }
   | { kind: "preview"; id: string }
-  | { kind: "paste"; id: string; plain: boolean }
+  /** `pinned`, here and on every request below that would put the panel
+   *  away: the panel is pinned, so it stays up. */
+  | { kind: "paste"; id: string; plain: boolean; pinned?: boolean }
   /** A press that started to move: Lumi drags the item (or its `file`-th
    *  file) out of the panel. Refused once the button is up. */
   | { kind: "drag"; id: string; file?: number }
@@ -113,17 +115,19 @@ export type Request =
   | { kind: "delete"; ids: string[] }
   | { kind: "restore"; id: string }
   | { kind: "restore"; ids: string[] }
-  | { kind: "copy"; id: string; plain?: boolean }
-  | { kind: "copyText"; id: string }
-  | { kind: "copyPath"; id: string }
-  | { kind: "open"; id: string }
-  | { kind: "reveal"; id: string }
+  | { kind: "copy"; id: string; plain?: boolean; pinned?: boolean }
+  | { kind: "copyText"; id: string; pinned?: boolean }
+  | { kind: "copyPath"; id: string; pinned?: boolean }
+  | { kind: "open"; id: string; pinned?: boolean }
+  | { kind: "reveal"; id: string; pinned?: boolean }
   | { kind: "saveImage"; id: string; name: string }
   | { kind: "clearAll" }
   | { kind: "settings" }
   | { kind: "setPin"; id: string; pin: string | null }
   | { kind: "clear" }
   | { kind: "close" }
+  /** The title bar's pin: keep the panel up while working elsewhere. */
+  | { kind: "pinPanel"; pinned: boolean }
   | { kind: "stats" }
   | { kind: "previewWidth"; width: number }
   /** The Settings tab's: the apps seen in the history, and a pattern list

@@ -19,6 +19,7 @@ import {
   DownloadGlyph,
   FolderGlyph,
   GearGlyph,
+  KeepOpenGlyph,
   KindGlyph,
   LumiMark,
   PasteGlyph,
@@ -44,11 +45,15 @@ export function App() {
   // How the query is read — the Search setting; `reload` sets it.
   const [mode, setMode] = useState<SearchMode>("mixed");
   const modeRef = useRef<SearchMode>("mixed");
-  // Pin's key — the Pin shortcut setting; ⌥P until the list says.
+  // Pin's key — the Pin shortcut setting; ⌘P until the list says.
   const [pinKey, setPinKey] = useState<Combo>(() => parseCombo(DEFAULT_PIN_KEY)!);
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState(0);
   const [notice, setNotice] = useState("");
+  // Pinned in the title bar: up while the person works elsewhere, and a
+  // paste, a copy or a link opened leaves it up. Every open starts
+  // unpinned — Lumi takes the pin off when the panel goes.
+  const [pinned, setPinned] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const preview = usePreviewWidth();
   const windowDrag = useWindowDrag();
@@ -125,11 +130,20 @@ export function App() {
     (plain: boolean, row: Entry | undefined = current) => {
       if (!row) return;
       // Lumi closes the panel before it pastes, so nothing after this runs
-      // in a page anybody can see.
-      void act(() => call({ kind: "paste", id: row.id, plain }));
+      // in a page anybody can see — unless it is pinned, when Lumi only
+      // hands the keyboard back and the panel stays as it was.
+      void act(() => call({ kind: "paste", id: row.id, plain, pinned }));
     },
-    [act, current],
+    [act, current, pinned],
   );
+
+  const togglePinned = useCallback(() => {
+    const next = !pinned;
+    void act(async () => {
+      await call({ kind: "pinPanel", pinned: next });
+      setPinned(next);
+    });
+  }, [act, pinned]);
 
   const togglePin = useCallback(() => {
     if (!current) return;
@@ -281,7 +295,7 @@ export function App() {
   const actions = useMemo((): Action[] => {
     const row = current;
     const run = (kind: "copy" | "copyText" | "copyPath" | "open" | "reveal", plain?: boolean) => () => {
-      if (row) void act(() => call(kind === "copy" ? { kind, id: row.id, plain } : { kind, id: row.id }));
+      if (row) void act(() => call(kind === "copy" ? { kind, id: row.id, plain, pinned } : { kind, id: row.id, pinned }));
     };
     const unpinned = (rows ?? []).filter((r) => !r.pin).length;
     const all = rows?.length ?? 0;
@@ -349,7 +363,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [act, current, openSettings, paste, pinKey, remove, removeAll, rows, togglePin]);
+  }, [act, current, openSettings, paste, pinKey, pinned, remove, removeAll, rows, togglePin]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -450,8 +464,10 @@ export function App() {
     // do again; with nothing, they stay the search field's own text undo.
     else if (cmd && !event.shiftKey && key.toLowerCase() === "z" && undos.current.length) undo();
     else if (cmd && event.shiftKey && key.toLowerCase() === "z" && redos.current.length) redo();
-    // Before ⌘+letter below, which a Pin of ⌘⌥P would otherwise fall to.
+    // Before ⌘+letter below, which ⌘P — Pin's default — would otherwise fall to.
     else if (pressed(event, pinKey)) togglePin();
+    // Before ⌘+letter too, which would take ⌘⇧P as row P's.
+    else if (cmd && event.shiftKey && !event.altKey && key.toLowerCase() === "p") togglePinned();
     else if (cmd && /^[1-9a-z]$/i.test(key)) {
       const wanted = key.toLowerCase();
       const at = shown.findIndex((row) => keys.get(row.id) === wanted);
@@ -497,6 +513,17 @@ export function App() {
             </button>
           ))}
         </nav>
+        <button
+          type="button"
+          className={pinned ? "keep on" : "keep"}
+          aria-pressed={pinned}
+          title={pinned ? "Pinned: stays open while you work elsewhere (⌘⇧P)" : "Keep the panel open while you work elsewhere (⌘⇧P)"}
+          aria-label="Keep the panel open"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={togglePinned}
+        >
+          <KeepOpenGlyph />
+        </button>
       </header>
       <div className="search">
         <SearchGlyph />
@@ -564,7 +591,7 @@ export function App() {
             row={current}
             query={query}
             used={used}
-            onOpen={(id) => void act(() => call({ kind: "open", id }))}
+            onOpen={(id) => void act(() => call({ kind: "open", id, pinned }))}
           />
         </div>
       </section>

@@ -44,7 +44,7 @@ const TIPS: [string, string][] = [
   ["⌥↩", "Paste as plain text"],
   ["⇥", "Filter by kind"],
   ["⌘K", "More actions"],
-  ["⌥P", "Pin"],
+  ["⌘P", "Pin"],
   ["⌘⌥⌫", "Delete"],
 ];
 

@@ -142,30 +142,37 @@
   --cb-link: color-mix(in srgb, var(--cb-accent) 58%, #fff);
 }
 
-/* How much of a file family's own hue its glyph keeps, and what the rest
-   is (the glyph rules below say why). Light takes a little black, for a
-   margin: it already reads. Dark takes half white, the least that puts
-   every family level with the grey glyph on a mid-grey desktop; Frosted is
-   "less colour", so its ink is the text's grey rather than black or white;
-   Dark glass is darkest, and needs less. */
+/* Which tone of a file family's hue its glyph starts from, how much of it
+   is kept, and what the rest is (the glyph rules below say why).
+   Light starts from the deep tone and keeps all of it. Dark starts from
+   the bright one and takes half white, the least that puts every family
+   level with the grey glyph on a mid-grey desktop; Frosted is "less
+   colour", so its ink is the text's grey rather than white; Dark glass is
+   darkest, and needs less.
+   A folder in the dark keeps none of its blue and is the ink itself: the
+   biggest solid in the list, light blue on a light desktop under clear
+   glass measured 1.2:1 where the title's white beside it was 2.6:1. White
+   (Frosted's grey) is a folder at a glance there, as blue is in light. */
 :root {
-  --cb-family-keep: 80%;
+  --cb-deep-share: 100%;
+  --cb-family-keep: 100%;
   --cb-family-ink: #000;
 }
-:root[data-material="sidebar"] {
-  --cb-family-ink: #3a3a3c;
-}
 :root[data-theme="dark"] {
+  --cb-deep-share: 0%;
   --cb-family-keep: 50%;
   --cb-family-ink: #fff;
+  --cb-folder-keep: 0%;
 }
 :root[data-material="sidebar"][data-theme="dark"] {
   --cb-family-ink: #e5e5ea;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
+    --cb-deep-share: 0%;
     --cb-family-keep: 50%;
     --cb-family-ink: #fff;
+    --cb-folder-keep: 0%;
   }
   :root[data-material="sidebar"]:not([data-theme]) {
     --cb-family-ink: #e5e5ea;
@@ -173,8 +180,10 @@
 }
 /* Dark glass is always dark (`wear` sets the theme), whatever the system. */
 :root[data-material="hud"] {
+  --cb-deep-share: 0%;
   --cb-family-keep: 60%;
   --cb-family-ink: #fff;
+  --cb-folder-keep: 0%;
 }
 
 html, body, #root { height: 100%; }
@@ -285,6 +294,31 @@ body {
   color: var(--cb-key-ink);
 }
 
+/* The panel's pin: after the filters, apart from them — it is about the
+   window, not about which rows show. */
+.keep {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-left: 4px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--cb-muted);
+  cursor: default;
+}
+.keep .glyph { width: 13px; height: 13px; }
+.keep:hover { color: CanvasText; }
+.keep.on {
+  border-color: var(--cb-key-edge);
+  background: var(--cb-key);
+  color: var(--cb-key-ink);
+}
+
 .search {
   display: flex;
   align-items: center;
@@ -361,24 +395,26 @@ body {
 .lead .glyph { width: 14px; height: 14px; }
 .row[aria-selected="true"] .lead { color: rgba(255, 255, 255, 0.85); }
 /* A file's family shows in its colour, until the row is selected and the
-   lead goes white with the rest. Each hue is shaded toward the theme's ink
-   (the tokens below), never drawn as is: the glass is clear, so what is
-   under a panel sets how light it is, and a dark panel over a light desktop
-   is mid-grey. A saturated hue has mid lightness too — measured, the folder
-   blue at 1.3:1 there against 1.7:1 for the grey glyph beside it, and every
-   family bar one under that grey. Mixed toward the ink, a hue is at least
-   as far from the glass as the grey glyph in every theme and on either
-   kind of desktop, and still reads as its colour. */
-.glyph[data-family="pdf"] { color: color-mix(in srgb, #e5484d var(--cb-family-keep), var(--cb-family-ink)); }
-.glyph[data-family="doc"] { color: color-mix(in srgb, #3e7bfa var(--cb-family-keep), var(--cb-family-ink)); }
-.glyph[data-family="sheet"] { color: color-mix(in srgb, #30a46c var(--cb-family-keep), var(--cb-family-ink)); }
-.glyph[data-family="slides"] { color: color-mix(in srgb, #f76b15 var(--cb-family-keep), var(--cb-family-ink)); }
-.glyph[data-family="code"] { color: color-mix(in srgb, #8e4ec6 var(--cb-family-keep), var(--cb-family-ink)); }
-.glyph[data-family="audio"] { color: color-mix(in srgb, #d6409f var(--cb-family-keep), var(--cb-family-ink)); }
-.glyph[data-family="video"] { color: color-mix(in srgb, #7c5cf0 var(--cb-family-keep), var(--cb-family-ink)); }
-.glyph[data-family="image"] { color: color-mix(in srgb, #12a594 var(--cb-family-keep), var(--cb-family-ink)); }
-.glyph[data-family="archive"] { color: color-mix(in srgb, #ab6400 var(--cb-family-keep), var(--cb-family-ink)); }
-.glyph[data-family="folder"] { color: color-mix(in srgb, #3e9bff var(--cb-family-keep), var(--cb-family-ink)); }
+   lead goes white with the rest. Two tones of each: the bright one, and a
+   deep one — the same hue and colourfulness, 0.07 darker in OKLCH — and
+   never either one drawn as is everywhere: the glass is clear, so what is
+   under a panel sets how light it is. A dark panel over a light desktop is
+   mid-grey, where a saturated hue has the same lightness — measured, the
+   folder blue at 1.3:1 against 1.7:1 for the grey glyph beside it — so dark
+   mixes the bright tone toward its ink. A light panel over a dark desktop
+   greys too, so light takes the deep tone; darkening by mixing in black
+   was the first try, and it dulled every hue (the folder's chroma 0.171 to
+   0.143), which read as dirty rather than as a colour. */
+.glyph[data-family="pdf"] { color: color-mix(in srgb, color-mix(in srgb, #cc2e39 var(--cb-deep-share), #e5484d) var(--cb-family-keep), var(--cb-family-ink)); }
+.glyph[data-family="doc"] { color: color-mix(in srgb, color-mix(in srgb, #2a64e2 var(--cb-deep-share), #3e7bfa) var(--cb-family-keep), var(--cb-family-ink)); }
+.glyph[data-family="sheet"] { color: color-mix(in srgb, color-mix(in srgb, #068e58 var(--cb-deep-share), #30a46c) var(--cb-family-keep), var(--cb-family-ink)); }
+.glyph[data-family="slides"] { color: color-mix(in srgb, color-mix(in srgb, #d95a02 var(--cb-deep-share), #f76b15) var(--cb-family-keep), var(--cb-family-ink)); }
+.glyph[data-family="code"] { color: color-mix(in srgb, color-mix(in srgb, #7938af var(--cb-deep-share), #8e4ec6) var(--cb-family-keep), var(--cb-family-ink)); }
+.glyph[data-family="audio"] { color: color-mix(in srgb, color-mix(in srgb, #bd258a var(--cb-deep-share), #d6409f) var(--cb-family-keep), var(--cb-family-ink)); }
+.glyph[data-family="video"] { color: color-mix(in srgb, color-mix(in srgb, #6945d8 var(--cb-deep-share), #7c5cf0) var(--cb-family-keep), var(--cb-family-ink)); }
+.glyph[data-family="image"] { color: color-mix(in srgb, color-mix(in srgb, #018e7f var(--cb-deep-share), #12a594) var(--cb-family-keep), var(--cb-family-ink)); }
+.glyph[data-family="archive"] { color: color-mix(in srgb, color-mix(in srgb, #8f5300 var(--cb-deep-share), #ab6400) var(--cb-family-keep), var(--cb-family-ink)); }
+.glyph[data-family="folder"] { color: color-mix(in srgb, color-mix(in srgb, #2385e7 var(--cb-deep-share), #3e9bff) var(--cb-folder-keep, var(--cb-family-keep)), var(--cb-family-ink)); }
 .row[aria-selected="true"] .glyph[data-family] { color: inherit; }
 /* A folder is solid, a page is drawn: a stroke of a folder's outline is
    the one family glyph with nothing inside it, and read as the faintest

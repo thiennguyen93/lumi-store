@@ -230,7 +230,7 @@ struct Prefs {
     theme: &'static str,
     /// How the panel reads a search: "exact", "fuzzy", "regexp", "mixed".
     search: &'static str,
-    /// The panel's Pin key, as the page spells it ("alt+p"); the page
+    /// The panel's Pin key, as the page spells it ("cmd+p"); the page
     /// checks it and falls back to its default on anything it cannot read.
     pin_key: String,
 }
@@ -294,7 +294,7 @@ fn prefs(host: &impl Host) -> Prefs {
             Some("sidebar") => "sidebar",
             _ => "popover",
         },
-        pin_key: s["pinKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("alt+p").to_string(),
+        pin_key: s["pinKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("cmd+p").to_string(),
         search: match s["search"].as_str() {
             Some("exact") => "exact",
             Some("fuzzy") => "fuzzy",
@@ -642,7 +642,11 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             // somewhere a synthesised ⌘V is not welcome. The panel closes
             // either way. Read here rather than sent by the panel, so a
             // stale panel cannot disagree with the setting.
-            host.paste(&items, prefs(host).paste_on_select)?;
+            let keystroke = prefs(host).paste_on_select;
+            host.paste(&items, keystroke)?;
+            if !keystroke {
+                put_away(host, request)?;
+            }
             Ok(json!({}))
         }
         "pin" => {
@@ -734,6 +738,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 return Err("That item has no plain text to copy.".to_string());
             }
             host.paste(&items, false)?;
+            put_away(host, request)?;
             Ok(json!({}))
         }
         "copyText" => {
@@ -744,6 +749,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 .ok_or_else(|| "Lumi read no text in that image.".to_string())?;
             let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None, path: None, file_token: None };
             host.paste(&[vec![rep]], false)?;
+            put_away(host, request)?;
             Ok(json!({}))
         }
         // Copy path(s): the places, as text — not the files, which Copy is.
@@ -752,13 +758,14 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let text = history::paths_text_of(&record.items).ok_or_else(|| "Lumi does not know where that file is.".to_string())?;
             let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None, path: None, file_token: None };
             host.paste(&[vec![rep]], false)?;
+            put_away(host, request)?;
             Ok(json!({}))
         }
         "open" => {
             let record = read_record(host, &id()?)?;
             let url = history::link_of(&record.items).ok_or_else(|| "That item is not a web address.".to_string())?;
             host.open_url(&url)?;
-            host.close_window(PANEL)?;
+            put_away(host, request)?;
             Ok(json!({}))
         }
         // The menu's Settings… / ⌘,: the panel goes, Settings comes.
@@ -771,7 +778,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let record = read_record(host, &id()?)?;
             let file = history::file_url_of(&record.items).ok_or_else(|| "That item is not a file.".to_string())?;
             host.reveal(&file)?;
-            host.close_window(PANEL)?;
+            put_away(host, request)?;
             Ok(json!({}))
         }
         // Save image as…: the panel suggests a name (it has the local
@@ -804,8 +811,26 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             host.close_window(PANEL)?;
             Ok(json!({}))
         }
+        // The pin in the panel's title bar: stay up while the person works
+        // in another app. Lumi takes the pin off when the panel goes.
+        "pinPanel" => {
+            let pinned = request["pinned"].as_bool().ok_or("the pin is not on or off")?;
+            host.set_pinned(PANEL, pinned)?;
+            Ok(json!({ "pinned": pinned }))
+        }
         other => Err(format!("the panel has no {other} request")),
     }
+}
+
+/// Put the panel away after something done from it — a copy, a link opened,
+/// a file shown — unless the person pinned it (`pinned` in the request: the
+/// page is the one that knows), which is asking for exactly the opposite.
+/// Escape and Settings… close it pinned or not.
+fn put_away(host: &impl Host, request: &Value) -> Result<(), String> {
+    if request["pinned"].as_bool() == Some(true) {
+        return Ok(());
+    }
+    host.close_window(PANEL)
 }
 
 /// The width the preview pane was last dragged to; `None` for never, or
@@ -1092,6 +1117,22 @@ mod tests {
         host.conflicts.set(2);
         ui(&host, &json!({"kind": "pin", "id": "id1"})).unwrap();
         assert_eq!(list(&host)[0]["pin"], "b");
+    }
+
+    #[test]
+    fn a_pinned_panel_stays_up_after_a_copy() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "one")).unwrap();
+        ui(&host, &json!({"kind": "pinPanel", "pinned": true})).unwrap();
+        assert_eq!(host.opened.borrow().last().unwrap(), &format!("pinned {PANEL} true"));
+        ui(&host, &json!({"kind": "copy", "id": "id1", "pinned": true})).unwrap();
+        assert_eq!(host.pasted.borrow().len(), 1, "copied");
+        assert_eq!(host.closed.get(), 0, "and still up");
+        ui(&host, &json!({"kind": "copy", "id": "id1"})).unwrap();
+        assert_eq!(host.closed.get(), 1, "unpinned, a copy puts it away");
+        ui(&host, &json!({"kind": "close", "pinned": true})).unwrap();
+        assert_eq!(host.closed.get(), 2, "Escape closes it pinned or not");
+        assert!(ui(&host, &json!({"kind": "pinPanel"})).is_err(), "on or off, nothing else");
     }
 
     #[test]

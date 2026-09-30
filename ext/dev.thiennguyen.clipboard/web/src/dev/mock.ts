@@ -94,7 +94,7 @@ let previewWidth: number | null = null;
 // What Lumi keeps for `GET /__lumi__/settings`, as text the way it stores it.
 let settings: Record<string, string> = {
   keep: "3mo",
-  pinKey: "alt+p",
+  pinKey: "cmd+p",
   theme: "system",
   search: new URLSearchParams(location.search).get("search") ?? "mixed",
   pasteOnSelect: "true",
@@ -133,7 +133,7 @@ function answer(request: Request): unknown {
         items: sorted(),
         pasteOnSelect: true,
         previewWidth,
-        pinKey: settings.pinKey ?? "alt+p",
+        pinKey: settings.pinKey ?? "cmd+p",
         searchMode: (settings.search ?? "mixed") as "exact" | "fuzzy" | "regexp" | "mixed",
         appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
       };
@@ -160,7 +160,7 @@ function answer(request: Request): unknown {
       say(`would drag ${request.id}${request.file != null ? ` (file ${request.file})` : ""} out of the panel`);
       return {};
     case "paste":
-      say(`would close the panel and paste ${request.plain ? "plain text of " : ""}${request.id}`);
+      say(`would ${request.pinned ? "hand the keyboard back" : "close the panel"} and paste ${request.plain ? "plain text of " : ""}${request.id}`);
       return {};
     case "pin": {
       const row = rows.find((r) => r.id === request.id);
@@ -189,13 +189,13 @@ function answer(request: Request): unknown {
       return { ids };
     }
     case "copy":
-      say(`would copy ${request.plain ? "plain text of " : ""}${request.id} and close`);
+      say(`would copy ${request.plain ? "plain text of " : ""}${request.id} and ${request.pinned ? "stay up" : "close"}`);
       return {};
     case "settings":
       say("would close the panel and open Settings on this extension's tab");
       return {};
     case "copyText":
-      say(`would copy the text read in ${request.id} and close`);
+      say(`would copy the text read in ${request.id} and ${request.pinned ? "stay up" : "close"}`);
       return {};
     case "copyPath":
       say(`would copy the path of ${rows.find((r) => r.id === request.id)?.title}`);
@@ -225,6 +225,9 @@ function answer(request: Request): unknown {
     case "close":
       say("would close the panel");
       return {};
+    case "pinPanel":
+      say(request.pinned ? "would keep the panel up while you work elsewhere" : "would let the panel close when you click away");
+      return { pinned: request.pinned };
     case "previewWidth":
       previewWidth = request.width;
       say(`would keep the preview ${request.width}px wide`);

@@ -41,6 +41,7 @@ type Answers = {
   setPin: { pin: string | null };
   clear: { ids: string[] };
   close: Record<string, never>;
+  pinPanel: { pinned: boolean };
   stats: Stats;
   previewWidth: Record<string, never>;
   apps: { apps: { id: string; name: string }[] };

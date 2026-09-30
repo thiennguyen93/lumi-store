@@ -27,10 +27,11 @@ pub trait Host {
     fn put(&self, key: &str, value: &str, if_rev: Option<u64>) -> Result<u64, PutError>;
     fn delete(&self, key: &str) -> Result<(), String>;
     fn delete_blob(&self, id: &str) -> Result<(), String>;
-    /// Put `items` on the pasteboard, close the panel and — when `keystroke`
-    /// — paste them into the application in front. The panel goes first: it
-    /// is key while it is up, so a ⌘V sent before it goes would land in the
-    /// panel's own search field.
+    /// Put `items` on the pasteboard and — when `keystroke` — paste them
+    /// into the application in front. For a paste Lumi takes the panel down
+    /// first (a pinned one only hands the keyboard back): it is key while it
+    /// is up, so a ⌘V sent before it goes would land in the panel's own
+    /// search field. Without a keystroke the panel is the caller's to close.
     fn paste(&self, items: &[Vec<Rep>], keystroke: bool) -> Result<(), String>;
     /// Drag `items` out of the panel the person is pressing in, into the
     /// application they drop them on; Lumi refuses unless the button is still
@@ -45,6 +46,8 @@ pub trait Host {
     fn set_material(&self, window: &str, material: &str) -> Result<(), String>;
     /// Light, dark or the system's, for the panel — at once if it is up.
     fn set_theme(&self, window: &str, theme: &str) -> Result<(), String>;
+    /// Keep the panel up while the person works elsewhere, or let it go.
+    fn set_pinned(&self, window: &str, pinned: bool) -> Result<(), String>;
     /// Hand one of this extension's pages a message; `false` when it is
     /// not on screen.
     fn post(&self, window: &str, message: &str) -> Result<bool, String>;
@@ -152,8 +155,7 @@ impl Host for Lumi {
             // to be gone — the order this trait's doc asks for.
             lumi::paste(&items)
         } else {
-            lumi::write_clipboard(&items)?;
-            self.close_window(crate::PANEL)
+            lumi::write_clipboard(&items)
         }
     }
 
@@ -175,6 +177,10 @@ impl Host for Lumi {
 
     fn set_theme(&self, window: &str, theme: &str) -> Result<(), String> {
         lumi_extension_api::set_theme(window, theme)
+    }
+
+    fn set_pinned(&self, window: &str, pinned: bool) -> Result<(), String> {
+        lumi_extension_api::set_pinned(window, pinned)
     }
 
     fn post(&self, window: &str, message: &str) -> Result<bool, String> {
@@ -345,6 +351,11 @@ pub mod memory {
 
         fn set_theme(&self, window: &str, theme: &str) -> Result<(), String> {
             self.opened.borrow_mut().push(format!("theme {window} {theme}"));
+            Ok(())
+        }
+
+        fn set_pinned(&self, window: &str, pinned: bool) -> Result<(), String> {
+            self.opened.borrow_mut().push(format!("pinned {window} {pinned}"));
             Ok(())
         }
 

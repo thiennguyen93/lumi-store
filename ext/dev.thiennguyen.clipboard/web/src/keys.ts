@@ -1,5 +1,5 @@
 // The panel's own shortcuts that the person can change — Pin, today — as
-// the `pinKey` setting spells them: "alt+p", "ctrl+shift+1". Matched on the
+// the `pinKey` setting spells them: "cmd+p", "ctrl+shift+1". Matched on the
 // key's position (`event.code`), not on what it types: ⌥P types "π".
 
 export interface Combo {
@@ -11,7 +11,9 @@ export interface Combo {
   key: string;
 }
 
-export const DEFAULT_PIN_KEY = "alt+p";
+/** ⌘P: the one ⌘-letter no row is ever given (`history::PIN_LETTERS`
+ *  leaves `p` out for it), and ⌘⇧P beside it pins the panel. */
+export const DEFAULT_PIN_KEY = "cmd+p";
 
 export function parseCombo(text: string): Combo | null {
   const parts = text.toLowerCase().split("+").map((p) => p.trim()).filter(Boolean);
@@ -95,13 +97,31 @@ export function refusal(combo: Combo): string | null {
     return "Add ⌘, ⌥ or ⌃ — without one, the key types into the search";
   }
   if (combo.cmd && !combo.ctrl && !combo.alt && !combo.shift) {
-    return "⌘ with a letter or digit pastes a row or a pinned item";
+    const taken = CMD_LETTERS[combo.key];
+    if (taken) return taken;
+    // A digit, or a letter a pinned row may be given.
+    if (combo.key !== "p") return "⌘ with a letter or digit pastes a row or a pinned item";
   }
   if (combo.cmd && combo.shift && !combo.ctrl && !combo.alt && combo.key === "z") {
     return "⌘⇧Z is Redo";
   }
+  if (combo.cmd && combo.shift && !combo.ctrl && !combo.alt && combo.key === "p") {
+    return "⌘⇧P pins the panel";
+  }
   return null;
 }
+
+/** ⌘-letters no row is given because something else answers them
+ *  (`history::PIN_LETTERS`' own list) — all but `p`, kept for Pin. */
+const CMD_LETTERS: Record<string, string> = {
+  a: "⌘A is Select All",
+  c: "⌘C is Copy",
+  q: "⌘Q is Quit",
+  v: "⌘V is Paste",
+  w: "⌘W is Close",
+  x: "⌘X is Cut",
+  z: "⌘Z is Undo",
+};
 
 const KEY_NAMES: Record<string, string> = {
   Space: "Space",

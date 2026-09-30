@@ -46,7 +46,18 @@ export function ActionsMenu({ actions, onClose }: { actions: Action[]; onClose: 
       onClose();
     };
     document.addEventListener("pointerdown", away, true);
-    return () => document.removeEventListener("pointerdown", away, true);
+    // And so does the panel losing the keyboard — a click in another app,
+    // ⌘-Tab — as a macOS menu goes when its app does. A panel used to close
+    // then, menu and all; a pinned one stays up, and a menu left open over
+    // an app the person is now typing in is a menu nobody can reach with
+    // the keys it lists. The pointer crossing a pinned panel is a focus and
+    // a blur too (Lumi's hover without the keyboard), but only while the
+    // panel does not hold the keyboard — never while this menu is up.
+    window.addEventListener("blur", onClose);
+    return () => {
+      document.removeEventListener("pointerdown", away, true);
+      window.removeEventListener("blur", onClose);
+    };
   }, [onClose]);
   // Moving off an armed item disarms it.
   useEffect(() => {

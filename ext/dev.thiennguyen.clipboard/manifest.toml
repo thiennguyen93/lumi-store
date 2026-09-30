@@ -5,16 +5,17 @@
 # all arrive with lumi:ext 0.3 in Lumi 1.25.0, and an older Lumi shows this
 # as needing an update rather than installing it. 1.26.0 since Save image
 # as…: `storage.blob-save` is a new import, and a component that imports it
-# does not load on a Lumi without it at all.
+# does not load on a Lumi without it at all. 1.29.0 since the panel's pin, for
+# the same reason: `ui.set-pinned`.
 [extension]
 id = "dev.thiennguyen.clipboard"
 name = "Clipboard Manager"
-version = "0.51.6"
+version = "0.52.3"
 description = "Keep what you copy — text, links, images and files — and paste it back from a panel."
 author = "Thien Nguyen"
 summary = "Remembers what you copy on this Mac and brings it back with one shortcut: search, pick, and it is pasted into the app you were typing in. Text, rich text, links, colours, files and images, with pins for what you keep reaching for. Anything a password manager marks as secret is never recorded — Lumi drops it before this extension hears of it — and the history is stored encrypted with a key Lumi keeps in your Keychain. Nothing leaves your Mac: the extension has no network access."
 homepage = "https://lumikeys.app/docs/extensions"
-min-lumi-version = "1.26.0"
+min-lumi-version = "1.29.0"
 # `clipboard-history`: hears each copy (the review sheet says so).
 # `clipboard`: puts a chosen item back on the pasteboard.
 # `input` + `accessibility`: pastes it into the app in front — the same
@@ -137,12 +138,13 @@ kind = "bool"
 default = "true"
 
 # The panel's own Pin key, while the panel is up — not a global shortcut.
-# Spelled "alt+p", "ctrl+shift+1"; the Settings tab records it.
+# Spelled "cmd+p", "ctrl+shift+1"; the Settings tab records it. ⌘P because
+# no row is ever given ⌘P (`history::PIN_LETTERS`), and ⌘⇧P pins the panel.
 [[settings]]
 name = "pinKey"
 label = "Pin shortcut"
 kind = "text"
-default = "alt+p"
+default = "cmd+p"
 
 # How the panel's search reads a query — Maccy's four modes.
 [[settings]]
