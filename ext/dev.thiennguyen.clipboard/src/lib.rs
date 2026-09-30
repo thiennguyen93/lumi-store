@@ -51,6 +51,14 @@ pub const DASHBOARD: &str = ":page:dashboard";
 /// Lumi's own `PUT /__lumi__/settings`; what it asks here only reads.
 pub const SETTINGS: &str = ":settings";
 
+/// Where the panel's About sends the person: this extension's page on
+/// lumikeys.app (the manifest's `homepage` too), and the extensions list
+/// there. Fixed here — the page
+/// names which one, never the address, so it cannot have anything else
+/// opened through this.
+const DOCS_URL: &str = "https://lumikeys.app/extensions/dev.thiennguyen.clipboard/";
+const STORE_URL: &str = "https://lumikeys.app/extensions";
+
 /// How long a row is kept, as the `keep` setting spells it.
 /// The keep when none is set, as the manifest's default says.
 const DEFAULT_KEEP: (&str, i64) = ("3mo", 90 * 24 * 60 * 60_000);
@@ -826,6 +834,19 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             host.open_settings()?;
             Ok(json!({}))
         }
+        // About's links: the docs and the store page, in the browser.
+        "openDocs" | "openStore" => {
+            host.open_url(if request["kind"] == "openDocs" { DOCS_URL } else { STORE_URL })?;
+            put_away(host, request)?;
+            Ok(json!({}))
+        }
+        // About's Welcome tour: the panel goes, the tour comes — the same
+        // window an install opens.
+        "tour" => {
+            host.close_window(PANEL)?;
+            host.open_window(WELCOME)?;
+            Ok(json!({}))
+        }
         "reveal" => {
             let record = read_record(host, &id()?)?;
             let file = history::file_url_of(&record.items).ok_or_else(|| "That item is not a file.".to_string())?;
@@ -1372,6 +1393,15 @@ mod tests {
         assert_eq!(*host.opened.borrow(), ["open https://example.com/x"]);
         ui(&host, &json!({"kind": "settings"})).unwrap();
         assert_eq!(host.opened.borrow().last().map(String::as_str), Some("settings"));
+
+        // About's links open only their own address, whatever else is sent.
+        ui(&host, &json!({"kind": "openDocs", "url": "https://evil.example"})).unwrap();
+        ui(&host, &json!({"kind": "openStore"})).unwrap();
+        ui(&host, &json!({"kind": "tour"})).unwrap();
+        assert_eq!(
+            host.opened.borrow()[2..],
+            [format!("open {DOCS_URL}"), format!("open {STORE_URL}"), "open-window welcome".to_string()]
+        );
 
         ui(&host, &json!({"kind": "copy", "id": "id2"})).unwrap();
         assert_eq!(*host.keystrokes.borrow(), [false], "copy is no ⌘V");

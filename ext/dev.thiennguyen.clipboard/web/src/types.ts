@@ -128,6 +128,11 @@ export type Request =
   | { kind: "saveImage"; id: string; name: string }
   | { kind: "clearAll" }
   | { kind: "settings" }
+  /** About's links: the docs or the store page, by name — the extension
+   *  holds the addresses — and the Welcome tour. */
+  | { kind: "openDocs"; pinned?: boolean }
+  | { kind: "openStore"; pinned?: boolean }
+  | { kind: "tour" }
   | { kind: "setPin"; id: string; pin: string | null }
   | { kind: "clear" }
   | { kind: "close" }

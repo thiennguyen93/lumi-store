@@ -1272,3 +1272,91 @@ html.glass-preview[data-material="sidebar"] #root {
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   backdrop-filter: blur(40px) saturate(200%);
 }
+
+/* ⌘K › About: the extension's card in place of the list and the preview.
+   The list stays mounted (and scrolled) under it, the filter chips go
+   with it; the search stays too,
+   folded to nothing but still focusable, so a letter typed lands there
+   and brings the history back. */
+.panel.about-up .body-grid,
+.panel.about-up .filters { display: none; }
+.panel.about-up .keep { margin-left: auto; }
+.panel.about-up .search {
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.about {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.about-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 24px 12px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.about-head { display: flex; align-items: center; gap: 14px; }
+.about-head .ext-icon { flex: none; }
+.about-title { min-width: 0; }
+.about-title h1 { margin: 0; font-size: 17px; font-weight: 600; }
+.about-title p { margin: 1px 0 0; font-size: 12px; color: var(--cb-muted); }
+.about-title .about-id {
+  font: 11px ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--cb-faint);
+}
+.about-lede { margin: 14px 0; line-height: 1.5; }
+.about-log { border-top: 1px solid var(--cb-line); padding-top: 10px; }
+.about-release + .about-release { margin-top: 10px; }
+.about-release h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.about-date { font-weight: 400; color: var(--cb-faint); }
+.about-release h3 {
+  margin: 6px 0 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cb-muted);
+}
+.about-release ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--cb-muted);
+}
+.about-release code {
+  font: 11px ui-monospace, "SF Mono", Menlo, monospace;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--cb-card);
+  color: CanvasText;
+}
+/* Pinned under the scrolling notes, above the footer's keys. */
+.about-links { flex: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 24px; }
+.about-links button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--cb-line);
+  border-radius: 7px;
+  background: var(--cb-card);
+  font: inherit;
+  font-size: 12px;
+  color: CanvasText;
+  cursor: default;
+}
+.about-links button:hover { background: var(--cb-hover); }
+.about-links .glyph { width: 14px; height: 14px; color: var(--cb-muted); }

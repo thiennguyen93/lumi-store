@@ -52,5 +52,5 @@ id = "dev.thiennguyen.screenshot"
 path = "ext/dev.thiennguyen.screenshot"
 subdir = "."
 web = "web"
-category = "Productivity"
+category = "Utilities"
 private = true

@@ -848,6 +848,15 @@ def changelog_of(entry_id: str, crate: Path, version: str) -> list:
     return releases
 
 
+def discussion_of(entry_id: str):
+    """`{number, url}` of the entry's GitHub Discussion, from the
+    DISCUSSIONS variable `discussions.py` fills in CI, or None — on a
+    laptop, in a check, or when that job failed. Lumi hides the hearts
+    for None rather than show a zero it cannot know."""
+    listed = json.loads(os.environ.get("DISCUSSIONS") or "{}")
+    return listed.get(entry_id)
+
+
 def notes_sha256(notes: str) -> str:
     """What a summary is pinned to: a version's notes, byte for byte. An
     edited section leaves its old summary unshown until it is redone."""
@@ -1112,6 +1121,12 @@ def main(check: bool = False, built: "Path | None" = None):
                 # (`release-notes/<id>.json`, or null while none matches
                 # the notes). Named by its content, like `details`.
                 "changelog": changelog_url,
+                # `{number, url}` or null: the entry's thread in the repo's
+                # Extensions discussions (`discussions.py`). Lumi reads
+                # the hearts on it live from GitHub — the index says which
+                # thread, never how many, since a count here is stale the
+                # moment it is written.
+                "discussion": discussion_of(entry_id),
                 "size": len(package),
                 "commands": [c.get("label") or c.get("name", "") for c in manifest.get("command", [])],
                 "shortcuts": [
@@ -1170,6 +1185,13 @@ def icon_img(entry: dict) -> str:
     )
 
 
+def discussion_link(entry: dict) -> str:
+    thread = entry.get("discussion")
+    if not thread:
+        return ""
+    return f' <a class="discuss" href="{html.escape(thread["url"], quote=True)}">❤️ Like or discuss</a>'
+
+
 def page(index: list) -> str:
     """The store's web face: the same index, browsable, with Install
     buttons that open `lumi://extensions/install?id=<id>`.
@@ -1187,7 +1209,7 @@ def page(index: list) -> str:
     <p class="by">{html.escape(e["author"])}</p>
     <p>{html.escape(e["description"])}</p>
     <p class="caps">{html.escape(", ".join(e["capabilities"]) or "reaches nothing outside Lumi")}</p>
-    <p><a class="install" href="lumi://extensions/install?id={html.escape(e["id"], quote=True)}">Install in Lumi</a></p>
+    <p><a class="install" href="lumi://extensions/install?id={html.escape(e["id"], quote=True)}">Install in Lumi</a>{discussion_link(e)}</p>
   </article>'''
         for e in index
     )
@@ -1205,6 +1227,7 @@ def page(index: list) -> str:
   small, .by, .caps {{ opacity: .65; }}
   .caps {{ font-size: .85em; }}
   .install {{ display: inline-block; padding: .4em 1em; border: 1px solid currentColor; border-radius: 8px; text-decoration: none; }}
+  .discuss {{ margin-left: .75em; }}
 </style>
 <h1>Lumi extensions</h1>
 <p>Install opens Lumi, which downloads the package, verifies the store
