@@ -1,0 +1,308 @@
+{
+  "0.3.1": {
+    "notesSha256": "6038698b34fa40126972febbef1bc5ab6adcc9bd157a7f9dffeedc6b0a08e773",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Extension Store screenshots added",
+          "items": [
+            "Extension Store now shows screenshots of the keyboard test in action"
+          ]
+        },
+        "vi": {
+          "headline": "Thêm ảnh chụp màn hình cho Cửa hàng Tiện ích",
+          "items": [
+            "Cửa hàng Tiện ích giờ hiển thị ảnh chụp màn hình khi kiểm tra bàn phím"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.0": {
+    "notesSha256": "a4b15e6fdf04e93dc857d27323438d09598a2213fdaea8a4f16102f9ec29c2f4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Under-the-hood improvements",
+          "items": [
+            "Updated internal components for better compatibility and performance"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện bên trong",
+          "items": [
+            "Cập nhật các thành phần nội bộ để tương thích và hiệu suất tốt hơn"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.1": {
+    "notesSha256": "690da28b1d59fc217dca9d90b176545c42fd5ee29bab25d6b2c8748fe228e467",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "F11 can now be tested without triggering Show Desktop",
+          "items": [
+            "F11 can now be tested without triggering Show Desktop"
+          ]
+        },
+        "vi": {
+          "headline": "Có thể kiểm tra phím F11 mà không kích hoạt Show Desktop",
+          "items": [
+            "Có thể kiểm tra phím F11 mà không kích hoạt Show Desktop"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.0": {
+    "notesSha256": "0f08ca6a29ef8e15f70bfff0716a90b840d7ddfce1519d021c0e075b93aab770",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The fn or Globe key is now tested on its own",
+          "items": [
+            "The fn or Globe key lights up when pressed and is checked for double-typing",
+            "Requires Accessibility permission; without it, fn is detected when pressed with delete or an arrow"
+          ]
+        },
+        "vi": {
+          "headline": "Phím fn hoặc Globe giờ được kiểm tra riêng",
+          "items": [
+            "Phím fn hoặc Globe sáng lên khi nhấn và được kiểm tra nhấn hai lần",
+            "Cần quyền Accessibility trong Lumi; nếu không có, fn vẫn được phát hiện khi nhấn cùng delete hoặc mũi tên"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.9": {
+    "notesSha256": "f961573839c1c197eea69662e1665f683466a131f52bf49182d56ae9de32ecdb",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed fn key detection with delete and arrow keys",
+          "items": [
+            "fn key now registers correctly when pressed with delete or arrow keys"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa lỗi phát hiện phím fn với delete và phím mũi tên",
+          "items": [
+            "Phím fn giờ được nhận diện đúng khi nhấn cùng delete hoặc phím mũi tên"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.8": {
+    "notesSha256": "ce082e33045d3eeed1ae82867b759e98b4374e7ad68b2fbecf577ad34ca485e5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Globe key can now be tested",
+          "items": [
+            "Globe key can now be tested by pressing it with delete or an arrow key",
+            "Tooltip and notes explain how to test the Globe key"
+          ]
+        },
+        "vi": {
+          "headline": "Có thể kiểm tra phím Globe",
+          "items": [
+            "Phím Globe giờ có thể kiểm tra bằng cách nhấn cùng phím delete hoặc phím mũi tên",
+            "Chú thích và ghi chú hướng dẫn cách kiểm tra phím Globe"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.7": {
+    "notesSha256": "a5e01576c94924cdf76eb3def82a36703c15f42091e84471a4855973a600e300",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Improved keyboard visibility",
+          "items": [
+            "Opening 'Keys this page cannot hear' now scrolls only the notes, keeping the keyboard visible"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện hiển thị bàn phím",
+          "items": [
+            "Mở 'Phím trang này không nghe được' giờ chỉ cuộn phần ghi chú, giữ bàn phím luôn hiển thị"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.6": {
+    "notesSha256": "3744081a685bdf45536c27fb4ce789ea85ccfdc9d962b4197ab58256c77566d6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Keyboard now matches MacBook Pro layout with proper key sizes",
+          "items": [
+            "The keyboard now shows a MacBook Pro layout with real key sizes and shapes",
+            "Function keys are full height with Touch ID shown on the right",
+            "Arrow keys show the correct half-height left and right keys",
+            "Modifier keys display their symbols instead of text labels",
+            "ISO Return key appears as one L-shaped key instead of two separate keys",
+            "Key labels resize to fit when you make the window narrower"
+          ]
+        },
+        "vi": {
+          "headline": "Bàn phím hiển thị đúng bố cục MacBook Pro với kích thước thật",
+          "items": [
+            "Bàn phím hiện theo bố cục MacBook Pro với kích thước và hình dạng thật",
+            "Phím chức năng có chiều cao đầy đủ với Touch ID ở bên phải",
+            "Phím mũi tên trái và phải hiển thị đúng chiều cao một nửa",
+            "Phím bổ trợ hiển thị ký hiệu thay vì chữ",
+            "Phím Return kiểu ISO hiện dạng chữ L liền khối thay vì hai phím riêng",
+            "Nhãn phím tự động co lại khi thu nhỏ cửa sổ"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.5": {
+    "notesSha256": "4d1c3cdba2ba63c552c306d0169b1618005d072a24dc73a478814e4b2ead99c2",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Added a hint for testing Caps Lock",
+          "items": [
+            "A hint now appears under the keyboard explaining how to test Caps Lock"
+          ]
+        },
+        "vi": {
+          "headline": "Thêm gợi ý kiểm tra phím Caps Lock",
+          "items": [
+            "Giờ có gợi ý hiển thị dưới bàn phím hướng dẫn cách kiểm tra phím Caps Lock"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.4": {
+    "notesSha256": "54c1294a114de1bd79532ff00d7a6dd0f6f11f68824ae2530ca254948032a26a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Start testing immediately when the tab opens",
+          "items": [
+            "The test now captures your keyboard as soon as you open the tab",
+            "When you click away, a cover appears and one click resumes the test"
+          ]
+        },
+        "vi": {
+          "headline": "Bắt đầu kiểm tra ngay khi mở tab",
+          "items": [
+            "Bàn phím được nhận diện ngay khi bạn mở tab",
+            "Khi nhấp ra ngoài, một lớp phủ xuất hiện và một cú nhấp sẽ tiếp tục kiểm tra"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.3": {
+    "notesSha256": "b94f5a19f08ce5a5e1335d1c189f0f79f7245eee5b379f9fee3698a332a3c83c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Caps Lock now registers when used as Hyper key",
+          "items": [
+            "Caps Lock now counts as pressed when Lumi's Hyper key is set to toggle Caps Lock on a tap"
+          ]
+        },
+        "vi": {
+          "headline": "Caps Lock giờ được nhận diện khi dùng làm phím Hyper",
+          "items": [
+            "Caps Lock giờ được tính là đã nhấn khi phím Hyper của Lumi được đặt để bật tắt Caps Lock khi chạm"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.2": {
+    "notesSha256": "84c877d9d24a05772f85b4ccb284f8b14e219e61e8d10d1d21e514c915ff624b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Modifier tracking and Caps Lock detection improvements",
+          "items": [
+            "The last key pressed now shows which modifier keys were held down",
+            "Caps Lock is now detected even when Hyper key remap is configured but inactive"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện theo dõi phím bổ trợ và phát hiện Caps Lock",
+          "items": [
+            "Phím vừa nhấn giờ hiển thị các phím bổ trợ đang được giữ",
+            "Caps Lock giờ được phát hiện ngay cả khi Hyper key đã cấu hình nhưng chưa hoạt động"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.1": {
+    "notesSha256": "b3780b5cf68b0852494a0932038ed1e9d785a8edddc44a840b626883cf4b8819",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Caps Lock now works with Hyper key enabled",
+          "items": [
+            "Caps Lock can now be tested even when Lumi's Hyper key is turned on"
+          ]
+        },
+        "vi": {
+          "headline": "Caps Lock hoạt động với phím Hyper đã bật",
+          "items": [
+            "Caps Lock giờ có thể kiểm tra được ngay cả khi phím Hyper của Lumi đang bật"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "0b700dc6d25a70c9c6c5694f0175b7f28aa609374a756b60459e03659d678cfe",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "First release: test every key and catch double-typing",
+          "items": [
+            "A keyboard test tab shows a MacBook keyboard that lights up as you press each key",
+            "Counts how many keys you have tested so far",
+            "Shows which keys are currently held down",
+            "Flags keys that register twice from a single press, indicating a worn switch",
+            "Supports both ANSI and ISO keyboard layouts"
+          ]
+        },
+        "vi": {
+          "headline": "Phiên bản đầu tiên: kiểm tra từng phím và phát hiện gõ kép",
+          "items": [
+            "Tab kiểm tra bàn phím hiển thị bàn phím MacBook sáng lên khi bạn nhấn từng phím",
+            "Đếm số lượng phím bạn đã kiểm tra",
+            "Hiển thị các phím đang được giữ",
+            "Đánh dấu phím kích hoạt hai lần khi chỉ nhấn một lần, dấu hiệu công tắc bị mòn",
+            "Hỗ trợ cả bố trí bàn phím ANSI và ISO"
+          ]
+        }
+      }
+    }
+  }
+}

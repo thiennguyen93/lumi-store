@@ -1,0 +1,412 @@
+{
+  "0.57.0": {
+    "notesSha256": "6e9a433d6fd3a527aaa6c8a6903a2bbb8d6368911ece0e2130e134ed069d8ef1",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Colour formats now recognised and converted",
+          "items": [
+            "Colours written as rgb(), rgba(), hsl() or hsla() are now recognised as colours",
+            "A copied colour's preview shows it in hex, rgb() and hsl() formats to copy from"
+          ]
+        },
+        "vi": {
+          "headline": "Nhận diện và chuyển đổi định dạng màu",
+          "items": [
+            "Màu viết dưới dạng rgb(), rgba(), hsl() hoặc hsla() giờ được nhận diện là màu",
+            "Xem trước màu đã sao chép hiển thị dạng hex, rgb() và hsl() để sao chép"
+          ]
+        }
+      }
+    }
+  },
+  "0.54.11": {
+    "notesSha256": "fe92481f4224ed6cf83790f94d71c916975a64c387997cace382e3ed3ff6ad4b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Smoother scrolling and a more stable text-recognition panel",
+          "items": [
+            "Long lists now fade at the edge when there is more content to scroll",
+            "The text-recognition panel no longer collapses when it has little to show"
+          ]
+        },
+        "vi": {
+          "headline": "Cuộn mượt hơn và bảng nhận diện văn bản ổn định hơn",
+          "items": [
+            "Danh sách dài giờ mờ dần ở rìa khi còn nội dung để cuộn",
+            "Bảng nhận diện văn bản không còn bị thu nhỏ khi có ít nội dung hiển thị"
+          ]
+        }
+      }
+    }
+  },
+  "0.54.6": {
+    "notesSha256": "ddc8b47a65a593fdce6110f8b3aba85a1afd9bde19642d66b515d3443c151a66",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "PDF viewing preferences now saved per panel",
+          "items": [
+            "Each panel remembers your preferred PDF fit mode"
+          ]
+        },
+        "vi": {
+          "headline": "Tùy chọn xem PDF được lưu riêng cho từng bảng",
+          "items": [
+            "Mỗi bảng ghi nhớ chế độ hiển thị PDF bạn ưa thích"
+          ]
+        }
+      }
+    }
+  },
+  "0.54.2": {
+    "notesSha256": "5bf8d40906bc496b8d29394068840cc6a8296a2061c01e77ecce9491305288d0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed keyboard shortcut conflict with preview expansion",
+          "items": [
+            "Fixed pinned items moving to different letters when Command-Y expands the preview"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa xung đột phím tắt khi mở rộng xem trước",
+          "items": [
+            "Sửa lỗi mục đã ghim chuyển sang chữ cái khác khi Command-Y mở rộng xem trước"
+          ]
+        }
+      }
+    }
+  },
+  "0.53.3": {
+    "notesSha256": "c9660e1fa48ea4696b8be9e20fc74165f5cc36d76d36b056c8fc80fc8f8a623b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Zoomed view for PDF previews",
+          "items": [
+            "You can now zoom in on PDF previews to see details more clearly"
+          ]
+        },
+        "vi": {
+          "headline": "Phóng to xem trước PDF",
+          "items": [
+            "Giờ bạn có thể phóng to bản xem trước PDF để xem rõ hơn"
+          ]
+        }
+      }
+    }
+  },
+  "0.52.4": {
+    "notesSha256": "5b2575b8de5cf9a9aa80712c89ab4462eff89ceab03b10bbd27b3f8b04257412",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Simpler welcome tour",
+          "items": [
+            "The welcome tour now uses clearer wording"
+          ]
+        },
+        "vi": {
+          "headline": "Hướng dẫn chào mừng rõ ràng hơn",
+          "items": [
+            "Hướng dẫn chào mừng giờ dùng từ ngữ dễ hiểu hơn"
+          ]
+        }
+      }
+    }
+  },
+  "0.52.3": {
+    "notesSha256": "f980e398560814319f383abb1cdfe140fe7cc1b115e992fcc5fdd376aaae1285",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Pin the panel or pin an item with new shortcuts",
+          "items": [
+            "Press Command-Shift-P to pin the panel open while you paste multiple items",
+            "Press Command-P to pin an item (changed from Option-P)"
+          ]
+        },
+        "vi": {
+          "headline": "Ghim bảng điều khiển hoặc ghim mục với phím tắt mới",
+          "items": [
+            "Nhấn Command-Shift-P để ghim bảng điều khiển mở khi dán nhiều mục",
+            "Nhấn Command-P để ghim một mục (đã đổi từ Option-P)"
+          ]
+        }
+      }
+    }
+  },
+  "0.51.6": {
+    "notesSha256": "be7c8c43b52421f04cdaaf354e615f440b1d7118a3f5b2b073655400102bc27a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Improved file icon visibility",
+          "items": [
+            "File icons are easier to tell apart in light and dark mode"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện hiển thị biểu tượng tệp",
+          "items": [
+            "Biểu tượng tệp dễ phân biệt hơn ở chế độ sáng và tối"
+          ]
+        }
+      }
+    }
+  },
+  "0.51.5": {
+    "notesSha256": "fb3b38a618a8d1d34a293a421b309ab8eb0d2a025b0386a4b77127a5499eb1da",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Drag images from the preview",
+          "items": [
+            "Images in the preview can now be dragged into other apps"
+          ]
+        },
+        "vi": {
+          "headline": "Kéo hình ảnh từ bản xem trước",
+          "items": [
+            "Giờ đây có thể kéo hình ảnh từ bản xem trước sang ứng dụng khác"
+          ]
+        }
+      }
+    }
+  },
+  "0.51.4": {
+    "notesSha256": "c256e52c6d8a1f419754bdeaa476004d9ab95f70170c0fe767f2fbf6b1f45fad",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Faster app selection in Settings",
+          "items": [
+            "Choosing an app in Settings now suggests matches as you type its name or bundle id"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn ứng dụng nhanh hơn trong Cài đặt",
+          "items": [
+            "Chọn ứng dụng trong Cài đặt giờ gợi ý kết quả khi bạn gõ tên hoặc bundle id"
+          ]
+        }
+      }
+    }
+  },
+  "0.51.2": {
+    "notesSha256": "8bfef2c53c7969543fd12fb3fb42165c8b4319a056eeb0760fc1a38c7ee9853a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Search now preserves letter case correctly",
+          "items": [
+            "Search now preserves letter case when reading history for the first time"
+          ]
+        },
+        "vi": {
+          "headline": "Tìm kiếm giữ nguyên chữ hoa chữ thường",
+          "items": [
+            "Tìm kiếm giờ giữ nguyên chữ hoa chữ thường khi đọc lịch sử lần đầu"
+          ]
+        }
+      }
+    }
+  },
+  "0.51.1": {
+    "notesSha256": "a727c2b345ff895aae0e8909d36389dcb3b3a75650d953370de96ed29bb9307c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Search now preserves original text casing",
+          "items": [
+            "Search now preserves the original casing of copied text"
+          ]
+        },
+        "vi": {
+          "headline": "Tìm kiếm giữ nguyên chữ hoa chữ thường",
+          "items": [
+            "Tìm kiếm giờ giữ nguyên chữ hoa chữ thường của văn bản đã sao chép"
+          ]
+        }
+      }
+    }
+  },
+  "0.51.0": {
+    "notesSha256": "362d38a11722f4676da7de630efe3f3cb9d8fe738a6350a2f3768bef77e3d88b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour now includes privacy information",
+          "items": [
+            "The Welcome tour now has a sixth step explaining privacy"
+          ]
+        },
+        "vi": {
+          "headline": "Hướng dẫn chào mừng giờ có thông tin về quyền riêng tư",
+          "items": [
+            "Hướng dẫn chào mừng giờ có thêm bước thứ sáu giải thích về quyền riêng tư"
+          ]
+        }
+      }
+    }
+  },
+  "0.50.0": {
+    "notesSha256": "dd85231543c46c24477056662de2f251169efd60bb69d76b4c7af2998c2dffcd",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Separate search for text in images",
+          "items": [
+            "Searching the text recognised in images is now separate from searching what you copied"
+          ]
+        },
+        "vi": {
+          "headline": "Tìm kiếm riêng cho văn bản trong ảnh",
+          "items": [
+            "Tìm kiếm văn bản nhận diện trong ảnh giờ tách biệt với tìm kiếm nội dung đã sao chép"
+          ]
+        }
+      }
+    }
+  },
+  "0.49.1": {
+    "notesSha256": "de7fb4405b102b7223609802d6a5e5dfd6acb6d958b41f219c69e789922abb0b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour improvements",
+          "items": [
+            "The Welcome tour now has five steps instead of four",
+            "Fixed keyboard navigation in the Welcome tour"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện hướng dẫn chào mừng",
+          "items": [
+            "Hướng dẫn chào mừng giờ có năm bước thay vì bốn",
+            "Sửa lỗi điều hướng bàn phím trong hướng dẫn chào mừng"
+          ]
+        }
+      }
+    }
+  },
+  "0.46.15": {
+    "notesSha256": "498e1c7cf66aee63b26c6d757c195bfe3722d02149affe15c80dcd224303253e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome window update",
+          "items": [
+            "The Welcome window now copies lumikeys.app as its example"
+          ]
+        },
+        "vi": {
+          "headline": "Cập nhật cửa sổ Chào mừng",
+          "items": [
+            "Cửa sổ Chào mừng giờ sao chép lumikeys.app làm ví dụ"
+          ]
+        }
+      }
+    }
+  },
+  "0.46.14": {
+    "notesSha256": "b455b51bb6b0b651576b94c0f7c36efd8c6bf46351c8c268f55ab3ddafe7d1c5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Extension Store screenshots added",
+          "items": [
+            "Extension Store now shows screenshots of the extension"
+          ]
+        },
+        "vi": {
+          "headline": "Thêm ảnh chụp màn hình cho Cửa hàng Tiện ích",
+          "items": [
+            "Cửa hàng Tiện ích giờ hiển thị ảnh chụp màn hình của tiện ích"
+          ]
+        }
+      }
+    }
+  },
+  "0.46.13": {
+    "notesSha256": "9e42bd5f5b395b52e8d517fd6b2ea7e520e410e9f5b8a16827d0ddc92e5cfee5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Links in previews are now clickable",
+          "items": [
+            "Links in the preview can now be clicked to open them"
+          ]
+        },
+        "vi": {
+          "headline": "Liên kết trong bản xem trước giờ có thể nhấp được",
+          "items": [
+            "Liên kết trong bản xem trước giờ có thể nhấp để mở"
+          ]
+        }
+      }
+    }
+  },
+  "0.46.11": {
+    "notesSha256": "ac0039b6c7e65d8fe080357a5626535dcbf5b1ace699573117155b9b601c6ec4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Renamed and improved search",
+          "items": [
+            "The extension is now called Clipboard Manager",
+            "Search works better at finding what you copied"
+          ]
+        },
+        "vi": {
+          "headline": "Đổi tên và cải thiện tìm kiếm",
+          "items": [
+            "Tiện ích giờ có tên là Clipboard Manager",
+            "Tìm kiếm hoạt động tốt hơn khi tìm nội dung đã sao chép"
+          ]
+        }
+      }
+    }
+  },
+  "0.46.8": {
+    "notesSha256": "095901636b0e4e3476bf499940f8f6556650ccb45afd2515e88f22b85e23558d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Redesigned welcome screen with live preview",
+          "items": [
+            "The welcome screen now shows a live preview of the clipboard panel"
+          ]
+        },
+        "vi": {
+          "headline": "Màn hình chào mừng mới với bản xem trước trực tiếp",
+          "items": [
+            "Màn hình chào mừng giờ hiển thị bản xem trước trực tiếp của bảng clipboard"
+          ]
+        }
+      }
+    }
+  }
+}
