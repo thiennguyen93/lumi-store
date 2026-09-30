@@ -3,7 +3,7 @@ import { useItemDrag } from "./itemDrag";
 import { FileGlyph, KindGlyph, PinGlyph } from "./icons";
 import { fileFamily } from "./fileType";
 import { AppMark } from "./AppMark";
-import { since, type Span } from "./search";
+import { type Found, since, type Span } from "./search";
 import type { Entry } from "./types";
 
 export const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -72,7 +72,7 @@ export function Row({
   index,
   selected,
   shortcut,
-  marks,
+  found,
   popped,
   onPick,
   onPaste,
@@ -81,8 +81,9 @@ export function Row({
   index: number;
   selected: boolean;
   shortcut: string | undefined;
-  /** What the search found in the title. */
-  marks: Span[];
+  /** The title as the search shows it: from near the match when the
+   *  match is far in, what to mark, and where it was when not in sight. */
+  found: Found;
   /** Just pinned: its pin pops in. */
   popped: boolean;
   onPick: (index: number) => void;
@@ -118,7 +119,9 @@ export function Row({
       </span>
       <Lead row={row} />
       {/* Copied text, so always a text node — never markup. */}
-      <span className="title">{row.title ? <Title text={row.title} marks={marks} /> : KIND_WORDS[row.kind]}</span>
+      <span className="title">{found.text ? <Title text={found.text} marks={found.marks} /> : KIND_WORDS[row.kind]}</span>
+      {/* Found in nothing the row shows: where, so the row is not a riddle. */}
+      {found.note && <span className="found-in">{found.note}</span>}
       {/* Two fixed columns at the end, so a time growing from 9s to 10s
           never shoves the app name: the app, right-aligned against the
           time, and the time (or a pin's glyph) in a column of its own. */}

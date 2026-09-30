@@ -15,7 +15,11 @@ export interface Entry {
   appName: string | null;
   kind: Kind;
   title: string;
+  /** The row's own text, as copied, its first kilobyte. */
   search: string;
+  /** The text Lumi read in the row's image, as read; absent while reading
+   *  is off, or when there was none. */
+  ocrSearch?: string;
   thumb: string | null;
   blobs: string[];
   /** Lumi read text in this item's image: Copy text in image is offered. */

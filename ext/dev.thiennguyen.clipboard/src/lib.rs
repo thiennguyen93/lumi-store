@@ -556,15 +556,12 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let (index, _) = read_index(host)?;
             let mut items = history::sorted(&index, prefs.order);
             for entry in &mut items {
-                let read = std::mem::take(&mut entry.ocr_search);
-                if prefs.ocr {
-                    if !read.is_empty() {
-                        entry.search.push(' ');
-                        entry.search.push_str(&read);
-                    }
-                } else {
+                // Its own field (`ocrSearch`), so the panel can say a row
+                // was found by the words in its image.
+                if !prefs.ocr {
                     // Reading is off: no row offers, or is found by, the
                     // text in its image.
+                    entry.ocr_search.clear();
                     entry.ocr = false;
                 }
             }
@@ -933,9 +930,11 @@ mod tests {
         on_event(&host, "clipboard", FIXTURE).unwrap();
         on_event(&host, "clipboard-ocr", OCR_FIXTURE).unwrap();
         let rows = list(&host);
-        let search = rows[0]["search"].as_str().unwrap();
-        assert!(search.contains("tìm kiếm nhanh"), "{search}");
-        assert!(search.starts_with("chuyển tính năng"), "the row's own text stays first: {search}");
+        let read = rows[0]["ocrSearch"].as_str().unwrap().to_lowercase();
+        assert!(read.contains("tìm kiếm nhanh"), "{read}");
+        let own = rows[0]["search"].as_str().unwrap().to_lowercase();
+        assert!(own.starts_with("chuyển tính năng"), "the row's own text is its own: {own}");
+        assert!(!own.contains("tìm kiếm nhanh"), "and the image's words are not in it: {own}");
 
         // Text for a copy the history no longer has is nothing to do.
         let stray = OCR_FIXTURE.replace("5f2c", "0000");
@@ -1231,7 +1230,7 @@ mod tests {
         let ocr = json!({"v": 1, "hash": "h1", "text": "Invoice TOTAL 42"}).to_string();
         on_event(&host, "clipboard-ocr", &ocr).unwrap();
         assert_eq!(list(&host)[0]["ocr"], true);
-        assert!(list(&host)[0]["search"].as_str().unwrap().contains("invoice total 42"));
+        assert_eq!(list(&host)[0]["ocrSearch"], "Invoice TOTAL 42", "found by it, as read");
         ui(&host, &json!({"kind": "copyText", "id": "id1"})).unwrap();
         let pasted = host.pasted.borrow();
         assert_eq!(pasted[0][0][0].text.as_deref(), Some("Invoice TOTAL 42"));
@@ -1241,7 +1240,7 @@ mod tests {
         let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
         assert_eq!(shown["ocr"], Value::Null, "reading turned off hides the text");
         assert_eq!(list(&host)[0]["ocr"], Value::Null, "and no row offers it");
-        assert!(!list(&host)[0]["search"].as_str().unwrap().contains("invoice"), "nor is found by it");
+        assert_eq!(list(&host)[0]["ocrSearch"], Value::Null, "nor is found by it");
         assert!(ui(&host, &json!({"kind": "copyText", "id": "id1"})).is_err());
     }
 

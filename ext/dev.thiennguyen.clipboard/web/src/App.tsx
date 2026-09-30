@@ -35,7 +35,7 @@ import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
 import { type Combo, DEFAULT_PIN_KEY, glyphs, parseCombo, pressed } from "./keys";
-import { badPattern, FILTER_LABELS, FILTERS, type Filter, highlights, inFilter, search, searchWith, type SearchMode, shortcuts } from "./search";
+import { badPattern, FILTER_LABELS, FILTERS, type Filter, found, inFilter, search, searchWith, type SearchMode, shortcuts } from "./search";
 import type { Entry, ListAnswer } from "./types";
 
 export function App() {
@@ -540,7 +540,7 @@ export function App() {
               index={index}
               selected={index === selected}
               shortcut={keys.get(row.id)}
-              marks={highlights(row.title, query, used)}
+              found={found(row, query, used)}
               popped={popped === row.id}
               onPick={(at) => {
                 setSelected(at);
@@ -560,7 +560,12 @@ export function App() {
             title="Drag to resize · double-click to reset"
             {...preview.grip}
           />
-          <Preview row={current} onOpen={(id) => void act(() => call({ kind: "open", id }))} />
+          <Preview
+            row={current}
+            query={query}
+            used={used}
+            onOpen={(id) => void act(() => call({ kind: "open", id }))}
+          />
         </div>
       </section>
       {notice && (

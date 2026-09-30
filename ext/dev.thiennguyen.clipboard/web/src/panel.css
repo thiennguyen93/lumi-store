@@ -376,6 +376,26 @@ body {
   background: var(--cb-hit-on-bg);
   color: var(--cb-hit-on-ink);
 }
+/* The same stroke in the preview card, laid over whatever drew the text
+   (previewMarks.ts): a highlight can only colour, so no weight or padding. */
+::highlight(search) {
+  background-color: var(--cb-hit-bg);
+  color: var(--cb-hit-ink);
+}
+
+/* Where a search found a row whose title shows nothing of it — "in image"
+   for the words read in a picture, "in its path" for a file's folder. */
+.found-in {
+  flex: none;
+  padding: 0 5px;
+  border: 1px solid var(--cb-line);
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 15px;
+  color: var(--cb-faint);
+  white-space: nowrap;
+}
+.row[aria-selected="true"] .found-in { border-color: currentColor; color: inherit; opacity: 0.8; }
 
 /* The end of a row: the app it came from, a dot, then how long ago —
    each its own column, the time a fixed four characters wide (`12mo` at
@@ -633,7 +653,10 @@ body {
   white-space: pre-wrap;
   word-break: break-word;
   min-height: 0;
-  overflow: hidden;
+  /* A long copy scrolls inside the card, as a rich one does: the rest of
+     it is readable, and a search can scroll to a word near its end. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   -webkit-user-select: text;
   user-select: text;
 }

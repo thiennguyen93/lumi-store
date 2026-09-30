@@ -20,9 +20,10 @@ export function words(query: string): string[] {
 }
 
 const folded = new WeakMap<Entry, string>();
+const foldedFields = new WeakMap<Entry, string[]>();
 
-/** Every word must appear somewhere in the row: its title, its search text
- *  (which carries text read out of an image) or the app it came from. */
+/** Every word must appear somewhere in the row: its title, its own text,
+ *  the text read out of its image, or the app it came from. */
 export function matches(row: Entry, wanted: string[]): boolean {
   if (!wanted.length) return true;
   const hay = hayOf(row);
@@ -36,18 +37,42 @@ export type SearchMode = "exact" | "fuzzy" | "regexp" | "mixed";
 function hayOf(row: Entry): string {
   let hay = folded.get(row);
   if (hay === undefined) {
-    hay = fold(`${row.title} ${row.search} ${row.appName ?? ""}`);
+    hay = fold(`${row.title} ${row.search} ${row.ocrSearch ?? ""} ${row.appName ?? ""}`);
     folded.set(row, hay);
   }
   return hay;
 }
 
+/** The fields of a row a fuzzy word is looked for in, each on its own, folded
+ *  once per row: a word's letters are not taken half from the title and
+ *  half from the text behind it, or from the app's name. */
+function fieldsOf(row: Entry): string[] {
+  let fields = foldedFields.get(row);
+  if (fields === undefined) {
+    fields = [row.title, row.search, row.ocrSearch ?? "", row.appName ?? ""].filter(Boolean).map(fold);
+    foldedFields.set(row, fields);
+  }
+  return fields;
+}
+
+/** The best `fuzzyScore` of `needle` in any one of `fields`. */
+function fuzzyFields(fields: string[], needle: string): number | null {
+  let best: number | null = null;
+  for (const field of fields) {
+    const score = fuzzyScore(field, needle);
+    if (score !== null && (best === null || score > best)) best = score;
+  }
+  return best;
+}
+
 /** How well `needle` is spread through `hay` in order — fzf's idea: every
  *  letter must appear, in order; letters next to each other and at the
  *  start of a word count for more, gaps for less. `null` when a letter is
- *  missing. The whole word appearing as it is always wins. */
+ *  missing, or when the letters are spread wider than `spanOf` allows. The
+ *  whole word appearing as it is always wins. */
 export function fuzzyScore(hay: string, needle: string): number | null {
   if (!needle) return 0;
+  const whole = hay.includes(needle) ? 10 + needle.length * 3 : 0;
   const first = needle[0] ?? "";
   let best: number | null = null;
   // Greedy from each place the first letter appears, best of them: from
@@ -58,28 +83,43 @@ export function fuzzyScore(hay: string, needle: string): number | null {
     if (score !== null && (best === null || score > best)) best = score;
     start = hay.indexOf(first, start + 1);
   }
-  if (best === null) return null;
-  return best + (hay.includes(needle) ? 10 + needle.length * 3 : 0);
+  if (best === null) {
+    // Past the starts tried, the word itself still counts, as exact would.
+    return whole ? needle.length + whole : null;
+  }
+  return best + whole;
 }
 
-/** How many starts `fuzzyScore` tries, so a long row stays cheap. */
-const MAX_STARTS = 40;
+/** How many starts `fuzzyScore` tries, so a long row stays cheap. Each is
+ *  at most `spanOf` letters of reading. */
+const MAX_STARTS = 200;
+
+/** How wide a word's letters may be spread and still be the word: three
+ *  letters of text for each typed, so `clpy` finds `clippy` and `invsep`
+ *  `Invoice-September`, while `phuoc` no longer finds a p in one sentence
+ *  and a c three sentences on. */
+function spanOf(needle: string): number {
+  return needle.length * 3;
+}
 
 /** `path`, when given, is filled with where each letter was found. */
 function fuzzyFrom(hay: string, needle: string, start: number, path?: number[]): number | null {
+  const end = Math.min(hay.length, start + spanOf(needle));
   let score = 0;
   let from = start;
   let prev = -2;
   for (const ch of needle) {
-    const at = hay.indexOf(ch, from);
-    if (at < 0) return null;
+    // Read only as far as the span allows, however long the row.
+    let at = from;
+    while (at < end && !hay.startsWith(ch, at)) at++;
+    if (at >= end) return null;
     path?.push(at);
     score += 1;
     if (at === prev + 1) score += 3;
     if (at === 0 || /[\s\p{P}]/u.test(hay[at - 1] ?? " ")) score += 2;
     if (prev >= 0) score -= Math.min(3, (at - prev - 1) * 0.1);
     prev = at;
-    from = at + 1;
+    from = at + ch.length;
   }
   return score;
 }
@@ -116,15 +156,15 @@ export function searchWith(rows: Entry[], query: string, mode: SearchMode): { ro
   const exact = () => rows.filter((row) => matches(row, wanted));
   const regexp = () => {
     const re = compiled(query.trim());
-    return re ? rows.filter((row) => re.test(`${row.title} ${row.search} ${row.appName ?? ""}`)) : [];
+    return re ? rows.filter((row) => re.test(`${row.title} ${row.search} ${row.ocrSearch ?? ""} ${row.appName ?? ""}`)) : [];
   };
   const fuzzy = () =>
     rows
       .map((row, at) => {
-        const hay = hayOf(row);
+        const fields = fieldsOf(row);
         let total = 0;
         for (const word of wanted) {
-          const score = fuzzyScore(hay, word);
+          const score = fuzzyFields(fields, word);
           if (score === null) return null;
           total += score;
         }
@@ -188,6 +228,83 @@ export function highlights(title: string, query: string, used: Used): Span[] {
     }
   }
   return merged(spans);
+}
+
+/** What a row shows for its title while a search is on: the text, what to
+ *  mark in it, and — when the match is in nothing the row can show — where
+ *  it was. */
+export type Found = { text: string; marks: Span[]; note: string | null };
+
+/** How far into a title a match may start and still be seen: past this,
+ *  the row starts nearer the match. A narrow panel shows about this much. */
+const SEEN = 32;
+
+/** How much comes before a match on a row that starts near it. */
+const LEAD = 24;
+
+/** How much of a long text a row is given; it draws one line anyway. */
+const SHOWN = 240;
+
+/**
+ * The row's title while `query` is searched: as it is when the match is in
+ * its first stretch; otherwise from a little before the first match, so the
+ * reason the row was found is on it. A match only in the row's text — past
+ * the title's two hundred characters — shows that stretch of the text; one
+ * only in the words read in its image shows those, and says so; a file's
+ * match in its path keeps the file's name and says where.
+ */
+export function found(row: Entry, query: string, used: Used): Found {
+  const title = row.title;
+  if (!words(query).length) return { text: title, marks: [], note: null };
+  const marks = highlights(title, query, used);
+  if (marks.length) return near(title, marks, null);
+  if (row.kind === "file") {
+    return { text: title, marks: [], note: highlights(row.search, query, used).length ? "in its path" : null };
+  }
+  const own = oneLine(row.search);
+  const ownMarks = highlights(own, query, used);
+  if (ownMarks.length) return near(own, ownMarks, null);
+  const read = oneLine(row.ocrSearch ?? "");
+  const readMarks = highlights(read, query, used);
+  if (readMarks.length) return near(read, readMarks, "in image");
+  return { text: title, marks: [], note: null };
+}
+
+/** `text` from a little before its first mark — at the start of a word
+ *  when one starts close enough — with a leading ellipsis; as it is when
+ *  the first mark is already in sight. */
+function near(text: string, marks: Span[], note: string | null): Found {
+  const first = marks[0]![0];
+  if (first <= SEEN) return { text: text.slice(0, SHOWN), marks: clip(marks, 0, SHOWN, 0), note };
+  let start = first - LEAD;
+  // The first word boundary in the lead, so the row starts on a word.
+  const space = text.slice(start, first).search(/\s/u);
+  if (space >= 0) start += space + 1;
+  // Never between the halves of a surrogate pair.
+  const unit = text.charCodeAt(start);
+  if (unit >= 0xdc00 && unit <= 0xdfff) start += 1;
+  const end = start + SHOWN;
+  return { text: `…${text.slice(start, end)}`, marks: clip(marks, start, end, 1), note };
+}
+
+/** `marks` inside `[start, end)`, moved to where they fall once the text is
+ *  cut there and `shift` characters put in front. */
+function clip(marks: Span[], start: number, end: number, shift: number): Span[] {
+  return marks
+    .filter(([from]) => from >= start && from < end)
+    .map(([from, to]) => [from - start + shift, Math.min(to, end) - start + shift] as Span);
+}
+
+/** A text as the extension makes a title (`history::one_line`): trimmed,
+ *  line breaks and tabs as ⏎ and ⇥, runs of spaces as one, U+FFFC gone. */
+export function oneLine(text: string): string {
+  return text
+    .replace(/\uFFFC/gu, "")
+    .trim()
+    .replace(/\r/gu, "")
+    .replace(/\n/gu, "⏎")
+    .replace(/\t/gu, "⇥")
+    .replace(/ {2,}/gu, " ");
 }
 
 /** The best spread of `needle` through `hay`, as `fuzzyScore` finds it:

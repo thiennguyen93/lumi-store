@@ -165,8 +165,9 @@ pub struct Entry {
     /// the panel can offer to copy it.
     #[serde(default, skip_serializing_if = "is_false")]
     pub ocr: bool,
-    /// The lowercased text Lumi read, kept apart from `search` so the panel
-    /// can leave it out while reading is off. `list` folds it into `search`.
+    /// The text Lumi read, kept apart from `search`: `list` leaves it out
+    /// while reading is off, and the panel can tell a row found by its
+    /// image's words from one found by its own.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub ocr_search: String,
     /// What a file row's files are, for the icon its row wears: their
@@ -875,8 +876,10 @@ pub fn title_of(items: &[Vec<Rep>], kind: Kind) -> String {
     one_line(&raw, TITLE_CHARS)
 }
 
+/// Kept as read, case and all: the panel folds it to search, and shows a
+/// stretch of it on a row whose match is past its title.
 fn ocr_search_of(text: &str) -> String {
-    text.chars().take(SEARCH_CHARS).collect::<String>().to_lowercase()
+    text.chars().take(SEARCH_CHARS).collect()
 }
 
 fn search_of(items: &[Vec<Rep>]) -> String {
@@ -888,7 +891,8 @@ fn search_of(items: &[Vec<Rep>]) -> String {
         text.push(' ');
         text.push_str(&path);
     }
-    text.chars().take(SEARCH_CHARS).collect::<String>().to_lowercase()
+    // As copied, case and all — `ocr_search_of`'s reason.
+    text.chars().take(SEARCH_CHARS).collect()
 }
 
 /// A one-line title: leading and trailing whitespace off, line breaks and
@@ -1111,7 +1115,7 @@ mod tests {
         let mut c = copy("h1", 1, vec![blob(uti::PNG, "p")]);
         c.ocr = Some("Search History".into());
         apply(&mut index, c, &rules(10), "a".into());
-        assert!(index.items[0].ocr_search.contains("search history"));
+        assert_eq!(index.items[0].ocr_search, "Search History", "kept as read");
         assert_eq!(index.items[0].thumb.as_deref(), Some("p"));
     }
 

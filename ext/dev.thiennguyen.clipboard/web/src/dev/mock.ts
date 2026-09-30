@@ -24,7 +24,8 @@ function entry(partial: Partial<Entry> & Pick<Entry, "id" | "kind" | "title">): 
     last: now - 3 * min,
     count: 1,
     appName: null,
-    search: partial.title.toLowerCase(),
+    // As the extension keeps it: the text as copied, a file's path.
+    search: filePaths.get(partial.id) ?? partial.title,
     thumb: null,
     blobs: [],
     // A stand-in bundle id, so the row asks for an icon.
@@ -33,12 +34,15 @@ function entry(partial: Partial<Entry> & Pick<Entry, "id" | "kind" | "title">): 
   };
 }
 
+const LOREM =
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+
 let rows: Entry[] = [
   entry({ id: "a", kind: "text", title: "hello@example.com", pin: "b", appName: "Mail", count: 3, last: now - 2 * 86_400_000 }),
   entry({ id: "b", kind: "text", title: "ssh deploy@staging.example.com", pin: "d", appName: "Terminal", count: 12, last: now - 7 * 86_400_000 }),
   entry({ id: "c", kind: "link", title: "https://lumikeys.app", appName: "Safari", last: now - 10_000 }),
   entry({ id: "d", kind: "text", title: "Meeting moved to Thursday, 3 pm", appName: "Notes", last: now - min }),
-  entry({ id: "e", kind: "image", title: "Image", thumb: "shot", appName: "Screenshot", last: now - 4 * min, search: "lumi · clipboard · search history", ocr: true }),
+  entry({ id: "e", kind: "image", title: "Image", thumb: "shot", appName: "Screenshot", last: now - 4 * min, search: "", ocrSearch: "Lumi · Clipboard Manager · Search history", ocr: true }),
   entry({ id: "f", kind: "color", title: "#378ADD", appName: "Figma", count: 2, last: now - 9 * min }),
   entry({ id: "g", kind: "file", title: "/Users/me/Downloads/lumi-1.23.0.dmg", fileExt: "dmg", appName: "Finder", last: now - 12 * min }),
   entry({ id: "h", kind: "rich", title: "Quarterly report — final draft", appName: "Chrome", last: now - 20 * min }),
@@ -64,6 +68,9 @@ let rows: Entry[] = [
   entry({ id: "r1", kind: "file", title: "brag-vertical.mp4 + 2 more", fileCount: 3, appName: "Finder", last: now - 31 * 60 * min }),
   entry({ id: "r2", kind: "file", title: "brag2.mp4 + 1 more", fileExt: "mp4", fileCount: 2, appName: "Finder", last: now - 32 * 60 * min }),
   entry({ id: "r3", kind: "file", title: "Projects + 1 more", fileExt: "/", fileCount: 2, appName: "Finder", last: now - 33 * 60 * min }),
+  // Long enough that a word near its end is past the title: `laborum`.
+  // Old, so it stays below what the store pictures show.
+  entry({ id: "s", kind: "text", title: `${LOREM.slice(0, 200)}…`, search: LOREM, appName: "Notes", last: now - 40 * 24 * 60 * min }),
 ];
 
 // The mock's copies of several files, as `preview` lists them.
@@ -136,7 +143,9 @@ function answer(request: Request): unknown {
         ? ""
         : row.kind === "file"
           ? (filePaths.get(row.id) ?? row.title)
-          : `${row.title}\n\n(the full text of the copy would be here)`;
+          : row.search.length > row.title.length
+            ? row.search
+            : `${row.title}\n\n(the full text of the copy would be here)`;
       const html =
         row?.kind === "rich"
           ? `<meta charset="utf-8"><div style="color: rgb(0, 0, 0); font-family: Georgia;">${row.title.replace(/</g, "&lt;")} 🎉</div><p style="color: rgb(34, 34, 34)">Some <b>bold</b>, <i>italic</i>, <s>struck</s>, <u>under</u> and <span style="color: rgb(220, 38, 38)">red</span> <span style="font-family: Menlo">mono</span> <a href="https://x.test">link</a>.</p><ul><li>one ✅</li><li>two</li></ul><img src="https://x.test/a.png"><script>parent.document.body.remove()</script>`

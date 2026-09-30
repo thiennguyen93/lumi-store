@@ -8,7 +8,8 @@ import { PdfViewer } from "./PdfViewer";
 import { TextFile } from "./TextFile";
 import { RichText } from "./richText";
 import { HEX, KIND_WORDS } from "./Row";
-import { ago } from "./search";
+import { ago, type Used } from "./search";
+import { usePreviewMarks } from "./previewMarks";
 import type { Entry } from "./types";
 
 /** How long the selection must rest on a row before its full text is
@@ -39,7 +40,20 @@ const seen = new Map<string, Full>();
 const SEEN_MAX = 64;
 const seenKey = (row: Entry) => `${row.id}:${row.ocr ? 1 : 0}`;
 
-export function Preview({ row, onOpen }: { row: Entry | undefined; onOpen?: (id: string) => void }) {
+export function Preview({
+  row,
+  onOpen,
+  query = "",
+  used = "exact",
+}: {
+  row: Entry | undefined;
+  onOpen?: (id: string) => void;
+  /** What the list is searched by, marked in the card and scrolled to. */
+  query?: string;
+  used?: Used;
+}) {
+  const card = useRef<HTMLDivElement>(null);
+  usePreviewMarks(card, query, used, row?.id);
   // The full text, keyed by the row it belongs to, so a late answer for a
   // row the selection has already left is never drawn under another.
   const [full, setFull] = useState<Full | null>(null);
@@ -110,7 +124,7 @@ export function Preview({ row, onOpen }: { row: Entry | undefined; onOpen?: (id:
 
   return (
     <aside className="preview" aria-live="polite">
-      <div className="card">
+      <div className="card" ref={card}>
         <header className="card-head">
           {row.kind === "file" ? (
             <FileGlyph family={fileFamily(row.fileExt)} many={(row.fileCount ?? 0) > 1} />
