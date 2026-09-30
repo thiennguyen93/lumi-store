@@ -24,7 +24,9 @@ macros, and those of every crate it depends on, so the job that builds
 must hold nothing worth stealing — and the job that signs must run
 nothing it did not review:
 
-  --list              the listed ids, for the build matrix
+  --list              the listed ids, for the build matrix, and the
+                      private ones among them (see below)
+  --path ID           where an entry's source lives, for a workflow step
   --build ID OUT      validate and build one entry; write OUT/extension.wasm,
                       plus OUT/ui/ for an entry with a web/ build, and
                       nothing else (no key, read-only token, one entry per
@@ -45,6 +47,14 @@ ceilings. A plain ui/ — hand-written, no build — is still packed from the
 reviewed source, as before. A plain
 `python3 scripts/publish.py` still does all of it in one process, for a
 maintainer's laptop, where the key and the build share a machine anyway.
+
+A `private = true` entry is first-party closed source: a private repo,
+pinned as a submodule marked `update = none` in .gitmodules so a plain
+recursive checkout skips it, and fetched with a read-only deploy key by
+`scripts/fetch-private.sh` in each job that needs it. `--check` skips a
+private entry whose source is not there — a fork's pull request gets no
+secret to fetch it with — and says so; every other mode fails, because a
+store published without it would drop it from the index.
 
 Fail-loud doctrine throughout: a bad manifest, a missing wasm, an absent
 signing key (with entries to sign) each stop the run with a sentence
@@ -657,7 +667,25 @@ def listed_entries() -> list:
             fail(entry_id, f"category {category!r} is not one of the store's: {', '.join(CATEGORIES)}")
         if not isinstance(entry.get("featured", False), bool):
             fail(entry_id, "featured is true or false")
+        if not isinstance(entry.get("private", False), bool):
+            fail(entry_id, "private is true or false")
     return listed
+
+
+def fetched(entry: dict) -> bool:
+    """Whether a private entry's source is checked out. A submodule
+    `update = none` leaves an empty directory behind, so the manifest is
+    the test."""
+    return (ROOT / entry["path"] / entry.get("subdir", ".") / "manifest.toml").is_file()
+
+
+def require_fetched(entry: dict):
+    if entry.get("private") and not fetched(entry):
+        fail(
+            entry["id"],
+            "private source is not checked out; scripts/fetch-private.sh fetches it "
+            "with the deploy key, and publishing without it would drop it from the store",
+        )
 
 
 def sources(entry: dict):
@@ -979,6 +1007,7 @@ def build_one(entry_id: str, out: Path):
     entry = next((e for e in listed_entries() if e["id"] == entry_id), None)
     if entry is None:
         sys.exit(f"error: {entry_id} is not in extensions.toml")
+    require_fetched(entry)
     crate, _, manifest, _, _ = sources(entry)
     wasm = build_wasm(entry_id, crate)
     out.mkdir(parents=True, exist_ok=True)
@@ -994,6 +1023,10 @@ def main(check: bool = False, built: "Path | None" = None):
     index = []
     for entry in listed:
         entry_id = entry["id"]
+        if check and entry.get("private") and not fetched(entry):
+            print(f"{entry_id}: skipped — private source not available (no deploy key, as on a fork's pull request)")
+            continue
+        require_fetched(entry)
         crate, manifest_path, manifest, ext, icon = sources(entry)
         # Before anything is built: a missing or out-of-step changelog is
         # the cheapest thing to tell a PR about.
@@ -1182,7 +1215,7 @@ No Lumi yet? <a href="https://lumikeys.app">Get it first.</a></p>
 """
 
 
-USAGE = "usage: publish.py [--check | --list | --build ID OUT | --sign-built DIR]"
+USAGE = "usage: publish.py [--check | --list | --path ID | --build ID OUT | --sign-built DIR]"
 
 if __name__ == "__main__":
     args = sys.argv[1:]
@@ -1191,8 +1224,16 @@ if __name__ == "__main__":
     elif args == ["--check"]:
         main(check=True)
     elif args == ["--list"]:
-        # One line for $GITHUB_OUTPUT: the build matrix.
-        print("entries=" + json.dumps([e["id"] for e in listed_entries()]))
+        # Two lines for $GITHUB_OUTPUT: the build matrix, and which of its
+        # entries need scripts/fetch-private.sh first.
+        listed = listed_entries()
+        print("entries=" + json.dumps([e["id"] for e in listed]))
+        print("private=" + json.dumps([e["id"] for e in listed if e.get("private")]))
+    elif len(args) == 2 and args[0] == "--path":
+        entry = next((e for e in listed_entries() if e["id"] == args[1]), None)
+        if entry is None:
+            sys.exit(f"error: {args[1]} is not in extensions.toml")
+        print(entry["path"])
     elif len(args) == 3 and args[0] == "--build":
         build_one(args[1], Path(args[2]))
     elif len(args) == 2 and args[0] == "--sign-built":
