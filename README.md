@@ -69,10 +69,55 @@ after review.
    is. UTF-8, at most 16 KB. The store publishes it named by its content,
    so an edit is picked up without bumping the version.
 
+   Every release needs notes: a `CHANGELOG.md` beside your manifest, one
+   `## <version>` section per release, newest on top.
+
+   ```md
+   # Changelog
+
+   ## [Unreleased]
+
+   ## [1.2.0] - 2026-09-30
+   ### Added
+   - Pin the panel so it stays open while you paste.
+   ### Fixed
+   - Search keeps text cased as it was copied.
+   ```
+
+   The file is required, and its newest section must be the version your
+   manifest ships — a bump without notes, or notes without a bump, fails
+   the PR. The headings Keep a Changelog, release-please, git-cliff and
+   changesets write are all accepted (`## 1.2.0`, `## v1.2.0`,
+   `## [1.2.0] - 2026-09-30`, `## [1.2.0](…) (2026-09-30)`); the date is
+   optional. Versions go newest first, each once; a section holds the same
+   small markdown as `STORE.md`, at most 4 KB. Anything above the first
+   `##` and an Unreleased section are not published. Write for the person
+   using your extension rather than for its code.
+
+   To start a section, bump the manifest's version and run
+
+   ```bash
+   python3 scripts/changelog.py draft dev.you.thing
+   ```
+
+   It puts your commits since CHANGELOG.md last changed on top, grouped
+   from Conventional Commit subjects (`feat` → Added, `fix` → Fixed,
+   `perf` → Improved; chore, refactor, style, docs, test, ci and build
+   left out) — a draft to reword, not the finished notes.
+
+   The store publishes your newest 20 sections, named by their content.
+   After a release merges, the store proposes a short summary of it in
+   English and Vietnamese — a headline and up to six plain sentences, for
+   Lumi's update list and lumikeys.app — as a PR adding
+   `release-notes/<id>.json`. Review or edit it there. A summary is pinned
+   to the notes it was written from: edit a section and its old summary
+   stops showing until a new one is merged, and the notes are shown
+   instead.
+
 3. Review is human, of source: the manifest's capabilities against what
    the code actually calls, nothing phoning home, no misbehaviour shipped
    as a feature. Updates are PRs that bump the submodule commit and the
-   manifest version.
+   manifest version, with a `CHANGELOG.md` section for that version.
 4. Every PR is checked first: CI validates each manifest, builds each
    extension from source and packs it, and signs nothing — the job holds
    no secret, because a submission's build script runs inside it. Run the
@@ -163,6 +208,13 @@ id/name alphabets, the supported-capability set, param kinds, selects with
 options — so a submission fails in the PR, not on somebody's Mac. (The
 long-term shape is Lumi shipping its installer's checks as a standalone
 check tool; until then this mirror is kept deliberately strict.)
+
+`CHANGELOG.md` is held to the rules under Submitting, and
+`release-notes/<id>.json` to its shape: for each version the changelog
+still has, the sha256 of that version's notes and a `lumi_notes` summary
+with an `en` and a `vi` headline (≤ 70 characters) and 1–6 items
+(≤ 110), plain text. `python3 -m unittest discover -s scripts -p
+'test_*.py'` runs the parser's own tests.
 
 Packages are reproducible tarballs (fixed metadata, sorted entries):
 rebuilding an unchanged extension publishes identical bytes.
