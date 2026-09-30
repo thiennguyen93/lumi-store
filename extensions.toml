@@ -13,6 +13,8 @@
 #                            # Writing, Windows, Design, Developer, Utilities —
 #                            # decided in review, not by the author
 # featured = true            # optional: the one plate at the top of Discover
+# private = true             # first-party only: closed source, fetched with a
+#                            # deploy key (README, "First-party private entries")
 
 # First-party and in-tree — a third-party entry is a pinned submodule
 # instead; ext/dev.thiennguyen.sample/README.md carries the distinction.
@@ -40,3 +42,15 @@ subdir = "."
 web = "web"
 category = "Productivity"
 featured = true
+
+
+# First-party and closed source: a private repo, `update = none` in
+# .gitmodules and fetched with a read-only deploy key by
+# scripts/fetch-private.sh. Its React editor under web/ is built by the store.
+[[extension]]
+id = "dev.thiennguyen.screenshot"
+path = "ext/dev.thiennguyen.screenshot"
+subdir = "."
+web = "web"
+category = "Productivity"
+private = true

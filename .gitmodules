@@ -1,0 +1,4 @@
+[submodule "ext/dev.thiennguyen.screenshot"]
+	path = ext/dev.thiennguyen.screenshot
+	url = git@github.com:thiennguyen93/lumi-screenshot.git
+	update = none
