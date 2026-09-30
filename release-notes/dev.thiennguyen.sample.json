@@ -1,0 +1,242 @@
+{
+  "0.11.1": {
+    "notesSha256": "feb938b90b420b2b44db9dcb5bc5a6941a3cdea78af38b77b6ca2bdf0eb6db19",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Extension Store screenshots added",
+          "items": [
+            "Screenshots of the About and Settings pages now appear in the Extension Store"
+          ]
+        },
+        "vi": {
+          "headline": "Thêm ảnh chụp màn hình cho Cửa hàng Tiện ích",
+          "items": [
+            "Trang Giới thiệu và Cài đặt giờ có ảnh chụp màn hình trong Cửa hàng Tiện ích"
+          ]
+        }
+      }
+    }
+  },
+  "0.11.0": {
+    "notesSha256": "c94b70c6204ce9b6727c113b2923605da7a2af6a25f4f3d7cf89f9106badb6f5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Compatibility update",
+          "items": [
+            "Updated for the latest version of Lumi while maintaining support for 1.22"
+          ]
+        },
+        "vi": {
+          "headline": "Cập nhật tương thích",
+          "items": [
+            "Cập nhật cho phiên bản Lumi mới nhất, vẫn hỗ trợ từ 1.22 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.10.0": {
+    "notesSha256": "3f319e648352209710de60b69bddb26049ece405d0694942d907e4ff7c51465b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome screen and update notifications",
+          "items": [
+            "A welcome window now appears when you first install the extension",
+            "You'll see a note when the extension updates to a new version",
+            "An installer page helps you get started with the extension",
+            "A page appears before uninstalling to confirm your choice"
+          ]
+        },
+        "vi": {
+          "headline": "Màn hình chào mừng và thông báo cập nhật",
+          "items": [
+            "Cửa sổ chào mừng xuất hiện khi bạn cài đặt tiện ích lần đầu",
+            "Bạn sẽ thấy thông báo khi tiện ích cập nhật lên phiên bản mới",
+            "Trang cài đặt giúp bạn bắt đầu sử dụng tiện ích",
+            "Một trang xác nhận xuất hiện trước khi gỡ cài đặt"
+          ]
+        }
+      }
+    }
+  },
+  "0.8.0": {
+    "notesSha256": "88571b88362197a7541df53d09aedcb74e98dd06cacda32e670e3a45e12cbbce",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Updated for the latest Lumi",
+          "items": [
+            "Updated to work with the latest version of Lumi"
+          ]
+        },
+        "vi": {
+          "headline": "Cập nhật cho phiên bản Lumi mới nhất",
+          "items": [
+            "Cập nhật để hoạt động với phiên bản Lumi mới nhất"
+          ]
+        }
+      }
+    }
+  },
+  "0.7.0": {
+    "notesSha256": "f95fbe172855444a30ba1fa6f49e87f3f10d074e4c907339691226b55fa845a2",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Translate now opens multiple languages at once",
+          "items": [
+            "Translate can open the same text in several languages at once",
+            "Each language you pick under Also open in gets its own tab",
+            "A short note now appears under each of Translate's four tabs",
+            "Languages with special characters in their code now open correctly"
+          ]
+        },
+        "vi": {
+          "headline": "Translate giờ mở nhiều ngôn ngữ cùng lúc",
+          "items": [
+            "Translate có thể mở cùng một đoạn văn bản bằng nhiều ngôn ngữ",
+            "Mỗi ngôn ngữ chọn trong Cũng mở bằng sẽ có tab riêng",
+            "Ghi chú ngắn xuất hiện dưới mỗi tab trong bốn tab của Translate",
+            "Ngôn ngữ có ký tự đặc biệt trong mã giờ mở đúng trang dịch"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.0": {
+    "notesSha256": "12de1707e478223b1b836ea6add6de72e39f210fa73a990d28751aa0ad3f77c6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Settings, About page, and command icons",
+          "items": [
+            "Added an About page and a Settings tab",
+            "Each command now has its own icon",
+            "Translation direction is now chosen from a segmented picker"
+          ]
+        },
+        "vi": {
+          "headline": "Cài đặt, trang Giới thiệu và biểu tượng lệnh",
+          "items": [
+            "Thêm trang Giới thiệu và tab Cài đặt",
+            "Mỗi lệnh giờ có biểu tượng riêng",
+            "Chọn hướng dịch từ bộ chọn phân đoạn"
+          ]
+        }
+      }
+    }
+  },
+  "0.5.0": {
+    "notesSha256": "90a08817645c0d97aaae21339f619cbb5c06a1f88c57a47020617117771aba17",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Settings now show which Lumi edition you're running",
+          "items": [
+            "The settings window now displays which Lumi you're running in and shows the edition if it's Pro"
+          ]
+        },
+        "vi": {
+          "headline": "Cài đặt hiện hiển thị phiên bản Lumi đang dùng",
+          "items": [
+            "Cửa sổ cài đặt giờ hiển thị Lumi nào đang chạy và phiên bản nếu là Pro"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.0": {
+    "notesSha256": "4a2f78736a27ac5b867657966d205788c58c90de9d0a1937a19590284a896299",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Default language is now saved separately for each profile",
+          "items": [
+            "Each profile can have its own default language",
+            "The settings window shows which profile's language you are editing"
+          ]
+        },
+        "vi": {
+          "headline": "Ngôn ngữ mặc định giờ được lưu riêng cho từng hồ sơ",
+          "items": [
+            "Mỗi hồ sơ có thể có ngôn ngữ mặc định riêng",
+            "Cửa sổ cài đặt hiển thị bạn đang chỉnh sửa ngôn ngữ của hồ sơ nào"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.0": {
+    "notesSha256": "81099056575be488684ed8df7a2ca2d6a067191f7397df9ecb6750cdea4f9034",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Profile indicator in settings",
+          "items": [
+            "The settings window now shows which profile is currently active"
+          ]
+        },
+        "vi": {
+          "headline": "Hiển thị hồ sơ đang dùng",
+          "items": [
+            "Cửa sổ cài đặt giờ đây hiển thị hồ sơ nào đang hoạt động"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.0": {
+    "notesSha256": "754559160a35f4c1b9a95353f761e6ac22193167752039bb05ef4a245489e993",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Settings window and extension icon",
+          "items": [
+            "Added a settings window accessible from the new Configure command",
+            "Added an icon for the extension"
+          ]
+        },
+        "vi": {
+          "headline": "Cửa sổ cài đặt và biểu tượng tiện ích",
+          "items": [
+            "Thêm cửa sổ cài đặt, mở từ lệnh Cấu hình mới",
+            "Thêm biểu tượng cho tiện ích"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "ccaa486a9428831d873409f434d0742f1d4820a15e57c34656838428ca04935b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Initial release",
+          "items": [
+            "First release with basic commands to help you learn extension development"
+          ]
+        },
+        "vi": {
+          "headline": "Phiên bản đầu tiên",
+          "items": [
+            "Phiên bản đầu tiên với các lệnh cơ bản giúp bạn học phát triển tiện ích"
+          ]
+        }
+      }
+    }
+  }
+}
