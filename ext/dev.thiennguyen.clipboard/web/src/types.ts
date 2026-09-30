@@ -121,6 +121,8 @@ export type Request =
   | { kind: "copy"; id: string; plain?: boolean; pinned?: boolean }
   | { kind: "copyText"; id: string; pinned?: boolean }
   | { kind: "copyPath"; id: string; pinned?: boolean }
+  /** One of a colour row's formats; the extension takes only a colour. */
+  | { kind: "copyColor"; text: string; pinned?: boolean }
   | { kind: "open"; id: string; pinned?: boolean }
   | { kind: "reveal"; id: string; pinned?: boolean }
   | { kind: "saveImage"; id: string; name: string }

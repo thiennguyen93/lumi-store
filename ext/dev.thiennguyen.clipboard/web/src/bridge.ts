@@ -33,6 +33,7 @@ type Answers = {
   copy: Record<string, never>;
   copyText: Record<string, never>;
   copyPath: Record<string, never>;
+  copyColor: Record<string, never>;
   open: Record<string, never>;
   reveal: Record<string, never>;
   saveImage: Record<string, never>;

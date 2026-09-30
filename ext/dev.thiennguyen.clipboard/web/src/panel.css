@@ -26,6 +26,8 @@
   --cb-code-keyword: #c0283a;
   --cb-code-type: #9a4a00;
   --cb-code-fn: #7447c9;
+  --cb-pass: #248a3d;
+  --cb-fail: #d70015;
   color-scheme: light dark;
 }
 
@@ -42,6 +44,8 @@
   --cb-code-keyword: #ff7b72;
   --cb-code-type: #ffa657;
   --cb-code-fn: #d2a8ff;
+  --cb-pass: #30d158;
+  --cb-fail: #ff6961;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
@@ -55,6 +59,8 @@
     --cb-code-keyword: #ff7b72;
     --cb-code-type: #ffa657;
     --cb-code-fn: #d2a8ff;
+    --cb-pass: #30d158;
+    --cb-fail: #ff6961;
   }
 }
 
@@ -467,6 +473,16 @@ body {
   border-radius: 3px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
+/* A copied colour, laid over a checkerboard so its alpha shows: an opaque
+   colour covers the board whole, a translucent one lets it through. The
+   board is the one editors draw, light in either theme. */
+.painted {
+  --tile: 6px;
+  background:
+    linear-gradient(var(--paint), var(--paint)),
+    repeating-conic-gradient(#cfcfcf 0 25%, #fff 0 50%) 0 0 / var(--tile) var(--tile);
+}
+.card .chip.painted { --tile: 14px; }
 .thumb {
   border-radius: 3px;
   overflow: hidden;
@@ -1157,7 +1173,82 @@ body {
 .card .file-list-ext { flex: none; }
 .card .file-list-dir { font-size: 10.5px; color: var(--cb-faint); }
 .card .file-list-size { flex: none; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--cb-muted); }
-.card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); }
+.card .chip { height: 72px; border-radius: 6px; border: 1px solid var(--cb-line); flex: none; position: relative; }
+/* The code as copied, in the swatch's corner: white or black, whichever
+   reads on it. */
+.card .chip-code {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 11px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* A colour's formats and how text reads on it (Preview.tsx `ColorCard`). */
+/* Room at the sides for a format's hover, which reaches past the text, so
+   a focused line never scrolls the section sideways. */
+.card .color-info { display: flex; flex-direction: column; min-height: 0; overflow: hidden auto; margin: 0 -6px; padding: 0 6px; }
+.card .color-info h3 { margin: 10px 0 3px; font-size: 10.5px; font-weight: 500; color: var(--cb-faint); }
+.card .color-info h3:first-child { margin-top: 2px; }
+.card .format {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 -6px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  cursor: default;
+}
+.card .format:hover { background: var(--cb-hover); }
+/* At the line's end, after text that takes the rest, so every line's
+   copy sits in one column. */
+.card .format > .glyph { flex: none; align-self: center; width: 12px; height: 12px; color: var(--cb-faint); }
+.card .format:hover > .glyph { color: var(--cb-muted); }
+.card .format:active { background: color-mix(in srgb, var(--cb-accent) 22%, transparent); }
+.card .format-label { flex: none; width: 34px; font-size: 10.5px; color: var(--cb-muted); }
+/* Wrapped rather than cut: a narrow preview still shows the whole value
+   that a click copies. */
+.card .format-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+/* Side by side when the preview is wide enough, else one above the other. */
+.card .text-on { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 6px; }
+.card .text-on > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 5px;
+  border: 1px solid var(--cb-line);
+  border-radius: 6px;
+}
+.card .text-on > .best { border-color: color-mix(in srgb, var(--cb-accent) 70%, transparent); }
+.card .text-on .sample {
+  flex: none;
+  width: 26px;
+  height: 20px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 600;
+}
+.card .text-on .ratio { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.card .grade { margin-left: auto; padding: 0 4px; border-radius: 3px; font-size: 10px; white-space: nowrap; }
+.card .grade.pass { background: color-mix(in srgb, var(--cb-pass) 18%, transparent); color: var(--cb-pass); }
+.card .grade.fail { background: color-mix(in srgb, var(--cb-fail) 15%, transparent); color: var(--cb-fail); }
+.card .over { display: flex; flex-direction: column; }
+.card .over-swatch { flex: none; width: 16px; height: 16px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--cb-line); overflow: hidden; }
+.card .over-swatch > span { display: block; width: 100%; height: 100%; }
 
 /* `pnpm dev` only (`?glass`, set by dev/mock.ts): a busy wallpaper and a
    CSS stand-in for AppKit's popover glass, to judge the page on it. Lumi

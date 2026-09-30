@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { type CSSProperties, useLayoutEffect, useRef, useState } from "react";
 import { blobUrl, call } from "./bridge";
 import { useItemDrag } from "./itemDrag";
 import { FileGlyph, KindGlyph, PinGlyph } from "./icons";
@@ -7,7 +7,17 @@ import { AppMark } from "./AppMark";
 import { cut, type Found, keptInSight, nextSkip, since, skipped, type Span } from "./search";
 import type { Entry } from "./types";
 
-export const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+/** A colour row's title as something to paint: one of the forms the
+ *  history calls a colour (hex, `rgb()`, `hsl()` — never a bare name),
+ *  and one this WebView can draw. */
+export function isColor(title: string): boolean {
+  return /^(#|rgba?\(|hsla?\()/i.test(title) && CSS.supports("color", title);
+}
+
+/** The style that paints a colour row's colour over `.painted`'s board. */
+export function paint(color: string): CSSProperties {
+  return { "--paint": color } as CSSProperties;
+}
 
 export const KIND_WORDS: Record<Entry["kind"], string> = {
   text: "Text",
@@ -18,7 +28,7 @@ export const KIND_WORDS: Record<Entry["kind"], string> = {
   image: "Image",
 };
 
-/** What stands before a title: the colour itself for a hex colour, the
+/** What stands before a title: the colour itself for a colour, the
  *  picture for an image, nothing for the rest — the key-cap already
  *  leads the row. The colour is re-checked here rather than trusted from
  *  `kind`, since it is about to become a CSS value. */
@@ -26,10 +36,10 @@ function Lead({ row }: { row: Entry }) {
   // One 16px slot on every row, so titles start in one column: a colour
   // and a picture are their own sign of what they are; everything else
   // gets its kind's glyph — the same one its filter chip wears.
-  if (row.kind === "color" && HEX.test(row.title)) {
+  if (row.kind === "color" && isColor(row.title)) {
     return (
       <span className="lead">
-        <span className="swatch" style={{ background: row.title }} />
+        <span className="swatch painted" style={paint(row.title)} />
       </span>
     );
   }

@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { blobUrl, call, fileUrl, type FileItem } from "./bridge";
 import { AppMark } from "./AppMark";
-import { CollapseGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
+import { CollapseGlyph, CopyGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { useItemDrag } from "./itemDrag";
 import { PdfViewer } from "./PdfViewer";
 import { TextFile } from "./TextFile";
 import { RichText } from "./richText";
-import { HEX, KIND_WORDS } from "./Row";
+import { isColor, KIND_WORDS, paint } from "./Row";
+import { BLACK, contrast, over, parseColor, type Rgba, toHex, toHsl, toRgb, WHITE } from "./color";
 import { ago, type Used } from "./search";
 import { usePreviewMarks } from "./previewMarks";
 import type { Entry } from "./types";
@@ -51,6 +52,7 @@ export function canZoom(row: Entry | undefined): boolean {
 export function Preview({
   row,
   onOpen,
+  onCopyColor,
   query = "",
   used = "exact",
   zoomed = false,
@@ -58,6 +60,8 @@ export function Preview({
 }: {
   row: Entry | undefined;
   onOpen?: (id: string) => void;
+  /** Copy one of a colour row's formats. */
+  onCopyColor?: (text: string) => void;
   /** What the list is searched by, marked in the card and scrolled to. */
   query?: string;
   used?: Used;
@@ -233,10 +237,9 @@ export function Preview({
             whole={zoomed}
           />
         )}
-        {row.kind === "color" && HEX.test(row.title) && (
-          <div className="chip" style={{ background: row.title }} />
-        )}
-        {mine?.files?.length ? (
+        {row.kind === "color" && isColor(row.title) ? (
+          <ColorCard color={row.title} onCopy={onCopyColor} />
+        ) : mine?.files?.length ? (
           <FileList id={row.id} files={mine.files} count={mine.fileCount || mine.files.length} />
         ) : row.kind === "file" && (row.fileCount ?? 0) <= 1 ? (
           <FilePath path={text.split("\n")[0]!} />
@@ -256,6 +259,88 @@ export function Preview({
         </footer>
       </div>
     </aside>
+  );
+}
+
+/** The panel's dark surface, for what a translucent colour looks like there. */
+const DARK: Rgba = { r: 30, g: 30, b: 30, a: 1 };
+
+/** A copied colour: the swatch with the code as copied in its corner, the
+ *  colour in the forms it is copied between, which of white or black text
+ *  reads on it, and — when it lets something through — what it comes to
+ *  over a light and a dark surface. A line copies its text. */
+function ColorCard({ color, onCopy }: { color: string; onCopy?: (text: string) => void }) {
+  const c = parseColor(color);
+  if (!c) return <div className="chip painted" style={paint(color)} />;
+  // Contrast is taken over what shows through: the board is light.
+  const seen = over(c, WHITE);
+  const onWhite = contrast(WHITE, seen);
+  const onBlack = contrast(BLACK, seen);
+  const copy = (text: string) => onCopy?.(text);
+  return (
+    <>
+      <div className="chip painted" style={paint(color)}>
+        <span className="chip-code" style={{ color: onWhite >= onBlack ? "#fff" : "#000" }}>
+          {color}
+        </span>
+      </div>
+      <section className="color-info">
+        <h3>Formats</h3>
+        {[
+          ["HEX", toHex(c)],
+          ["RGB", toRgb(c)],
+          ["HSL", toHsl(c)],
+        ].map(([label, text]) => (
+          <button key={label} className="format" title="Copy" onClick={() => copy(text!)}>
+            <span className="format-label">{label}</span>
+            <span className="format-text">{text}</span>
+            <CopyGlyph />
+          </button>
+        ))}
+        <h3>Text on it</h3>
+        <div className="text-on">
+          {(
+            [
+              ["White", WHITE, onWhite],
+              ["Black", BLACK, onBlack],
+            ] as const
+          ).map(([name, ink, ratio]) => (
+            <div key={name} className={ratio >= Math.max(onWhite, onBlack) ? "best" : undefined} title={`${name} text`}>
+              <span className="sample" style={{ background: toHex(seen), color: toHex(ink) }}>
+                Aa
+              </span>
+              <span className="ratio">{ratio.toFixed(1)}:1</span>
+              <span className={ratio >= 4.5 ? "grade pass" : "grade fail"}>{ratio >= 4.5 ? "AA" : "✕ AA"}</span>
+            </div>
+          ))}
+        </div>
+        {c.a < 1 && (
+          <>
+            <h3>Over light and dark · {Math.round(c.a * 100)}%</h3>
+            <div className="over">
+              {(
+                [
+                  ["Light", WHITE],
+                  ["Dark", DARK],
+                ] as const
+              ).map(([name, under]) => {
+                const hex = toHex(over(c, under));
+                return (
+                  <button key={name} className="format" title="Copy" onClick={() => copy(hex)}>
+                    <span className="over-swatch" style={{ background: toHex(under) }}>
+                      <span style={{ background: color }} />
+                    </span>
+                    <span className="format-label">{name}</span>
+                    <span className="format-text">{hex}</span>
+                    <CopyGlyph />
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </section>
+    </>
   );
 }
 

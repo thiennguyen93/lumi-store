@@ -871,22 +871,50 @@ pub fn kind_of(items: &[Vec<Rep>]) -> Kind {
     if utis.iter().any(|u| uti::is_image(u)) && plain_text(items).is_none() {
         return Kind::Image;
     }
+    let plain = plain_text(items).map(str::trim);
+    // Before the rich check: an editor or a browser writes HTML or RTF
+    // beside a colour code too, and a styled `#378ADD` is still a colour.
+    if plain.is_some_and(is_color) {
+        return Kind::Color;
+    }
     if utis.contains(&uti::HTML) || utis.contains(&uti::RTF) {
         return Kind::Rich;
     }
-    match plain_text(items).map(str::trim) {
-        Some(text) if is_color(text) => Kind::Color,
+    match plain {
         Some(text) if is_link(text) => Kind::Link,
         _ => Kind::Text,
     }
 }
 
-/// `#rgb` or `#rrggbb` — what the panel draws as a swatch.
-fn is_color(text: &str) -> bool {
-    let Some(hex) = text.strip_prefix('#') else {
-        return false;
-    };
-    matches!(hex.len(), 3 | 6) && hex.chars().all(|c| c.is_ascii_hexdigit())
+/// One CSS colour and nothing else — what the panel draws as a swatch:
+/// `#rgb`, `#rgba`, `#rrggbb` or `#rrggbbaa`; `rgb()`/`rgba()` and
+/// `hsl()`/`hsla()` in either the comma or the space-and-slash syntax.
+/// Colour names are left out: "red" or "tan" alone is as likely a word.
+pub fn is_color(text: &str) -> bool {
+    static COLOR: std::sync::OnceLock<regex_lite::Regex> = std::sync::OnceLock::new();
+    COLOR
+        .get_or_init(|| {
+            let n = r"[+-]?(?:\d+(?:\.\d+)?|\.\d+)";
+            let pct = format!(r"{n}%");
+            let alpha = format!(r"(?:{n}%?|none)");
+            let hue = format!(r"(?:{n}(?:deg|grad|rad|turn)?|none)");
+            let any = format!(r"(?:{n}%?|none)");
+            let hex = r"#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})";
+            // Comma syntax: the three channels all numbers or all percents.
+            let rgb_commas = format!(
+                r"rgba?\(\s*(?:{n}\s*,\s*{n}\s*,\s*{n}|{pct}\s*,\s*{pct}\s*,\s*{pct})\s*(?:,\s*{n}%?\s*)?\)"
+            );
+            let rgb_spaces = format!(r"rgba?\(\s*{any}\s+{any}\s+{any}\s*(?:/\s*{alpha}\s*)?\)");
+            let hsl_commas = format!(
+                r"hsla?\(\s*{n}(?:deg|grad|rad|turn)?\s*,\s*{pct}\s*,\s*{pct}\s*(?:,\s*{n}%?\s*)?\)"
+            );
+            let hsl_spaces = format!(r"hsla?\(\s*{hue}\s+{any}\s+{any}\s*(?:/\s*{alpha}\s*)?\)");
+            regex_lite::Regex::new(&format!(
+                r"(?i)^(?:{hex}|{rgb_commas}|{rgb_spaces}|{hsl_commas}|{hsl_spaces})$"
+            ))
+            .expect("the colour pattern is fixed")
+        })
+        .is_match(text)
 }
 
 /// One web address and nothing else. Deliberately narrow: a row is drawn as
@@ -1140,6 +1168,13 @@ mod tests {
     fn kinds_are_told_apart() {
         assert_eq!(kind_of(&[vec![text("#378ADD")]]), Kind::Color);
         assert_eq!(kind_of(&[vec![text("#12g")]]), Kind::Text);
+        assert_eq!(kind_of(&[vec![text("  #12345678\n")]]), Kind::Color);
+        let html = |h: &str| Rep { uti: uti::HTML.into(), text: Some(h.into()), blob: None, bytes: 8, file_size: None, path: None, file_token: None };
+        assert_eq!(
+            kind_of(&[vec![text("#12345678"), html("<span>#12345678</span>")]]),
+            Kind::Color,
+            "a colour copied from an editor, HTML and all, is still a colour"
+        );
         assert_eq!(kind_of(&[vec![text("https://github.com/p0deje/Maccy")]]), Kind::Link);
         assert_eq!(kind_of(&[vec![text("see https://x.y")]]), Kind::Text);
         assert_eq!(kind_of(&[vec![blob(uti::PNG, "p")]]), Kind::Image);
@@ -1150,6 +1185,26 @@ mod tests {
         let file = Rep { uti: uti::FILE_URL.into(), text: Some("file:///Users/me/a%20b.txt".into()), blob: None, bytes: 0, file_size: None, path: None, file_token: None };
         assert_eq!(kind_of(&[vec![file.clone()]]), Kind::File);
         assert_eq!(title_of(&[vec![file]], Kind::File), "a b.txt");
+    }
+
+    #[test]
+    fn colours_are_css_colour_values_and_nothing_else() {
+        for yes in [
+            "#abc", "#ABCD", "#378ADD", "#12345678",
+            "rgb(255, 0, 0)", "rgba(255,0,0,0.5)", "rgb(100%, 0%, 0%)", "rgba(0, 0, 0, 50%)",
+            "rgb(255 0 0)", "rgb(255 0 0 / 0.5)", "RGB(10% 20% 30% / 40%)", "rgb(none 0 0)",
+            "hsl(120, 100%, 50%)", "hsla(120deg, 100%, 50%, .3)", "hsl(0.5turn 60% 40%)",
+            "hsl(120 100 50 / 50%)", "hsl(-30 50% 50%)",
+        ] {
+            assert!(is_color(yes), "{yes}");
+        }
+        for no in [
+            "#12", "#12345", "#1234567", "#123456789", "#12g", "123456", "red",
+            "rgb(255, 0)", "rgb(255, 0%, 0)", "rgb(255, 0, 0", "rgb(a, b, c)", "rgb(255 0 0) x",
+            "hsl(120, 100, 50)", "hsl(120 100% 50%) / 1", "rgb()", "color: #fff",
+        ] {
+            assert!(!is_color(no), "{no}");
+        }
     }
 
     #[test]

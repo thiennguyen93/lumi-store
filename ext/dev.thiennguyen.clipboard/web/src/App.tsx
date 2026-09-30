@@ -635,6 +635,7 @@ export function App() {
             query={query}
             used={used}
             onOpen={(id) => void act(() => call({ kind: "open", id, pinned }))}
+            onCopyColor={(text) => void act(() => call({ kind: "copyColor", text, pinned }))}
             zoomed={zoomed}
             onZoom={() => setZoom(!zoomed)}
           />

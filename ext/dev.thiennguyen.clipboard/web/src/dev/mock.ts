@@ -44,6 +44,9 @@ let rows: Entry[] = [
   entry({ id: "d", kind: "text", title: "Meeting moved to Thursday, 3 pm", appName: "Notes", last: now - min }),
   entry({ id: "e", kind: "image", title: "Image", thumb: "shot", appName: "Screenshot", last: now - 4 * min, search: "", ocrSearch: "Lumi · Clipboard Manager · Search history", ocr: true }),
   entry({ id: "f", kind: "color", title: "#378ADD", appName: "Figma", count: 2, last: now - 9 * min }),
+  entry({ id: "f2", kind: "color", title: "#378ADD80", appName: "VS Code", last: now - 9 * min - 1 }),
+  entry({ id: "f3", kind: "color", title: "rgba(220, 38, 38, 0.35)", appName: "Chrome", last: now - 9 * min - 2 }),
+  entry({ id: "f4", kind: "color", title: "hsl(140 60% 40% / 15%)", appName: "Chrome", last: now - 9 * min - 3 }),
   entry({ id: "g", kind: "file", title: "/Users/me/Downloads/lumi-1.23.0.dmg", fileExt: "dmg", appName: "Finder", last: now - 12 * min }),
   entry({ id: "h", kind: "rich", title: "Quarterly report — final draft", appName: "Chrome", last: now - 20 * min }),
   entry({ id: "i", kind: "text", title: "cargo clippy --all-targets -- -D warnings", appName: "Terminal", count: 5, last: now - 60 * min }),
@@ -198,6 +201,9 @@ function answer(request: Request): unknown {
       return {};
     case "copyText":
       say(`would copy the text read in ${request.id} and ${request.pinned ? "stay up" : "close"}`);
+      return {};
+    case "copyColor":
+      say(`would copy ${request.text} and ${request.pinned ? "stay up" : "close"}`);
       return {};
     case "copyPath":
       say(`would copy the path of ${rows.find((r) => r.id === request.id)?.title}`);

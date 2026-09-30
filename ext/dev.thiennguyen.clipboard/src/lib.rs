@@ -450,6 +450,35 @@ fn count_file_rows(host: &impl Host) -> Result<(), String> {
     })
 }
 
+/// Rows kept before colours were told apart from what came with them are
+/// Rich (a colour copied from an editor, HTML and all) or Text (`#rrggbbaa`,
+/// `rgb()`, `hsl()`). Only rows whose title reads as a colour are read again
+/// and given the kind their record says — once, since a Color row is not
+/// looked at again.
+fn recolor_rows(host: &impl Host) -> Result<(), String> {
+    let (index, _) = read_index(host)?;
+    let mut recolored = std::collections::HashSet::new();
+    let maybe = |e: &history::Entry| matches!(e.kind, history::Kind::Rich | history::Kind::Text) && history::is_color(&e.title);
+    for entry in index.items.iter().chain(&index.trash).filter(|e| maybe(e)) {
+        if let Ok(record) = read_record(host, &entry.id) {
+            if history::kind_of(&record.items) == history::Kind::Color {
+                recolored.insert(entry.id.clone());
+            }
+        }
+    }
+    if recolored.is_empty() {
+        return Ok(());
+    }
+    update_index(host, |index| {
+        for entry in index.items.iter_mut().chain(index.trash.iter_mut()) {
+            if recolored.contains(&entry.id) {
+                entry.kind = history::Kind::Color;
+            }
+        }
+        Ok(())
+    })
+}
+
 /// Delete what an evicted or removed row held. Best effort: a record or
 /// blob left behind is storage wasted, not a history that is wrong, and a
 /// failure here must not undo the index write that already happened.
@@ -589,6 +618,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 // Best effort: a stale title is only a title.
                 let _ = rename_file_rows(host);
                 let _ = count_file_rows(host);
+                let _ = recolor_rows(host);
                 let _ = recase_search(host);
             }
             let (index, _) = read_index(host)?;
@@ -766,6 +796,21 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None, path: None, file_token: None };
             host.paste(&[vec![rep]], false)?;
             put_away(host, request)?;
+            Ok(json!({}))
+        }
+        // One of a colour row's formats, from the preview. The page writes
+        // the text, so only a colour is taken: the webview cannot put
+        // anything else on the pasteboard through this.
+        "copyColor" => {
+            let text = request["text"].as_str().map(str::trim).unwrap_or_default();
+            if !history::is_color(text) {
+                return Err("That is not a colour.".to_string());
+            }
+            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text.to_string()), blob: None, file_size: None, path: None, file_token: None };
+            host.paste(&[vec![rep]], false)?;
+            put_away(host, request)?;
+            // Best effort: the copy happened whether or not it is said.
+            let _ = host.alert(&format!("Copied {text}"));
             Ok(json!({}))
         }
         "open" => {
@@ -1079,6 +1124,35 @@ mod tests {
         .unwrap();
         ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
         assert_eq!(read_index(&host).unwrap().0.items[0].search, "left alone");
+    }
+
+    #[test]
+    fn colours_copied_with_html_are_colours_and_old_rows_are_told_again() {
+        let host = Memory::default();
+        let colour = FIXTURE.replace("Chuyển tính năng sang extension", "#12345678");
+        on_event(&host, "clipboard", &colour).unwrap();
+        let (index, _) = read_index(&host).unwrap();
+        assert_eq!(index.items[0].kind, history::Kind::Color);
+
+        // As an older build kept it.
+        update_index(&host, |index| {
+            index.items[0].kind = history::Kind::Rich;
+            Ok(())
+        })
+        .unwrap();
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        assert_eq!(read_index(&host).unwrap().0.items[0].kind, history::Kind::Color);
+    }
+
+    #[test]
+    fn copy_color_takes_a_colour_and_nothing_else() {
+        let host = Memory::default();
+        ui(&host, &json!({"kind": "copyColor", "text": "rgb(55 138 221 / 0.5)"})).unwrap();
+        assert_eq!(*host.keystrokes.borrow(), [false], "a copy, not a paste");
+        assert!(ui(&host, &json!({"kind": "copyColor", "text": "rm -rf ~"})).is_err());
+        assert!(ui(&host, &json!({"kind": "copyColor"})).is_err());
+        assert_eq!(host.keystrokes.borrow().len(), 1, "nothing else reached the pasteboard");
+        assert_eq!(*host.alerts.borrow(), ["Copied rgb(55 138 221 / 0.5)"], "said once, for the copy that happened");
     }
 
     #[test]

@@ -51,6 +51,9 @@ pub trait Host {
     /// Hand one of this extension's pages a message; `false` when it is
     /// not on screen.
     fn post(&self, window: &str, message: &str) -> Result<bool, String>;
+    /// Say something in Lumi's own alert overlay — to the person at the
+    /// keyboard, once the panel may already be gone.
+    fn alert(&self, text: &str) -> Result<(), String>;
     /// Open a web address — for a press, so Lumi asks no capability of it.
     fn open_url(&self, url: &str) -> Result<(), String>;
     /// Select a file in Finder, by its `file:` URL.
@@ -187,6 +190,10 @@ impl Host for Lumi {
         lumi_extension_api::post(window, message)
     }
 
+    fn alert(&self, text: &str) -> Result<(), String> {
+        lumi_extension_api::alert(text)
+    }
+
     fn open_url(&self, url: &str) -> Result<(), String> {
         lumi_extension_api::open_url(url)
     }
@@ -269,6 +276,8 @@ pub mod memory {
         pub closed: Cell<u32>,
         /// Every `post`, as (window, message).
         pub posts: RefCell<Vec<(String, String)>>,
+        /// Every `alert`'s text.
+        pub alerts: RefCell<Vec<String>>,
         /// Every `open_url` and `reveal`, as "open <url>" / "reveal <url>".
         pub opened: RefCell<Vec<String>>,
         pub settings: RefCell<serde_json::Value>,
@@ -342,6 +351,11 @@ pub mod memory {
         fn post(&self, window: &str, message: &str) -> Result<bool, String> {
             self.posts.borrow_mut().push((window.to_string(), message.to_string()));
             Ok(true)
+        }
+
+        fn alert(&self, text: &str) -> Result<(), String> {
+            self.alerts.borrow_mut().push(text.to_string());
+            Ok(())
         }
 
         fn set_material(&self, window: &str, material: &str) -> Result<(), String> {
