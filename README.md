@@ -57,9 +57,8 @@ after review.
 
    At most 4, each a PNG or JPEG of at most 1 MB, made at 16:10 (1280×800)
    so Lumi's frames show them whole. Lumi's installer ignores the key; the
-   store publishes the files beside your package. The first-party
-   extensions' pictures are made with `scripts/preview_ui.py` (its
-   `/__promo__/` page) and `scripts/screenshot.mjs` — see the top of each.
+   store publishes the files beside your package. How the first-party
+   extensions' pictures are made is under "Store pictures" below.
 
    The longer words for that page go in a `STORE.md` beside your
    manifest. Without one, the page shows your manifest's one-line
@@ -107,6 +106,55 @@ source is refused, because a committed bundle is a binary swapped past
 review. The page's CSP (`default-src 'self'`) still applies: production
 builds only, no inline `<script>`. `ext/dev.thiennguyen.clipboard/web/` is
 a working example.
+
+## Store pictures
+
+The first-party extensions' `screenshots` are promo pages: a headline over
+the extension's colour, the page in a Lumi window, a callout. They are
+taken the same way every time, without a Lumi build:
+
+- `scripts/preview/promo/<id>.json` — each shot's headline, callout, page,
+  window size and `theme`;
+- `scripts/preview/shots/<id>-<n>.js` — an optional scene run in the page
+  before the picture (a row clicked, a field filled);
+- `scripts/preview/<id>.json` — what the stand-in bridge answers `call`
+  with. An extension with a built front end has its own stand-in instead
+  (the clipboard's is `web/src/dev/mock.ts`), which is the data the
+  pictures show.
+
+1. For an extension with a built front end, start its dev server:
+
+   ```bash
+   pnpm -C ext/dev.thiennguyen.clipboard/web dev --port 5173 --strictPort
+   ```
+
+2. Serve the extension's pages with the stand-in for Lumi's bridge.
+   `--proxy` is only for a built front end, so the promo page and the
+   extension's page share an origin and a scene can reach into it:
+
+   ```bash
+   python3 scripts/preview_ui.py ext/dev.thiennguyen.clipboard --port 5191 --proxy http://127.0.0.1:5173
+   ```
+
+   It reads Lumi's stylesheet from `../lumi/src-tauri/src/ext/lumi.css`;
+   point `--lumi-css` elsewhere if Lumi is not checked out beside this
+   repo. Restart it after editing a promo JSON — it is read once.
+
+3. Take each shot at 1280×800, scale 1, into the path the manifest's
+   `screenshots` lists (needs Google Chrome in `/Applications`):
+
+   ```bash
+   node scripts/screenshot.mjs "http://127.0.0.1:5191/__promo__/?shot=1" \
+     ext/dev.thiennguyen.clipboard/shots/1-history.png \
+     scripts/preview/shots/dev.thiennguyen.clipboard-1.js 1280 800 1
+   ```
+
+   Pass `""` for the scene when a shot has none. A shot's `theme` is
+   applied on its own: a page drawn in Lumi's colours follows the system's
+   scheme, so a `"dark"` shot is loaded with `prefers-color-scheme: dark`.
+   `THEME=light|dark` overrides it.
+
+Look at every picture before committing it: each must stay under 1 MB.
 
 ## What CI enforces
 
