@@ -66,9 +66,10 @@ FRAME = """<!doctype html>
 # (`color`, the icon's), a headline and one line under it, the page in a
 # Lumi window running off the bottom edge, and a callout card over the
 # window's corner pointing at the one thing the picture is about. The page
-# is the iframe — the one scene scripts reach into.
+# is the iframe — the one scene scripts reach into. `data-theme` is the
+# shot's theme, for scripts/screenshot.mjs to take it in.
 PROMO = """<!doctype html>
-<html><head><meta charset="utf-8"><title>{headline}</title>
+<html data-theme="{theme}"><head><meta charset="utf-8"><title>{headline}</title>
 <style>
   * {{ box-sizing: border-box; }}
   html, body {{ margin: 0; width: 1280px; height: 800px; overflow: hidden; }}
@@ -162,6 +163,7 @@ def promo_page(spec: dict, n: int, name: str) -> str:
         left=(1280 - width) // 2
         + (0 if not callout else 60 if callout.get("side") == "left" else -60 if panel else 0),
         width=width,
+        theme="dark" if dark else "light",
         height=int(shot.get("height", 560)),
         radius=16 if panel else 12,
         bar_hidden='style="display: none"' if panel else "",

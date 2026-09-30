@@ -1,7 +1,8 @@
 // A store picture, taken the same way every time: headless Chrome at a
 // fixed size, a page served by scripts/preview_ui.py, and a scene script
 // run in it first — keys pressed, a field filled — so the picture shows the
-// extension in use. THEME=dark for prefers-color-scheme: dark.
+// extension in use. THEME=dark for prefers-color-scheme: dark; without it, a
+// promo page's own `data-theme` (the shot's `theme`) decides.
 //
 //   node scripts/screenshot.mjs <url> <out.png> [scene.js] [width] [height] [scale]
 //
@@ -54,11 +55,23 @@ const send = (method, params = {}) =>
     ws.send(JSON.stringify({ id: n, method, params }));
   });
 await send("Emulation.setDeviceMetricsOverride", { width: +w, height: +h, deviceScaleFactor: +scale, mobile: false });
-await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: process.env.THEME || "light" }] });
+const scheme = (value) =>
+  send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value }] });
+await scheme(process.env.THEME || "light");
 await send("Emulation.setFocusEmulationEnabled", { enabled: true });
 await send("Page.enable");
 await send("Page.navigate", { url });
 await sleep(1500);
+// A page drawn in Lumi's colours (Canvas, CanvasText) follows the system's
+// scheme, not `?theme=`: a dark shot is loaded again with the scheme dark.
+if (!process.env.THEME) {
+  const asked = await send("Runtime.evaluate", { expression: "document.documentElement.dataset.theme" });
+  if (asked.result?.result?.value === "dark") {
+    await scheme("dark");
+    await send("Page.reload");
+    await sleep(1500);
+  }
+}
 if (script) {
   const answer = await send("Runtime.evaluate", { expression: script, awaitPromise: true });
   if (answer.result?.exceptionDetails) console.error(JSON.stringify(answer.result.exceptionDetails));
