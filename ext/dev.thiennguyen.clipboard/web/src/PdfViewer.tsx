@@ -47,13 +47,26 @@ let closing: Promise<void> = Promise.resolve();
  *  Only the page on show is drawn, and the file is read by ranges, so a
  *  500-page PDF opens as fast as a one-page one. A file pdf.js cannot open
  *  — locked, broken, not a PDF — calls `onFail` and the tile stands in. */
-export function PdfViewer({ src, name, onFail }: { src: string; name: string; onFail: () => void }) {
+export function PdfViewer({
+  src,
+  name,
+  onFail,
+  whole = false,
+}: {
+  src: string;
+  name: string;
+  onFail: () => void;
+  /** The whole page in view — the zoomed panel, tall enough to read one —
+   *  rather than the page fitted to the width and scrolled. */
+  whole?: boolean;
+}) {
   const scroller = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [page, setPage] = useState(1);
   const [zoom, setZoom] = useState(0);
   const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
   // The latest `onFail`, so a new closure from the parent does not reload the file.
   const fail = useRef(onFail);
   fail.current = onFail;
@@ -111,7 +124,10 @@ export function PdfViewer({ src, name, onFail }: { src: string; name: string; on
   useEffect(() => {
     const el = scroller.current;
     if (!el) return;
-    const observer = new ResizeObserver(([entry]) => setWidth(Math.floor(entry?.contentRect.width ?? 0)));
+    const observer = new ResizeObserver(([entry]) => {
+      setWidth(Math.floor(entry?.contentRect.width ?? 0));
+      setHeight(Math.floor(entry?.contentRect.height ?? 0));
+    });
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -128,7 +144,10 @@ export function PdfViewer({ src, name, onFail }: { src: string; name: string; on
       try {
         const sheet = await doc.getPage(page);
         if (!live) return;
-        const fitted = (width / sheet.getViewport({ scale: 1 }).width) * ZOOMS[zoom]!;
+        const natural = sheet.getViewport({ scale: 1 });
+        const across = width / natural.width;
+        const fit = whole && height ? Math.min(across, height / natural.height) : across;
+        const fitted = fit * ZOOMS[zoom]!;
         const css = sheet.getViewport({ scale: fitted });
         const density = Math.min(window.devicePixelRatio || 1, Math.sqrt(MAX_PIXELS / (css.width * css.height)));
         const viewport = sheet.getViewport({ scale: fitted * density });
@@ -148,7 +167,7 @@ export function PdfViewer({ src, name, onFail }: { src: string; name: string; on
       live = false;
       task?.cancel();
     };
-  }, [doc, page, zoom, width]);
+  }, [doc, page, zoom, width, height, whole]);
 
   const pages = doc?.numPages ?? 0;
   const go = (by: number) => {

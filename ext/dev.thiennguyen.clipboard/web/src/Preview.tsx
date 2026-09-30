@@ -40,17 +40,36 @@ const seen = new Map<string, Full>();
 const SEEN_MAX = 64;
 const seenKey = (row: Entry) => `${row.id}:${row.ocr ? 1 : 0}`;
 
+/** Whether a row has something worth the whole panel: text, rich text or a
+ *  link, read at full width; a copied picture; or one copied file a viewer
+ *  draws — a picture, a PDF, a film, a text or code file. A colour is a
+ *  swatch, a sound's player a bar, and a tile or a list of files is no
+ *  bigger for the room. */
+export function canZoom(row: Entry | undefined): boolean {
+  if (!row) return false;
+  if (row.kind === "text" || row.kind === "rich" || row.kind === "link") return true;
+  if (row.kind === "image") return !!row.thumb;
+  if (row.kind !== "file" || (row.fileCount ?? 0) > 1) return false;
+  const family = fileFamily(row.fileExt);
+  return family === "image" || family === "pdf" || family === "video" || isTextFile(row.fileExt);
+}
+
 export function Preview({
   row,
   onOpen,
   query = "",
   used = "exact",
+  zoomed = false,
+  onZoom,
 }: {
   row: Entry | undefined;
   onOpen?: (id: string) => void;
   /** What the list is searched by, marked in the card and scrolled to. */
   query?: string;
   used?: Used;
+  /** The card has the whole panel, the list put aside (`canZoom`). */
+  zoomed?: boolean;
+  onZoom?: () => void;
 }) {
   const card = useRef<HTMLDivElement>(null);
   usePreviewMarks(card, query, used, row?.id);
@@ -60,10 +79,14 @@ export function Preview({
   // The rich row that has waited long enough for its formatting: past
   // `HOLD_MS`, or with the ask failed, its plain title is drawn after all.
   const [gaveUp, setGaveUp] = useState<string | null>(null);
-  // The row whose read text is drawn over the whole card, picture hidden.
-  // Leaving the row puts its picture back, coming back included.
+  // The row whose read text is what the zoomed panel shows, picture hidden:
+  // the read's own ⤢ zooms the panel onto the text, as the head's zooms it
+  // onto the picture. Leaving the row or the zoom puts the picture back.
   const [expanded, setExpanded] = useState<string | null>(null);
   useEffect(() => setExpanded(null), [row?.id]);
+  useEffect(() => {
+    if (!zoomed) setExpanded(null);
+  }, [zoomed]);
   // The picture's size in pixels, read off the image once it has loaded;
   // by row, like the text.
   const [size, setSize] = useState<{ id: string; w: number; h: number } | null>(null);
@@ -119,7 +142,8 @@ export function Preview({
   // drawn — and its room taken — with the picture, not a moment later when
   // the text arrives, which would squeeze the picture after it was drawn.
   const reads = row.kind === "image" && !!row.ocr;
-  const wide = reads && expanded === row.id;
+  // The read has the zoomed panel; zoomed onto the picture, it steps aside.
+  const wide = reads && zoomed && expanded === row.id;
   const pixels = size?.id === row.id ? `${size.w} × ${size.h} px` : null;
   const weight = row.kind === "file" && mine?.fileSize != null ? bytes(mine.fileSize) : null;
 
@@ -141,6 +165,21 @@ export function Preview({
             <AppMark key={row.app ?? ""} app={row.app} name={row.appName} withName />
           </span>
           {(pixels || weight) && <span className="dims">{[pixels, weight].filter(Boolean).join(" · ")}</span>}
+          {/* Zoomed onto the read, the read's own ⤡ is the way back. */}
+          {onZoom && canZoom(row) && !wide && (
+            <button
+              type="button"
+              className="bare zoom"
+              aria-pressed={zoomed}
+              title={zoomed ? "Back to the list (⎋)" : "Give it the whole panel"}
+              aria-label={zoomed ? "Back to the list" : "Expand preview"}
+              // The caret stays in the search field, as it does for a row.
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={onZoom}
+            >
+              {zoomed ? <CollapseGlyph /> : <ExpandGlyph />}
+            </button>
+          )}
         </header>
         {row.kind === "image" && row.thumb && !wide && (
           <Pulled id={row.id} className="picture">
@@ -155,19 +194,26 @@ export function Preview({
             />
           </Pulled>
         )}
-        {reads && (
+        {reads && (!zoomed || wide) && (
           <section className="ocr-read">
             <header className="ocr-head">
               <span>Text in image</span>
               <button
                 type="button"
-                className="cap quiet"
+                className="bare"
                 aria-pressed={wide}
-                title={wide ? "Show the image" : "Give the text the whole card"}
-                aria-label={wide ? "Collapse text" : "Expand text"}
+                title={wide ? "Back to the list (⎋)" : "Give the text the whole panel"}
+                aria-label={wide ? "Back to the list" : "Expand text"}
                 // The caret stays in the search field, as it does for a row.
                 onMouseDown={(event) => event.preventDefault()}
-                onClick={() => setExpanded(wide ? null : row.id)}
+                onClick={() => {
+                  if (wide) {
+                    onZoom?.();
+                    return;
+                  }
+                  setExpanded(row.id);
+                  if (!zoomed) onZoom?.();
+                }}
               >
                 {wide ? <CollapseGlyph /> : <ExpandGlyph />}
               </button>
@@ -190,6 +236,7 @@ export function Preview({
             token={mine?.fileToken ?? null}
             name={row.title}
             onSize={(w, h) => setSize({ id: row.id, w, h })}
+            whole={zoomed}
           />
         )}
         {row.kind === "color" && HEX.test(row.title) && (
@@ -283,6 +330,7 @@ function FileMedia({
   name,
   text,
   onSize,
+  whole = false,
 }: {
   /** The row: what a drag of the picture takes out. */
   id: string;
@@ -293,6 +341,8 @@ function FileMedia({
   token: string | null;
   name: string;
   onSize: (w: number, h: number) => void;
+  /** The panel is zoomed: a PDF shows its whole page. */
+  whole?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   // Once per grant: a new address for the same file would reload the player.
@@ -340,7 +390,7 @@ function FileMedia({
     );
   }
   if (src && family === "pdf") {
-    return <PdfViewer src={src} name={name} onFail={() => setFailed(true)} />;
+    return <PdfViewer src={src} name={name} whole={whole} onFail={() => setFailed(true)} />;
   }
   return (
     <Pulled id={id} className="file-tile" family={family}>

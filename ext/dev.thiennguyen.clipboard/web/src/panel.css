@@ -313,6 +313,24 @@ body {
 }
 .keep .glyph { width: 13px; height: 13px; }
 .keep:hover { color: CanvasText; }
+/* A glyph button with no outline, as Keep open is: the expand buttons in
+   the preview. The glyph says which way it goes, so pressed has no fill. */
+.bare {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--cb-muted);
+  cursor: pointer;
+}
+.bare .glyph { width: 13px; height: 13px; }
+.bare:hover { color: CanvasText; }
 .keep.on {
   border-color: var(--cb-key-edge);
   background: var(--cb-key);
@@ -695,6 +713,23 @@ body {
 .grip:hover::after,
 .grip:active::after { opacity: 0.6; }
 
+/* Zoomed (`canZoom`): the card has the whole body, the list kept at no
+   width so it comes back where it was scrolled to. What the card draws grows
+   into the room — a picture, a film, a PDF — instead of keeping the fixed
+   box it has beside the list. */
+.panel.zoomed .list { visibility: hidden; overflow: hidden; padding: 0; }
+.panel.zoomed .grip { display: none; }
+.panel.zoomed .preview { padding-left: 12px; }
+.panel.zoomed .card .picture { flex: 1 1 0; height: auto; }
+.panel.zoomed .card .player.video { flex: 1 1 0; min-height: 0; display: flex; }
+.panel.zoomed .card .player.video video { flex: 1; min-height: 0; max-height: none; object-fit: contain; }
+.panel.zoomed .card .player.pdf { flex: 1 1 0; height: auto; min-height: 0; }
+.panel.zoomed .card .pdf-sheet canvas { margin: 0 auto; }
+.card-head .dims + .zoom { margin-left: 2px; }
+.card-head > span + .zoom { margin-left: auto; }
+/* The glyph, not the button's box, lines up with the card's right edge. */
+.card-head .zoom { margin: -3px -4px -3px 0; }
+
 .preview {
   height: 100%;
   box-sizing: border-box;
@@ -800,7 +835,7 @@ body {
   overflow: hidden;
 }
 /* The text Lumi read in the image, under it; long reads scroll. Its
-   expand button hides the picture so the read gets the whole card. */
+   expand button zooms the panel onto the read, the picture hidden. */
 .card .ocr-read {
   flex: 1 1 0;
   min-height: 56px;
@@ -817,9 +852,7 @@ body {
   font-size: 11px;
   color: var(--cb-muted);
 }
-.ocr-head .cap { padding: 0 4px; cursor: pointer; }
-.ocr-head .cap:hover { color: CanvasText; }
-.ocr-head .glyph { width: 12px; height: 12px; }
+.ocr-head .bare { margin: -3px -4px -3px 0; }
 .card .body.ocr {
   flex: 1 1 0;
   min-height: 0;
@@ -827,7 +860,10 @@ body {
   overscroll-behavior: contain;
   font: 12px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
-.card .picture img { max-width: 100%; max-height: 100%; object-fit: contain; }
+/* Rounded a step inside the well it sits in, so the two corners nest. The
+   image is sized to itself (max-*, not width/height), so the radius lands on
+   its own corners and not on empty space beside it. */
+.card .picture img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
 .card .file-tile {
   display: flex;
   flex-direction: column;

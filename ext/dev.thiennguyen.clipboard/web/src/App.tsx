@@ -31,7 +31,7 @@ import {
 } from "./icons";
 import { type Action, ActionsMenu } from "./ActionsMenu";
 import { foldAll, moving, slide, tops } from "./motion";
-import { Preview } from "./Preview";
+import { canZoom, Preview } from "./Preview";
 import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
@@ -54,6 +54,11 @@ export function App() {
   // paste, a copy or a link opened leaves it up. Every open starts
   // unpinned — Lumi takes the pin off when the panel goes.
   const [pinned, setPinned] = useState(false);
+  // The preview has the whole panel, the list put aside. Kept while the
+  // arrow keys move between rows that can have it, the way Quick Look stays
+  // up; the first row that cannot (`canZoom`) ends it, so the list is never
+  // back on screen with a zoom still waiting to take it away again.
+  const [zoom, setZoom] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const preview = usePreviewWidth();
   const windowDrag = useWindowDrag();
@@ -82,6 +87,10 @@ export function App() {
   );
   const keys = useMemo(() => shortcuts(shown), [shown]);
   const current = shown[selected];
+  const zoomed = zoom && canZoom(current);
+  useEffect(() => {
+    if (zoom && !canZoom(current)) setZoom(false);
+  }, [zoom, current]);
 
   const reload = useCallback(async (keepId: string | null, opening = false) => {
     const answer = await call({ kind: "list", opening });
@@ -446,6 +455,8 @@ export function App() {
       // gets here anyway while it is up puts away the menu, never the panel.
       if (menuOpen) {
         closeMenu();
+      } else if (zoomed) {
+        setZoom(false);
       } else if (query) {
         setQuery("");
         setSelected(0);
@@ -485,7 +496,7 @@ export function App() {
     // Focusable itself, so a click on what is not — the preview's text,
     // which stays selectable — leaves the focus in here rather than on the
     // body, where no key reaches `onKeyDown`.
-    <main className="panel" tabIndex={-1} onKeyDown={onKeyDown} onClick={onClick}>
+    <main className={zoomed ? "panel zoomed" : "panel"} tabIndex={-1} onKeyDown={onKeyDown} onClick={onClick}>
       {/* The breadcrumb is the panel's title bar: drag it to move the panel. */}
       <header className="crumbs" {...windowDrag}>
         <LumiMark />
@@ -534,6 +545,8 @@ export function App() {
             setQuery(event.target.value);
             setSelected(0);
             setNotice("");
+            // A search is typed to see the list, so it comes back.
+            setZoom(false);
           }}
           placeholder="Search history"
           autoComplete="off"
@@ -547,7 +560,15 @@ export function App() {
         className="body-grid"
         // Nothing to preview: the list takes the width, so the empty note
         // sits in the middle of the panel rather than of the list.
-        style={{ gridTemplateColumns: empty ? "minmax(0, 1fr)" : `minmax(0, 1fr) min(${preview.width}px, calc(100% - ${MIN_LIST}px))` }}
+        // Zoomed, the list keeps its column at no width rather than leaving
+        // the page, so it comes back where it was scrolled to.
+        style={{
+          gridTemplateColumns: empty
+            ? "minmax(0, 1fr)"
+            : zoomed
+              ? "0 minmax(0, 1fr)"
+              : `minmax(0, 1fr) min(${preview.width}px, calc(100% - ${MIN_LIST}px))`,
+        }}
       >
         <div ref={list} id="list" className="list" role="listbox" aria-label="Clipboard history">
           {rows !== null && empty && (
@@ -592,6 +613,8 @@ export function App() {
             query={query}
             used={used}
             onOpen={(id) => void act(() => call({ kind: "open", id, pinned }))}
+            zoomed={zoomed}
+            onZoom={() => setZoom(!zoomed)}
           />
         </div>
       </section>
