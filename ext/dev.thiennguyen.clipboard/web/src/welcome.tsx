@@ -1,7 +1,7 @@
-// Clipboard Manager's Welcome window — the five-step tour `on_lifecycle`
+// Clipboard Manager's Welcome window — the six-step tour `on_lifecycle`
 // opens on an install and on an update. The top half is a small, live
 // picture of the panel acting out each step; the bottom half says it. After
-// the last step comes the finish: not a sixth step but the whole window,
+// the last step comes the finish: not a seventh step but the whole window,
 // so nobody pressing Continue expects another one after it.
 //
 // Its own choice: Lumi opens nothing on an install, and the one thing an
@@ -14,7 +14,18 @@
 import { StrictMode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { call, Held, message, setShortcut, shortcuts } from "./bridge";
-import { ClipboardGlyph, FileGlyph, KindGlyph, PlayGlyph, SearchGlyph } from "./icons";
+import {
+  ClipboardGlyph,
+  CloudOffGlyph,
+  EyeOffGlyph,
+  FileGlyph,
+  KeyGlyph,
+  KindGlyph,
+  LockGlyph,
+  PlayGlyph,
+  SearchGlyph,
+  ShieldGlyph,
+} from "./icons";
 import { acceleratorGlyphs, acceleratorOf, acceleratorRefusal } from "./keys";
 import { fuzzyScore } from "./search";
 import type { FileFamily } from "./fileType";
@@ -37,7 +48,7 @@ const TIPS: [string, string][] = [
   ["⌘⌥⌫", "Delete"],
 ];
 
-const STEPS = 5;
+const STEPS = 6;
 
 function Welcome() {
   const [step, setStep] = useState(0);
@@ -94,8 +105,7 @@ function Welcome() {
               <h1>Welcome to Clipboard Manager</h1>
               <p className="dim">
                 Everything you copy — text, links, colours, files, screenshots — is kept on this
-                Mac and pasted back from a panel. Stored encrypted; anything a password manager
-                marks as secret is never recorded.
+                Mac and pasted back from a panel.
               </p>
             </>
           ))}
@@ -132,6 +142,17 @@ function Welcome() {
               Drag any item out of the panel into another app. A file lands as the file itself —
               attached to a mail, dropped in a folder — a screenshot as an image, text as text.
               Settings can close the panel after each drop.
+            </p>
+          </>
+        )}
+        {step === 5 && (
+          <>
+            <h1>Private by design</h1>
+            <p className="dim">
+              Your history stays on this Mac — the extension has no network access. What it keeps
+              is encrypted with XChaCha20-Poly1305, under a key Lumi holds in your Keychain. Anything
+              a password manager marks as secret is dropped before it arrives, and Settings can
+              skip whole apps, text that matches a pattern, and forget copies after a time you pick.
             </p>
           </>
         )}
@@ -295,7 +316,7 @@ function Marked({ text, marks }: { text: string; marks: number[] }) {
  * A small, pretend panel acting out the step on screen: things arriving as
  * they are copied; the panel popping up at the key; a few letters typed
  * narrowing the list down to one row; files opening beside the list; a
- * row dragged out into a mail.
+ * row dragged out into a mail; the history sealed where it is kept.
  */
 function Preview({ step, armed }: { step: number; armed: string | null }) {
   const [typed, setTyped] = useState(0);
@@ -343,7 +364,7 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
         {armed ? <Caps glyphs={acceleratorGlyphs(armed)} small /> : "No key yet"}
       </span>
       <div className="panel" ref={panel}>
-        {step === 3 ? <Looking /> : <>
+        {step === 3 ? <Looking /> : step === 5 ? <Vault /> : <>
         <div className="search">
           <SearchGlyph />
           {query ? <span>{query}</span> : <span className="placeholder">Search</span>}
@@ -488,6 +509,79 @@ function Json() {
       <span className="line inner">  {"}"},</span>
       <span className="line">  <span className="k">"workers"</span>: <span className="n">4</span></span>
     </pre>
+  );
+}
+
+/** What a copy looks like as it is kept: the plain text, and what lands on
+ *  disk in its place. Made up, the same length, so it swaps letter by
+ *  letter. */
+const PLAIN = "npm install --save-dev vite";
+const SEALED = "x9Qe#vL2·m0Tf+8Kd$pWz3Ra7!c";
+
+/** In ticks of `SEAL_TICK`: held plain, sealing, held sealed, opening. */
+const SEAL_HOLD = 14;
+const SEAL_TICK = 70;
+const SEAL_LOOP = 2 * (SEAL_HOLD + PLAIN.length);
+
+/** How many letters are sealed at tick `at` of the loop. */
+function sealedAt(at: number): number {
+  const n = PLAIN.length;
+  if (at < SEAL_HOLD) return 0;
+  if (at < SEAL_HOLD + n) return at - SEAL_HOLD;
+  if (at < 2 * SEAL_HOLD + n) return n;
+  return n - (at - 2 * SEAL_HOLD - n);
+}
+
+/**
+ * The privacy step: the panel's history as it is kept. A copy seals into
+ * ciphertext letter by letter and opens again; the key is in the Keychain;
+ * a password manager's copy comes and is turned away; nothing goes out.
+ */
+function Vault() {
+  const [at, setAt] = useState(() =>
+    matchMedia("(prefers-reduced-motion: reduce)").matches ? SEAL_HOLD + PLAIN.length : 0,
+  );
+
+  useEffect(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const tick = window.setInterval(() => setAt((was) => (was + 1) % SEAL_LOOP), SEAL_TICK);
+    return () => window.clearInterval(tick);
+  }, []);
+
+  const sealed = sealedAt(at);
+  const shut = sealed === PLAIN.length;
+  return (
+    <div className="vault">
+      <div className="search seal-head">
+        <ShieldGlyph />
+        <span>History on this Mac</span>
+        <span className="sp" />
+        <span className="badge-ok">Encrypted</span>
+      </div>
+      <div className={shut ? "item first shut" : "item first"} style={{ animationDelay: "0s" }}>
+        <LockGlyph open={!shut} />
+        <span className="text mono">
+          <span className="cipher">{SEALED.slice(0, sealed)}</span>
+          {PLAIN.slice(sealed)}
+        </span>
+        <span className="meta">{shut ? "on disk" : "Terminal"}</span>
+      </div>
+      <div className="item" style={{ animationDelay: "0.35s" }}>
+        <KeyGlyph />
+        <span className="text">Key kept in your Keychain</span>
+        <span className="meta">Lumi</span>
+      </div>
+      <div className="item refused" style={{ animationDelay: "0.7s" }}>
+        <EyeOffGlyph />
+        <span className="text mono"><span className="secret">••••••••••••</span></span>
+        <span className="meta">Secret · not kept</span>
+      </div>
+      <div className="item" style={{ animationDelay: "1.05s" }}>
+        <CloudOffGlyph />
+        <span className="text">No network access</span>
+        <span className="meta">This Mac only</span>
+      </div>
+    </div>
   );
 }
 

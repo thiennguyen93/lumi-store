@@ -1,4 +1,4 @@
-/* The Welcome window: a small live panel on top acting out each of five
+/* The Welcome window: a small live panel on top acting out each of six
    steps, the words below. Lumi's lumi.css comes first and has no
    specificity, so these rules win without trying; its tokens are used with a
    fallback each, so `pnpm dev` reads too. */
@@ -311,6 +311,52 @@ p { margin: 0; }
   45%, 100% { opacity: 1; max-height: 15px; }
 }
 
+/* Step six: the history as it is kept. The panel's search field becomes
+   a header saying where; the first row seals into ciphertext and opens
+   again; a password manager's copy arrives and is turned away. */
+.vault .seal-head { gap: 6px; color: var(--wc-dim); font-weight: 500; }
+.vault .seal-head svg { color: var(--wc-ok); }
+.vault .sp { flex: 1; }
+.badge-ok {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wc-ok) 16%, transparent);
+  color: var(--wc-ok);
+  font-size: 10px;
+  font-weight: 600;
+}
+.step-5 .item { animation: arrive 0.5s ease-out both; }
+.vault .mono { font: 11px/1.4 ui-monospace, "SF Mono", Menlo, monospace; }
+.vault .cipher { color: var(--wc-mark-ink); }
+.vault .item.first svg { transition: color 0.2s ease; }
+.vault .item.shut svg { color: var(--wc-ok); }
+.vault .item.shut .meta { color: var(--wc-ok); }
+.step-5 .item.refused { animation: arrive 0.5s ease-out 0.7s both, refuse 4s ease-in-out 1.4s infinite; }
+.item.refused .secret { position: relative; }
+.item.refused .secret::after {
+  /* The strike through a copy that is never recorded. */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 1.5px;
+  width: 0;
+  background: var(--wc-bad);
+  animation: strike 4s ease-in-out 1.4s infinite;
+}
+.item.refused .meta { color: var(--wc-bad); }
+
+@keyframes refuse {
+  0%, 30% { opacity: 1; }
+  45%, 85% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+@keyframes strike {
+  0%, 15% { width: 0; }
+  35%, 85% { width: 100%; }
+  100% { width: 0; }
+}
+
 /* Step five: the found row is picked up, carried out of the panel and
    dropped into a mail beside it. The mail sits beside the panel the way
    the key does on step two: always there, grown in on this step only. */
@@ -458,6 +504,9 @@ p { margin: 0; }
   .preview *, .preview { animation: none !important; }
   /* No flight: the file is simply in the mail. */
   .drop.shown .landed { opacity: 1; }
+  /* The secret simply struck out. */
+  .item.refused .secret::after { width: 100%; }
+  .step-5 .item.refused { opacity: 0.4; }
 }
 
 /* ---- The finish ------------------------------------------------------- */
