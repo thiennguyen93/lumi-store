@@ -143,7 +143,7 @@ export function Preview({
           {(pixels || weight) && <span className="dims">{[pixels, weight].filter(Boolean).join(" · ")}</span>}
         </header>
         {row.kind === "image" && row.thumb && !wide && (
-          <Picture id={row.id}>
+          <Pulled id={row.id} className="picture">
             <img
               alt="Copied image"
               src={blobUrl(row.thumb)}
@@ -153,7 +153,7 @@ export function Preview({
                 if (w && h) setSize({ id: row.id, w, h });
               }}
             />
-          </Picture>
+          </Pulled>
         )}
         {reads && (
           <section className="ocr-read">
@@ -241,19 +241,29 @@ function LinkBody({ text, onOpen }: { text: string; onOpen: () => void }) {
   );
 }
 
-/** A picture in the preview, pulled out of the panel the way its row is:
- *  through Lumi (`clipboard.drag`), never WebKit's own drag of an `<img>`.
- *  That one is a session Lumi never hears of, so the panel stays at its
- *  level over the drag image — the file macOS draws at the pointer sat
- *  under the panel until the pointer left it — and it carries no PNG file
- *  where one is wanted. Hence `draggable={false}` on the `<img>` inside.
- *  An image row hands its image; a copied image file hands the file. */
-function Picture({ id, children }: { id: string; children: ReactNode }) {
+/** Something in the preview that stands for the whole item — a picture, or
+ *  the tile of a file or folder nothing can draw — pulled out of the panel
+ *  the way its row is: through Lumi (`clipboard.drag`), never WebKit's own
+ *  drag. That one is a session Lumi never hears of from the page, and it
+ *  carries no file: an image as a PNG where one is wanted, a copied file or
+ *  folder as itself, only come from Lumi's. Hence `draggable={false}` on an
+ *  `<img>` inside, and the press kept off the search field as a row keeps it. */
+function Pulled({
+  id,
+  className,
+  family,
+  children,
+}: {
+  id: string;
+  className: string;
+  family?: FileFamily;
+  children: ReactNode;
+}) {
   const drag = useItemDrag(() => {
     call({ kind: "drag", id }).catch(() => {});
   });
   return (
-    <div className="picture" {...drag}>
+    <div className={className} data-family={family} onMouseDown={(event) => event.preventDefault()} {...drag}>
       {children}
     </div>
   );
@@ -303,7 +313,7 @@ function FileMedia({
     // The file itself, drawn by the webview: a type it cannot draw (HEIC
     // before macOS 14), or one too big for Lumi to send whole, is the tile.
     return (
-      <Picture id={id}>
+      <Pulled id={id} className="picture">
         <img
           alt={name}
           src={src}
@@ -315,7 +325,7 @@ function FileMedia({
           }}
           onError={() => setFailed(true)}
         />
-      </Picture>
+      </Pulled>
     );
   }
   if (src && family === "video") {
@@ -333,10 +343,10 @@ function FileMedia({
     return <PdfViewer src={src} name={name} onFail={() => setFailed(true)} />;
   }
   return (
-    <div className="file-tile" data-family={family}>
+    <Pulled id={id} className="file-tile" family={family}>
       <FileGlyph family={family} />
       <span>{family === "folder" ? "FOLDER" : ext ? ext.toUpperCase() : "FILE"}</span>
-    </div>
+    </Pulled>
   );
 }
 
