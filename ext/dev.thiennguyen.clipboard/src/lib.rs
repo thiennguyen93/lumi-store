@@ -22,7 +22,7 @@ pub mod rtf;
 pub mod snippets;
 
 use history::{Copy, Index, Order, Outcome, Rules};
-use host::{Host, PutError};
+use host::{Host, Presence, PutError};
 use lumi_extension_api as lumi;
 use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
@@ -229,43 +229,41 @@ fn tell_panel(host: &impl Host) {
     let _ = host.post(PANEL, HISTORY_CHANGED);
 }
 
-/// What the panel is told when it is asked for while already up — the
-/// shortcut pressed again, or the tour's "Try it". It stays as it is, and
-/// shows where the keys go now; pinned and left for another app, it takes
-/// the keyboard back first (`focus`).
+/// What the panel is told when Show is run while it is already up — the
+/// shortcut pressed again, or the tour's "Try it": it stays as it is, and
+/// shows where the keys go now.
 pub const SUMMONED: &str = r#"{"kind":"summoned"}"#;
 
-/// Asked only to learn whether the panel is up — Lumi answers `false` and
-/// sends nothing when it is not on screen. A kind the page does not know,
-/// so it does nothing with it.
-const PING: &str = r#"{"kind":"ping"}"#;
-
 /// One of the manifest's `[[command]]`s: the panel shown, hidden or
-/// toggled.
+/// toggled. Lumi's `open-window` never puts a window away, so which of them
+/// closes the panel is decided here, from where it stands.
 fn command(host: &impl Host, name: &str) -> Result<(), String> {
     match name {
         "open" => show_panel(host),
         "hide" => host.close_window(PANEL),
-        "toggle" => {
-            if host.post(PANEL, PING) == Ok(true) {
-                host.close_window(PANEL)
-            } else {
-                open_panel(host)
-            }
-        }
+        // On screen, put away — pinned behind another app or not; off
+        // screen, shown as Show shows it.
+        "toggle" => match host.window_state(PANEL)? {
+            Presence::Hidden => open_panel(host),
+            Presence::Up | Presence::Focused => host.close_window(PANEL),
+        },
         _ => Err(format!("Clipboard Manager has no {name} command")),
     }
 }
 
-/// Show only ever brings the panel up: run while it is up, it does not put
-/// it away — Escape, Hide and Toggle do. Lumi sends a press's `open-window`
-/// on a panel that holds the keyboard away again (Maccy's habit), so an up
-/// panel is never asked for that way: the post doubles as the question.
+/// Show only ever brings the panel up — Escape, Hide and Toggle put it
+/// away. Already up, it is told so (`SUMMONED`), and a pinned panel the
+/// person left takes the keyboard back first, where it stands. One that
+/// holds the keyboard is not opened again: Lumi would bring it to the
+/// pointer, and it is where the person put it.
 fn show_panel(host: &impl Host) -> Result<(), String> {
-    if host.post(PANEL, SUMMONED) == Ok(true) {
-        return Ok(());
+    match host.window_state(PANEL)? {
+        Presence::Hidden => return open_panel(host),
+        Presence::Up => host.open_window(PANEL)?,
+        Presence::Focused => {}
     }
-    open_panel(host)
+    let _ = host.post(PANEL, SUMMONED);
+    Ok(())
 }
 
 /// Open the panel, put away, in the glass and the theme the person chose —
@@ -1090,14 +1088,6 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             host.set_pinned(PANEL, pinned)?;
             Ok(json!({ "pinned": pinned }))
         }
-        // A pinned panel told it was asked for (`SUMMONED`): the keyboard
-        // back from whichever app has it. The page's own request, not a
-        // press, so Lumi hands it over where the panel stands and never
-        // puts the panel away; one that holds the keyboard already keeps it.
-        "focus" => {
-            host.open_window(PANEL)?;
-            Ok(json!({}))
-        }
         other => Err(format!("the panel has no {other} request")),
     }
 }
@@ -1574,26 +1564,26 @@ mod tests {
     fn show_only_ever_brings_the_panel_up() {
         let host = Memory::default();
         let opens = || host.opened.borrow().iter().filter(|o| o.starts_with("open-window")).count();
+        let told = || host.posts.borrow().iter().filter(|(_, m)| m == SUMMONED).count();
         command(&host, "open").unwrap();
-        assert_eq!(opens(), 1, "opened");
-        // Run again while up: told, never opened again — a press's
-        // open-window on a panel with the keyboard is Lumi putting it away.
-        host.posts.borrow_mut().clear();
+        assert_eq!((opens(), told()), (1, 0), "opened, and a page just opened is told nothing");
+        // Run again with the keyboard in it: told, never opened again —
+        // Lumi would bring it to the pointer.
         command(&host, "open").unwrap();
         command(&host, "open").unwrap();
-        assert_eq!(opens(), 1, "still the one open");
-        assert_eq!(host.closed.get(), 0, "and never put away");
-        assert_eq!(*host.posts.borrow(), [(PANEL.to_string(), SUMMONED.to_string()), (PANEL.to_string(), SUMMONED.to_string())]);
+        assert_eq!((opens(), told(), host.closed.get()), (1, 2, 0), "still the one open, never put away");
         let message: Value = serde_json::from_str(SUMMONED).unwrap();
         assert_eq!(message, json!({"kind": "summoned"}));
-        // Pinned and left, the page asks for the keyboard back itself.
-        ui(&host, &json!({"kind": "focus"})).unwrap();
-        assert_eq!(opens(), 2);
+        // Pinned and left for another app: the keyboard back, then told.
+        host.away.set(true);
+        command(&host, "open").unwrap();
+        assert_eq!((opens(), told()), (2, 3));
+        assert_eq!(host.window_state(PANEL).unwrap(), Presence::Focused);
         // Escape puts it away; the next Show opens it again.
         ui(&host, &json!({"kind": "close"})).unwrap();
         assert_eq!(host.closed.get(), 1);
         command(&host, "open").unwrap();
-        assert_eq!(opens(), 3, "opened again");
+        assert_eq!((opens(), told()), (3, 3), "opened again");
     }
 
     #[test]
@@ -1603,16 +1593,17 @@ mod tests {
         command(&host, "hide").unwrap();
         assert_eq!(host.closed.get(), 1, "hiding a panel not up is not an error");
         command(&host, "toggle").unwrap();
-        assert_eq!(opens(), 1, "not up: shown");
+        assert_eq!(opens(), 1, "hidden: shown");
         command(&host, "toggle").unwrap();
-        assert_eq!((opens(), host.closed.get()), (1, 2), "up: put away");
+        assert_eq!((opens(), host.closed.get()), (1, 2), "focused: put away");
+        command(&host, "toggle").unwrap();
+        host.away.set(true);
+        command(&host, "toggle").unwrap();
+        assert_eq!((opens(), host.closed.get()), (2, 3), "up behind another app: put away too");
         command(&host, "open").unwrap();
         command(&host, "hide").unwrap();
-        assert_eq!(host.closed.get(), 3);
-        // Toggle asks with a ping the page does nothing with; only Show
-        // tells it it was asked for.
-        let count = |message: &str| host.posts.borrow().iter().filter(|(_, m)| m == message).count();
-        assert_eq!((count(PING), count(SUMMONED)), (2, 1));
+        assert_eq!(host.closed.get(), 4);
+        assert!(host.posts.borrow().iter().all(|(_, m)| m != SUMMONED), "only Show tells the page");
         assert!(command(&host, "nope").is_err());
     }
 

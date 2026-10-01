@@ -148,8 +148,6 @@ export type Request =
   | { kind: "close" }
   /** The title bar's pin: keep the panel up while working elsewhere. */
   | { kind: "pinPanel"; pinned: boolean }
-  /** Pinned and asked for again: the keyboard back, where the panel stands. */
-  | { kind: "focus" }
   | { kind: "stats" }
   | { kind: "previewWidth"; width: number }
   /** Null puts the line back where the page draws it. */

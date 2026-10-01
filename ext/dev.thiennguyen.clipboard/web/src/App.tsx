@@ -196,15 +196,14 @@ export function App() {
 
   // The shortcut pressed while the panel is up does not put it away — only
   // Escape does — and the extension says it was pressed (src/lib.rs
-  // `SUMMONED`). Pinned and left for another app, the panel asks for the
-  // keyboard back; either way, what the keys work on now hails, so a press
-  // that changed nothing on screen still says it was heard: the ⌘K menu's
-  // chosen action while it is up, else the selected row while the list is
-  // in sight, else the search.
+  // `SUMMONED`), the keyboard already back if the panel was pinned and left
+  // for another app. What the keys work on now hails, so a press that
+  // changed nothing on screen still says it was heard: the ⌘K menu's chosen
+  // action while it is up, else the selected row while the list is in
+  // sight, else the search.
   useEffect(() => {
     const told = (event: Event) => {
       if (!isNews((event as CustomEvent<unknown>).detail, "summoned")) return;
-      if (pinned) void act(() => call({ kind: "focus" }));
       const row = zoomed || about ? null : list.current?.querySelector<HTMLElement>('.row[aria-selected="true"]');
       row?.scrollIntoView({ block: "nearest" });
       hail(
@@ -215,7 +214,7 @@ export function App() {
     };
     window.addEventListener("lumi:message", told);
     return () => window.removeEventListener("lumi:message", told);
-  }, [act, pinned, zoomed, about]);
+  }, [zoomed, about]);
 
   const paste = useCallback(
     (plain: boolean, row: Entry | undefined = current) => {

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.66.1] - 2026-10-02
+
+### Changed
+
+- With the panel pinned and you working in another app, Show clipboard history gives it the keyboard back the moment you press it, before the selected item blinks: Clipboard Manager now asks Lumi where the panel stands instead of finding out from the panel. Needs Lumi 1.31.0.
+
 ## [0.66.0] - 2026-10-02
 
 ### Added

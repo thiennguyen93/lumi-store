@@ -319,12 +319,37 @@ interface config {
 /// a name the manifest does not declare is refused, so the review sheet's
 /// list of windows is also the list of windows that can ever open.
 interface ui {
-    /// Open (or focus) one declared window by its manifest `name`.
+    /// Open (or focus) one declared window by its manifest `name`. One
+    /// already up is focused, never closed, whoever asks — your command's
+    /// own press included: a pinned panel the person left takes the
+    /// keyboard back where it stands, any other comes to the pointer. A key
+    /// that also puts a window away is yours to build, from `window-state`
+    /// and `close-window`. Until Lumi 1.31 a press on a panel that held the
+    /// keyboard closed it instead.
     open-window: func(name: string) -> result<_, string>;
 
     /// Close one declared window by its manifest `name`. One that is not
     /// open is not an error. Added in 0.3.
     close-window: func(name: string) -> result<_, string>;
+
+    /// Where one of your windows stands.
+    enum presence {
+        /// Not on screen — a panel put away included.
+        hidden,
+        /// On screen while the keyboard is elsewhere: a pinned panel once
+        /// the person works in another application. A pointer resting over
+        /// it is not the keyboard — the panel stays `up`.
+        up,
+        /// On screen with the keyboard.
+        focused,
+    }
+
+    /// Where one declared window stands, by its manifest `name` — for a
+    /// command that decides for itself: a toggle that puts a window away
+    /// when it is `focused`, or a show that only nudges one already in
+    /// front. Allowed wherever `post` is, `on-event` included. Added in
+    /// Lumi 1.31.
+    window-state: func(name: string) -> result<presence, string>;
 
     /// Bring up Lumi's Settings on this extension's own Settings tab — a
     /// panel's "Settings…". Only for something the person did. Added in 0.3.
@@ -346,11 +371,11 @@ interface ui {
     /// the person works in another application, instead of closing the
     /// moment it loses the keyboard. A paste from it hands the keyboard
     /// back and leaves it up; it sits above ordinary windows but under
-    /// menus. Escape, your shortcut pressed while it is up (from Lumi 1.31,
-    /// whether or not it has the keyboard), and `close-window` still put it
-    /// away, and the pin goes with it — every
-    /// show starts unpinned. Only a panel that is up, and only for
-    /// something the person did in one of your windows. Added in Lumi 1.29.
+    /// menus. Escape and `close-window` still put it away, and the pin goes
+    /// with it — every show starts unpinned. Your shortcut does not, from
+    /// Lumi 1.31: it focuses the panel (`open-window`). Only a panel that is
+    /// up, and only for something the person did in one of your windows.
+    /// Added in Lumi 1.29.
     set-pinned: func(name: string, pinned: bool) -> result<_, string>;
 
     /// Make one of your windows' unified title bar `height` points tall —

@@ -6,6 +6,7 @@
 //! to the SDK.
 
 use crate::history::Rep;
+pub use lumi_extension_api::Presence;
 use lumi_extension_api::{self as lumi, storage};
 
 /// A stored value and the revision it was read at, for compare-and-swap:
@@ -73,8 +74,13 @@ pub trait Host {
     /// Close one of the manifest's windows by name — `lib::PANEL` or
     /// `lib::WELCOME`. One that is not open is not an error.
     fn close_window(&self, name: &str) -> Result<(), String>;
-    /// Open (or bring forward) one of the manifest's windows by name.
+    /// Open (or bring forward) one of the manifest's windows by name. One
+    /// already up is never closed: a pinned panel the person left takes the
+    /// keyboard back where it stands, any other comes to the pointer.
     fn open_window(&self, name: &str) -> Result<(), String>;
+    /// Where one of the manifest's windows stands: hidden, up with the
+    /// keyboard elsewhere (a pinned panel the person left), or focused.
+    fn window_state(&self, name: &str) -> Result<Presence, String>;
     /// The glass the panel opens on next.
     fn set_material(&self, window: &str, material: &str) -> Result<(), String>;
     /// Light, dark or the system's, for the panel — at once if it is up.
@@ -213,6 +219,10 @@ impl Host for Lumi {
         lumi_extension_api::open_window(name)
     }
 
+    fn window_state(&self, name: &str) -> Result<Presence, String> {
+        lumi::window_state(name)
+    }
+
     fn set_material(&self, window: &str, material: &str) -> Result<(), String> {
         lumi_extension_api::set_material(window, material)
     }
@@ -344,6 +354,9 @@ pub mod memory {
         /// The windows on screen: opened and not closed since. A `post` to
         /// one answers `true`, as Lumi's does.
         pub up: RefCell<BTreeSet<String>>,
+        /// The person is working in another app: a window on screen is `Up`
+        /// rather than `Focused`, until `open_window` hands it the keyboard.
+        pub away: Cell<bool>,
         /// Every `alert`'s text.
         pub alerts: RefCell<Vec<String>>,
         /// Every `open_url` and `reveal`, as "open <url>" / "reveal <url>".
@@ -441,8 +454,17 @@ pub mod memory {
 
         fn open_window(&self, name: &str) -> Result<(), String> {
             self.up.borrow_mut().insert(name.to_string());
+            self.away.set(false);
             self.opened.borrow_mut().push(format!("open-window {name}"));
             Ok(())
+        }
+
+        fn window_state(&self, name: &str) -> Result<Presence, String> {
+            Ok(match (self.up.borrow().contains(name), self.away.get()) {
+                (false, _) => Presence::Hidden,
+                (true, true) => Presence::Up,
+                (true, false) => Presence::Focused,
+            })
         }
 
         fn post(&self, window: &str, message: &str) -> Result<bool, String> {

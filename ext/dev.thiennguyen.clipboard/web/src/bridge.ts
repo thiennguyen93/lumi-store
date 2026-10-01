@@ -61,7 +61,6 @@ type Answers = {
   clear: { ids: string[] };
   close: Record<string, never>;
   pinPanel: { pinned: boolean };
-  focus: Record<string, never>;
   stats: Stats;
   previewWidth: Record<string, never>;
   previewSplit: Record<string, never>;

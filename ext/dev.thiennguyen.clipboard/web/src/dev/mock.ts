@@ -378,9 +378,6 @@ function answer(request: Request): unknown {
     case "pinPanel":
       say(request.pinned ? "would keep the panel up while you work elsewhere" : "would let the panel close when you click away");
       return { pinned: request.pinned };
-    case "focus":
-      say("would hand the panel the keyboard back");
-      return {};
     case "pdfFit":
       pdfFit = { ...pdfFit, [request.zoomed ? "zoomed" : "pane"]: request.fit };
       say(`would start ${request.zoomed ? "zoomed" : "side"} PDFs at the ${request.fit}`);
