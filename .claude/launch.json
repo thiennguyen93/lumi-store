@@ -84,6 +84,19 @@
         "http://localhost:5178"
       ],
       "port": 5192
+    },
+    {
+      "name": "screenshot-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "../lumi-screenshot/web",
+        "dev",
+        "--port",
+        "5183",
+        "--strictPort"
+      ],
+      "port": 5183
     }
   ]
 }

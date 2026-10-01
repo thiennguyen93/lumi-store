@@ -21,7 +21,8 @@
 # So:
 #
 #   plan   reads the reviewed list. No submodules, nothing built.
-#   build  one runner per extension. No secret, a read-only token that is
+#   build  one runner per extension. No secret (a private entry's leg
+#          holds its deploy key for one step; see below), a read-only token that is
 #          not persisted, and the only things it hands on are what it
 #          compiled: extension.wasm, and ui/ for an entry whose front end is
 #          built from web/ (`pnpm install --frozen-lockfile --ignore-scripts`
@@ -38,6 +39,18 @@
 #   discussions
 #          beside the others: one GitHub Discussion per extension, for
 #          hearts and feedback. `discussions: write` and nothing else.
+#
+# **Private entries** (`private = true` in extensions.toml) are the store
+# owner's closed-source extensions: private repos, pinned as submodules
+# marked `update = none`, so every recursive checkout here skips them.
+# `scripts/fetch-private.sh` checks them out with a read-only deploy key,
+# which opens that one repository and nothing else, in two places only:
+# the entry's own build leg — before `publish.py --build`, with the key
+# deleted by the time any build script runs — and the sign job, which
+# packs their manifests and icons and runs no submission's code. Their
+# source never crosses between jobs as an artifact: artifacts of a public
+# repository can be downloaded by anyone. What they compile is published
+# like every other package.
 #
 # What this does not close: an extension's own build can still put whatever
 # it likes in its *own* wasm. That is the author's code by definition, and
@@ -68,6 +81,7 @@ jobs:
       contents: read
     outputs:
       entries: ${{ steps.list.outputs.entries }}
+      private: ${{ steps.list.outputs.private }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -89,6 +103,15 @@ jobs:
         with:
           submodules: recursive
           persist-credentials: false
+
+      # Only in a private entry's own leg, and before the build: the key
+      # is on disk for this step alone.
+      - name: Private source
+        if: contains(fromJSON(needs.plan.outputs.private), matrix.id)
+        env:
+          ID: ${{ matrix.id }}
+          DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+        run: scripts/fetch-private.sh "$ID"
 
       # No minisign and no secret: nothing here signs. Node is the
       # runner's own; pnpm is whatever version the entry's package.json
@@ -156,6 +179,13 @@ jobs:
         with:
           submodules: recursive
           persist-credentials: false
+
+      # The private entries' manifests, icons and store pages, packed
+      # below. Nothing from them runs here.
+      - name: Private sources
+        env:
+          DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+        run: scripts/fetch-private.sh
 
       - name: Toolchain
         run: |
