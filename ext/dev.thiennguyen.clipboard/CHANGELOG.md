@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.62.1] - 2026-10-01
+
+### Fixed
+
+- The ⌘K actions menu's search field fits inside the menu instead of running past its right edge.
+
 ## [0.62.0] - 2026-10-01
 
 ### Added

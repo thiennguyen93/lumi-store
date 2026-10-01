@@ -1,5 +1,46 @@
-import { defineConfig } from "vite";
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+
+/** Lumi's own page stylesheet: from the Lumi checkout beside this repo, as
+ *  scripts/preview_ui.py finds it, or wherever `LUMI_CSS` says. */
+const LUMI_CSS =
+  process.env.LUMI_CSS ?? fileURLToPath(new URL("../../../../lumi/src-tauri/src/ext/lumi.css", import.meta.url));
+
+/** The pages Lumi draws inside a pane — the settings-page and the [[page]]
+ *  tab — which Lumi puts lumi.css first in. The two windows link it
+ *  themselves. */
+const PANE_PAGES = new Set(["/settings.html", "/dashboard.html"]);
+
+/**
+ * `pnpm dev` with Lumi's sheet, as Lumi serves the pages. Without it every
+ * page drew here without the rules Lumi puts under it — an input's
+ * `width: 100%`, a button's border — so a page could look right here and
+ * wrong in Lumi: the ⌘K menu's filter ran 6px past the menu's edge in Lumi
+ * only. Read on every request, so an edit to lumi.css shows on a reload.
+ */
+function lumiSheet(): Plugin {
+  return {
+    name: "lumi-sheet",
+    apply: "serve",
+    configureServer(server) {
+      if (!existsSync(LUMI_CSS)) {
+        server.config.logger.warn(`lumi.css not found at ${LUMI_CSS}: pages draw without Lumi's sheet (set LUMI_CSS).`);
+        return;
+      }
+      server.middlewares.use("/__lumi__/lumi.css", (_req, res) => {
+        res.setHeader("Content-Type", "text/css; charset=utf-8");
+        res.setHeader("Cache-Control", "no-store");
+        res.end(readFileSync(LUMI_CSS));
+      });
+    },
+    transformIndexHtml: (_html, { path }) =>
+      PANE_PAGES.has(path)
+        ? [{ tag: "link", attrs: { rel: "stylesheet", href: "/__lumi__/lumi.css" }, injectTo: "head-prepend" }]
+        : undefined,
+  };
+}
 
 // The store runs `pnpm run build` and ships `dist/` as the package's ui/.
 //
@@ -17,7 +58,7 @@ import react from "@vitejs/plugin-react";
 //   the manifest.
 export default defineConfig({
   base: "./",
-  plugins: [react()],
+  plugins: [react(), lumiSheet()],
   build: {
     outDir: "dist",
     emptyOutDir: true,

@@ -692,9 +692,12 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .menu { animation: none; }
 }
-/* Under the list, next to the ⌘K that opened the menu. */
+/* Under the list, next to the ⌘K that opened the menu. As wide as the menu
+   less its margins: Lumi's sheet gives every input `width: 100%`, which
+   with the margins ran the field 6px past the menu's right edge. */
 .menu-filter {
   flex: none;
+  width: auto;
   margin: 2px 6px 6px;
   height: 26px;
   padding: 0 8px;
