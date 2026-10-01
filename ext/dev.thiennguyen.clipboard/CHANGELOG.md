@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.66.0] - 2026-10-02
+
+### Added
+
+- Two more commands, Hide clipboard history and Toggle clipboard history, for keys of your own in Lumi's Settings. The shortcut the extension comes with stays on Show clipboard history.
+
+### Changed
+
+- Show clipboard history only ever brings the panel up. Pressed while the panel is already up, pinned or not, it no longer puts it away: the panel takes the keyboard back if you were working in another app, and the selected item blinks so you know you can search or move through the list. Escape, Hide or Toggle put it away.
+
 ## [0.65.1] - 2026-10-02
 
 ### Fixed
