@@ -32,13 +32,22 @@ const SELECTED = 2;
 
 type Row = { id: string; name: string; live: boolean; gone: boolean };
 
+/** The ticked profiles that still exist — what Selected Profiles looks in.
+ *  One ticked and deleted since is listed in the submenu to be unticked,
+ *  but counted nowhere: nothing is looked in for it. Every one, while Lumi
+ *  has not said which exist. */
+export function countedPicks(picked: string[], book: Book | null): string[] {
+  return book ? picked.filter((id) => book.profiles.some((p) => p.id === id)) : picked;
+}
+
 /** What the button says: the choice, or for Selected Profiles the one
  *  ticked or how many. */
 export function scopeLabel(scope: Scope, picked: string[], book: Book | null): string {
   if (scope !== "selected") return SCOPES.find((s) => s.value === scope)!.label;
-  if (picked.length === 0) return "No Profiles";
-  if (picked.length === 1) return book?.profiles.find((p) => p.id === picked[0])?.name ?? "1 Profile";
-  return `${picked.length} Profiles`;
+  const counted = countedPicks(picked, book);
+  if (counted.length === 0) return "No Profiles";
+  if (counted.length === 1) return book?.profiles.find((p) => p.id === counted[0])?.name ?? "1 Profile";
+  return `${counted.length} Profiles`;
 }
 
 export function LookIn({

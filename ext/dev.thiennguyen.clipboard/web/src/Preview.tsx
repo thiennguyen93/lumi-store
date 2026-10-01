@@ -96,17 +96,23 @@ export function Preview({
   useEffect(() => {
     if (!zoomed) setExpanded(null);
   }, [zoomed]);
-  // Bumped when Lumi tells of a profile switch: what a copy expands to
-  // depends on whose snippets are looked in, so every preview kept from
-  // before is asked again — the one on screen at once.
-  const [profiled, setProfiled] = useState(0);
+  // Bumped when Lumi tells of anything a preview is made from changing:
+  // another profile switched to, renamed or removed (`lumi:profiles`), the
+  // settings — Match snippets, Look in, reading images (`lumi:settings`) —
+  // or the snippets themselves (`lumi:snippets`). Every preview kept from
+  // before is asked again, the one on screen at once; a pinned panel stays
+  // up for hours, and must not show what was true when it opened.
+  const [stale, setStale] = useState(0);
   useEffect(() => {
-    const switched = () => {
+    const changed = () => {
       seen.clear();
-      setProfiled((n) => n + 1);
+      setStale((n) => n + 1);
     };
-    window.addEventListener("lumi:profiles", switched);
-    return () => window.removeEventListener("lumi:profiles", switched);
+    const news = ["lumi:profiles", "lumi:settings", "lumi:snippets"];
+    for (const name of news) window.addEventListener(name, changed);
+    return () => {
+      for (const name of news) window.removeEventListener(name, changed);
+    };
   }, []);
   // The picture's size in pixels, read off the image once it has loaded;
   // by row, like the text.
@@ -118,9 +124,11 @@ export function Preview({
     const key = seenKey(row);
     const known = seen.get(key);
     if (known) {
-      // Back on a row already shown: drawn at once, no call.
+      // Back on a row already shown: drawn at once — with no call, unless
+      // what it expands to is made afresh each time (a date, a script),
+      // which is asked again behind what is drawn.
       setFull(known);
-      return;
+      if (!known.snippets?.some((one) => one.dynamic)) return;
     }
     let live = true;
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
@@ -149,7 +157,7 @@ export function Preview({
       clearTimeout(timer);
       clearTimeout(hold);
     };
-  }, [row, profiled]);
+  }, [row, stale]);
 
   if (!row) return <aside className="preview empty-card" />;
 

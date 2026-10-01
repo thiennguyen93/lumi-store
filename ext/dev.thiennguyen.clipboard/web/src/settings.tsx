@@ -9,7 +9,7 @@ import { createRoot } from "react-dom/client";
 import { acceleratorGlyphs, comboOf, comboText, DEFAULT_PIN_KEY, glyphs, parseCombo, refusal } from "./keys";
 import { shortcuts } from "./bridge";
 import { KEEP_LABELS, type OwnShortcuts, type Stats } from "./types";
-import { type Book, LookIn, type Scope, SCOPES } from "./LookIn";
+import { type Book, countedPicks, LookIn, type Scope, SCOPES } from "./LookIn";
 import "./settings.css";
 
 if (import.meta.env.DEV) {
@@ -93,9 +93,23 @@ function lookHint(scope: Scope, picked: string[], book: Book | null): ReactNode 
     case "all":
       return book ? `Every profile, all ${book.profiles.length}` : "Every profile";
     case "selected": {
-      if (!picked.length) return "Nothing is ticked, so nothing is matched";
-      const names = picked.map((id) => name(id) ?? "a deleted profile");
-      return names.length <= 3 ? names.join(", ") : `${names.slice(0, 2).join(", ")} and ${names.length - 2} more`;
+      // How many, and the live one if it is among them — the names are in
+      // the submenu, and a hundred of them would not fit here anyway.
+      const count = countedPicks(picked, book).length;
+      if (!count) return "Nothing is ticked, so nothing is matched";
+      const live = book && picked.includes(book.active) ? name(book.active) : undefined;
+      return (
+        <>
+          {count} selected
+          {live && (
+            <>
+              {" · "}
+              {live}
+              <span className="pop-tag">In use</span>
+            </>
+          )}
+        </>
+      );
     }
   }
 }
@@ -293,7 +307,7 @@ function Settings() {
             <Row
               label="Look in"
               hint={lookHint(values.snippetsIn, values.snippetProfiles, book)}
-              bad={values.snippetsIn === "selected" && !values.snippetProfiles.length}
+              bad={values.snippetsIn === "selected" && !countedPicks(values.snippetProfiles, book).length}
             >
               <LookIn
                 scope={values.snippetsIn}

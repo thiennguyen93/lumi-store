@@ -135,15 +135,16 @@ export function App() {
   following.current = selected > 0 ? (current?.id ?? null) : null;
 
   // A copy made while the panel is up — pinned over another app, or not —
-  // comes as news from the extension (`ui.post`, src/lib.rs `tell_panel`):
-  // the list is read again. One read at a time; news during one asks for
-  // one more after it. A failed read leaves the list as it was — nobody
-  // asked for it, so it is no notice either.
+  // comes as news from the extension (`ui.post`, src/lib.rs `tell_panel`),
+  // and a change to the settings from Lumi (`lumi:settings`, Lumi 1.31):
+  // either way the list is read again, and with it the order, the search
+  // mode, the Pin key and the glass. One read at a time; news during one
+  // asks for one more after it. A failed read leaves the list as it was —
+  // nobody asked for it, so it is no notice either.
   useEffect(() => {
     let reading = false;
     let again = false;
-    const told = async (event: Event) => {
-      if (!isHistoryNews((event as CustomEvent<unknown>).detail)) return;
+    const reread = async () => {
       if (reading) {
         again = true;
         return;
@@ -158,8 +159,16 @@ export function App() {
         reading = false;
       }
     };
+    const told = (event: Event) => {
+      if (isHistoryNews((event as CustomEvent<unknown>).detail)) void reread();
+    };
+    const settled = () => void reread();
     window.addEventListener("lumi:message", told);
-    return () => window.removeEventListener("lumi:message", told);
+    window.addEventListener("lumi:settings", settled);
+    return () => {
+      window.removeEventListener("lumi:message", told);
+      window.removeEventListener("lumi:settings", settled);
+    };
   }, [reload]);
 
   // A selection past the end — after a delete, or a search that narrowed

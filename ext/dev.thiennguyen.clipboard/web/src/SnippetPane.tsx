@@ -40,7 +40,11 @@ export function SnippetPane({
             )}
           </header>
           <div className="body snippet-text">{linked(one.text, one.links, onOpen)}</div>
-          {one.dynamic && <p className="snippet-fresh">Changes each time the panel shows it</p>}
+          {/* "May": a script or a variable is expanded again each time, and
+              whether that comes out different — a date within one day, a
+              script that only reshapes what its pattern caught — nothing
+              here can tell. */}
+          {one.dynamic && <p className="snippet-fresh">May change each time it's shown</p>}
         </div>
       ))}
     </section>

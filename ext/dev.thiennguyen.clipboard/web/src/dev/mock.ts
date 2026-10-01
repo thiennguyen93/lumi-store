@@ -186,6 +186,18 @@ let trash: Entry[] = [];
 
 const PIN_LETTERS = "bdefghijklmnorstu";
 
+// `mockEditSnippet(";addr", "Somewhere else")` in the console: the person
+// edits a snippet in Lumi — `null` removes it — as Lumi tells every page of
+// an extension holding `snippets` (`lumi:snippets`).
+Object.assign(window, {
+  mockEditSnippet(trigger: string, text: string | null) {
+    const rows = MOCK_SNIPPETS[trigger] ?? [];
+    if (text === null) delete MOCK_SNIPPETS[trigger];
+    else MOCK_SNIPPETS[trigger] = rows.map((row) => ({ ...row, text: () => text }));
+    window.dispatchEvent(new CustomEvent("lumi:snippets", { detail: {} }));
+  },
+});
+
 // `mockSwitch("p_home")` in the console: the person switches profile, as
 // Lumi tells every page on screen (`lumi:profiles`).
 Object.assign(window, {
@@ -482,8 +494,10 @@ window.fetch = async (input, init) => {
   }
   if (url.endsWith("/__lumi__/settings")) {
     if (init?.method === "PUT") {
-      settings = JSON.parse(String(init.body));
+      settings = { ...settings, ...JSON.parse(String(init.body)) };
       say("saved settings");
+      // As Lumi tells every page of the extension's (`lumi:settings`).
+      setTimeout(() => window.dispatchEvent(new CustomEvent("lumi:settings", { detail: { ...settings } })));
       return new Response(null, { status: 204 });
     }
     return new Response(JSON.stringify(settings), { status: 200 });
