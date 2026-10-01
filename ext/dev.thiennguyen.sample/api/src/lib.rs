@@ -181,7 +181,7 @@ pub fn set_clipboard_text(text: &str) -> Result<(), String> {
 /// Replace the pasteboard with whole items — each a list of [`Rep`], the
 /// same thing in several types, the richest first. [`Data::Blob`] names a
 /// blob in your own [`storage`], which goes on the board without passing
-/// through your component. At most 32 MB in all. Lumi marks the board as
+/// through your component. At most 160 MB in all. Lumi marks the board as
 /// yours, so when you hear the copy you can tell it was your own write.
 pub fn write_clipboard(items: &[Vec<Rep>]) -> Result<(), String> {
     lumi::ext::clipboard::write_all(items)
@@ -273,6 +273,15 @@ pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
 /// say so with `min-lumi-version`.
 pub fn set_pinned(name: &str, pinned: bool) -> Result<(), String> {
     lumi::ext::ui::set_pinned(name, pinned)
+}
+
+/// Make one of your windows' unified title bar `height` points tall, and
+/// macOS's traffic lights move to stay centred in it — a compact mode, a
+/// second row of controls. Answers the height it became, clamped to 32–96;
+/// draw your toolbar at that. Only a window declared `titlebar = "unified"`
+/// that is open. Needs Lumi 1.30.0 or later — say so with `min-lumi-version`.
+pub fn set_titlebar_height(name: &str, height: f64) -> Result<f64, String> {
+    lumi::ext::ui::set_titlebar_height(name, height)
 }
 
 /// Send `message` (JSON text) to one of your own windows or pages — a
@@ -486,6 +495,76 @@ pub mod storage {
     /// Bytes used on disk and the most your extension may use.
     pub fn usage() -> Result<(u64, u64), String> {
         wit::usage().map(|space| (space.bytes, space.limit))
+    }
+}
+
+/// The pixels on screen: one picture of a display, a window or an area.
+/// Every function here needs the `screen` capability.
+///
+/// The picture goes into your extension's [`storage`] as a PNG blob and you
+/// get its id — a page shows it at `/__lumi__/blob/<id>`,
+/// [`write_clipboard`] takes it as [`Data::Blob`], [`storage::blob_save`]
+/// hands it to the person. Delete it when you are done with it: it counts
+/// against your store's space like any other blob.
+///
+/// Coordinates are points, origin at the top-left of the main display, y
+/// down. Lumi's own windows, yours included, are never in the picture.
+///
+/// Capturing also needs macOS's Screen Recording permission, which is
+/// Lumi's, not yours: the person turns it on once, in System Settings, for
+/// every extension that declares `screen`. Without it a capture is refused
+/// with a sentence saying where the switch is — show it to them. Capturing
+/// needs macOS 14 or later.
+///
+/// ```ignore
+/// use lumi_extension_api::screen::{self, Target};
+/// // Let the person drag out an area, then take a picture of it.
+/// let Some(area) = screen::select_area()? else { return Ok("cancelled".into()) };
+/// let shot = screen::capture(Target::Area(area))?;
+/// // shot.blob is a PNG of what they chose.
+/// ```
+///
+/// Needs Lumi 1.30.0 or later — say so with `min-lumi-version`.
+pub mod screen {
+    use super::lumi::ext::screen as wit;
+
+    pub use wit::{PickedWindow, Rect, Shot, Target, Window};
+
+    /// Whether Lumi holds Screen Recording, as far as macOS will say
+    /// without trying. `true` is reliable; `false` may be stale for a
+    /// permission given since Lumi started — only [`capture`] tells for
+    /// certain. Use it to word a hint, never to refuse to try.
+    pub fn permitted() -> Result<bool, String> {
+        wit::permitted()
+    }
+
+    /// Take one picture. Only while answering a press — a command or one of
+    /// your windows — never from an event or a lifecycle hook.
+    pub fn capture(target: Target) -> Result<Shot, String> {
+        wit::capture(target)
+    }
+
+    /// Let the person drag out an area of the screen: every display dims,
+    /// the pointer becomes a crosshair, and what they drag is the answer.
+    /// `None` when they press Escape, right-click, or leave it for two
+    /// minutes. Takes no picture — pass the area to [`capture`] — and needs
+    /// no macOS permission. The time they take is not counted against your
+    /// run. Only while answering a press, like [`capture`].
+    pub fn select_area() -> Result<Option<Rect>, String> {
+        wit::select_area()
+    }
+
+    /// Let the person pick a window: every display dims, the window under
+    /// the pointer lights up, and the one they click is the answer. `None`
+    /// when they press Escape, right-click, or leave it for two minutes.
+    /// Applications' windows, the menu bar, its items and the Dock are
+    /// offered — the Dock only with Screen Recording — and Lumi's own
+    /// windows never are. Takes no picture — pass
+    /// `Target::Window(Window { id: Some(picked.id), shadow })` to
+    /// [`capture`] — and needs no macOS permission. Only while answering a
+    /// press.
+    pub fn select_window() -> Result<Option<PickedWindow>, String> {
+        wit::select_window()
     }
 }
 
