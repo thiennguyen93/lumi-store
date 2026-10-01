@@ -591,6 +591,9 @@ pub mod screen {
 /// }
 /// ```
 ///
+/// Nothing tells your component when the person edits a snippet; a page of
+/// yours on screen is told, with a `lumi:snippets` event, and can ask again.
+///
 /// Needs Lumi 1.31.0 or later — say so with `min-lumi-version`.
 pub mod snippets {
     use super::lumi::ext::snippets as wit;
