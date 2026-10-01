@@ -27,8 +27,12 @@ which GitHub caches for 60 seconds. The index only says which discussion
 is whose.
 
 Runs in its own job in publish.yml, the one job holding `discussions:
-write` and nothing else — no key, no build. It reads manifests as files
-(`publish.sources`) and runs no submission's code.
+write` — no build. It reads manifests as files (`publish.sources`) and
+runs no submission's code. A private entry's manifest is there only once
+`scripts/fetch-private.sh` has fetched it with the deploy key, as the sign
+job does; without it — no key, or one that no longer opens the repo —
+that entry's thread is left as it is rather than failing the run, since a
+failed run is every extension's hearts gone from the index.
 
 Standard library only, like publish.py.
 """
@@ -145,9 +149,16 @@ def main():
     out = {}
     for entry in listed:
         entry_id = entry["id"]
+        thread = found.get(entry_id)
+        if entry.get("private") and not publish.fetched(entry):
+            # No manifest to title a thread by: keep the one it has, as it
+            # is, and make one on a run that has the source.
+            print(f"{entry_id}: private source not available — its discussion is left as it is", file=sys.stderr)
+            if thread is not None:
+                out[entry_id] = {"number": thread["number"], "url": thread["url"]}
+            continue
         _, _, _, ext, _ = publish.sources(entry)
         title, body = title_of(ext), body_of(entry_id, ext)
-        thread = found.get(entry_id)
         if thread is None:
             thread = graphql(
                 """mutation($repo: ID!, $category: ID!, $title: String!, $body: String!) {

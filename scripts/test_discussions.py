@@ -3,6 +3,8 @@
   python3 -m unittest discover -s scripts -p 'test_*.py'
 """
 
+import io
+import json
 import os
 import sys
 import unittest
@@ -38,6 +40,54 @@ class IndexField(unittest.TestCase):
             env = {} if value is None else {"DISCUSSIONS": value}
             with self.subTest(value=value), mock.patch.dict(os.environ, env, clear=True):
                 self.assertIsNone(publish.discussion_of("a.b"))
+
+
+class Sync(unittest.TestCase):
+    """`main` against a stand-in for GitHub, with a private entry whose
+    source this run does not have — as in a run without its deploy key."""
+
+    PUBLIC = "dev.thiennguyen.sample"
+    PRIVATE = "dev.thiennguyen.screenshot"
+
+    def run_main(self, threads):
+        listed = [e for e in publish.listed_entries() if e["id"] in (self.PUBLIC, self.PRIVATE)]
+        self.assertTrue(any(e.get("private") for e in listed), "extensions.toml lists the private entry")
+        calls = []
+
+        def graphql(query, **variables):
+            calls.append(query.split("(")[0].split()[-1])
+            return {"createDiscussion": {"discussion": {"id": "D9", "number": 9, "url": "https://x/9"}}}
+
+        out = io.StringIO()
+        with mock.patch.dict(os.environ, {"GITHUB_REPOSITORY": "o/r"}), \
+                mock.patch.object(publish, "listed_entries", return_value=listed), \
+                mock.patch.object(publish, "fetched", return_value=False), \
+                mock.patch.object(discussions, "category_and_threads", return_value=("R", "C", threads)), \
+                mock.patch.object(discussions, "graphql", side_effect=graphql), \
+                mock.patch("sys.stdout", out), mock.patch("sys.stderr", io.StringIO()):
+            discussions.main()
+        line = out.getvalue().strip()
+        self.assertTrue(line.startswith("discussions="), line)
+        return json.loads(line.split("=", 1)[1]), calls
+
+    def public_thread(self):
+        entry = next(e for e in publish.listed_entries() if e["id"] == self.PUBLIC)
+        _, _, _, ext, _ = publish.sources(entry)
+        return {"id": "D1", "number": 1, "url": "https://x/1",
+                "title": discussions.title_of(ext), "body": discussions.body_of(self.PUBLIC, ext)}
+
+    def test_a_private_entry_without_its_source_keeps_its_thread_and_costs_no_one_theirs(self):
+        private = {"id": "D2", "number": 2, "url": "https://x/2", "title": "Screenshot",
+                   "body": discussions.body_of(self.PRIVATE, {"name": "Screenshot"})}
+        found, calls = self.run_main([self.public_thread(), private])
+        self.assertEqual(found, {self.PUBLIC: {"number": 1, "url": "https://x/1"},
+                                 self.PRIVATE: {"number": 2, "url": "https://x/2"}})
+        self.assertEqual(calls, [], "nothing to create or update")
+
+    def test_a_private_entry_without_its_source_or_a_thread_gets_none_yet(self):
+        found, calls = self.run_main([self.public_thread()])
+        self.assertEqual(found, {self.PUBLIC: {"number": 1, "url": "https://x/1"}})
+        self.assertEqual(calls, [])
 
 
 if __name__ == "__main__":
