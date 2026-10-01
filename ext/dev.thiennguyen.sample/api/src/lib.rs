@@ -125,6 +125,8 @@ pub use lumi::ext::clipboard::{Data, Rep};
 pub use lumi::ext::net::{Request, Response};
 pub use lumi::ext::profiles::{Book as Profiles, Profile};
 pub use lumi::ext::selection::Found;
+/// Where one of your windows stands — what [`window_state`] answers.
+pub use lumi::ext::ui::Presence;
 
 /// Wire your extension type into the component's exports. Call once, at
 /// the crate root, on the type that implements [`Guest`].
@@ -237,6 +239,12 @@ pub fn fetch(request: &Request) -> Result<Response, String> {
 /// /__lumi__/drag` on a press hands that press to macOS as a window
 /// drag, while it is the window in front. A name the manifest does not declare
 /// is refused here, by name — the declaration is the grant.
+///
+/// One already up is focused, never closed, from your command's press too:
+/// a pinned panel the person left takes the keyboard back where it stands,
+/// any other comes to the pointer. For a key that also puts it away, ask
+/// [`window_state`] and [`close_window`] it yourself. Until Lumi 1.31 a
+/// press on a panel that held the keyboard closed it instead.
 pub fn open_window(name: &str) -> Result<(), String> {
     lumi::ext::ui::open_window(name)
 }
@@ -245,6 +253,25 @@ pub fn open_window(name: &str) -> Result<(), String> {
 /// One that is not open is not an error.
 pub fn close_window(name: &str) -> Result<(), String> {
     lumi::ext::ui::close_window(name)
+}
+
+/// Where one of your own windows stands, by its manifest `name`:
+/// [`Presence::Hidden`] off screen, [`Presence::Up`] on screen with the
+/// keyboard elsewhere — a pinned panel the person left, even with the
+/// pointer over it — or [`Presence::Focused`]. For a command that decides
+/// for itself, a toggle say:
+///
+/// ```ignore
+/// match lumi_extension_api::window_state("history")? {
+///     Presence::Focused => lumi_extension_api::close_window("history"),
+///     _ => lumi_extension_api::open_window("history"),
+/// }
+/// ```
+///
+/// Works from [`Guest::on_event`] too. Needs Lumi 1.31.0 or later — say so
+/// with `min-lumi-version`.
+pub fn window_state(name: &str) -> Result<Presence, String> {
+    lumi::ext::ui::window_state(name)
 }
 
 /// Bring up Lumi's Settings on your extension's Settings tab — for a
@@ -268,9 +295,9 @@ pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
 
 /// Pin one of your panels, or let it go. A pinned panel stays up while the
 /// person works in another app; a paste from it hands the keyboard back and
-/// leaves it up. Escape, your shortcut — pressed while it is up, with the
-/// keyboard or without — and [`close_window`] still put it away, pin and
-/// all; every show starts unpinned. Only a panel that is up,
+/// leaves it up. Escape and [`close_window`] still put it away, pin and
+/// all; every show starts unpinned. Your shortcut does not, from Lumi 1.31:
+/// it focuses the panel ([`open_window`]). Only a panel that is up,
 /// from a request your page sends on a press. Needs Lumi 1.29.0 or later —
 /// say so with `min-lumi-version`.
 pub fn set_pinned(name: &str, pinned: bool) -> Result<(), String> {
