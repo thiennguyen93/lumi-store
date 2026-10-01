@@ -1323,7 +1323,8 @@ mod tests {
         host
     }
 
-    /// `cargo test --release --lib opening_a_full_history -- --ignored --nocapture`
+    /// From the repo root:
+    /// `cargo test --manifest-path ext/dev.thiennguyen.clipboard/Cargo.toml --release --lib opening_a_full_history -- --ignored --nocapture`
     #[test]
     #[ignore = "a measurement, not a check"]
     fn opening_a_full_history_costs() {
