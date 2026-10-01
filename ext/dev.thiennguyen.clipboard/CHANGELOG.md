@@ -1,6 +1,24 @@
 # Changelog
 
-## [0.63.23] - 2026-10-02
+## [0.65.1] - 2026-10-02
+
+### Fixed
+
+- A long copy's scroll bar no longer covers its last letters. Every scroll bar in the preview — the copy, what it expands to, the text read in an image, the list of links — now sits in one line along the right edge.
+
+## [0.65.0] - 2026-10-02
+
+### Added
+
+- Drag the line across the preview up or down to give more room to either side: the picture or the text read in it, or a copy or what it expands to. The line stays where you leave it for both kinds, so it holds still as you move through the list. Double-click the line to put it back where it was.
+
+## [0.64.0] - 2026-10-02
+
+### Added
+
+- With the panel pinned and you working in another app, the shortcut gives the panel the keyboard back where it stands, and the selected item now blinks to say so, so you know you can search or move through the list right away. With the ⌘K menu up, its chosen action blinks instead. Press the shortcut again to put the panel away.
+
+## [0.63.26] - 2026-10-02
 
 ### Added
 

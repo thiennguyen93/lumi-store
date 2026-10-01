@@ -10,7 +10,7 @@
 // uses dangerouslySetInnerHTML. A rich copy's HTML is parsed inert and
 // rebuilt from a short list of tags and styles (richText.tsx).
 
-import { type KeyboardEvent, type MouseEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type KeyboardEvent, type MouseEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { call, message } from "./bridge";
 import {
   ClipboardGlyph,
@@ -34,10 +34,11 @@ import {
 } from "./icons";
 import { About, type AboutLink } from "./About";
 import { type Action, ActionsMenu } from "./ActionsMenu";
-import { foldAll, moving, slide, tops } from "./motion";
+import { foldAll, hail, moving, slide, tops } from "./motion";
 import { canZoom, Preview } from "./Preview";
 import { adoptFits } from "./pdfFit";
 import { MIN_LIST, usePreviewWidth } from "./PreviewWidth";
+import { usePreviewSplit } from "./PreviewSplit";
 import { useScrollFade } from "./scrollFade";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
@@ -71,6 +72,7 @@ export function App() {
   const [about, setAbout] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const preview = usePreviewWidth();
+  const split = usePreviewSplit();
   const windowDrag = useWindowDrag();
   const list = useRef<HTMLDivElement>(null);
   useScrollFade(list);
@@ -88,6 +90,7 @@ export function App() {
   // What ⌘Z took back, for ⌘⇧Z to do again; anything new done clears it.
   const redos = useRef<Undo[]>([]);
   const adoptWidth = preview.adopt;
+  const adoptSplit = split.adopt;
   // `reload` is made once; it reads the filter through this.
   const filterRef = useRef<Filter>("all");
   filterRef.current = filter;
@@ -107,6 +110,7 @@ export function App() {
     const answer = await call({ kind: "list", opening });
     setRows(answer.items);
     adoptWidth(answer.previewWidth);
+    adoptSplit(answer.previewSplit);
     adoptFits(answer.pdfFit);
     wear(answer.appearance, answer.theme);
     setPinKey(parseCombo(answer.pinKey ?? "") ?? parseCombo(DEFAULT_PIN_KEY)!);
@@ -120,7 +124,7 @@ export function App() {
       ).findIndex((row) => row.id === keepId);
       if (at >= 0) setSelected(at);
     }
-  }, [adoptWidth]);
+  }, [adoptWidth, adoptSplit]);
 
   useEffect(() => {
     reload(null, true)
@@ -160,7 +164,7 @@ export function App() {
       }
     };
     const told = (event: Event) => {
-      if (isHistoryNews((event as CustomEvent<unknown>).detail)) void reread();
+      if (isNews((event as CustomEvent<unknown>).detail, "history")) void reread();
     };
     const settled = () => void reread();
     window.addEventListener("lumi:message", told);
@@ -189,6 +193,29 @@ export function App() {
       setNotice(message(err));
     }
   }, []);
+
+  // The shortcut pressed while the panel is up does not put it away — only
+  // Escape does — and the extension says it was pressed (src/lib.rs
+  // `SUMMONED`). Pinned and left for another app, the panel asks for the
+  // keyboard back; either way, what the keys work on now hails, so a press
+  // that changed nothing on screen still says it was heard: the ⌘K menu's
+  // chosen action while it is up, else the selected row while the list is
+  // in sight, else the search.
+  useEffect(() => {
+    const told = (event: Event) => {
+      if (!isNews((event as CustomEvent<unknown>).detail, "summoned")) return;
+      if (pinned) void act(() => call({ kind: "focus" }));
+      const row = zoomed || about ? null : list.current?.querySelector<HTMLElement>('.row[aria-selected="true"]');
+      row?.scrollIntoView({ block: "nearest" });
+      hail(
+        document.querySelector<HTMLElement>('.menu-item[aria-selected="true"], .menu-filter') ??
+          row ??
+          (about ? null : document.querySelector<HTMLElement>(".search")),
+      );
+    };
+    window.addEventListener("lumi:message", told);
+    return () => window.removeEventListener("lumi:message", told);
+  }, [act, pinned, zoomed, about]);
 
   const paste = useCallback(
     (plain: boolean, row: Entry | undefined = current) => {
@@ -697,7 +724,14 @@ export function App() {
             />,
           ])}
         </div>
-        <div className="preview-slot" hidden={empty}>
+        <div
+          className="preview-slot"
+          hidden={empty}
+          // The line across the card, where it was dragged to (`--upper-basis`),
+          // and the floors a dragged line goes down to (`[data-split]`).
+          data-split={split.height == null ? undefined : ""}
+          style={split.height == null ? undefined : ({ "--split": `${split.height}px` } as CSSProperties)}
+        >
           <div
             className="grip"
             role="separator"
@@ -715,6 +749,7 @@ export function App() {
             onCopySnippet={(id, text) => void act(() => call({ kind: "copySnippet", id, text, pinned }))}
             zoomed={zoomed}
             onZoom={() => setZoom(!zoomed)}
+            split={split.grip}
           />
         </div>
       </section>
@@ -750,11 +785,12 @@ export function App() {
   );
 }
 
-/** The extension's `{"kind":"history"}`: the history changed under the
- *  panel. A post is the extension's own JSON; checked anyway, so news of
- *  another shape — a later version's — is ignored. */
-function isHistoryNews(detail: unknown): boolean {
-  return typeof detail === "object" && detail !== null && (detail as { kind?: unknown }).kind === "history";
+/** The extension's `{"kind": …}` news: `history`, the history changed under
+ *  the panel; `summoned`, the panel was asked for again. A post is the
+ *  extension's own JSON; checked anyway, so news of another shape — a later
+ *  version's — is ignored. */
+function isNews(detail: unknown, kind: "history" | "summoned"): boolean {
+  return typeof detail === "object" && detail !== null && (detail as { kind?: unknown }).kind === kind;
 }
 
 function emptyText(kept: number, query: string, filter: Filter, mode: SearchMode): string {

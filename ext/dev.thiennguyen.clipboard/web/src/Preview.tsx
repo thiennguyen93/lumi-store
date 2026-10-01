@@ -5,7 +5,7 @@ import { CollapseGlyph, CopyGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyp
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { useItemDrag } from "./itemDrag";
 import { LinkList } from "./LinkList";
-import { SnippetNote, SnippetPane } from "./SnippetPane";
+import { SnippetPane } from "./SnippetPane";
 import { PdfViewer } from "./PdfViewer";
 import { TextFile } from "./TextFile";
 import { linked } from "./LinkedText";
@@ -14,6 +14,7 @@ import { isColor, KIND_WORDS, paint } from "./Row";
 import { BLACK, contrast, over, parseColor, type Rgba, toHex, toHsl, toRgb, WHITE } from "./color";
 import { ago, type Used } from "./search";
 import { usePreviewMarks } from "./previewMarks";
+import type { SplitGrip } from "./PreviewSplit";
 import type { Entry } from "./types";
 
 /** How long the selection must rest on a row before its full text is
@@ -64,6 +65,7 @@ export function Preview({
   used = "exact",
   zoomed = false,
   onZoom,
+  split,
 }: {
   row: Entry | undefined;
   /** Open a link row's address, or — `url` — one of a row's listed links,
@@ -79,6 +81,9 @@ export function Preview({
   /** The card has the whole panel, the list put aside (`canZoom`). */
   zoomed?: boolean;
   onZoom?: () => void;
+  /** Moves the line between a picture and its read text, or a copy and
+   *  what it expands to (`PreviewSplit`). */
+  split?: SplitGrip;
 }) {
   const card = useRef<HTMLDivElement>(null);
   usePreviewMarks(card, query, used, row?.id);
@@ -238,6 +243,8 @@ export function Preview({
         )}
         {reads && (!zoomed || wide) && (
           <section className="ocr-read">
+            {/* Only under the picture: zoomed onto the read, nothing is above. */}
+            {split && !wide && row.thumb && <Grip {...split} />}
             <header className="ocr-head">
               <span>Text in image</span>
               <button
@@ -284,7 +291,7 @@ export function Preview({
         {/* A text or rich copy, what it expands to and its links share the
             card's room as one block (`Stack`); any other kind is drawn as
             it always was. */}
-        <Stack on={row.kind === "text" || row.kind === "rich"}>
+        <Stack on={row.kind === "text" || row.kind === "rich"} even={expansions.length > 0}>
           {row.kind === "color" && isColor(row.title) ? (
             <ColorCard color={row.title} onCopy={onCopyColor} />
           ) : mine?.files?.length ? (
@@ -314,6 +321,7 @@ export function Preview({
           {expansions.length > 0 && (
             <SnippetPane
               key={`snippets:${row.id}`}
+              grip={split && <Grip {...split} />}
               expansions={expansions}
               onCopy={onCopySnippet ? (text) => onCopySnippet(row.id, text) : undefined}
               onOpen={onOpen ? (url) => onOpen(row.id, url, true) : undefined}
@@ -333,7 +341,6 @@ export function Preview({
           )}
         </Stack>
         <footer className="card-foot">
-          {expansions.length > 0 && <SnippetNote expansions={expansions} />}
           Copied {ago(row.last)} · {times}
         </footer>
       </div>
@@ -343,14 +350,30 @@ export function Preview({
 
 /**
  * A copy's text, what it expands to and its links, as one block sharing the
- * room the card has left: each gets all of its content while there is room,
- * and once there is not, the room is shared equally and each scrolls in its
- * share — so a one-line copy keeps its line beside a long expansion, and a
- * long expansion takes the room the line does not need instead of stopping
- * at a fixed fraction of the card (panel.css `.texts`).
+ * room the card has left (panel.css `.texts`). With no expansion, each gets
+ * all of its content while there is room, and once there is not, the room
+ * is shared equally and each scrolls in its share. With one (`even`), the
+ * parts split the room equally whatever their length, so the copy and what
+ * it expands to sit either side of a rule in the middle.
  */
-function Stack({ on, children }: { on: boolean; children: ReactNode }) {
-  return on ? <div className="texts">{children}</div> : <>{children}</>;
+/** The line between the card's two parts, caught a few pixels either side
+ *  of it and dragged up or down (`PreviewSplit`); it sits in the part under
+ *  the line. */
+function Grip(split: SplitGrip) {
+  return (
+    <div
+      className="split-grip"
+      role="separator"
+      aria-orientation="horizontal"
+      aria-label="Resize the two parts"
+      title="Drag to resize · double-click to reset"
+      {...split}
+    />
+  );
+}
+
+function Stack({ on, even, children }: { on: boolean; even: boolean; children: ReactNode }) {
+  return on ? <div className={even ? "texts even" : "texts"}>{children}</div> : <>{children}</>;
 }
 
 /** The panel's dark surface, for what a translucent colour looks like there. */

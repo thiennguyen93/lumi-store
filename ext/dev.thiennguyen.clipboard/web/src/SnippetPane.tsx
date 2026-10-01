@@ -5,7 +5,7 @@
 // expands to. Each folds away under its own head — a long one out of the
 // way of the next — and opens again by the same press.
 
-import { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import type { Expansion } from "./bridge";
 import { ChevronRightGlyph, CopyGlyph, RefreshGlyph } from "./icons";
 import { linked } from "./LinkedText";
@@ -13,10 +13,13 @@ import { useScrollFade } from "./scrollFade";
 
 export function SnippetPane({
   expansions,
+  grip,
   onCopy,
   onOpen,
 }: {
   expansions: Expansion[];
+  /** The line above the section, to drag (Preview.tsx `Grip`). */
+  grip?: ReactNode;
   onCopy?: (text: string) => void;
   onOpen?: (url: string) => void;
 }) {
@@ -40,6 +43,7 @@ export function SnippetPane({
   const { mixed } = changing(expansions);
   return (
     <section className="snippet" aria-label="Expands to">
+      {grip}
       <div ref={box} className="snippet-scroll">
         {expansions.map((one, at) => (
           <div className="expansion" key={at}>
@@ -86,6 +90,7 @@ export function SnippetPane({
           </div>
         ))}
       </div>
+      <SnippetNote expansions={expansions} />
     </section>
   );
 }
@@ -99,16 +104,18 @@ function changing(expansions: Expansion[]): { count: number; mixed: boolean } {
 
 /**
  * The one sentence for every expansion that can change, at the foot of the
- * card over "Copied …" — said once rather than under each, where two
- * profiles' scripts would say it twice, and kept still at the bottom rather
- * than scrolled with the expansions it is about.
+ * section — which reaches the card's foot, so it sits over "Copied …" —
+ * said once rather than under each, where two profiles' scripts would say
+ * it twice, and kept still rather than scrolled with the expansions it is
+ * about. In the section, not in the card's foot: there it made the foot
+ * taller than an image's, and the rule above moved between the two kinds.
  *
  * "May": a script or a variable is expanded again each time, and whether
  * that comes out different — a date within one day, a script that only
  * reshapes what its pattern caught — nothing here can tell. Beside fixed
  * ones it carries the ↻ the changing ones are marked with.
  */
-export function SnippetNote({ expansions }: { expansions: Expansion[] }) {
+function SnippetNote({ expansions }: { expansions: Expansion[] }) {
   const { count, mixed } = changing(expansions);
   if (!count) return null;
   return (

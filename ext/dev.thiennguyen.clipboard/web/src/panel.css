@@ -601,7 +601,6 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .when.pop .glyph { animation: none; }
 }
-
 /* A folding row's height closes; nothing inside may spill out meanwhile. */
 .row { overflow: hidden; }
 
@@ -780,6 +779,43 @@ body {
 .grip:hover::after,
 .grip:active::after { opacity: 0.6; }
 
+/* The line across the card (Preview.tsx `Grip`), dragged up or down: in
+   the part under it, reaching a few pixels into the gap above and into the
+   part's own padding below, so it is easy to catch without covering the
+   head under it. A hairline lights up on the line, as the edge's does. */
+.card .ocr-read,
+.card .snippet { position: relative; }
+/* Once the line has been caught, the floors are the person's to go down
+   to: two lines of the copy over it, the head and a line under it. Left
+   alone, the card keeps its own — a picture no shorter than 96px, five
+   lines read — and the panel's 430px leaves the line barely any way to go
+   with those. */
+.preview-slot[data-split] .card { --upper-min: 40px; --lower-lines: 1; }
+.split-grip {
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 9px;
+  cursor: row-resize;
+  z-index: 1;
+  touch-action: none;
+}
+.split-grip::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--cb-accent);
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.split-grip:hover::after,
+.split-grip:active::after { opacity: 0.6; }
+
 /* Zoomed (`canZoom`): the card has the whole body, the list kept at no
    width so it comes back where it was scrolled to. What the card draws grows
    into the room — a picture, a film, a PDF — instead of keeping the fixed
@@ -810,6 +846,17 @@ body {
   padding: 0 12px 10px 0;
 }
 .card {
+  /* The split a picture and the text read in it share (`.picture`,
+     `.ocr-read`), which a copy and what it expands to share too
+     (`.texts.even`) — so the rule between the two halves stays put while
+     the list is walked over both kinds. The lower part's floor is the read's
+     own: its rule, padding, head, gap and `--lower-lines` lines. The upper
+     part's height is the one dragged (`--split`, PreviewSplit.ts), when it
+     was. */
+  --upper-basis: var(--split, 180px);
+  --upper-min: 96px;
+  --lower-lines: 5;
+  --lower-min: calc(1px + 6px + 15.4px + 4px + var(--lower-lines) * 1.5 * 12px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -854,6 +901,16 @@ body {
   overscroll-behavior: contain;
   -webkit-user-select: text;
   user-select: text;
+}
+/* Every text that scrolls in the card keeps its scroller in one strip: the
+   card's 12px right padding, reached across and given back as its own (as
+   `.snippet-scroll` does), so the text sits where it did. macOS draws the
+   scroller over the content, not beside it; inside the text's own edge it
+   ran over the last letters, and a copy over what it expands to showed two
+   scrollers out of line. What it expands to is in that strip already. */
+.card .body:not(.snippet-text) {
+  margin-right: -12px;
+  padding-right: 12px;
 }
 /* A copied link: plain until the pointer is on it, then a link — the
    theme's link ink, underlined, a hand — and a click opens it in the
@@ -918,11 +975,13 @@ body {
   border-top: 1px solid var(--cb-line);
 }
 .links-head { flex: none; font-size: 11px; color: var(--cb-muted); }
-/* Room at the sides for a line's hover, as a colour's formats have. */
+/* Room at the sides for a line's hover, as a colour's formats have — and
+   on the right the card's whole padding, for the scroller's strip
+   (`.card .body`). */
 .card .links ul {
   min-height: 0;
-  margin: 0 -6px;
-  padding: 0 6px;
+  margin: 0 -12px 0 -6px;
+  padding: 0 12px 0 6px;
   list-style: none;
   overflow: hidden auto;
   overscroll-behavior: contain;
@@ -990,6 +1049,26 @@ body {
   align-content: start;
   gap: 8px;
 }
+/* Beside what it expands to, the copy is laid out as a picture beside the
+   text read in it (the `--upper-*`/`--lower-*` split on `.card`): the copy
+   where the picture would be, what it expands to — and its links, when it
+   has any, sharing that half — where the read would be. A one-line trigger
+   keeps the picture's room, and the rule between stays where an image's is.
+   The block steps aside (`contents`) so its parts are the card's own rows,
+   as the picture and the read are: a block of its own, with its own floor,
+   gave way differently once the card was too short for both halves — the
+   rule moved, and the expansion ran over "Copied …". */
+.card .texts.even { display: contents; }
+.card .texts.even > :first-child { flex: 0 1 var(--upper-basis); min-height: var(--upper-min); }
+.card .texts.even > .snippet {
+  flex: 1 1 0;
+  min-height: var(--lower-min);
+  box-sizing: border-box;
+  /* Its height is the card's to give, never its content's — so it can be
+     asked how much it got (`.snippet-fresh`). */
+  container: snippet / size;
+}
+.card .texts.even > .links { flex: 1 1 0; min-height: 0; }
 /* The block shares the room now; a fixed fraction would leave it empty. */
 .card .texts > .snippet,
 .card .texts > .links { max-height: none; }
@@ -1053,30 +1132,44 @@ body {
   all: unset;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--snippet-gap);
   flex: 1;
   min-width: 0;
   cursor: default;
 }
 .snippet-toggle:focus-visible { outline: 2px solid var(--cb-accent); outline-offset: 1px; border-radius: 4px; }
-.snippet-toggle > .glyph { flex: none; width: 10px; height: 10px; transition: transform 0.15s ease; }
+.snippet-toggle > .glyph { flex: none; width: var(--snippet-chevron); height: var(--snippet-chevron); transition: transform 0.15s ease; }
 .snippet-toggle[aria-expanded="true"] > .glyph { transform: rotate(90deg); }
 .snippet-toggle:hover { color: CanvasText; }
 .snippet-from { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-/* In the card's foot, a line over "Copied …" (SnippetNote). */
+/* At the section's foot (SnippetNote), pushed down past whatever room the
+   expansions leave, so it sits over the card's "Copied …". */
 .card .snippet-fresh {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 4px;
-  margin: 0 0 3px;
+  margin: auto 0 0;
+  padding-top: 6px;
+  font-size: 11px;
+  color: var(--cb-faint);
+}
+/* Dragged down to a head and a line (`[data-split]`), the section keeps
+   them and the note steps aside: under the head it would be all there is. */
+@container snippet (height < 84px) {
+  .card .snippet-fresh { display: none; }
 }
 .card .snippet-fresh .glyph, .snippet-mark .glyph { width: 11px; height: 11px; }
 .snippet-mark { flex: none; display: grid; place-items: center; color: var(--cb-faint); }
 /* Square to the text's edge rather than nudged past it, as other heads'
    buttons are: past it is where the scroller is. */
 .snippet-head .bare { flex: none; margin: -3px 0; }
+/* Under its head's words, not under the chevron — an outline's indent: the
+   chevron and the gap after it, so the two stay in step. */
+.card .snippet { --snippet-chevron: 10px; --snippet-gap: 4px; }
 .card .body.snippet-text {
   flex: none;
+  padding-left: calc(var(--snippet-chevron) + var(--snippet-gap));
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font: 12.5px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -1104,9 +1197,9 @@ body {
   /* A fixed box, not the picture's own height: that is only known once it
      has loaded, and a box that grew then would move all that follows. The
      picture is fitted inside; a short card shrinks the box at first draw. */
-  flex: 0 1 180px;
-  height: 180px;
-  min-height: 96px;
+  flex: 0 1 var(--upper-basis);
+  height: var(--upper-basis);
+  min-height: var(--upper-min);
   border-radius: 6px;
   background: var(--cb-card);
   display: flex;
@@ -1117,9 +1210,15 @@ body {
 /* The text Lumi read in the image, under it; long reads scroll. Its
    expand button zooms the panel onto the read, the picture hidden. Never
    shorter than its heading and five lines of text (the body's floor): a
-   tall picture gives way down to its own 96px first. */
+   tall picture gives way down to its own 96px first. A line dragged
+   (`[data-split]`) goes down to one. */
 .card .ocr-read {
   flex: 1 1 0;
+  /* The floor counts the rule and padding (`--lower-min`), so they are
+     inside it: added on top, the read kept 7px more than its five lines,
+     and a section with less padding drew its rule 3px lower. */
+  min-height: var(--lower-min);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1136,8 +1235,8 @@ body {
 .ocr-head .bare { margin: -3px -4px -3px 0; }
 .card .body.ocr {
   flex: 1 1 0;
-  /* Five lines at the 1.5 line height below. */
-  min-height: calc(5 * 1.5em);
+  /* The card's lines (`--lower-lines`) at the 1.5 line height below. */
+  min-height: calc(var(--lower-lines) * 1.5em);
   overflow-y: auto;
   overscroll-behavior: contain;
   font: 12px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;

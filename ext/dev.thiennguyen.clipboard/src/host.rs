@@ -339,8 +339,11 @@ pub mod memory {
         pub dragged: RefCell<Vec<(Vec<Vec<Rep>>, bool)>>,
         /// How many times the panel was closed; other windows go to `opened`.
         pub closed: Cell<u32>,
-        /// Every `post`, as (window, message).
+        /// Every `post`, as (window, message) — sent or not.
         pub posts: RefCell<Vec<(String, String)>>,
+        /// The windows on screen: opened and not closed since. A `post` to
+        /// one answers `true`, as Lumi's does.
+        pub up: RefCell<BTreeSet<String>>,
         /// Every `alert`'s text.
         pub alerts: RefCell<Vec<String>>,
         /// Every `open_url` and `reveal`, as "open <url>" / "reveal <url>".
@@ -353,16 +356,19 @@ pub mod memory {
         /// The profile book: the live id and every (id, name). Empty means
         /// one profile, `default`, live.
         pub book: RefCell<(String, Vec<Profile>)>,
-        /// The person's snippets, as (profile, snippet id, trigger, text,
-        /// fixed, revision). A trigger matches its text whole, any case —
-        /// enough for what the history does with the answer.
-        pub snippets: RefCell<Vec<(String, String, String, String, bool, String)>>,
+        /// The person's snippets. A trigger matches its text whole, any
+        /// case — enough for what the history does with the answer.
+        pub snippets: RefCell<Vec<MockSnippet>>,
         /// Every `find_snippets`, as (text, within).
         pub found: RefCell<Vec<(String, Within)>>,
         /// Every `expand_snippet`, as "profile/snippet". A snippet that is
         /// not fixed expands to its text and how many times it has been.
         pub expanded: RefCell<Vec<String>>,
     }
+
+    /// One of the mock's snippets, as (profile, snippet id, trigger, text,
+    /// fixed, revision).
+    pub type MockSnippet = (String, String, String, String, bool, String);
 
     impl Memory {
         fn book(&self) -> (String, Vec<Profile>) {
@@ -424,6 +430,7 @@ pub mod memory {
         }
 
         fn close_window(&self, name: &str) -> Result<(), String> {
+            self.up.borrow_mut().remove(name);
             if name == crate::PANEL {
                 self.closed.set(self.closed.get() + 1);
             } else {
@@ -433,13 +440,14 @@ pub mod memory {
         }
 
         fn open_window(&self, name: &str) -> Result<(), String> {
+            self.up.borrow_mut().insert(name.to_string());
             self.opened.borrow_mut().push(format!("open-window {name}"));
             Ok(())
         }
 
         fn post(&self, window: &str, message: &str) -> Result<bool, String> {
             self.posts.borrow_mut().push((window.to_string(), message.to_string()));
-            Ok(true)
+            Ok(self.up.borrow().contains(window))
         }
 
         fn alert(&self, text: &str) -> Result<(), String> {

@@ -89,6 +89,12 @@ const INDEX: &str = "index";
 /// Storage key of the preview pane's width, as the person last dragged it.
 const PREVIEW_WIDTH: &str = "panel.previewWidth";
 
+/// Storage key of where the line across the preview sits, as the person
+/// last dragged it: the height of the part above it — a picture over the
+/// text read in it, or a copy over what it expands to. Missing, the page's
+/// default stands.
+const PREVIEW_SPLIT: &str = "panel.previewSplit";
+
 /// Storage key of what a PDF's 100% fits, as last picked on its bar: one
 /// for the pane beside the list and one for the zoomed panel, as
 /// `{"pane": "height", "zoomed": "width"}` — either may be missing.
@@ -96,6 +102,9 @@ const PDF_FIT: &str = "panel.pdfFit";
 
 /// What a stored width may be: a pane, not a sliver or a wall.
 const PREVIEW_WIDTHS: std::ops::RangeInclusive<u64> = 120..=2000;
+
+/// What a stored split may be: a part, not a sliver or a wall.
+const PREVIEW_SPLITS: std::ops::RangeInclusive<u64> = 40..=2000;
 
 /// How often a write of the index is retried when a panel request and a
 /// copy land together. Each retry re-reads and re-applies, so five is five
@@ -110,17 +119,8 @@ struct Clipboard;
 
 impl lumi::Guest for Clipboard {
     fn run_command(name: String, _params: String) -> Result<String, String> {
-        match name.as_str() {
-            "open" => {
-                // The glass and the theme the person chose, before the
-                // panel is drawn on them. A Lumi that cannot set them opens
-                // the panel all the same.
-                dress(&host::Lumi);
-                host::Lumi.open_window(PANEL)?;
-                Ok(String::new())
-            }
-            _ => Err(format!("Clipboard Manager has no {name} command")),
-        }
+        command(&host::Lumi, &name)?;
+        Ok(String::new())
     }
 
     fn run_node(name: String, _params: String, _items: String) -> Result<String, String> {
@@ -186,8 +186,7 @@ fn welcome(host: &impl Host, request: &Value) -> Result<Value, String> {
         // The tour's "Try it": the panel comes up over the window, dressed
         // as Settings says, the way the command opens it.
         "openPanel" => {
-            dress(host);
-            host.open_window(PANEL)?;
+            show_panel(host)?;
             Ok(json!({}))
         }
         "settings" => {
@@ -228,6 +227,53 @@ pub const HISTORY_CHANGED: &str = r#"{"kind":"history"}"#;
 /// answers `false` and sends nothing when the panel is put away.
 fn tell_panel(host: &impl Host) {
     let _ = host.post(PANEL, HISTORY_CHANGED);
+}
+
+/// What the panel is told when it is asked for while already up — the
+/// shortcut pressed again, or the tour's "Try it". It stays as it is, and
+/// shows where the keys go now; pinned and left for another app, it takes
+/// the keyboard back first (`focus`).
+pub const SUMMONED: &str = r#"{"kind":"summoned"}"#;
+
+/// Asked only to learn whether the panel is up — Lumi answers `false` and
+/// sends nothing when it is not on screen. A kind the page does not know,
+/// so it does nothing with it.
+const PING: &str = r#"{"kind":"ping"}"#;
+
+/// One of the manifest's `[[command]]`s: the panel shown, hidden or
+/// toggled.
+fn command(host: &impl Host, name: &str) -> Result<(), String> {
+    match name {
+        "open" => show_panel(host),
+        "hide" => host.close_window(PANEL),
+        "toggle" => {
+            if host.post(PANEL, PING) == Ok(true) {
+                host.close_window(PANEL)
+            } else {
+                open_panel(host)
+            }
+        }
+        _ => Err(format!("Clipboard Manager has no {name} command")),
+    }
+}
+
+/// Show only ever brings the panel up: run while it is up, it does not put
+/// it away — Escape, Hide and Toggle do. Lumi sends a press's `open-window`
+/// on a panel that holds the keyboard away again (Maccy's habit), so an up
+/// panel is never asked for that way: the post doubles as the question.
+fn show_panel(host: &impl Host) -> Result<(), String> {
+    if host.post(PANEL, SUMMONED) == Ok(true) {
+        return Ok(());
+    }
+    open_panel(host)
+}
+
+/// Open the panel, put away, in the glass and the theme the person chose —
+/// set before it is drawn on them; a Lumi that cannot set them opens it all
+/// the same.
+fn open_panel(host: &impl Host) -> Result<(), String> {
+    dress(host);
+    host.open_window(PANEL)
 }
 
 /// Hand the Dashboard, if it is on screen, the counts as they are now.
@@ -710,6 +756,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "searchMode": prefs.search,
                 "pinKey": prefs.pin_key,
                 "previewWidth": preview_width(host),
+                "previewSplit": preview_split(host),
                 "pdfFit": pdf_fit(host),
             }))
         }
@@ -992,6 +1039,27 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             }
             Err("the width was busy; try again".to_string())
         }
+        // A height for the part above the line, or null to put the line
+        // back where the page draws it.
+        "previewSplit" => {
+            if request["height"].is_null() {
+                host.delete(PREVIEW_SPLIT)?;
+                return Ok(json!({}));
+            }
+            let height = request["height"]
+                .as_u64()
+                .filter(|h| PREVIEW_SPLITS.contains(h))
+                .ok_or_else(|| "the height is not one a part can be".to_string())?;
+            for _ in 0..CAS_ATTEMPTS {
+                let rev = host.get(PREVIEW_SPLIT)?.map(|s| s.rev);
+                match host.put(PREVIEW_SPLIT, &height.to_string(), rev) {
+                    Ok(_) => return Ok(json!({})),
+                    Err(PutError::Conflict) => continue,
+                    Err(PutError::Failed(err)) => return Err(err),
+                }
+            }
+            Err("the split was busy; try again".to_string())
+        }
         "pdfFit" => {
             let place = if request["zoomed"].as_bool() == Some(true) { "zoomed" } else { "pane" };
             let fit = request["fit"]
@@ -1022,6 +1090,14 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             host.set_pinned(PANEL, pinned)?;
             Ok(json!({ "pinned": pinned }))
         }
+        // A pinned panel told it was asked for (`SUMMONED`): the keyboard
+        // back from whichever app has it. The page's own request, not a
+        // press, so Lumi hands it over where the panel stands and never
+        // puts the panel away; one that holds the keyboard already keeps it.
+        "focus" => {
+            host.open_window(PANEL)?;
+            Ok(json!({}))
+        }
         other => Err(format!("the panel has no {other} request")),
     }
 }
@@ -1042,6 +1118,13 @@ fn put_away(host: &impl Host, request: &Value) -> Result<(), String> {
 fn preview_width(host: &impl Host) -> Option<u64> {
     let stored = host.get(PREVIEW_WIDTH).ok()??;
     stored.value.parse().ok().filter(|w| PREVIEW_WIDTHS.contains(w))
+}
+
+/// The height of the part above the preview's line, as last dragged; None
+/// for never, or for back to the default.
+fn preview_split(host: &impl Host) -> Option<u64> {
+    let stored = host.get(PREVIEW_SPLIT).ok()??;
+    stored.value.parse().ok().filter(|h| PREVIEW_SPLITS.contains(h))
 }
 
 /// What a PDF's 100% fits, beside the list (`pane`) and in the zoomed panel
@@ -1485,6 +1568,52 @@ mod tests {
         ui(&host, &json!({"kind": "close", "pinned": true})).unwrap();
         assert_eq!(host.closed.get(), 2, "Escape closes it pinned or not");
         assert!(ui(&host, &json!({"kind": "pinPanel"})).is_err(), "on or off, nothing else");
+    }
+
+    #[test]
+    fn show_only_ever_brings_the_panel_up() {
+        let host = Memory::default();
+        let opens = || host.opened.borrow().iter().filter(|o| o.starts_with("open-window")).count();
+        command(&host, "open").unwrap();
+        assert_eq!(opens(), 1, "opened");
+        // Run again while up: told, never opened again — a press's
+        // open-window on a panel with the keyboard is Lumi putting it away.
+        host.posts.borrow_mut().clear();
+        command(&host, "open").unwrap();
+        command(&host, "open").unwrap();
+        assert_eq!(opens(), 1, "still the one open");
+        assert_eq!(host.closed.get(), 0, "and never put away");
+        assert_eq!(*host.posts.borrow(), [(PANEL.to_string(), SUMMONED.to_string()), (PANEL.to_string(), SUMMONED.to_string())]);
+        let message: Value = serde_json::from_str(SUMMONED).unwrap();
+        assert_eq!(message, json!({"kind": "summoned"}));
+        // Pinned and left, the page asks for the keyboard back itself.
+        ui(&host, &json!({"kind": "focus"})).unwrap();
+        assert_eq!(opens(), 2);
+        // Escape puts it away; the next Show opens it again.
+        ui(&host, &json!({"kind": "close"})).unwrap();
+        assert_eq!(host.closed.get(), 1);
+        command(&host, "open").unwrap();
+        assert_eq!(opens(), 3, "opened again");
+    }
+
+    #[test]
+    fn hide_and_toggle_put_the_panel_away_and_toggle_brings_it_back() {
+        let host = Memory::default();
+        let opens = || host.opened.borrow().iter().filter(|o| o.starts_with("open-window")).count();
+        command(&host, "hide").unwrap();
+        assert_eq!(host.closed.get(), 1, "hiding a panel not up is not an error");
+        command(&host, "toggle").unwrap();
+        assert_eq!(opens(), 1, "not up: shown");
+        command(&host, "toggle").unwrap();
+        assert_eq!((opens(), host.closed.get()), (1, 2), "up: put away");
+        command(&host, "open").unwrap();
+        command(&host, "hide").unwrap();
+        assert_eq!(host.closed.get(), 3);
+        // Toggle asks with a ping the page does nothing with; only Show
+        // tells it it was asked for.
+        let count = |message: &str| host.posts.borrow().iter().filter(|(_, m)| m == message).count();
+        assert_eq!((count(PING), count(SUMMONED)), (2, 1));
+        assert!(command(&host, "nope").is_err());
     }
 
     #[test]
@@ -2124,6 +2253,19 @@ mod tests {
         assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["previewWidth"], 340);
         assert!(ui(&host, &json!({"kind": "previewWidth", "width": 5})).is_err());
         assert!(ui(&host, &json!({"kind": "previewWidth", "width": "wide"})).is_err());
+    }
+
+    #[test]
+    fn the_preview_split_is_kept_listed_and_put_back() {
+        let host = Memory::default();
+        assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["previewSplit"], Value::Null);
+        ui(&host, &json!({"kind": "previewSplit", "height": 120})).unwrap();
+        ui(&host, &json!({"kind": "previewSplit", "height": 240})).unwrap();
+        assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["previewSplit"], 240);
+        assert!(ui(&host, &json!({"kind": "previewSplit", "height": 5})).is_err());
+        assert!(ui(&host, &json!({"kind": "previewSplit", "height": "tall"})).is_err());
+        ui(&host, &json!({"kind": "previewSplit", "height": null})).unwrap();
+        assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["previewSplit"], Value::Null);
     }
 
     #[test]

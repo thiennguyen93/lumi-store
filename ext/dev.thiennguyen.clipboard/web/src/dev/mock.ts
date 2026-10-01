@@ -123,6 +123,7 @@ const MOCK_LINKS: Record<string, { url: string; text?: string }[]> = {
 };
 
 let previewWidth: number | null = null;
+let previewSplit: number | null = null;
 let pdfFit: { pane?: "width" | "height"; zoomed?: "width" | "height" } = {};
 // The mock's profiles, Work live, and what each snippet trigger expands to
 // in them — as `preview` answers it (src/snippets.rs).
@@ -229,6 +230,15 @@ Object.assign(window, {
   },
 });
 
+// `mockSummon()` in the console: the shortcut pressed again, as the extension
+// tells the panel each time it is asked for (`{"kind":"summoned"}`). Pinned,
+// what the keys work on hails.
+Object.assign(window, {
+  mockSummon() {
+    window.dispatchEvent(new CustomEvent("lumi:message", { detail: { kind: "summoned" } }));
+  },
+});
+
 function sorted(): Entry[] {
   const pins = rows.filter((r) => r.pin).sort((a, b) => (a.pin! < b.pin! ? -1 : 1));
   const rest = rows.filter((r) => !r.pin).sort((a, b) => b.last - a.last);
@@ -254,6 +264,7 @@ function answer(request: Request): unknown {
         items: sorted(),
         pasteOnSelect: true,
         previewWidth,
+        previewSplit,
         pdfFit,
         pinKey: settings.pinKey ?? "cmd+p",
         searchMode: (settings.search ?? "mixed") as "exact" | "fuzzy" | "regexp" | "mixed",
@@ -367,6 +378,9 @@ function answer(request: Request): unknown {
     case "pinPanel":
       say(request.pinned ? "would keep the panel up while you work elsewhere" : "would let the panel close when you click away");
       return { pinned: request.pinned };
+    case "focus":
+      say("would hand the panel the keyboard back");
+      return {};
     case "pdfFit":
       pdfFit = { ...pdfFit, [request.zoomed ? "zoomed" : "pane"]: request.fit };
       say(`would start ${request.zoomed ? "zoomed" : "side"} PDFs at the ${request.fit}`);
@@ -374,6 +388,10 @@ function answer(request: Request): unknown {
     case "previewWidth":
       previewWidth = request.width;
       say(`would keep the preview ${request.width}px wide`);
+      return {};
+    case "previewSplit":
+      previewSplit = request.height;
+      say(request.height == null ? "would put the line back" : `would keep ${request.height}px over the line`);
       return {};
     case "apps": {
       const seen = new Map<string, string>();

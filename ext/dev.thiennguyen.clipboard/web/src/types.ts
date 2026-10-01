@@ -36,6 +36,10 @@ export interface ListAnswer {
   pasteOnSelect: boolean;
   /** The preview pane's width as last dragged, or null for never. */
   previewWidth: number | null;
+  /** The height of the part above the preview's line — a picture over its
+   *  read text, a copy over what it expands to — as last dragged, or null
+   *  for the default. */
+  previewSplit?: number | null;
   /** What a PDF's 100% fits beside the list and in the zoomed panel, as
    *  last picked; a place never picked is left out. */
   pdfFit?: { pane?: "width" | "height"; zoomed?: "width" | "height" };
@@ -144,8 +148,12 @@ export type Request =
   | { kind: "close" }
   /** The title bar's pin: keep the panel up while working elsewhere. */
   | { kind: "pinPanel"; pinned: boolean }
+  /** Pinned and asked for again: the keyboard back, where the panel stands. */
+  | { kind: "focus" }
   | { kind: "stats" }
   | { kind: "previewWidth"; width: number }
+  /** Null puts the line back where the page draws it. */
+  | { kind: "previewSplit"; height: number | null }
   | { kind: "pdfFit"; zoomed: boolean; fit: "width" | "height" }
   /** The Settings tab's: the apps seen in the history, and a pattern list
    *  tried against a sample. */

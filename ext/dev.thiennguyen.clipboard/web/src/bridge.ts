@@ -61,8 +61,10 @@ type Answers = {
   clear: { ids: string[] };
   close: Record<string, never>;
   pinPanel: { pinned: boolean };
+  focus: Record<string, never>;
   stats: Stats;
   previewWidth: Record<string, never>;
+  previewSplit: Record<string, never>;
   pdfFit: Record<string, never>;
   apps: { apps: { id: string; name: string }[] };
   profiles: { active: string; profiles: { id: string; name: string }[] };
