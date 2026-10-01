@@ -233,6 +233,12 @@ pub struct Record {
     /// on a record kept before this; found again when `v` is out of date.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub links: Option<crate::links::KeptLinks>,
+    /// What the copy expands to as a snippet trigger, for the snippets that
+    /// expand the same way every time — each under the revision Lumi
+    /// answered, so an edited snippet is expanded again (`snippets::look`).
+    /// Missing until a preview first finds one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub snippets: Option<Vec<crate::snippets::Kept>>,
 }
 
 /// The person's settings, as far as the model cares.
@@ -368,7 +374,7 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
         id: new_id,
         // Its links are `lib`'s to find, once, for the record it writes:
         // this runs again on every retry of the index write.
-        record: Record { items: copy.items, ocr: copy.ocr.filter(|text| !text.trim().is_empty()), links: None },
+        record: Record { items: copy.items, ocr: copy.ocr.filter(|text| !text.trim().is_empty()), links: None, snippets: None },
         evicted,
     }
 }
@@ -739,7 +745,7 @@ pub fn preview_html(items: &[Vec<Rep>]) -> Option<String> {
     rep(uti::RTF).and_then(crate::rtf::to_html)
 }
 
-fn plain_text(items: &[Vec<Rep>]) -> Option<&str> {
+pub(crate) fn plain_text(items: &[Vec<Rep>]) -> Option<&str> {
     items
         .iter()
         .flatten()

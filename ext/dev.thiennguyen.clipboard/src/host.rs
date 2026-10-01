@@ -20,6 +20,39 @@ pub struct Stored {
 /// The storage key the row-id counter lives under.
 const SEQ: &str = "seq";
 
+/// Whose snippets to look in, as profile ids.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Within {
+    Active,
+    All,
+    Only(Vec<String>),
+}
+
+/// One snippet whose trigger is the whole text asked about.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SnippetHit {
+    pub profile: String,
+    pub snippet: String,
+    pub revision: String,
+    /// The same expansion every time — worth keeping.
+    pub fixed: bool,
+}
+
+/// One snippet, expanded.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Expansion {
+    pub text: String,
+    pub revision: String,
+    pub fixed: bool,
+}
+
+/// One of the person's profiles.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Profile {
+    pub id: String,
+    pub name: String,
+}
+
 pub trait Host {
     fn get(&self, key: &str) -> Result<Option<Stored>, String>;
     /// Write `value` if the key is still at `if_rev` (`None`: must not
@@ -66,6 +99,12 @@ pub trait Host {
     fn settings(&self) -> serde_json::Value;
     /// Now, in ms since the epoch — the clock Lumi stamps copies with.
     fn now(&self) -> i64;
+    /// Every profile, in Lumi's order, and the live one's id.
+    fn profiles(&self) -> Result<(String, Vec<Profile>), String>;
+    /// Every snippet in those profiles whose trigger is the whole of `text`.
+    fn find_snippets(&self, text: &str, within: &Within) -> Result<Vec<SnippetHit>, String>;
+    /// One snippet expanded as typing `text` would.
+    fn expand_snippet(&self, profile: &str, snippet: &str, text: &str) -> Result<Expansion, String>;
 
     /// A fresh id for a new row, from a counter kept in storage.
     ///
@@ -219,6 +258,30 @@ impl Host for Lumi {
             .duration_since(std::time::UNIX_EPOCH)
             .map_or(0, |d| d.as_millis() as i64)
     }
+
+    fn profiles(&self) -> Result<(String, Vec<Profile>), String> {
+        let book = lumi::profiles()?;
+        let rows = book.profiles.into_iter().map(|row| Profile { id: row.id, name: row.name }).collect();
+        Ok((book.active, rows))
+    }
+
+    fn find_snippets(&self, text: &str, within: &Within) -> Result<Vec<SnippetHit>, String> {
+        use lumi::snippets::Within as Asked;
+        let asked = match within {
+            Within::Active => Asked::Active,
+            Within::All => Asked::All,
+            Within::Only(ids) => Asked::Only(ids.clone()),
+        };
+        Ok(lumi::snippets::find(text, asked)?
+            .into_iter()
+            .map(|hit| SnippetHit { profile: hit.profile, snippet: hit.snippet, revision: hit.revision, fixed: hit.fixed })
+            .collect())
+    }
+
+    fn expand_snippet(&self, profile: &str, snippet: &str, text: &str) -> Result<Expansion, String> {
+        let out = lumi::snippets::expand(profile, snippet, text)?;
+        Ok(Expansion { text: out.text, revision: out.revision, fixed: out.fixed })
+    }
 }
 
 #[cfg(test)]
@@ -287,6 +350,29 @@ pub mod memory {
         pub now: Cell<i64>,
         /// Fail the next `n` puts with a conflict, to exercise the retry.
         pub conflicts: Cell<u32>,
+        /// The profile book: the live id and every (id, name). Empty means
+        /// one profile, `default`, live.
+        pub book: RefCell<(String, Vec<Profile>)>,
+        /// The person's snippets, as (profile, snippet id, trigger, text,
+        /// fixed, revision). A trigger matches its text whole, any case —
+        /// enough for what the history does with the answer.
+        pub snippets: RefCell<Vec<(String, String, String, String, bool, String)>>,
+        /// Every `find_snippets`, as (text, within).
+        pub found: RefCell<Vec<(String, Within)>>,
+        /// Every `expand_snippet`, as "profile/snippet". A snippet that is
+        /// not fixed expands to its text and how many times it has been.
+        pub expanded: RefCell<Vec<String>>,
+    }
+
+    impl Memory {
+        fn book(&self) -> (String, Vec<Profile>) {
+            let book = self.book.borrow().clone();
+            if book.1.is_empty() {
+                ("default".to_string(), vec![Profile { id: "default".to_string(), name: "Default".to_string() }])
+            } else {
+                book
+            }
+        }
     }
 
     impl Host for Memory {
@@ -402,6 +488,42 @@ pub mod memory {
 
         fn now(&self) -> i64 {
             self.now.get()
+        }
+
+        fn profiles(&self) -> Result<(String, Vec<Profile>), String> {
+            Ok(self.book())
+        }
+
+        fn find_snippets(&self, text: &str, within: &Within) -> Result<Vec<SnippetHit>, String> {
+            self.found.borrow_mut().push((text.to_string(), within.clone()));
+            let (active, rows) = self.book();
+            let ids: Vec<String> = match within {
+                Within::Active => vec![active],
+                Within::All => rows.iter().map(|row| row.id.clone()).collect(),
+                Within::Only(picked) => rows.iter().map(|row| row.id.clone()).filter(|id| picked.contains(id)).collect(),
+            };
+            let snippets = self.snippets.borrow();
+            Ok(ids
+                .iter()
+                .flat_map(|id| {
+                    snippets
+                        .iter()
+                        .filter(move |row| &row.0 == id && row.2.eq_ignore_ascii_case(text))
+                        .map(|row| SnippetHit { profile: row.0.clone(), snippet: row.1.clone(), revision: row.5.clone(), fixed: row.4 })
+                })
+                .collect())
+        }
+
+        fn expand_snippet(&self, profile: &str, snippet: &str, text: &str) -> Result<Expansion, String> {
+            self.expanded.borrow_mut().push(format!("{profile}/{snippet}"));
+            let times = self.expanded.borrow().len();
+            let snippets = self.snippets.borrow();
+            let row = snippets
+                .iter()
+                .find(|row| row.0 == profile && row.1 == snippet && row.2.eq_ignore_ascii_case(text))
+                .ok_or_else(|| "that text is not this snippet's trigger".to_string())?;
+            let text = if row.4 { row.3.clone() } else { format!("{} #{times}", row.3) };
+            Ok(Expansion { text, revision: row.5.clone(), fixed: row.4 })
         }
     }
 }

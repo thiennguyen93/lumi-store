@@ -15,6 +15,11 @@ export type FileItem = { name: string; dir?: string; size?: number; folder?: boo
  *  the words a rich copy links it under, when they are not the address. */
 export type Link = { url: string; text?: string };
 
+/** What a copy expands to as a snippet trigger (src/snippets.rs): the text,
+ *  the profiles whose snippet gives it, whether it was expanded fresh for
+ *  this preview (a date, a random value), and the web addresses in it. */
+export type Expansion = { text: string; profiles: string[]; dynamic: boolean; links: Link[] };
+
 type Answers = {
   list: ListAnswer;
   welcome: { from: string | null; version: string };
@@ -31,6 +36,8 @@ type Answers = {
     /** A text or rich copy's web addresses (at most 50), and how many in all. */
     links?: Link[] | null;
     linkCount?: number;
+    /** What the copy expands to, when it is a snippet trigger; Lumi 1.31. */
+    snippets?: Expansion[] | null;
   };
   paste: Record<string, never>;
   drag: Record<string, never>;
@@ -41,6 +48,7 @@ type Answers = {
   copyText: Record<string, never>;
   copyPath: Record<string, never>;
   copyColor: Record<string, never>;
+  copySnippet: Record<string, never>;
   open: Record<string, never>;
   reveal: Record<string, never>;
   saveImage: Record<string, never>;
@@ -57,6 +65,7 @@ type Answers = {
   previewWidth: Record<string, never>;
   pdfFit: Record<string, never>;
   apps: { apps: { id: string; name: string }[] };
+  profiles: { active: string; profiles: { id: string; name: string }[] };
   dress: Record<string, never>;
   tryPatterns: { errors: { line: number; error: string }[]; matched: number | null };
 };

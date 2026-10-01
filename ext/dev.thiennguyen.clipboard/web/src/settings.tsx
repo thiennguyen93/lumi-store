@@ -9,6 +9,7 @@ import { createRoot } from "react-dom/client";
 import { acceleratorGlyphs, comboOf, comboText, DEFAULT_PIN_KEY, glyphs, parseCombo, refusal } from "./keys";
 import { shortcuts } from "./bridge";
 import { KEEP_LABELS, type OwnShortcuts, type Stats } from "./types";
+import { type Book, type Matching, MatchMenu } from "./MatchMenu";
 import "./settings.css";
 
 if (import.meta.env.DEV) {
@@ -33,6 +34,8 @@ interface Values {
   appearance: Glass;
   ignoreApps: string[];
   ignorePatterns: string;
+  matchSnippets: Matching;
+  snippetProfiles: string[];
 }
 
 interface App {
@@ -69,6 +72,26 @@ const ORDERS: { value: Order; label: string }[] = [
   { value: "used", label: "Most used" },
 ];
 
+const MATCHES: Matching[] = ["off", "current", "all", "selected"];
+
+/** What "Match snippets" does, said under it — with the live profile's
+ *  name when Lumi has told it. */
+function matchHint(matching: Matching, picked: string[], book: Book | null): string {
+  const live = book?.profiles.find((p) => p.id === book.active)?.name;
+  switch (matching) {
+    case "off":
+      return "A copy is not looked up as a snippet trigger";
+    case "current":
+      return `A copy that is a trigger in ${live ? `“${live}”` : "the profile in use"} shows what it expands to`;
+    case "all":
+      return "A copy that is a trigger in any profile shows what it expands to";
+    case "selected":
+      return picked.length
+        ? "A copy that is a trigger in a ticked profile shows what it expands to"
+        : "Nothing is ticked under Selected, so nothing is matched";
+  }
+}
+
 const GLASSES: { value: Glass; label: string; hint: string }[] = [
   { value: "popover", label: "Glass", hint: "Follows light and dark" },
   { value: "hud", label: "Dark glass", hint: "Dark, whatever the system" },
@@ -97,6 +120,11 @@ function read(raw: Record<string, unknown>): Values {
       .map((l) => l.trim())
       .filter(Boolean),
     ignorePatterns: text(raw.ignorePatterns, ""),
+    matchSnippets: (MATCHES.includes(raw.matchSnippets as Matching) ? raw.matchSnippets : "current") as Matching,
+    snippetProfiles: text(raw.snippetProfiles, "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter((id, at, all) => id && all.indexOf(id) === at),
   };
 }
 
@@ -114,6 +142,8 @@ function written(v: Values): Record<string, string> {
     appearance: v.appearance,
     ignoreApps: v.ignoreApps.join("\n"),
     ignorePatterns: v.ignorePatterns,
+    matchSnippets: v.matchSnippets,
+    snippetProfiles: v.snippetProfiles.join(","),
   };
 }
 
@@ -128,6 +158,7 @@ function Settings() {
   const [values, setValues] = useState<Values | null>(null);
   const [failed, setFailed] = useState("");
   const [stats, setStats] = useState<Stats | null>(null);
+  const [book, setBook] = useState<Book | null>(null);
   const latest = useRef<Values | null>(null);
   const saving = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -155,12 +186,33 @@ function Settings() {
     // The history's size, for the line under the slider; nothing if Lumi
     // says the tab is not in front.
     ask<Stats>({ kind: "stats" }).then(setStats, () => {});
+    // The profiles, for the live one's name and the ones to tick — and
+    // again as Lumi tells of a switch, a rename, one made or removed, which
+    // can happen while this tab stays up (Lumi 1.31).
+    ask<Book>({ kind: "profiles" }).then(setBook, () => {});
+    const switched = (event: Event) => {
+      const book = (event as CustomEvent<Book>).detail;
+      if (book && typeof book.active === "string" && Array.isArray(book.profiles)) setBook(book);
+    };
+    window.addEventListener("lumi:profiles", switched);
+    // Asked again each time the tab comes back into view: Lumi answers a
+    // page only while Settings is in front, so a tab opened behind another
+    // app reads nothing the first time — measured: the hint said "the
+    // profile in use" until something else told it.
+    const shown = () => {
+      if (document.visibilityState !== "visible") return;
+      ask<Book>({ kind: "profiles" }).then(setBook, () => {});
+      ask<Stats>({ kind: "stats" }).then(setStats, () => {});
+    };
+    document.addEventListener("visibilitychange", shown);
     // Lumi drops the page when its tab is left: what is still waiting to
     // be saved goes now.
     const flush = () => saving.current !== undefined && save();
     window.addEventListener("pagehide", flush);
     document.addEventListener("visibilitychange", flush);
     return () => {
+      window.removeEventListener("lumi:profiles", switched);
+      document.removeEventListener("visibilitychange", shown);
       window.removeEventListener("pagehide", flush);
       document.removeEventListener("visibilitychange", flush);
     };
@@ -210,6 +262,24 @@ function Settings() {
           </Row>
           <Row label="Search text in images" hint="Lumi reads text in copied images, on this Mac">
             <Toggle on={values.ocr} label="Search text in images" onChange={(ocr) => change({ ocr }, true)} />
+          </Row>
+        </div>
+      </section>
+
+      <section>
+        <h3>Snippets</h3>
+        <div className="group">
+          <Row
+            label="Match snippets"
+            hint={matchHint(values.matchSnippets, values.snippetProfiles, book)}
+            bad={values.matchSnippets === "selected" && !values.snippetProfiles.length}
+          >
+            <MatchMenu
+              matching={values.matchSnippets}
+              picked={values.snippetProfiles}
+              book={book}
+              onChange={(patch) => change(patch, true)}
+            />
           </Row>
         </div>
       </section>
@@ -313,12 +383,12 @@ function Settings() {
   );
 }
 
-function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+function Row({ label, hint, bad = false, children }: { label: string; hint?: string; bad?: boolean; children: ReactNode }) {
   return (
     <div className="row">
       <div className="lbl">
         {label}
-        {hint && <small>{hint}</small>}
+        {hint && <small className={bad ? "bad" : undefined}>{hint}</small>}
       </div>
       {children}
     </div>

@@ -218,6 +218,22 @@ export function ChevronRightGlyph() {
   );
 }
 
+export function ChevronDownGlyph() {
+  return (
+    <Glyph>
+      <path d="m6 9 6 6 6-6" />
+    </Glyph>
+  );
+}
+
+export function CheckGlyph() {
+  return (
+    <Glyph>
+      <path d="M20 6 9 17l-5-5" />
+    </Glyph>
+  );
+}
+
 export function PlusGlyph() {
   return (
     <Glyph>

@@ -701,8 +701,9 @@ export function App() {
             row={current}
             query={query}
             used={used}
-            onOpen={(id, url) => void act(() => call({ kind: "open", id, url, pinned }))}
+            onOpen={(id, url, snippet) => void act(() => call({ kind: "open", id, url, snippet, pinned }))}
             onCopyColor={(text) => void act(() => call({ kind: "copyColor", text, pinned }))}
+            onCopySnippet={(id, text) => void act(() => call({ kind: "copySnippet", id, text, pinned }))}
             zoomed={zoomed}
             onZoom={() => setZoom(!zoomed)}
           />

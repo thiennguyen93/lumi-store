@@ -973,6 +973,39 @@ body {
   text-decoration-color: color-mix(in srgb, var(--cb-link) 50%, transparent);
   text-underline-offset: 3px;
 }
+/* What a snippet trigger expands to, under the copy (SnippetPane.tsx): a
+   heading naming the profiles, the expansion as text with its addresses
+   live, and a copy button. Up to two-fifths of the card, as the links. */
+.card .snippet {
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 40%;
+  min-height: 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--cb-line);
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+}
+.card .expansion { display: flex; flex-direction: column; gap: 3px; min-height: 0; }
+.snippet-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--cb-muted);
+}
+.snippet-from { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.card .snippet-fresh { margin: 0; font-size: 11px; color: var(--cb-faint); }
+.snippet-head .bare { flex: none; margin: -3px -4px -3px 0; }
+.card .body.snippet-text {
+  flex: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 12.5px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
 /* A long OCR read scrolls rather than squeezing the picture; only a pane
    too short for both gives way, the picture down to 96px, so the foot is
    never pushed out of the card. */

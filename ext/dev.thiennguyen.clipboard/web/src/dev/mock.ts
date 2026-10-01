@@ -60,6 +60,9 @@ let rows: Entry[] = [
   entry({ id: "j", kind: "text", title: "pnpm tauri dev", appName: "Terminal", count: 9, last: now - 120 * min }),
   entry({ id: "k", kind: "text", title: "example.com/docs/getting-started", appName: "Chrome", last: now - 180 * min }),
   entry({ id: "l", kind: "link", title: "https://developer.apple.com/design/human-interface-guidelines", appName: "Safari", last: now - 240 * min }),
+  // Snippet triggers copied: what each expands to is under it.
+  entry({ id: "sn1", kind: "text", title: ";addr", appName: "Notes", last: now - 30_000 }),
+  entry({ id: "sn2", kind: "text", title: ";d", appName: "Slack", last: now - 40_000 }),
   // Text with several addresses in it: its preview lists them under it.
   entry({ id: "t", kind: "text", title: RELEASE_NOTE.replace(/\n/g, "⏎").slice(0, 200), search: RELEASE_NOTE, appName: "Slack", last: now - 250 * min }),
   entry({ id: "m", kind: "file", title: "/Users/me/Desktop/invoice-2041.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min }),
@@ -119,6 +122,45 @@ const MOCK_LINKS: Record<string, { url: string; text?: string }[]> = {
 
 let previewWidth: number | null = null;
 let pdfFit: { pane?: "width" | "height"; zoomed?: "width" | "height" } = {};
+// The mock's profiles, Work live, and what each snippet trigger expands to
+// in them — as `preview` answers it (src/snippets.rs).
+const MOCK_BOOK = {
+  active: "p_work",
+  profiles: [
+    { id: "default", name: "Default" },
+    { id: "p_work", name: "Work" },
+    { id: "p_home", name: "Home" },
+  ],
+};
+const MOCK_SNIPPETS: Record<string, { profile: string; text: () => string; dynamic: boolean }[]> = {
+  ";addr": [
+    { profile: "default", text: () => "12 Nguyen Hue, District 1, Ho Chi Minh City\nhttps://maps.example.com/12-nguyen-hue", dynamic: false },
+    { profile: "p_work", text: () => "12 Nguyen Hue, District 1, Ho Chi Minh City\nhttps://maps.example.com/12-nguyen-hue", dynamic: false },
+    { profile: "p_home", text: () => "Flat 4B, 88 Le Loi", dynamic: false },
+  ],
+  ";d": [{ profile: "p_work", text: () => new Date().toISOString().slice(0, 19).replace("T", " "), dynamic: true }],
+};
+
+function mockExpansions(title: string) {
+  const ids =
+    settings.matchSnippets === "off"
+      ? []
+      : settings.matchSnippets === "all"
+        ? MOCK_BOOK.profiles.map((p) => p.id)
+        : settings.matchSnippets === "selected"
+          ? (settings.snippetProfiles ?? "").split(",").filter(Boolean)
+          : [MOCK_BOOK.active];
+  const found: { text: string; profiles: string[]; dynamic: boolean; links: { url: string }[] }[] = [];
+  for (const one of (MOCK_SNIPPETS[title.trim().toLowerCase()] ?? []).filter((s) => ids.includes(s.profile))) {
+    const text = one.text();
+    const name = MOCK_BOOK.profiles.find((p) => p.id === one.profile)!.name;
+    const same = found.find((f) => f.text === text);
+    if (same) same.profiles.push(name);
+    else found.push({ text, profiles: [name], dynamic: one.dynamic, links: [...text.matchAll(/https?:\/\/\S+/g)].map((m) => ({ url: m[0] })) });
+  }
+  return found.length ? found : null;
+}
+
 // What Lumi keeps for `GET /__lumi__/settings`, as text the way it stores it.
 let settings: Record<string, string> = {
   keep: "3mo",
@@ -131,10 +173,21 @@ let settings: Record<string, string> = {
   appearance: "popover",
   ignoreApps: "com.example.terminal",
   ignorePatterns: "^sk-[A-Za-z0-9]{20,}$\n\\b\\d{6}\\b",
+  matchSnippets: "current",
+  snippetProfiles: "p_work,p_gone",
 };
 let trash: Entry[] = [];
 
 const PIN_LETTERS = "bdefghijklmnorstu";
+
+// `mockSwitch("p_home")` in the console: the person switches profile, as
+// Lumi tells every page on screen (`lumi:profiles`).
+Object.assign(window, {
+  mockSwitch(id: string) {
+    MOCK_BOOK.active = id;
+    window.dispatchEvent(new CustomEvent("lumi:profiles", { detail: structuredClone(MOCK_BOOK) }));
+  },
+});
 
 // `mockCopy("some text")` in the console: a copy made while the panel is up,
 // as the extension tells the panel of one (`ui.post`, `{"kind":"history"}`).
@@ -193,7 +246,8 @@ function answer(request: Request): unknown {
       const fileToken = row?.kind === "file" && /\.(pdf|png|heic|mp3|mp4|html|md|json|go|tsx)$/.test(row.title) ? row.title : null;
       const files = row ? MOCK_FILES[row.id] : undefined;
       const links = row ? MOCK_LINKS[row.id] : undefined;
-      return { text, html, ocr, fileSize, fileToken, files: files ?? null, fileCount: files?.length ?? 0, links: links ?? null, linkCount: links?.length ?? 0 };
+      const snippets = row && (row.kind === "text" || row.kind === "rich") ? mockExpansions(row.title) : null;
+      return { text, html, ocr, fileSize, fileToken, files: files ?? null, fileCount: files?.length ?? 0, links: links ?? null, linkCount: links?.length ?? 0, snippets };
     }
     case "drag":
       say(`would drag ${request.id}${request.file != null ? ` (file ${request.file})` : ""} out of the panel`);
@@ -246,6 +300,11 @@ function answer(request: Request): unknown {
     case "copyColor":
       say(`would copy ${request.text} and ${request.pinned ? "stay up" : "close"}`);
       return {};
+    case "copySnippet":
+      say(`would copy what ${request.id} expands to and ${request.pinned ? "stay up" : "close"}`);
+      return {};
+    case "profiles":
+      return MOCK_BOOK;
     case "copyPath":
       say(`would copy the path of ${rows.find((r) => r.id === request.id)?.title}`);
       return {};

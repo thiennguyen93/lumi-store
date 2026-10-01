@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { blobUrl, call, fileUrl, type FileItem, type Link } from "./bridge";
+import { blobUrl, call, fileUrl, type Expansion, type FileItem, type Link } from "./bridge";
 import { AppMark } from "./AppMark";
 import { CollapseGlyph, CopyGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { useItemDrag } from "./itemDrag";
 import { LinkList } from "./LinkList";
+import { SnippetPane } from "./SnippetPane";
 import { PdfViewer } from "./PdfViewer";
 import { TextFile } from "./TextFile";
 import { linked } from "./LinkedText";
@@ -36,6 +37,7 @@ type Full = {
   fileCount?: number;
   links?: Link[] | null;
   linkCount?: number;
+  snippets?: Expansion[] | null;
 };
 
 /** Previews already asked for, by row — and by whether the row has read
@@ -57,16 +59,20 @@ export function Preview({
   row,
   onOpen,
   onCopyColor,
+  onCopySnippet,
   query = "",
   used = "exact",
   zoomed = false,
   onZoom,
 }: {
   row: Entry | undefined;
-  /** Open a link row's address, or — `url` — one of a row's listed links. */
-  onOpen?: (id: string, url?: string) => void;
+  /** Open a link row's address, or — `url` — one of a row's listed links,
+   *  or, with `snippet`, one in what the row expands to. */
+  onOpen?: (id: string, url?: string, snippet?: boolean) => void;
   /** Copy one of a colour row's formats. */
   onCopyColor?: (text: string) => void;
+  /** Copy what a row expands to as a snippet trigger. */
+  onCopySnippet?: (id: string, text: string) => void;
   /** What the list is searched by, marked in the card and scrolled to. */
   query?: string;
   used?: Used;
@@ -90,6 +96,18 @@ export function Preview({
   useEffect(() => {
     if (!zoomed) setExpanded(null);
   }, [zoomed]);
+  // Bumped when Lumi tells of a profile switch: what a copy expands to
+  // depends on whose snippets are looked in, so every preview kept from
+  // before is asked again — the one on screen at once.
+  const [profiled, setProfiled] = useState(0);
+  useEffect(() => {
+    const switched = () => {
+      seen.clear();
+      setProfiled((n) => n + 1);
+    };
+    window.addEventListener("lumi:profiles", switched);
+    return () => window.removeEventListener("lumi:profiles", switched);
+  }, []);
   // The picture's size in pixels, read off the image once it has loaded;
   // by row, like the text.
   const [size, setSize] = useState<{ id: string; w: number; h: number } | null>(null);
@@ -108,12 +126,15 @@ export function Preview({
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
-        const { text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount } = await call({ kind: "preview", id: row.id });
+        const { text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets } = await call({
+          kind: "preview",
+          id: row.id,
+        });
         if (!(text || html || ocr)) {
           if (live) setGaveUp(row.id);
           return;
         }
-        const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount };
+        const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets };
         seen.delete(key);
         seen.set(key, answer);
         if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
@@ -128,7 +149,7 @@ export function Preview({
       clearTimeout(timer);
       clearTimeout(hold);
     };
-  }, [row]);
+  }, [row, profiled]);
 
   if (!row) return <aside className="preview empty-card" />;
 
@@ -157,6 +178,8 @@ export function Preview({
   const links = (row.kind === "text" || row.kind === "rich") && mine?.links ? mine.links : [];
   const bodyLinks = row.kind === "rich" ? links : [];
   const openLink = onOpen ? (url: string) => onOpen(row.id, url) : undefined;
+  // What a text or rich copy expands to, when it is a snippet trigger.
+  const expansions = (row.kind === "text" || row.kind === "rich") && mine?.snippets ? mine.snippets : [];
 
   const from = row.appName || row.app;
   const times = row.count > 1 ? `${row.count}×` : "once";
@@ -274,6 +297,15 @@ export function Preview({
               <div className={row.kind === "rich" ? "body rich" : "body"}>{linked(text, bodyLinks, openLink)}</div>
             )
           )
+        )}
+        {/* A trigger copied: what it expands to, under the copy itself. */}
+        {expansions.length > 0 && (
+          <SnippetPane
+            key={`snippets:${row.id}`}
+            expansions={expansions}
+            onCopy={onCopySnippet ? (text) => onCopySnippet(row.id, text) : undefined}
+            onOpen={onOpen ? (url) => onOpen(row.id, url, true) : undefined}
+          />
         )}
         {/* The text or the formatting stays as it is; its addresses are
             listed under it, each one a click away from the browser. */}

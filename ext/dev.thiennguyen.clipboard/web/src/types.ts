@@ -123,9 +123,13 @@ export type Request =
   | { kind: "copyPath"; id: string; pinned?: boolean }
   /** One of a colour row's formats; the extension takes only a colour. */
   | { kind: "copyColor"; text: string; pinned?: boolean }
+  /** What a row expands to as a snippet trigger, from the preview; taken
+   *  only if the row still expands to it. */
+  | { kind: "copySnippet"; id: string; text: string; pinned?: boolean }
   /** A link row's address; with `url`, one of the links the preview listed
-   *  for a text or rich row — opened only if the item still has it. */
-  | { kind: "open"; id: string; url?: string; pinned?: boolean }
+   *  for a text or rich row — opened only if the item still has it — or,
+   *  with `snippet`, one in what the row expands to. */
+  | { kind: "open"; id: string; url?: string; snippet?: boolean; pinned?: boolean }
   | { kind: "reveal"; id: string; pinned?: boolean }
   | { kind: "saveImage"; id: string; name: string }
   | { kind: "clearAll" }
@@ -146,6 +150,8 @@ export type Request =
   /** The Settings tab's: the apps seen in the history, and a pattern list
    *  tried against a sample. */
   | { kind: "apps" }
+  /** Every profile and the live one, for "Match snippets" to tick. */
+  | { kind: "profiles" }
   | { kind: "dress" }
   | { kind: "tryPatterns"; patterns: string; sample: string };
 

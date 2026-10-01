@@ -51,8 +51,9 @@
 //! writes need `clipboard`, [`paste`] needs `clipboard`, `input` and
 //! `accessibility` — and answers only a command or one of your windows,
 //! never [`Guest::on_event`] or [`Guest::on_lifecycle`] —, `open_url` needs `applications` (plus `network` for
-//! a web address), `fetch` needs `network`, and everything in [`config`]
-//! needs `config`. `alert`, `settings`, `profiles`, [`storage`] and
+//! a web address), `fetch` needs `network`, everything in [`config`]
+//! needs `config`, [`screen`] needs `screen`, and [`snippets`] needs
+//! `snippets`. `alert`, `settings`, `profiles`, [`storage`] and
 //! [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
@@ -323,7 +324,9 @@ pub fn setting(name: &str) -> Option<String> {
 /// One call answers both halves, so the list and the live id are always
 /// from the same moment. Ask again whenever you need it rather than
 /// holding on to an answer: the person may switch at any time, and
-/// nothing tells your component that they did.
+/// nothing tells your component that they did. A page of yours on screen
+/// is told — a `lumi:profiles` event carrying this same answer, from Lumi
+/// 1.31.0 — so a window can ask again then.
 ///
 /// ```ignore
 /// let book = lumi::profiles()?;
@@ -565,6 +568,56 @@ pub mod screen {
     /// press.
     pub fn select_window() -> Result<Option<PickedWindow>, String> {
         wit::select_window()
+    }
+}
+
+/// The person's snippets, asked about a whole text: is it a trigger, and
+/// what does it expand to. For text that came from somewhere other than the
+/// keyboard — a copy in a history, a line in a document — when you want to
+/// say what Lumi would make of it. Every function here needs the `snippets`
+/// capability.
+///
+/// A snippet counts when it is switched on and has a trigger; where and when
+/// it would fire while typing — its applications, the profile's Snippets
+/// switch — is not asked, since nothing is being typed. A trigger matches
+/// exactly as typing would match it: the snippet's own case sensitivity,
+/// and a regular expression covering the whole text.
+///
+/// ```ignore
+/// use lumi_extension_api::snippets::{self, Within};
+/// for hit in snippets::find(";addr", Within::All)? {
+///     let expansion = snippets::expand(&hit.profile, &hit.snippet, ";addr")?;
+///     // Keep expansion.text under hit.revision only when expansion.fixed.
+/// }
+/// ```
+///
+/// Needs Lumi 1.31.0 or later — say so with `min-lumi-version`.
+pub mod snippets {
+    use super::lumi::ext::snippets as wit;
+
+    pub use wit::{Expansion, Hit, Within};
+
+    /// Every snippet in those profiles whose trigger is the whole of
+    /// `text`: profile by profile, then in the order each lists them. A
+    /// text longer than 64 characters — more than a trigger can be typed
+    /// in — matches nothing, and costs nothing past the call. A profile id
+    /// in [`Within::Only`] that no profile has is skipped. Trim the text
+    /// first if surrounding spaces should not count.
+    pub fn find(text: &str, within: Within) -> Result<Vec<Hit>, String> {
+        wit::find(text, &within)
+    }
+
+    /// Expand one snippet as typing `text` would: variables rendered, a
+    /// script run against what its pattern caught. Refused when `text` is
+    /// no longer its trigger or the snippet is gone or switched off — and,
+    /// for a snippet that reads the clipboard, unless you also declare
+    /// `clipboard`.
+    ///
+    /// An expansion with `fixed` set is the same every time and worth
+    /// keeping under its `revision`; any other is fresh each call — a date,
+    /// a random value, whatever a script computes.
+    pub fn expand(profile: &str, snippet: &str, text: &str) -> Result<Expansion, String> {
+        wit::expand(profile, snippet, text)
     }
 }
 

@@ -97,6 +97,16 @@
         "--strictPort"
       ],
       "port": 5183
+    },
+    {
+      "name": "lumi-kit",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "pnpm -C ../lumi exec vite --port ${PORT:-5274} --strictPort"
+      ],
+      "port": 5274,
+      "autoPort": true
     }
   ]
 }

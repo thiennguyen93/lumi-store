@@ -19,6 +19,7 @@ pub mod history;
 pub mod host;
 pub mod links;
 pub mod rtf;
+pub mod snippets;
 
 use history::{Copy, Index, Order, Outcome, Rules};
 use host::{Host, PutError};
@@ -262,6 +263,10 @@ struct Prefs {
     /// The panel's Pin key, as the page spells it ("cmd+p"); the page
     /// checks it and falls back to its default on anything it cannot read.
     pin_key: String,
+    /// "Match snippets": whose snippet triggers a copy is looked up as.
+    match_snippets: snippets::Matching,
+    /// The profiles ticked for `Matching::Selected`.
+    snippet_profiles: Vec<String>,
 }
 
 impl Prefs {
@@ -335,6 +340,8 @@ fn prefs(host: &impl Host) -> Prefs {
             Some("dark") => "dark",
             _ => "system",
         },
+        match_snippets: snippets::Matching::parse(s["matchSnippets"].as_str()),
+        snippet_profiles: snippets::picked(s["snippetProfiles"].as_str().unwrap_or_default()),
     }
 }
 
@@ -618,6 +625,24 @@ fn links_of_record(host: &impl Host, id: &str, record: &history::Record) -> link
     kept
 }
 
+/// What the copy expands to as a snippet trigger, in the profiles the
+/// setting names — nothing when it names none, or the copy is not one a
+/// trigger can be. Expansions that come out the same every time are kept
+/// with the record (`snippets::look`), written back only when that changed.
+/// Best effort throughout: a Lumi that cannot answer leaves the preview
+/// without the section, never without the preview.
+fn snippets_of_record(host: &impl Host, id: &str, record: &history::Record, prefs: &Prefs) -> Vec<snippets::Shown> {
+    let Some(text) = snippets::trigger_text(&record.items) else { return Vec::new() };
+    let Some(within) = snippets::within(prefs.match_snippets, &prefs.snippet_profiles) else { return Vec::new() };
+    let kept = record.snippets.clone().unwrap_or_default();
+    let Ok(looked) = snippets::look(host, &text, &within, &kept) else { return Vec::new() };
+    if looked.kept != kept {
+        let now = Some(looked.kept.clone()).filter(|kept| !kept.is_empty());
+        let _ = update_record(host, id, |record| record.snippets = now.clone());
+    }
+    looked.shown
+}
+
 /// Change one stored record — compare-and-swap, as the index is: the text
 /// read in an image and a preview's links can land on it together. A record
 /// gone since has nothing to change.
@@ -695,10 +720,13 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             // An image's text as Lumi read it, while reading is on.
             let id = id()?;
             let record = read_record(host, &id)?;
-            let ocr = record.ocr.as_deref().filter(|text| prefs(host).ocr && !text.trim().is_empty());
+            let prefs = prefs(host);
+            let ocr = record.ocr.as_deref().filter(|text| prefs.ocr && !text.trim().is_empty());
             // The web addresses in a text or rich copy, for the list under
             // its text — as kept with it, not looked for again.
             let links = links_of_record(host, &id, &record);
+            // What the copy expands to, when it is a snippet's trigger.
+            let expanded = snippets_of_record(host, &id, &record, &prefs);
             Ok(json!({
                 "text": history::preview_text(&record.items),
                 "html": history::preview_html(&record.items),
@@ -710,6 +738,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "fileCount": history::file_count_of(&record.items),
                 "links": Some(&links.list).filter(|list| !list.is_empty()),
                 "linkCount": links.count,
+                "snippets": Some(&expanded).filter(|shown| !shown.is_empty()),
             }))
         }
         "paste" => {
@@ -861,14 +890,44 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let _ = host.alert(&format!("Copied {text}"));
             Ok(json!({}))
         }
+        // What a row expands to as a snippet trigger, from the preview's
+        // Copy. Taken only when the row still expands to it — or, for an
+        // expansion made fresh each time (a date, a random value), when one
+        // of those is among its snippets: what the person saw is what they
+        // copy, and this side cannot make the same value twice.
+        "copySnippet" => {
+            let id = id()?;
+            let record = read_record(host, &id)?;
+            let wanted = request["text"].as_str().unwrap_or_default();
+            let shown = snippets_of_record(host, &id, &record, &prefs(host));
+            if wanted.is_empty() || !shown.iter().any(|one| one.text == wanted || one.dynamic) {
+                return Err("That is not what the item expands to.".to_string());
+            }
+            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: wanted.len() as u64, text: Some(wanted.to_string()), blob: None, file_size: None, path: None, file_token: None };
+            host.paste(&[vec![rep]], false)?;
+            put_away(host, request)?;
+            let _ = host.alert("Copied the snippet's expansion");
+            Ok(json!({}))
+        }
         // A link row's address — or, with `url`, one of the links the
         // preview listed for a text or rich row: opened only when it is one
         // the stored item keeps, so the page can name an address but never
-        // make one up.
+        // make one up. With `snippet`, a link in what the row expands to,
+        // found again the way `copySnippet` finds its text.
         "open" => {
             let id = id()?;
             let record = read_record(host, &id)?;
             let url = match request["url"].as_str() {
+                Some(wanted) if request["snippet"].as_bool() == Some(true) => {
+                    let shown = snippets_of_record(host, &id, &record, &prefs(host));
+                    let listed = shown.iter().any(|one| {
+                        one.links.iter().any(|link| link.url == wanted) || (one.dynamic && links::is_web_address(wanted))
+                    });
+                    if !listed {
+                        return Err("That link is not in what the item expands to.".to_string());
+                    }
+                    wanted.to_string()
+                }
                 Some(wanted) => links_of_record(host, &id, &record)
                     .list
                     .into_iter()
@@ -1016,6 +1075,12 @@ fn settings(host: &impl Host, request: &Value) -> Result<Value, String> {
     match request["kind"].as_str().unwrap_or_default() {
         "stats" => stats(host),
         "apps" => Ok(json!({ "apps": seen_apps(host)? })),
+        // Every profile and the live one, for "Match snippets" to tick.
+        "profiles" => {
+            let (active, rows) = host.profiles()?;
+            let rows: Vec<Value> = rows.into_iter().map(|row| json!({ "id": row.id, "name": row.name })).collect();
+            Ok(json!({ "active": active, "profiles": rows }))
+        }
         // Sent after the tab saves Appearance: the panel, if it is up,
         // changes with it.
         "dress" => {
@@ -1609,6 +1674,133 @@ mod tests {
         assert_eq!(shown["links"], json!([{ "url": "https://kept.test" }]));
         ui(&host, &json!({"kind": "open", "id": "id1", "url": "https://kept.test", "pinned": true})).unwrap();
         assert_eq!(stored(&host).rev, rev, "a kept list is not written again");
+    }
+
+    /// Two profiles, Work live: `;addr` in both, fixed, with a link in it;
+    /// `;d` in Work, expanded fresh each time.
+    fn snippet_host() -> Memory {
+        let host = Memory::default();
+        *host.book.borrow_mut() = (
+            "p_work".to_string(),
+            vec![
+                host::Profile { id: "default".to_string(), name: "Default".to_string() },
+                host::Profile { id: "p_work".to_string(), name: "Work".to_string() },
+            ],
+        );
+        for profile in ["default", "p_work"] {
+            host.snippets.borrow_mut().push((
+                profile.to_string(),
+                "a".to_string(),
+                ";addr".to_string(),
+                "12 Main St, https://maps.test/a".to_string(),
+                true,
+                "r1".to_string(),
+            ));
+        }
+        host.snippets.borrow_mut().push((
+            "p_work".to_string(),
+            "d".to_string(),
+            ";d".to_string(),
+            "today".to_string(),
+            false,
+            "r1".to_string(),
+        ));
+        host
+    }
+
+    #[test]
+    fn a_copy_that_is_a_trigger_shows_what_it_expands_to_in_the_profiles_asked() {
+        let host = snippet_host();
+        on_event(&host, "clipboard", &event("h1", 1, " ;addr\n")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 2, "just words")).unwrap();
+
+        // The default: the live profile's.
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(
+            shown["snippets"],
+            json!([{
+                "text": "12 Main St, https://maps.test/a",
+                "profiles": ["Work"],
+                "dynamic": false,
+                "links": [{ "url": "https://maps.test/a" }],
+            }])
+        );
+        assert_eq!(host.found.borrow().last().unwrap(), &(";addr".to_string(), host::Within::Active));
+
+        // Every profile's: one entry naming both.
+        *host.settings.borrow_mut() = json!({ "matchSnippets": "all" });
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["snippets"][0]["profiles"], json!(["Default", "Work"]));
+
+        // The ticked ones; none ticked, nothing asked.
+        *host.settings.borrow_mut() = json!({ "matchSnippets": "selected", "snippetProfiles": "default" });
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["snippets"][0]["profiles"], json!(["Default"]));
+        let asked = host.found.borrow().len();
+        for off in [json!({ "matchSnippets": "selected" }), json!({ "matchSnippets": "off" })] {
+            *host.settings.borrow_mut() = off;
+            let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+            assert!(shown["snippets"].is_null());
+        }
+        // Words that are no trigger are asked about and show nothing.
+        *host.settings.borrow_mut() = json!({});
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id2"})).unwrap();
+        assert!(shown["snippets"].is_null());
+        assert_eq!(host.found.borrow().len(), asked + 1, "off and nothing-ticked ask nothing");
+    }
+
+    #[test]
+    fn a_fixed_expansion_is_kept_with_the_record_and_a_changing_one_is_not() {
+        let host = snippet_host();
+        on_event(&host, "clipboard", &event("h1", 1, ";addr")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 2, ";d")).unwrap();
+        let stored = |host: &Memory, id: &str| host.kv.borrow()[&format!("item.{id}")].clone();
+
+        ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        let kept: Value = serde_json::from_str(&stored(&host, "id1").value).unwrap();
+        assert_eq!(kept["snippets"][0]["text"], "12 Main St, https://maps.test/a");
+        let rev = stored(&host, "id1").rev;
+        ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(host.expanded.borrow().len(), 1, "expanded once");
+        assert_eq!(stored(&host, "id1").rev, rev, "and written once");
+
+        let first = ui(&host, &json!({"kind": "preview", "id": "id2"})).unwrap();
+        let second = ui(&host, &json!({"kind": "preview", "id": "id2"})).unwrap();
+        assert_ne!(first["snippets"][0]["text"], second["snippets"][0]["text"]);
+        assert_eq!(second["snippets"][0]["dynamic"], true);
+        let kept: Value = serde_json::from_str(&stored(&host, "id2").value).unwrap();
+        assert!(kept.get("snippets").is_none(), "nothing kept: {kept}");
+    }
+
+    #[test]
+    fn copying_or_opening_an_expansion_takes_only_what_the_item_expands_to() {
+        let host = snippet_host();
+        on_event(&host, "clipboard", &event("h1", 1, ";addr")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 2, ";d")).unwrap();
+
+        ui(&host, &json!({"kind": "copySnippet", "id": "id1", "text": "12 Main St, https://maps.test/a", "pinned": true})).unwrap();
+        assert_eq!(host.pasted.borrow().last().unwrap()[0][0].text.as_deref(), Some("12 Main St, https://maps.test/a"));
+        assert!(ui(&host, &json!({"kind": "copySnippet", "id": "id1", "text": "anything else"})).is_err());
+        // A fresh expansion each time: what the page showed is what it copies.
+        ui(&host, &json!({"kind": "copySnippet", "id": "id2", "text": "today #7", "pinned": true})).unwrap();
+        assert_eq!(host.pasted.borrow().last().unwrap()[0][0].text.as_deref(), Some("today #7"));
+
+        ui(&host, &json!({"kind": "open", "id": "id1", "url": "https://maps.test/a", "snippet": true, "pinned": true})).unwrap();
+        assert_eq!(host.opened.borrow().last().unwrap(), "open https://maps.test/a");
+        assert!(ui(&host, &json!({"kind": "open", "id": "id1", "url": "https://elsewhere.test", "snippet": true})).is_err());
+        // Not one of the item's own links either.
+        assert!(ui(&host, &json!({"kind": "open", "id": "id1", "url": "https://maps.test/a"})).is_err());
+        assert!(ui(&host, &json!({"kind": "open", "id": "id2", "url": "javascript:alert(1)", "snippet": true})).is_err());
+    }
+
+    #[test]
+    fn the_settings_tab_lists_the_profiles_to_tick() {
+        let host = snippet_host();
+        let answer = settings(&host, &json!({"kind": "profiles"})).unwrap();
+        assert_eq!(
+            answer,
+            json!({ "active": "p_work", "profiles": [{ "id": "default", "name": "Default" }, { "id": "p_work", "name": "Work" }] })
+        );
     }
 
     #[test]

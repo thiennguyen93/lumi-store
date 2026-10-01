@@ -102,6 +102,21 @@ pub fn links_of(items: &[Vec<Rep>]) -> Vec<Link> {
     found.links
 }
 
+/// The web addresses written out in a piece of plain text — what a snippet
+/// expands to — first seen first, as many as the preview lists.
+pub fn in_text(text: &str) -> Vec<Link> {
+    let mut found = Found::default();
+    written(text, &mut found);
+    found.links.truncate(LINKS_LISTED);
+    found.links
+}
+
+/// Whether `url` is a web address exactly as written: what the page may
+/// name for a link it was shown but this side cannot find again.
+pub fn is_web_address(url: &str) -> bool {
+    web_address(url).as_deref() == Some(url)
+}
+
 /// The address as macOS's `NSURL` takes it on every macOS Lumi runs on:
 /// what follows the host percent-encoded where it is not plain ASCII — a
 /// Vietnamese word in a path, a space — which macOS 14 does by itself and

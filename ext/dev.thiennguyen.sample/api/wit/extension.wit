@@ -562,6 +562,75 @@ interface screen {
     select-window: func() -> result<option<picked-window>, string>;
 }
 
+/// The person's snippets, asked about a whole text: is it a trigger, and
+/// what does it expand to. Costs `snippets`. For a component holding text
+/// from somewhere other than the keyboard — a copy in a history, a line in
+/// a document — that wants to say what Lumi would make of it.
+///
+/// A snippet counts when it is switched on and has a trigger. Where and when
+/// it would fire while typing — its applications, the profile's own
+/// Snippets switch, on a space or at once — is not asked: nothing is being
+/// typed, and what the component does with the answer is its own.
+///
+/// Added to 0.3 in Lumi 1.31 without a new world version: an existing
+/// component imports nothing new and is unaffected, and one that calls this
+/// needs a Lumi that has it, which its manifest's `min-lumi-version` says.
+interface snippets {
+    /// Whose snippets to look in. Profile ids are `profiles.read`'s.
+    variant within {
+        /// The live profile's.
+        active,
+        /// Every profile's, in the order Lumi lists them.
+        all,
+        /// These profiles', in the order Lumi lists them. An id no profile
+        /// has is skipped.
+        only(list<string>),
+    }
+
+    /// One snippet whose trigger is the whole of the text asked about.
+    record hit {
+        /// The profile it is in.
+        profile: string,
+        /// Its id, stable while it exists — what `expand` takes.
+        snippet: string,
+        /// As the person wrote it: literal text, or a regular expression.
+        trigger: string,
+        /// Changes whenever anything that decides its expansion does — the
+        /// trigger, the replacement, or how either is read. Keep an
+        /// expansion under it, and keep it no longer than this stays the
+        /// same.
+        revision: string,
+        /// Whether the expansion is the same every time: plain text with no
+        /// `{{$…}}` variable and no script. Only then is one worth keeping.
+        fixed: bool,
+    }
+
+    record expansion {
+        /// What the trigger expands to — plain text, always.
+        text: string,
+        /// It holds something read from the clipboard, through
+        /// `{{$clipboardText}}` or a script that read it. Answered only to
+        /// a component that also holds `clipboard`; anyone else is refused.
+        sealed: bool,
+        /// `hit.revision` and `hit.fixed` as they stand now, for a snippet
+        /// changed between the two calls.
+        revision: string,
+        fixed: bool,
+    }
+
+    /// Every snippet in those profiles whose trigger is the whole of `text`,
+    /// as typed: with the snippet's own case sensitivity, a regular
+    /// expression matching from its first character to its last. Profile by
+    /// profile, then in the order each lists them. A text longer than any
+    /// trigger can be typed — 64 characters — matches nothing, and a profile
+    /// whose snippets cannot be read is skipped.
+    find: func(text: string, within: within) -> result<list<hit>, string>;
+    /// Expand one snippet as typing `text` would: its variables rendered,
+    /// its script run against what a pattern caught. Refused when `text` is
+    /// no longer its trigger, or it is gone or switched off.
+    expand: func(profile: string, snippet: string, text: string) -> result<expansion, string>;
+}
+
 world extension {
     import selection;
     import clipboard;
@@ -575,6 +644,7 @@ world extension {
     import ui;
     import storage;
     import screen;
+    import snippets;
 
     /// Run one of the commands the manifest declares.
     ///

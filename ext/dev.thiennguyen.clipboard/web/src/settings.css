@@ -340,3 +340,75 @@ span.keycap { cursor: default; }
   .glasses { grid-template-columns: 1fr; }
   .row:not(.col) { flex-wrap: wrap; }
 }
+
+/* "Match snippets" (MatchMenu.tsx): a pop-up button that reads like the
+   select above it, and its menu — the Selected row flies out a submenu of
+   profiles to tick. A hint that has gone bad (nothing ticked) is red. */
+.lbl small.bad { color: var(--st-bad); }
+.row > .pop { flex: none; }
+.pop { position: relative; }
+.pop-button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-width: 130px;
+  max-width: 260px;
+  height: 22px;
+  padding: 0 6px 0 9px;
+  border: 1px solid var(--st-line);
+  border-radius: 6px;
+  background: var(--st-field);
+  font-size: 12.5px;
+}
+.pop-button:focus-visible { outline: 2px solid var(--st-accent); outline-offset: 1px; }
+.pop-value { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pop .glyph { width: 12px; height: 12px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pop-button .glyph { color: var(--st-dim); }
+.pop-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  box-sizing: border-box;
+  padding: 5px;
+  border: 1px solid var(--st-line);
+  border-radius: 8px;
+  background: var(--st-raised);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.pop-menu hr { width: calc(100% - 14px); margin: 4px 7px; border: 0; border-top: 1px solid var(--st-line); }
+.pop-parent { position: relative; display: flex; flex-direction: column; }
+.pop-sub { top: -6px; right: auto; left: calc(100% + 4px); max-height: 232px; overflow-y: auto; overscroll-behavior: contain; }
+.pop-sub.left { left: auto; right: calc(100% + 4px); }
+.pop-item {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 8px 0 4px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.pop-item.on { background: var(--st-accent); color: #fff; }
+.pop-mark { display: grid; place-items: center; width: 14px; flex: none; }
+.pop-more { margin-left: auto; padding-left: 16px; display: grid; place-items: center; }
+.pop-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.pop-tag {
+  padding: 0 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--st-accent) 16%, transparent);
+  color: var(--st-accent);
+  font-size: 11px;
+  line-height: 16px;
+}
+.pop-item.on .pop-tag { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.pop-item.gone { color: var(--st-dim); }
+.pop-item.gone.on { color: rgba(255, 255, 255, 0.85); }
+.pop-none { margin: 4px 8px; font-size: 12px; color: var(--st-dim); }
