@@ -50,8 +50,11 @@ class Sync(unittest.TestCase):
     PRIVATE = "dev.thiennguyen.screenshot"
 
     def run_main(self, threads):
-        listed = [e for e in publish.listed_entries() if e["id"] in (self.PUBLIC, self.PRIVATE)]
-        self.assertTrue(any(e.get("private") for e in listed), "extensions.toml lists the private entry")
+        # The private entry made up here, so the test does not hang on what
+        # extensions.toml lists today; its source is never read anyway.
+        listed = [e for e in publish.listed_entries() if e["id"] == self.PUBLIC] + [
+            {"id": self.PRIVATE, "path": f"ext/{self.PRIVATE}", "subdir": ".", "category": "Utilities", "private": True}
+        ]
         calls = []
 
         def graphql(query, **variables):
