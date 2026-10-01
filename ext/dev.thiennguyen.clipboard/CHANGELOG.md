@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.62.0] - 2026-10-01
+
+### Added
+
+- The ⌘K actions menu highlights the letters you typed in each action it found, the way the history search does.
+
+## [0.61.0] - 2026-10-01
+
+### Added
+
+- The ⌘K actions menu takes shorthand: string together the starts of an action's words, as in "delall" for "Delete all…" or "sif" for "Show in Finder". The closest match comes first, right above the search field.
+
+## [0.60.8] - 2026-10-01
+
+### Fixed
+
+- Searching the ⌘K actions menu matches the start of a word: "de" finds the Delete actions, no longer "Show in Finder" for the "de" inside "Finder".
+
+## [0.60.7] - 2026-10-01
+
+### Changed
+
+- The ⌘K actions menu reads from the bottom up: Paste sits right above the search field, the delete actions furthest from it. The arrow keys move the way they point.
+
+## [0.60.6] - 2026-10-01
+
+### Changed
+
+- The ⌘K actions menu has its search field at the bottom, next to the ⌘K that opens it. The field stays in place while you type and the list narrows above it.
+
+## [0.60.5] - 2026-10-01
+
+### Fixed
+
+- The ⌘K actions menu shows all its actions instead of cutting the last one in half. When the panel is too short for them all, the list scrolls, fades at the edge that has more, and the arrow keys keep the chosen action in view.
+
 ## [0.60.4] - 2026-10-01
 
 ### Changed

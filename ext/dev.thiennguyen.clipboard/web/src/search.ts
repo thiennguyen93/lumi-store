@@ -19,6 +19,71 @@ export function words(query: string): string[] {
   return fold(query).split(/\s+/).filter(Boolean);
 }
 
+/** A name's words, or the words typed, split at anything not a letter or
+ *  digit, so `…` and `-` never decide. */
+const nameWords = (text: string) => fold(text).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+
+/** Where what was typed finds a name, as a menu finds its items: every
+ *  word typed is made of starts of the name's words, in their order — `de`
+ *  and `delall` find Delete all…, `sif` Show in Finder, `del unp` Delete
+ *  all unpinned…. Never letters from inside a word: `de` does not find the
+ *  de inside Finder. The first of the name's words a match starts at, and
+ *  the letters it is made of in `name`, to mark; null for none. Found in
+ *  the folded name, then mapped back, so `tv` marks T and V in Tiếng Việt. */
+export function wordStarts(name: string, query: string): { at: number; marks: Span[] } | null {
+  const { text, back } = foldMapped(name);
+  const own = [...text.matchAll(/[\p{L}\p{N}]+/gu)].map((m) => ({ word: m[0], start: m.index }));
+  // `typed` from the word at `w` on, as stretches of `text`: the longest
+  // start that word shares with it first — `de` is the De of Delete, not
+  // its D and the e of entry — then shorter ones, until the rest fits on
+  // the words after.
+  const from = (typed: string, w: number): Span[] | null => {
+    const here = own[w];
+    if (!here) return null;
+    let shared = 0;
+    while (shared < Math.min(here.word.length, typed.length) && here.word[shared] === typed[shared]) shared++;
+    for (let n = shared; n > 0; n--) {
+      const mine: Span = [here.start, here.start + n];
+      if (n === typed.length) return [mine];
+      for (let next = w + 1; next < own.length; next++) {
+        const rest = from(typed.slice(n), next);
+        if (rest) return [mine, ...rest];
+      }
+    }
+    return null;
+  };
+  const starts: number[] = [];
+  const marks: Span[] = [];
+  for (const typed of nameWords(query)) {
+    let hit: { w: number; spans: Span[] } | null = null;
+    for (let w = 0; w < own.length && !hit; w++) {
+      const spans = from(typed, w);
+      if (spans) hit = { w, spans };
+    }
+    if (!hit) return null;
+    starts.push(hit.w);
+    for (const [start, end] of hit.spans) {
+      const first = back[start]?.[0];
+      const last = back[end - 1]?.[1];
+      if (first !== undefined && last !== undefined) marks.push([first, last]);
+    }
+  }
+  return { at: starts.length ? Math.min(...starts) : 0, marks: merged(marks) };
+}
+
+/** The items what was typed finds, closest first: a match from the name's
+ *  first word over one further in, then the name of fewer words — `delall`
+ *  puts Delete all… over Delete all unpinned…. Ties keep their order, and
+ *  so does everything while nothing is typed. */
+export function byWordStarts<T>(items: T[], name: (item: T) => string, query: string): T[] {
+  if (!nameWords(query).length) return items;
+  return items
+    .map((item) => ({ item, at: wordStarts(name(item), query)?.at ?? -1, size: nameWords(name(item)).length }))
+    .filter((found) => found.at >= 0)
+    .sort((a, b) => a.at - b.at || a.size - b.size)
+    .map((found) => found.item);
+}
+
 const folded = new WeakMap<Entry, string>();
 const foldedFields = new WeakMap<Entry, string[]>();
 

@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { cut, found, fuzzyScore, highlights, keptInSight, nextSkip, oneLine, searchWith, skipped, type Found } from "../src/search.ts";
+import { cut, found, fuzzyScore, highlights, keptInSight, nextSkip, oneLine, searchWith, skipped, byWordStarts, wordStarts, type Found } from "../src/search.ts";
 import type { Entry } from "../src/types.ts";
 
 function row(id: string, title: string, appName = "Claude", search = title): Entry {
@@ -223,4 +223,66 @@ test("an end past the text leaves it as it is", () => {
 test("an end never splits a letter outside the basic plane", () => {
   const shown: Found = { text: "go 🚀 now", marks: [], note: null };
   assert.equal(cut(shown, 4).text, "go…");
+});
+
+test("an action is found by the starts of its words, not by letters inside one", () => {
+  const actions = [
+    "Paste",
+    "Paste as plain text",
+    "Copy",
+    "Copy path",
+    "Show in Finder",
+    "Settings…",
+    "About Clipboard Manager",
+    "Delete entry",
+    "Delete all unpinned…",
+    "Delete all…",
+  ];
+  const find = (query: string) => byWordStarts(actions, (name) => name, query);
+  assert.deepEqual(find("de"), ["Delete entry", "Delete all…", "Delete all unpinned…"]);
+  assert.deepEqual(find("fin"), ["Show in Finder"]);
+  assert.deepEqual(find("del unp"), ["Delete all unpinned…"]);
+  assert.deepEqual(find("PATH"), ["Copy path"]);
+  assert.deepEqual(find("settings…"), ["Settings…"]);
+  assert.deepEqual(find("pinned"), []);
+  // Nothing typed: every action, in the menu's own order.
+  assert.deepEqual(find("  "), actions);
+  assert.deepEqual(find("…"), actions);
+  // Starts strung together, in the name's order, words skipped or not.
+  assert.deepEqual(find("dau"), ["Delete all unpinned…"]);
+  assert.deepEqual(find("du"), ["Delete all unpinned…"]);
+  assert.deepEqual(find("sif"), ["Show in Finder"]);
+  assert.deepEqual(find("cp"), ["Copy path"]);
+  assert.deepEqual(find("pastepl"), ["Paste as plain text"]);
+  // A start that could be longer still lets the next word take over.
+  assert.deepEqual(find("de en"), ["Delete entry"]);
+  // Not out of order, and not from inside a word.
+  assert.deepEqual(find("alldel"), []);
+  assert.deepEqual(find("pc"), []);
+  assert.deepEqual(find("inder"), []);
+});
+
+test("the closest action comes first", () => {
+  const actions = ["Copy path", "Paste as plain text", "Delete all unpinned…", "Paste", "Delete all…"];
+  const find = (query: string) => byWordStarts(actions, (name) => name, query);
+  // The fewer words left over, the closer.
+  assert.deepEqual(find("delall"), ["Delete all…", "Delete all unpinned…"]);
+  // From the name's first word before from further in.
+  assert.deepEqual(find("pa"), ["Paste", "Paste as plain text", "Copy path"]);
+  assert.equal(wordStarts("Copy path", "pa")?.at, 1);
+  assert.equal(wordStarts("Show in Finder", "de"), null);
+});
+
+test("an action marks the letters that found it", () => {
+  const marks = (name: string, query: string) => wordStarts(name, query)?.marks;
+  assert.deepEqual(marks("Delete all…", "delall"), [[0, 3], [7, 10]]);
+  assert.deepEqual(marks("Show in Finder", "sif"), [[0, 1], [5, 6], [8, 9]]);
+  // A word takes as much as it can: the De of Delete, not D and the e of entry.
+  assert.deepEqual(marks("Delete entry", "de"), [[0, 2]]);
+  assert.deepEqual(marks("Delete all unpinned…", "unp del"), [[0, 3], [11, 14]]);
+  assert.deepEqual(marks("Copy path", "pa"), [[5, 7]]);
+  // Folded to find, marked in the name as written.
+  assert.deepEqual(marks("Tiếng Việt", "tv"), [[0, 1], [6, 7]]);
+  assert.deepEqual(marks("Tiếng Việt", "tieng"), [[0, 5]]);
+  assert.deepEqual(marks("Paste", ""), []);
 });

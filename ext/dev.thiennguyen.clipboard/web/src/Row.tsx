@@ -64,8 +64,9 @@ function Lead({ row }: { row: Entry }) {
   );
 }
 
-/** The title, with what the search found in it marked. */
-function Title({ text, marks }: { text: string; marks: Span[] }) {
+/** The title, with what the search found in it marked — a row's, or an
+ *  action's in the ⌘K menu. */
+export function Title({ text, marks }: { text: string; marks: Span[] }) {
   if (!marks.length) return <>{text}</>;
   const parts = [];
   let at = 0;

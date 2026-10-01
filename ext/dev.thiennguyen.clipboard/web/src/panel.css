@@ -500,8 +500,10 @@ body {
 /* What the search found in a title: a highlighter stroke in the key's
    amber, its ink picked per glass (the --cb-hit tokens below). On the
    accent, amber is a stain and a faint white wash sinks: the mark turns
-   over instead — a white stroke, the accent's ink (--cb-hit-on-*). */
-.title mark {
+   over instead — a white stroke, the accent's ink (--cb-hit-on-*). The
+   ⌘K menu marks what its filter matched the same way. */
+.title mark,
+.menu-label mark {
   padding: 1px 1px;
   margin: 0 -1px;
   border-radius: 3px;
@@ -511,9 +513,14 @@ body {
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
-.row[aria-selected="true"] .title mark {
+.row[aria-selected="true"] .title mark,
+.menu-item[aria-selected="true"] .menu-label mark {
   background: var(--cb-hit-on-bg);
   color: var(--cb-hit-on-ink);
+}
+/* A dangerous action is chosen on red, not the accent: the ink follows. */
+.menu-item.danger[aria-selected="true"] .menu-label mark {
+  color: color-mix(in srgb, var(--denied, #d93025) 78%, #000);
 }
 /* The same stroke in the preview card, laid over whatever drew the text
    (previewMarks.ts): a highlight can only colour, so no weight or padding. */
@@ -654,14 +661,17 @@ body {
 }
 .hints .exit:hover { color: CanvasText; }
 
-/* ⌘K: a macOS menu, raised above the footer's right end. */
+/* ⌘K: a macOS menu, raised above the footer's right end. As tall as its
+   actions, up to the panel's own top with the same 10px it keeps at the
+   side — a fixed cap cut the last action in half on a panel with room
+   for all of them. Past that the list scrolls, with fades. */
 .menu {
   position: absolute;
   right: 10px;
   bottom: 34px;
   z-index: 2;
   width: 264px;
-  max-height: 320px;
+  max-height: calc(100% - 34px - 10px);
   display: flex;
   flex-direction: column;
   border: 1px solid var(--cb-line);
@@ -674,6 +684,7 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   animation: menu-in 140ms cubic-bezier(.2, .8, .2, 1);
+  transform-origin: bottom right;
 }
 @keyframes menu-in {
   from { opacity: 0; transform: translateY(4px) scale(0.98); }
@@ -681,8 +692,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .menu { animation: none; }
 }
+/* Under the list, next to the ⌘K that opened the menu. */
 .menu-filter {
-  margin: 6px 6px 2px;
+  flex: none;
+  margin: 2px 6px 6px;
   height: 26px;
   padding: 0 8px;
   border: 0;
@@ -694,9 +707,23 @@ body {
   user-select: text;
 }
 .menu-list {
+  min-height: 0;
   overflow-y: auto;
-  padding: 4px 5px 5px;
+  overscroll-behavior: contain;
+  padding: 5px 5px 4px;
+  /* The arrow keys scroll an action clear of the fade, not into it. */
+  scroll-padding-block: 12px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--fade-above),
+    #000 calc(100% - var(--fade-below)),
+    transparent
+  );
+  transition: --fade-above 0.2s ease, --fade-below 0.2s ease;
 }
+.menu-list[data-above] { --fade-above: 12px; }
+.menu-list[data-below] { --fade-below: 12px; }
 .menu-item {
   display: flex;
   align-items: center;

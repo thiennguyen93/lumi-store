@@ -1,11 +1,15 @@
 // ⌘K: what can be done with the selected row, and with the whole history.
 // A menu the macOS way — a small raised list with its keys on the right —
-// with a filter field at the top, so a few letters reach any action. The
+// with a filter field at the bottom, so a few letters reach any action. The
 // field takes the keyboard while the menu is up; the panel's search keeps
-// its text underneath.
+// its text underneath. The menu rises from the footer's ⌘K, so it reads
+// bottom-up: the first action sits right above the field, the dangerous
+// ones furthest from it.
 
-import { type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { fold as foldText } from "./search";
+import { type KeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useScrollFade } from "./scrollFade";
+import { Title } from "./Row";
+import { byWordStarts, wordStarts } from "./search";
 
 export interface Action {
   id: string;
@@ -14,7 +18,7 @@ export interface Action {
   /** A key the panel already answers, shown as a reminder; ↩ in the menu
    *  runs the action whatever it says. */
   keys?: string;
-  /** Red, and in the section below the line. */
+  /** Red, and in the section above the line. */
   danger?: boolean;
   /** Asked twice: the first ↩ turns the item into this sentence. */
   confirm?: string;
@@ -28,14 +32,23 @@ export function ActionsMenu({ actions, onClose }: { actions: Action[]; onClose: 
   const [armed, setArmed] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const box = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
+  useScrollFade(list);
 
+  // Closest first, but each kind on its own side of the line.
   const shown = useMemo(() => {
-    const wanted = foldText(filter.trim());
-    return wanted ? actions.filter((a) => foldText(a.label).includes(wanted)) : actions;
+    const found = byWordStarts(actions, (action) => action.label, filter);
+    return [...found.filter((action) => !action.danger), ...found.filter((action) => action.danger)];
   }, [actions, filter]);
   const current = shown[Math.min(at, shown.length - 1)];
 
   useEffect(() => input.current?.focus(), []);
+  // Opened or narrowed, a list too long for the panel shows its first
+  // actions — its bottom, by the field — before it is painted.
+  useLayoutEffect(() => {
+    const box = list.current;
+    if (box) box.scrollTop = box.scrollHeight;
+  }, [filter]);
   // A press anywhere else puts the menu away, as a macOS menu goes — the
   // footer's own ⌘K button excepted, which toggles it itself. Capture, so
   // a row or chip that stops the press still closes the menu first.
@@ -64,6 +77,17 @@ export function ActionsMenu({ actions, onClose }: { actions: Action[]; onClose: 
     if (armed && current?.id !== armed) setArmed(null);
   }, [armed, current]);
 
+  // The arrow keys bring the action they land on into view. The pointer
+  // does not: an item scrolled out from under it would put the next one
+  // there, and the list would run on by itself.
+  const move = (step: number) => {
+    const next = Math.max(0, Math.min(shown.length - 1, Math.min(at, shown.length - 1) + step));
+    const action = shown[next];
+    if (!action) return;
+    setAt(next);
+    document.getElementById(`action-${action.id}`)?.scrollIntoView({ block: "nearest" });
+  };
+
   const run = (action: Action | undefined) => {
     if (!action) return;
     if (action.confirm && armed !== action.id) {
@@ -79,8 +103,9 @@ export function ActionsMenu({ actions, onClose }: { actions: Action[]; onClose: 
     event.stopPropagation();
     if (event.nativeEvent.isComposing || event.keyCode === 229) return;
     const key = event.key;
-    if (key === "ArrowDown") setAt((i) => Math.min(shown.length - 1, i + 1));
-    else if (key === "ArrowUp") setAt((i) => Math.max(0, i - 1));
+    // The arrows go the way they point: up is further from the field.
+    if (key === "ArrowUp") move(1);
+    else if (key === "ArrowDown") move(-1);
     else if (key === "Enter") run(current);
     // ⎋ takes back one step at a time: a waiting confirmation first, the
     // menu only when nothing is waiting.
@@ -90,11 +115,46 @@ export function ActionsMenu({ actions, onClose }: { actions: Action[]; onClose: 
     event.preventDefault();
   };
 
-  // One line between the row's actions and the dangerous ones.
+  // One line between the row's actions and the dangerous ones, above them.
   const firstDanger = shown.findIndex((a) => a.danger);
 
   return (
     <div ref={box} className="menu" role="dialog" aria-label="Actions">
+      <div ref={list} id="menu-list" className="menu-list" role="listbox" aria-label="Actions">
+        {!shown.length && <div className="menu-empty">No action by that name</div>}
+        {/* Bottom-up: the first action last, right above the field. */}
+        {shown
+          .map((action, index) => [
+            <div
+              key={action.id}
+              id={`action-${action.id}`}
+              role="option"
+              aria-selected={action === current}
+              className={["menu-item", action.danger ? "danger" : "", armed === action.id ? "armed" : ""]
+                .filter(Boolean)
+                .join(" ")}
+              // The filter keeps the keyboard.
+              onMouseDown={(event) => event.preventDefault()}
+              onMouseMove={() => setAt(index)}
+              onClick={() => run(action)}
+            >
+              {action.glyph}
+              <span className="menu-label">
+                {armed === action.id ? (
+                  action.confirm
+                ) : (
+                  <Title text={action.label} marks={wordStarts(action.label, filter)?.marks ?? []} />
+                )}
+              </span>
+              {action.keys && armed !== action.id && <kbd className="cap quiet">{action.keys}</kbd>}
+            </div>,
+            index === firstDanger && index > 0 ? <div key="line" className="menu-line" role="separator" /> : null,
+          ])
+          .reverse()}
+      </div>
+      {/* At the foot, by the ⌘K that opened the menu: the menu grows and
+          shrinks upward from it, so the field stays where the eye already is
+          while a filter narrows the list. */}
       <input
         ref={input}
         className="menu-filter"
@@ -111,29 +171,6 @@ export function ActionsMenu({ actions, onClose }: { actions: Action[]; onClose: 
         aria-controls="menu-list"
         aria-activedescendant={current ? `action-${current.id}` : undefined}
       />
-      <div id="menu-list" className="menu-list" role="listbox" aria-label="Actions">
-        {!shown.length && <div className="menu-empty">No action by that name</div>}
-        {shown.map((action, index) => [
-          index === firstDanger && index > 0 ? <div key="line" className="menu-line" role="separator" /> : null,
-          <div
-            key={action.id}
-            id={`action-${action.id}`}
-            role="option"
-            aria-selected={action === current}
-            className={["menu-item", action.danger ? "danger" : "", armed === action.id ? "armed" : ""]
-              .filter(Boolean)
-              .join(" ")}
-            // The filter keeps the keyboard.
-            onMouseDown={(event) => event.preventDefault()}
-            onMouseMove={() => setAt(index)}
-            onClick={() => run(action)}
-          >
-            {action.glyph}
-            <span className="menu-label">{armed === action.id ? action.confirm : action.label}</span>
-            {action.keys && armed !== action.id && <kbd className="cap quiet">{action.keys}</kbd>}
-          </div>,
-        ])}
-      </div>
     </div>
   );
 }
