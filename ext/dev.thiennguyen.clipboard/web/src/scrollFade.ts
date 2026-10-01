@@ -19,11 +19,12 @@ export function useScrollFade(ref: RefObject<HTMLElement | null>) {
     };
     mark();
     box.addEventListener("scroll", mark, { passive: true });
-    // The panel resized, or rows came, went or moved (a search, a pin).
+    // The panel resized, or rows came, went or moved (a search, a pin), or
+    // one changed inside — folded away, opened — without the box resizing.
     const sized = new ResizeObserver(mark);
     sized.observe(box);
     const changed = new MutationObserver(mark);
-    changed.observe(box, { childList: true });
+    changed.observe(box, { childList: true, subtree: true });
     return () => {
       box.removeEventListener("scroll", mark);
       sized.disconnect();

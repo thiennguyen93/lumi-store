@@ -1,10 +1,10 @@
 # Changelog
 
-## [0.63.12] - 2026-10-02
+## [0.63.23] - 2026-10-02
 
 ### Added
 
-- Copy one of your snippet triggers, such as `;addr`, and the preview shows what it expands to: its web addresses can be clicked, and a button copies it. A snippet that comes out the same every time is remembered with the copy. One that changes, such as a date, is expanded again each time the panel shows it.
+- Copy one of your snippet triggers, such as `;addr`, and the preview shows what it expands to: its web addresses read as plain text and turn into links under the pointer, a button copies it, and clicking its heading folds it away. A snippet that comes out the same every time is remembered with the copy. One that changes, such as a date, is expanded again each time the panel shows it.
 - Settings has a new Snippets section. Match snippets switches it on or off. Look in picks the profile you're using (the default), every profile, or Selected Profiles. Once Selected Profiles is chosen, its submenu lists every profile with a search field on top, to find them by name and tick them however many you have. An open panel, pinned or not, follows at once when you switch, rename or remove a profile, change these settings or edit a snippet in Lumi, and a snippet that can change is expanded again each time you come back to it. Needs Lumi 1.31.0.
 
 ## [0.62.1] - 2026-10-01

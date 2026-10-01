@@ -63,6 +63,8 @@ let rows: Entry[] = [
   // Snippet triggers copied: what each expands to is under it.
   entry({ id: "sn1", kind: "text", title: ";addr", appName: "Notes", last: now - 30_000 }),
   entry({ id: "sn2", kind: "text", title: ";d", appName: "Slack", last: now - 40_000 }),
+  entry({ id: "sn3", kind: "text", title: ";tk123", appName: "Claude", last: now - 45_000 }),
+  entry({ id: "sn4", kind: "text", title: ";mix", appName: "Notes", last: now - 50_000 }),
   // Text with several addresses in it: its preview lists them under it.
   entry({ id: "t", kind: "text", title: RELEASE_NOTE.replace(/\n/g, "⏎").slice(0, 200), search: RELEASE_NOTE, appName: "Slack", last: now - 250 * min }),
   entry({ id: "m", kind: "file", title: "/Users/me/Desktop/invoice-2041.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min }),
@@ -130,7 +132,8 @@ const MOCK_BOOK = {
   profiles: [
     { id: "default", name: "Default" },
     { id: "p_work", name: "Work" },
-    { id: "p_home", name: "Home" },
+    // Long, as people name them, so a head that cannot wrap is seen at its widest.
+    { id: "p_home", name: "Home — personal đây là một cái tên rất dài dài vô cùng" },
     ...Array.from({ length: 97 }, (_, i) => ({
       id: `p_${i}`,
       name: `${["Client", "Project", "Team", "Studio", "Agency", "Lab", "Shop", "Ops"][i % 8]} ${String(i + 1).padStart(3, "0")}`,
@@ -144,6 +147,16 @@ const MOCK_SNIPPETS: Record<string, { profile: string; text: () => string; dynam
     { profile: "p_home", text: () => "Flat 4B, 88 Le Loi", dynamic: false },
   ],
   ";d": [{ profile: "p_work", text: () => new Date().toISOString().slice(0, 19).replace("T", " "), dynamic: true }],
+  // Two profiles' scripts, both changing; and one fixed beside one changing.
+  ";tk123": [
+    // Long enough to wrap over many lines, as a script's output can be.
+    { profile: "p_work", text: () => `https://google.com?q=otr-123${"nguyen_ngoc_phuoc_thien".repeat(8)}`, dynamic: true },
+    { profile: "p_home", text: () => "STG-123", dynamic: true },
+  ],
+  ";mix": [
+    { profile: "p_work", text: () => "Fixed text", dynamic: false },
+    { profile: "p_home", text: () => new Date().toISOString().slice(11, 19), dynamic: true },
+  ],
 };
 
 function mockExpansions(title: string) {

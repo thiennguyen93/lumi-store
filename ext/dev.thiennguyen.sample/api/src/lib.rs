@@ -268,8 +268,9 @@ pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
 
 /// Pin one of your panels, or let it go. A pinned panel stays up while the
 /// person works in another app; a paste from it hands the keyboard back and
-/// leaves it up. Escape, your shortcut and [`close_window`] still put it
-/// away, pin and all — every show starts unpinned. Only a panel that is up,
+/// leaves it up. Escape, your shortcut — pressed while it is up, with the
+/// keyboard or without — and [`close_window`] still put it away, pin and
+/// all; every show starts unpinned. Only a panel that is up,
 /// from a request your page sends on a press. Needs Lumi 1.29.0 or later —
 /// say so with `min-lumi-version`.
 pub fn set_pinned(name: &str, pinned: bool) -> Result<(), String> {

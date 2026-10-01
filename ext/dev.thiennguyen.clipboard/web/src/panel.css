@@ -973,6 +973,27 @@ body {
   text-decoration-color: color-mix(in srgb, var(--cb-link) 50%, transparent);
   text-underline-offset: 3px;
 }
+/* A text or rich copy, what it expands to and its links (Preview.tsx
+   `Stack`): one block with the card's room left, each part a row sized to
+   its content — `minmax(0, max-content)` — so the room goes to them equally
+   until one is whole, and what it does not need goes to the others. Each
+   part scrolls in its row when the room runs out. */
+.card .texts {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  /* One column exactly the card's width. Left to size itself, the column
+     took the widest thing in it — a profile's name on a line that does not
+     wrap — and pushed the text and the copy buttons out of the card. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: minmax(0, max-content);
+  align-content: start;
+  gap: 8px;
+}
+/* The block shares the room now; a fixed fraction would leave it empty. */
+.card .texts > .snippet,
+.card .texts > .links { max-height: none; }
+
 /* What a snippet trigger expands to, under the copy (SnippetPane.tsx): a
    heading naming the profiles, the expansion as text with its addresses
    live, and a copy button. Up to two-fifths of the card, as the links. */
@@ -980,15 +1001,45 @@ body {
   flex: 0 1 auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   max-height: 40%;
   min-height: 0;
-  padding-top: 6px;
+  padding-top: 3px;
   border-top: 1px solid var(--cb-line);
+}
+/* What scrolls, inside the rule above it, so the rule stays sharp while
+   the ends fade. It reaches across the card's 12px right padding and gives
+   it back as its own, so the text sits where it did while macOS's
+   scroller — drawn over the content, not beside it, and widening under the
+   pointer — lands in that strip rather than on the copy buttons. */
+.card .snippet-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  margin-right: -12px;
+  padding-right: 12px;
+  /* Room for what a head's copy button reaches past its line (`.snippet-head
+     .bare`'s -3px): without it the last head's button stood 2px beyond the
+     content, the box scrolled by those 2px, and its foot faded — over a head
+     with nothing under it. The top 3px is the section's own, moved here. */
+  padding-block: 3px;
   overflow: hidden auto;
   overscroll-behavior: contain;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--fade-above),
+    #000 calc(100% - var(--fade-below)),
+    transparent
+  );
+  transition: --fade-above 0.2s ease, --fade-below 0.2s ease;
 }
-.card .expansion { display: flex; flex-direction: column; gap: 3px; min-height: 0; }
+.card .snippet-scroll[data-above] { --fade-above: 12px; }
+.card .snippet-scroll[data-below] { --fade-below: 12px; }
+/* Each expansion keeps its own height, however long its text: the section
+   around them is what scrolls. Allowed to shrink, an expansion was squeezed
+   to fit the section while its text was not, and ran over the next one. */
+.card .expansion { flex: none; display: flex; flex-direction: column; gap: 3px; }
 .snippet-head {
   display: flex;
   align-items: center;
@@ -996,14 +1047,54 @@ body {
   font-size: 11px;
   color: var(--cb-muted);
 }
+/* The head's press: the chevron, who it is from and the may-change mark,
+   all one target that folds the expansion away or opens it. */
+.snippet-toggle {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  cursor: default;
+}
+.snippet-toggle:focus-visible { outline: 2px solid var(--cb-accent); outline-offset: 1px; border-radius: 4px; }
+.snippet-toggle > .glyph { flex: none; width: 10px; height: 10px; transition: transform 0.15s ease; }
+.snippet-toggle[aria-expanded="true"] > .glyph { transform: rotate(90deg); }
+.snippet-toggle:hover { color: CanvasText; }
 .snippet-from { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.card .snippet-fresh { margin: 0; font-size: 11px; color: var(--cb-faint); }
-.snippet-head .bare { flex: none; margin: -3px -4px -3px 0; }
+/* In the card's foot, a line over "Copied …" (SnippetNote). */
+.card .snippet-fresh {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 3px;
+}
+.card .snippet-fresh .glyph, .snippet-mark .glyph { width: 11px; height: 11px; }
+.snippet-mark { flex: none; display: grid; place-items: center; color: var(--cb-faint); }
+/* Square to the text's edge rather than nudged past it, as other heads'
+   buttons are: past it is where the scroller is. */
+.snippet-head .bare { flex: none; margin: -3px 0; }
 .card .body.snippet-text {
   flex: none;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font: 12.5px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  /* A step down from full ink: at full white on the dark glass, text set
+     beside an address in the link colour read a size larger than it, at
+     the same 12.5px and weight. */
+  color: color-mix(in srgb, CanvasText 82%, transparent);
+}
+/* An address in an expansion reads as the text it is, and turns into a
+   link only under the pointer — a copied link row's way (`.body.link`). */
+.card .snippet-text .link.live { color: inherit; text-decoration: none; cursor: default; }
+.card .snippet-text .link.live:hover {
+  color: var(--cb-link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--cb-link) 50%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 /* A long OCR read scrolls rather than squeezing the picture; only a pane

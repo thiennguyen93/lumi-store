@@ -5,7 +5,7 @@ import { CollapseGlyph, CopyGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyp
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { useItemDrag } from "./itemDrag";
 import { LinkList } from "./LinkList";
-import { SnippetPane } from "./SnippetPane";
+import { SnippetNote, SnippetPane } from "./SnippetPane";
 import { PdfViewer } from "./PdfViewer";
 import { TextFile } from "./TextFile";
 import { linked } from "./LinkedText";
@@ -281,58 +281,76 @@ export function Preview({
             whole={zoomed}
           />
         )}
-        {row.kind === "color" && isColor(row.title) ? (
-          <ColorCard color={row.title} onCopy={onCopyColor} />
-        ) : mine?.files?.length ? (
-          <FileList id={row.id} files={mine.files} count={mine.fileCount || mine.files.length} />
-        ) : row.kind === "file" && (row.fileCount ?? 0) <= 1 ? (
-          <FilePath path={text.split("\n")[0]!} />
-        ) : waiting ? (
-          <div className="body rich" />
-        ) : html ? (
-          <RichText
-            key={row.id}
-            html={html}
-            links={bodyLinks}
-            onOpen={openLink}
-            fallback={<div className="body rich">{linked(text, bodyLinks, openLink)}</div>}
-          />
-        ) : (
-          row.kind === "link" && onOpen ? (
-            <LinkBody text={text} onOpen={() => onOpen(row.id)} />
+        {/* A text or rich copy, what it expands to and its links share the
+            card's room as one block (`Stack`); any other kind is drawn as
+            it always was. */}
+        <Stack on={row.kind === "text" || row.kind === "rich"}>
+          {row.kind === "color" && isColor(row.title) ? (
+            <ColorCard color={row.title} onCopy={onCopyColor} />
+          ) : mine?.files?.length ? (
+            <FileList id={row.id} files={mine.files} count={mine.fileCount || mine.files.length} />
+          ) : row.kind === "file" && (row.fileCount ?? 0) <= 1 ? (
+            <FilePath path={text.split("\n")[0]!} />
+          ) : waiting ? (
+            <div className="body rich" />
+          ) : html ? (
+            <RichText
+              key={row.id}
+              html={html}
+              links={bodyLinks}
+              onOpen={openLink}
+              fallback={<div className="body rich">{linked(text, bodyLinks, openLink)}</div>}
+            />
           ) : (
-            row.kind !== "image" && (
-              <div className={row.kind === "rich" ? "body rich" : "body"}>{linked(text, bodyLinks, openLink)}</div>
+            row.kind === "link" && onOpen ? (
+              <LinkBody text={text} onOpen={() => onOpen(row.id)} />
+            ) : (
+              row.kind !== "image" && (
+                <div className={row.kind === "rich" ? "body rich" : "body"}>{linked(text, bodyLinks, openLink)}</div>
+              )
             )
-          )
-        )}
-        {/* A trigger copied: what it expands to, under the copy itself. */}
-        {expansions.length > 0 && (
-          <SnippetPane
-            key={`snippets:${row.id}`}
-            expansions={expansions}
-            onCopy={onCopySnippet ? (text) => onCopySnippet(row.id, text) : undefined}
-            onOpen={onOpen ? (url) => onOpen(row.id, url, true) : undefined}
-          />
-        )}
-        {/* The text or the formatting stays as it is; its addresses are
-            listed under it, each one a click away from the browser. */}
-        {links.length > 0 && openLink && (
-          <LinkList
-            // Its own key: `row.id` is the rich text's, a sibling here, and two
-            // siblings sharing one leave the old one's nodes behind.
-            key={`links:${row.id}`}
-            links={links}
-            count={mine?.linkCount || links.length}
-            onOpen={openLink}
-          />
-        )}
+          )}
+          {/* A trigger copied: what it expands to, under the copy itself. */}
+          {expansions.length > 0 && (
+            <SnippetPane
+              key={`snippets:${row.id}`}
+              expansions={expansions}
+              onCopy={onCopySnippet ? (text) => onCopySnippet(row.id, text) : undefined}
+              onOpen={onOpen ? (url) => onOpen(row.id, url, true) : undefined}
+            />
+          )}
+          {/* The text or the formatting stays as it is; its addresses are
+              listed under it, each one a click away from the browser. */}
+          {links.length > 0 && openLink && (
+            <LinkList
+              // Its own key: `row.id` is the rich text's, a sibling here, and two
+              // siblings sharing one leave the old one's nodes behind.
+              key={`links:${row.id}`}
+              links={links}
+              count={mine?.linkCount || links.length}
+              onOpen={openLink}
+            />
+          )}
+        </Stack>
         <footer className="card-foot">
+          {expansions.length > 0 && <SnippetNote expansions={expansions} />}
           Copied {ago(row.last)} · {times}
         </footer>
       </div>
     </aside>
   );
+}
+
+/**
+ * A copy's text, what it expands to and its links, as one block sharing the
+ * room the card has left: each gets all of its content while there is room,
+ * and once there is not, the room is shared equally and each scrolls in its
+ * share — so a one-line copy keeps its line beside a long expansion, and a
+ * long expansion takes the room the line does not need instead of stopping
+ * at a fixed fraction of the card (panel.css `.texts`).
+ */
+function Stack({ on, children }: { on: boolean; children: ReactNode }) {
+  return on ? <div className="texts">{children}</div> : <>{children}</>;
 }
 
 /** The panel's dark surface, for what a translucent colour looks like there. */

@@ -346,8 +346,9 @@ interface ui {
     /// the person works in another application, instead of closing the
     /// moment it loses the keyboard. A paste from it hands the keyboard
     /// back and leaves it up; it sits above ordinary windows but under
-    /// menus. Escape, your shortcut pressed while it has the keyboard, and
-    /// `close-window` still put it away, and the pin goes with it — every
+    /// menus. Escape, your shortcut pressed while it is up (from Lumi 1.31,
+    /// whether or not it has the keyboard), and `close-window` still put it
+    /// away, and the pin goes with it — every
     /// show starts unpinned. Only a panel that is up, and only for
     /// something the person did in one of your windows. Added in Lumi 1.29.
     set-pinned: func(name: string, pinned: bool) -> result<_, string>;
