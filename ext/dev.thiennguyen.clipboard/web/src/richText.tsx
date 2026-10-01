@@ -8,8 +8,16 @@
 // text colour that is a colour. Black and grey are dropped — they were
 // chosen for a white page and would vanish on dark glass — and so are
 // backgrounds and sizes, for the same reason.
+//
+// A link is link-coloured text. Given the copy's links (`links`, as the
+// extension listed them), one whose href is among them — and any of them
+// written out in the text — opens on a click (LinkedText.tsx). The href
+// itself is never put on the page.
 
 import { type CSSProperties, type ReactNode, createElement } from "react";
+import type { Link } from "./bridge";
+import { linked, liveLink } from "./LinkedText";
+import { linkOfHref } from "./links";
 
 /** Tags drawn as themselves, or as the tag they mean. */
 const TAGS: Record<string, string> = {
@@ -69,20 +77,27 @@ export function RichText({
   html,
   fallback,
   maxNodes = MAX_NODES,
+  links = [],
+  onOpen,
 }: {
   html: string;
   fallback: ReactNode;
   maxNodes?: number;
+  /** The copy's links, as the extension listed them, and how to open one. */
+  links?: readonly Link[];
+  onOpen?: (url: string) => void;
 }) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   let nodes = 0;
   let shown = false;
 
-  const walk = (node: Node, depth: number, key: number): ReactNode => {
+  // `inLink`: inside an `<a>`, whose words are its own link or none.
+  const walk = (node: Node, depth: number, key: number, inLink = false): ReactNode => {
     if (++nodes > maxNodes) return null;
     if (node.nodeType === Node.TEXT_NODE) {
-      if (node.textContent?.trim()) shown = true;
-      return node.textContent;
+      const text = node.textContent ?? "";
+      if (text.trim()) shown = true;
+      return inLink ? text : linked(text, links, onOpen);
     }
     if (node.nodeType !== Node.ELEMENT_NODE || depth > MAX_DEPTH) return null;
     const el = node as Element;
@@ -93,13 +108,16 @@ export function RichText({
       return el.hasAttribute("checked") ? "☑ " : "☐ ";
     }
     if (DROPPED.has(name)) return null;
-    const kids = Array.from(el.childNodes, (child, i) => walk(child, depth + 1, i));
+    const kids = Array.from(el.childNodes, (child, i) => walk(child, depth + 1, i, inLink || name === "a"));
     const tag = TAGS[name];
     // html, body and the tags nobody listed: their contents, unwrapped.
     if (!tag) return createElement("span", { key, style: styleOf(el) }, ...kids);
     if (tag === "br" || tag === "hr") return createElement(tag, { key });
     const props: Record<string, unknown> = { key, style: styleOf(el) };
-    if (name === "a") props.className = "link";
+    if (name === "a") {
+      const link = onOpen && linkOfHref(el.getAttribute("href"), links);
+      Object.assign(props, link ? liveLink(link.url, onOpen) : { className: "link" });
+    }
     return createElement(tag, props, ...kids);
   };
 

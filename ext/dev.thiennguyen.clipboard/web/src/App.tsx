@@ -128,6 +128,40 @@ export function App() {
       .finally(() => input.current?.focus());
   }, [reload]);
 
+  // The row a reread of the list keeps chosen: the one the person is on,
+  // wherever it moves to — except the top row, where a new copy lands, so
+  // resting there follows it.
+  const following = useRef<string | null>(null);
+  following.current = selected > 0 ? (current?.id ?? null) : null;
+
+  // A copy made while the panel is up — pinned over another app, or not —
+  // comes as news from the extension (`ui.post`, src/lib.rs `tell_panel`):
+  // the list is read again. One read at a time; news during one asks for
+  // one more after it. A failed read leaves the list as it was — nobody
+  // asked for it, so it is no notice either.
+  useEffect(() => {
+    let reading = false;
+    let again = false;
+    const told = async (event: Event) => {
+      if (!isHistoryNews((event as CustomEvent<unknown>).detail)) return;
+      if (reading) {
+        again = true;
+        return;
+      }
+      reading = true;
+      try {
+        do {
+          again = false;
+          await reload(following.current).catch(() => {});
+        } while (again);
+      } finally {
+        reading = false;
+      }
+    };
+    window.addEventListener("lumi:message", told);
+    return () => window.removeEventListener("lumi:message", told);
+  }, [reload]);
+
   // A selection past the end — after a delete, or a search that narrowed
   // the list — lands on the last row rather than on nothing.
   useEffect(() => {
@@ -667,7 +701,7 @@ export function App() {
             row={current}
             query={query}
             used={used}
-            onOpen={(id) => void act(() => call({ kind: "open", id, pinned }))}
+            onOpen={(id, url) => void act(() => call({ kind: "open", id, url, pinned }))}
             onCopyColor={(text) => void act(() => call({ kind: "copyColor", text, pinned }))}
             zoomed={zoomed}
             onZoom={() => setZoom(!zoomed)}
@@ -704,6 +738,13 @@ export function App() {
       </footer>
     </main>
   );
+}
+
+/** The extension's `{"kind":"history"}`: the history changed under the
+ *  panel. A post is the extension's own JSON; checked anyway, so news of
+ *  another shape — a later version's — is ignored. */
+function isHistoryNews(detail: unknown): boolean {
+  return typeof detail === "object" && detail !== null && (detail as { kind?: unknown }).kind === "history";
 }
 
 function emptyText(kept: number, query: string, filter: Filter, mode: SearchMode): string {

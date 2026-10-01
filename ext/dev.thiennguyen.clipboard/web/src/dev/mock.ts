@@ -37,6 +37,13 @@ function entry(partial: Partial<Entry> & Pick<Entry, "id" | "kind" | "title">): 
 const LOREM =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
+const RELEASE_NOTE = [
+  "Release 0.59 checklist:",
+  "1. Store page → https://lumikeys.app/extensions/dev.thiennguyen.clipboard/",
+  "2. PR: https://github.com/thiennguyen93/lumi-store/pull/14 (review by Fri).",
+  "3. Docs at www.lumikeys.app/docs/extensions, and the wiki https://vi.wikipedia.org/wiki/Việt_Nam.",
+].join("\n");
+
 let rows: Entry[] = [
   entry({ id: "a", kind: "text", title: "hello@example.com", pin: "b", appName: "Mail", count: 3, last: now - 2 * 86_400_000 }),
   entry({ id: "b", kind: "text", title: "ssh deploy@staging.example.com", pin: "d", appName: "Terminal", count: 12, last: now - 7 * 86_400_000 }),
@@ -53,6 +60,8 @@ let rows: Entry[] = [
   entry({ id: "j", kind: "text", title: "pnpm tauri dev", appName: "Terminal", count: 9, last: now - 120 * min }),
   entry({ id: "k", kind: "text", title: "example.com/docs/getting-started", appName: "Chrome", last: now - 180 * min }),
   entry({ id: "l", kind: "link", title: "https://developer.apple.com/design/human-interface-guidelines", appName: "Safari", last: now - 240 * min }),
+  // Text with several addresses in it: its preview lists them under it.
+  entry({ id: "t", kind: "text", title: RELEASE_NOTE.replace(/\n/g, "⏎").slice(0, 200), search: RELEASE_NOTE, appName: "Slack", last: now - 250 * min }),
   entry({ id: "m", kind: "file", title: "/Users/me/Desktop/invoice-2041.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min }),
   entry({ id: "m2", kind: "file", title: "/Users/me/Desktop/broken.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min - 1 }),
   entry({ id: "m3", kind: "file", title: "/Users/me/Pictures/sunset.png", fileExt: "png", appName: "Finder", last: now - 26 * 60 * min - 2 }),
@@ -93,6 +102,21 @@ const MOCK_FILES: Record<string, { name: string; dir?: string; size?: number; fo
   ],
 };
 
+// The mock's links, as `preview` lists them (src/links.rs finds them).
+const MOCK_LINKS: Record<string, { url: string; text?: string }[]> = {
+  h: [
+    { url: "https://lumikeys.app/docs", text: "the docs" },
+    { url: "https://github.com/thiennguyen93", text: "GitHub" },
+    { url: "https://example.com/reports/q3-final-draft-with-a-much-longer-address-than-fits.pdf" },
+  ],
+  t: [
+    { url: "https://lumikeys.app/extensions/dev.thiennguyen.clipboard/" },
+    { url: "https://github.com/thiennguyen93/lumi-store/pull/14" },
+    { url: "https://www.lumikeys.app/docs/extensions" },
+    { url: "https://vi.wikipedia.org/wiki/Việt_Nam" },
+  ],
+};
+
 let previewWidth: number | null = null;
 let pdfFit: { pane?: "width" | "height"; zoomed?: "width" | "height" } = {};
 // What Lumi keeps for `GET /__lumi__/settings`, as text the way it stores it.
@@ -111,6 +135,15 @@ let settings: Record<string, string> = {
 let trash: Entry[] = [];
 
 const PIN_LETTERS = "bdefghijklmnorstu";
+
+// `mockCopy("some text")` in the console: a copy made while the panel is up,
+// as the extension tells the panel of one (`ui.post`, `{"kind":"history"}`).
+Object.assign(window, {
+  mockCopy(title: string) {
+    rows = [entry({ id: `copy-${Date.now()}`, kind: "text", title, appName: "Notes", last: Date.now() }), ...rows];
+    window.dispatchEvent(new CustomEvent("lumi:message", { detail: { kind: "history" } }));
+  },
+});
 
 function sorted(): Entry[] {
   const pins = rows.filter((r) => r.pin).sort((a, b) => (a.pin! < b.pin! ? -1 : 1));
@@ -153,13 +186,14 @@ function answer(request: Request): unknown {
             : `${row.title}\n\n(the full text of the copy would be here)`;
       const html =
         row?.kind === "rich"
-          ? `<meta charset="utf-8"><div style="color: rgb(0, 0, 0); font-family: Georgia;">${row.title.replace(/</g, "&lt;")} 🎉</div><p style="color: rgb(34, 34, 34)">Some <b>bold</b>, <i>italic</i>, <s>struck</s>, <u>under</u> and <span style="color: rgb(220, 38, 38)">red</span> <span style="font-family: Menlo">mono</span> <a href="https://x.test">link</a>.</p><ul><li>one ✅</li><li>two</li></ul><img src="https://x.test/a.png"><script>parent.document.body.remove()</script>`
+          ? `<meta charset="utf-8"><div style="color: rgb(0, 0, 0); font-family: Georgia;">${row.title.replace(/</g, "&lt;")} 🎉</div><p style="color: rgb(34, 34, 34)">Some <b>bold</b>, <i>italic</i>, <s>struck</s>, <u>under</u> and <span style="color: rgb(220, 38, 38)">red</span> <span style="font-family: Menlo">mono</span> <a href="https://lumikeys.app/docs">the docs</a>, <a href="https://github.com/thiennguyen93">GitHub</a>, <a href="mailto:hi@example.com">mail me</a>.</p><p>Draft: https://example.com/reports/q3-final-draft-with-a-much-longer-address-than-fits.pdf</p><ul><li>one ✅</li><li>two</li></ul><img src="https://x.test/a.png"><script>parent.document.body.remove()</script>`
           : null;
       const ocr = row?.ocr && settings.ocr !== "false" ? ["Lumi", "Clipboard Manager", "Search history", ...Array.from({ length: 60 }, (_, i) => `Line ${i + 1} of a long read`)].join("\n") : null;
       const fileSize = row?.kind === "file" ? (row.title.endsWith(".pdf") ? 1_234_567 : 48_213_904) : null;
       const fileToken = row?.kind === "file" && /\.(pdf|png|heic|mp3|mp4|html|md|json|go|tsx)$/.test(row.title) ? row.title : null;
       const files = row ? MOCK_FILES[row.id] : undefined;
-      return { text, html, ocr, fileSize, fileToken, files: files ?? null, fileCount: files?.length ?? 0 };
+      const links = row ? MOCK_LINKS[row.id] : undefined;
+      return { text, html, ocr, fileSize, fileToken, files: files ?? null, fileCount: files?.length ?? 0, links: links ?? null, linkCount: links?.length ?? 0 };
     }
     case "drag":
       say(`would drag ${request.id}${request.file != null ? ` (file ${request.file})` : ""} out of the panel`);
@@ -216,7 +250,7 @@ function answer(request: Request): unknown {
       say(`would copy the path of ${rows.find((r) => r.id === request.id)?.title}`);
       return {};
     case "open":
-      say(`would open ${rows.find((r) => r.id === request.id)?.title} in the browser`);
+      say(`would open ${request.url ?? rows.find((r) => r.id === request.id)?.title} in the browser and ${request.pinned ? "stay up" : "close"}`);
       return {};
     case "saveImage":
       say(`would close the panel and offer ${request.id} to save as "${request.name}.png"`);

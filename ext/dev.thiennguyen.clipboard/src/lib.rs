@@ -17,6 +17,7 @@
 
 pub mod history;
 pub mod host;
+pub mod links;
 pub mod rtf;
 
 use history::{Copy, Index, Order, Outcome, Rules};
@@ -210,7 +211,21 @@ pub fn on_event(host: &impl Host, name: &str, payload: &str) -> Result<(), Strin
         _ => return Ok(()),
     }
     tell_dashboard(host);
+    tell_panel(host);
     Ok(())
+}
+
+/// What the panel is told when the history changed under it — a copy, a
+/// copy made again, the text read in an image: read the list again. The
+/// news, not the rows: a thousand of them are more than a post may carry,
+/// and the panel reads them in one `list` anyway.
+pub const HISTORY_CHANGED: &str = r#"{"kind":"history"}"#;
+
+/// Tell the panel, if it is up — pinned or not — that the history changed,
+/// so a copy made while it is open shows up in it. Best effort: Lumi
+/// answers `false` and sends nothing when the panel is put away.
+fn tell_panel(host: &impl Host) {
+    let _ = host.post(PANEL, HISTORY_CHANGED);
 }
 
 /// Hand the Dashboard, if it is on screen, the counts as they are now.
@@ -512,8 +527,11 @@ fn on_copy(host: &impl Host, payload: &str) -> Result<(), String> {
     // the index whose record is missing is a row that cannot be pasted,
     // while a record with no row is only space, and is removed below if the
     // index write fails.
-    let preview = history::apply(&mut Index::default(), copy.clone(), &prefs.rules, id.clone());
-    let wrote_record = if let Outcome::Inserted { record, .. } = &preview {
+    let mut preview = history::apply(&mut Index::default(), copy.clone(), &prefs.rules, id.clone());
+    let wrote_record = if let Outcome::Inserted { record, .. } = &mut preview {
+        // Its links, found now and kept with it: the copy never changes,
+        // so no preview has to look for them again.
+        record.links = Some(links::kept(&record.items));
         let text = serde_json::to_string(record).map_err(|err| err.to_string())?;
         host.put(&record_key(&id), &text, None).map_err(|err| match err {
             PutError::Conflict => "a history record already had that id".to_string(),
@@ -578,12 +596,32 @@ fn keep_ocr(host: &impl Host, hash: &str, text: &str) -> Result<(), String> {
     let Some(entry) = index.items.iter().find(|e| e.hash == hash) else {
         return Ok(());
     };
-    let key = record_key(&entry.id);
+    update_record(host, &entry.id, |record| record.ocr = Some(text.to_string()))
+}
+
+/// The links the preview lists for an item, as its record keeps them. A
+/// record kept before records kept them, or by older rules, has them found
+/// now and kept — so that is done once per item, not once per preview.
+fn links_of_record(host: &impl Host, id: &str, record: &history::Record) -> links::KeptLinks {
+    if let Some(kept) = record.links.as_ref().filter(|kept| kept.current()) {
+        return kept.clone();
+    }
+    let kept = links::kept(&record.items);
+    // Best effort: unkept, they are only found again next time.
+    let _ = update_record(host, id, |record| record.links = Some(kept.clone()));
+    kept
+}
+
+/// Change one stored record — compare-and-swap, as the index is: the text
+/// read in an image and a preview's links can land on it together. A record
+/// gone since has nothing to change.
+fn update_record(host: &impl Host, id: &str, change: impl Fn(&mut history::Record)) -> Result<(), String> {
+    let key = record_key(id);
     for _ in 0..CAS_ATTEMPTS {
         let Some(stored) = host.get(&key)? else { return Ok(()) };
         let mut record: history::Record =
             serde_json::from_str(&stored.value).map_err(|err| err.to_string())?;
-        record.ocr = Some(text.to_string());
+        change(&mut record);
         let value = serde_json::to_string(&record).map_err(|err| err.to_string())?;
         match host.put(&key, &value, Some(stored.rev)) {
             Ok(_) => return Ok(()),
@@ -659,8 +697,12 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             // neither of which is what the preview pane should show; the
             // record is. Asked per selected row, not per keystroke.
             // An image's text as Lumi read it, while reading is on.
-            let record = read_record(host, &id()?)?;
+            let id = id()?;
+            let record = read_record(host, &id)?;
             let ocr = record.ocr.as_deref().filter(|text| prefs(host).ocr && !text.trim().is_empty());
+            // The web addresses in a text or rich copy, for the list under
+            // its text — as kept with it, not looked for again.
+            let links = links_of_record(host, &id, &record);
             Ok(json!({
                 "text": history::preview_text(&record.items),
                 "html": history::preview_html(&record.items),
@@ -670,6 +712,8 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 // Several files: each one, for the list the preview draws.
                 "files": Some(history::files_list_of(&record.items)).filter(|files| !files.is_empty()),
                 "fileCount": history::file_count_of(&record.items),
+                "links": Some(&links.list).filter(|list| !list.is_empty()),
+                "linkCount": links.count,
             }))
         }
         "paste" => {
@@ -821,10 +865,23 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let _ = host.alert(&format!("Copied {text}"));
             Ok(json!({}))
         }
+        // A link row's address — or, with `url`, one of the links the
+        // preview listed for a text or rich row: opened only when it is one
+        // the stored item keeps, so the page can name an address but never
+        // make one up.
         "open" => {
-            let record = read_record(host, &id()?)?;
-            let url = history::link_of(&record.items).ok_or_else(|| "That item is not a web address.".to_string())?;
-            host.open_url(&url)?;
+            let id = id()?;
+            let record = read_record(host, &id)?;
+            let url = match request["url"].as_str() {
+                Some(wanted) => links_of_record(host, &id, &record)
+                    .list
+                    .into_iter()
+                    .find(|link| link.url == wanted)
+                    .map(|link| link.url)
+                    .ok_or_else(|| "That link is not in the item.".to_string())?,
+                None => history::link_of(&record.items).ok_or_else(|| "That item is not a web address.".to_string())?,
+            };
+            host.open_url(&links::for_opening(&url))?;
             put_away(host, request)?;
             Ok(json!({}))
         }
@@ -1408,6 +1465,88 @@ mod tests {
     }
 
     #[test]
+    fn text_and_rich_rows_preview_their_links_and_open_only_those() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "Docs: https://lumikeys.app/docs, and www.example.com/Việt.")).unwrap();
+        let rich = json!({ "v": 1, "at": 2, "hash": "h2", "items": [[
+            { "uti": "public.html", "text": r#"<a href="https://github.com/x">my code</a>"#, "bytes": 42 },
+            { "uti": "public.utf8-plain-text", "text": "my code", "bytes": 7 },
+        ]] });
+        on_event(&host, "clipboard", &rich.to_string()).unwrap();
+        on_event(&host, "clipboard", &event("h3", 3, "https://link.test/only")).unwrap();
+
+        let text = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(
+            text["links"],
+            json!([{ "url": "https://lumikeys.app/docs" }, { "url": "https://www.example.com/Việt" }])
+        );
+        assert_eq!(text["linkCount"], 2);
+        let rich = ui(&host, &json!({"kind": "preview", "id": "id2"})).unwrap();
+        assert_eq!(rich["links"], json!([{ "url": "https://github.com/x", "text": "my code" }]));
+        // A link row is its one address; it lists none.
+        let link = ui(&host, &json!({"kind": "preview", "id": "id3"})).unwrap();
+        assert_eq!(link["links"], Value::Null);
+
+        ui(&host, &json!({"kind": "open", "id": "id1", "url": "https://www.example.com/Việt"})).unwrap();
+        ui(&host, &json!({"kind": "open", "id": "id2", "url": "https://github.com/x", "pinned": true})).unwrap();
+        // Not one of that row's links: a page cannot have anything opened.
+        assert!(ui(&host, &json!({"kind": "open", "id": "id1", "url": "https://github.com/x"})).is_err());
+        assert!(ui(&host, &json!({"kind": "open", "id": "id2", "url": "javascript:alert(1)"})).is_err());
+        assert_eq!(*host.opened.borrow(), ["open https://www.example.com/Vi%E1%BB%87t", "open https://github.com/x"]);
+        assert_eq!(host.closed.get(), 1, "a pinned panel stays up");
+    }
+
+    #[test]
+    fn links_are_found_once_at_the_copy_and_read_back_from_the_record() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "see https://a.test and https://b.test")).unwrap();
+        let stored = |host: &Memory| host.kv.borrow()["item.id1"].clone();
+        let record: Value = serde_json::from_str(&stored(&host).value).unwrap();
+        assert_eq!(
+            record["links"],
+            json!({ "v": links::LINKS_VERSION, "list": [{ "url": "https://a.test" }, { "url": "https://b.test" }], "count": 2 })
+        );
+
+        // What the record keeps is what the preview shows — nothing is
+        // looked for again, and nothing written.
+        let mut record = record;
+        record["links"]["list"] = json!([{ "url": "https://kept.test" }]);
+        record["links"]["count"] = json!(1);
+        let rev = stored(&host).rev;
+        host.put("item.id1", &record.to_string(), Some(rev)).unwrap();
+        let rev = stored(&host).rev;
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["links"], json!([{ "url": "https://kept.test" }]));
+        ui(&host, &json!({"kind": "open", "id": "id1", "url": "https://kept.test", "pinned": true})).unwrap();
+        assert_eq!(stored(&host).rev, rev, "a kept list is not written again");
+    }
+
+    #[test]
+    fn a_record_without_current_links_has_them_found_and_kept_once() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "see https://a.test")).unwrap();
+        let stored = |host: &Memory| host.kv.borrow()["item.id1"].clone();
+        // As kept before records kept links, and as kept by older rules.
+        for old in [Value::Null, json!({ "v": 0, "list": [{ "url": "https://stale.test" }], "count": 1 })] {
+            let mut record: Value = serde_json::from_str(&stored(&host).value).unwrap();
+            if old.is_null() {
+                record.as_object_mut().unwrap().remove("links");
+            } else {
+                record["links"] = old;
+            }
+            host.put("item.id1", &record.to_string(), Some(stored(&host).rev)).unwrap();
+
+            let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+            assert_eq!(shown["links"], json!([{ "url": "https://a.test" }]));
+            let kept: Value = serde_json::from_str(&stored(&host).value).unwrap();
+            assert_eq!(kept["links"]["v"], links::LINKS_VERSION, "found again and kept");
+            let rev = stored(&host).rev;
+            ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+            assert_eq!(stored(&host).rev, rev, "and only once");
+        }
+    }
+
+    #[test]
     fn copy_path_copies_where_the_files_are_as_text() {
         let host = Memory::default();
         let one = json!({ "v": 1, "at": 1, "hash": "h1", "items": [[
@@ -1600,10 +1739,27 @@ mod tests {
         ui(&host, &json!({"kind": "pin", "id": "id1"})).unwrap();
         on_event(&host, "screen", "{}").unwrap();
         let posts = host.posts.borrow();
-        assert_eq!(posts.len(), 2, "an unknown event tells nobody: {posts:?}");
-        assert!(posts.iter().all(|(window, _)| window == DASHBOARD));
-        let last: Value = serde_json::from_str(&posts[1].1).unwrap();
+        let dashboard: Vec<&str> = posts.iter().filter(|(window, _)| window == DASHBOARD).map(|(_, m)| m.as_str()).collect();
+        assert_eq!(dashboard.len(), 2, "an unknown event tells nobody: {posts:?}");
+        let last: Value = serde_json::from_str(dashboard[1]).unwrap();
         assert_eq!(last, json!({"kept": 1, "keep": "3mo", "pinned": 1, "images": 0, "since": 5}));
+    }
+
+    #[test]
+    fn a_copy_or_the_text_read_in_an_image_tells_the_panel_to_read_the_list_again() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "one")).unwrap();
+        // The same again: the row moves up, so the panel is told too.
+        on_event(&host, "clipboard", &event("h1", 2, "one")).unwrap();
+        on_event(&host, "clipboard", &image_event("h2", "img")).unwrap();
+        on_event(&host, "clipboard-ocr", &json!({"v": 1, "hash": "h2", "text": "read"}).to_string()).unwrap();
+        // A pin is the panel's own doing: it reads the list itself.
+        ui(&host, &json!({"kind": "pin", "id": "id1"})).unwrap();
+        on_event(&host, "screen", "{}").unwrap();
+        let told: Vec<String> = host.posts.borrow().iter().filter(|(window, _)| window == PANEL).map(|(_, m)| m.clone()).collect();
+        assert_eq!(told, vec![HISTORY_CHANGED; 4]);
+        let message: Value = serde_json::from_str(HISTORY_CHANGED).unwrap();
+        assert_eq!(message, json!({"kind": "history"}));
     }
 
     #[test]

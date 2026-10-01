@@ -217,6 +217,11 @@ pub struct Record {
     /// only a shortened copy for searching.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ocr: Option<String>,
+    /// The links the preview lists, found once when the copy is kept
+    /// (`links::kept`) — the copy never changes, so neither do they. Missing
+    /// on a record kept before this; found again when `v` is out of date.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub links: Option<crate::links::KeptLinks>,
 }
 
 /// The person's settings, as far as the model cares.
@@ -349,7 +354,9 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
 
     Outcome::Inserted {
         id: new_id,
-        record: Record { items: copy.items, ocr: copy.ocr.filter(|text| !text.trim().is_empty()) },
+        // Its links are `lib`'s to find, once, for the record it writes:
+        // this runs again on every retry of the index write.
+        record: Record { items: copy.items, ocr: copy.ocr.filter(|text| !text.trim().is_empty()), links: None },
         evicted,
     }
 }

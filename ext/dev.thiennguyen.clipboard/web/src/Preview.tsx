@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { blobUrl, call, fileUrl, type FileItem } from "./bridge";
+import { blobUrl, call, fileUrl, type FileItem, type Link } from "./bridge";
 import { AppMark } from "./AppMark";
 import { CollapseGlyph, CopyGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { useItemDrag } from "./itemDrag";
+import { LinkList } from "./LinkList";
 import { PdfViewer } from "./PdfViewer";
 import { TextFile } from "./TextFile";
+import { linked } from "./LinkedText";
 import { RichText } from "./richText";
 import { isColor, KIND_WORDS, paint } from "./Row";
 import { BLACK, contrast, over, parseColor, type Rgba, toHex, toHsl, toRgb, WHITE } from "./color";
@@ -32,6 +34,8 @@ type Full = {
   fileToken?: string | null;
   files?: FileItem[] | null;
   fileCount?: number;
+  links?: Link[] | null;
+  linkCount?: number;
 };
 
 /** Previews already asked for, by row — and by whether the row has read
@@ -59,7 +63,8 @@ export function Preview({
   onZoom,
 }: {
   row: Entry | undefined;
-  onOpen?: (id: string) => void;
+  /** Open a link row's address, or — `url` — one of a row's listed links. */
+  onOpen?: (id: string, url?: string) => void;
   /** Copy one of a colour row's formats. */
   onCopyColor?: (text: string) => void;
   /** What the list is searched by, marked in the card and scrolled to. */
@@ -103,12 +108,12 @@ export function Preview({
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
-        const { text, html, ocr, fileSize, fileToken, files, fileCount } = await call({ kind: "preview", id: row.id });
+        const { text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount } = await call({ kind: "preview", id: row.id });
         if (!(text || html || ocr)) {
           if (live) setGaveUp(row.id);
           return;
         }
-        const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount };
+        const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount };
         seen.delete(key);
         seen.set(key, answer);
         if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
@@ -144,6 +149,14 @@ export function Preview({
   const wide = reads && zoomed && expanded === row.id;
   const pixels = size?.id === row.id ? `${size.w} × ${size.h} px` : null;
   const weight = row.kind === "file" && mine?.fileSize != null ? bytes(mine.fileSize) : null;
+
+  // A text or rich copy's links, as listed: drawn under it. In a rich
+  // copy's body they are clickable too, where its formatting links them or
+  // its text writes them out. A plain-text copy's body stays plain text —
+  // it is there to be read and selected, not followed.
+  const links = (row.kind === "text" || row.kind === "rich") && mine?.links ? mine.links : [];
+  const bodyLinks = row.kind === "rich" ? links : [];
+  const openLink = onOpen ? (url: string) => onOpen(row.id, url) : undefined;
 
   const from = row.appName || row.app;
   const times = row.count > 1 ? `${row.count}×` : "once";
@@ -246,13 +259,33 @@ export function Preview({
         ) : waiting ? (
           <div className="body rich" />
         ) : html ? (
-          <RichText key={row.id} html={html} fallback={<div className="body rich">{text}</div>} />
+          <RichText
+            key={row.id}
+            html={html}
+            links={bodyLinks}
+            onOpen={openLink}
+            fallback={<div className="body rich">{linked(text, bodyLinks, openLink)}</div>}
+          />
         ) : (
           row.kind === "link" && onOpen ? (
             <LinkBody text={text} onOpen={() => onOpen(row.id)} />
           ) : (
-            row.kind !== "image" && <div className={row.kind === "rich" ? "body rich" : "body"}>{text}</div>
+            row.kind !== "image" && (
+              <div className={row.kind === "rich" ? "body rich" : "body"}>{linked(text, bodyLinks, openLink)}</div>
+            )
           )
+        )}
+        {/* The text or the formatting stays as it is; its addresses are
+            listed under it, each one a click away from the browser. */}
+        {links.length > 0 && openLink && (
+          <LinkList
+            // Its own key: `row.id` is the rich text's, a sibling here, and two
+            // siblings sharing one leave the old one's nodes behind.
+            key={`links:${row.id}`}
+            links={links}
+            count={mine?.linkCount || links.length}
+            onOpen={openLink}
+          />
         )}
         <footer className="card-foot">
           Copied {ago(row.last)} · {times}

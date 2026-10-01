@@ -856,10 +856,93 @@ body {
 .rich-html pre { white-space: pre-wrap; }
 .rich-html blockquote { padding-left: 0.8em; border-left: 2px solid var(--cb-line); }
 .rich-html .link { color: var(--cb-accent, #3478f6); text-decoration: underline; }
+/* Words in a rich copy that are one of its links (LinkedText.tsx) — an
+   `<a>`, or an address written out in its text: the theme's link ink, a
+   hand, and a click opens the address. A plain-text copy's body has none:
+   it is text to select. */
+.card .link.live {
+  color: var(--cb-link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--cb-link) 45%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.card .link.live:hover { text-decoration-color: currentColor; }
 .rich-html mark { color: inherit; background: color-mix(in srgb, #ffd60a 45%, transparent); }
 .rich-html :is(td, th) { padding: 2px 6px; border: 1px solid var(--cb-line); }
 .rich-html table { border-collapse: collapse; }
 .rich-html hr { border: 0; border-top: 1px solid var(--cb-line); }
+
+/* The web addresses in a text or rich copy, under its text (LinkList.tsx).
+   Up to two-fifths of the card, then the list scrolls: the copy's own text
+   keeps the rest. A line opens its address in the browser. */
+.card .links {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 40%;
+  min-height: 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--cb-line);
+}
+.links-head { flex: none; font-size: 11px; color: var(--cb-muted); }
+/* Room at the sides for a line's hover, as a colour's formats have. */
+.card .links ul {
+  min-height: 0;
+  margin: 0 -6px;
+  padding: 0 6px;
+  list-style: none;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--fade-above),
+    #000 calc(100% - var(--fade-below)),
+    transparent
+  );
+  transition: --fade-above 0.2s ease, --fade-below 0.2s ease;
+}
+.card .links ul[data-above] { --fade-above: 12px; }
+.card .links ul[data-below] { --fade-below: 12px; }
+.card .link-line {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: calc(100% + 12px);
+  margin: 0 -6px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  cursor: default;
+}
+.card .link-line:hover { background: var(--cb-hover); }
+.card .link-line:active { background: color-mix(in srgb, var(--cb-accent) 22%, transparent); }
+.card .link-line > .glyph { flex: none; width: 12px; height: 12px; color: var(--cb-faint); }
+.card .link-line:hover > .glyph { color: var(--cb-muted); }
+.card .link-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+/* The words on one line, the address on two — a narrow pane still shows
+   most of it — each cut at the end; the whole address is the tooltip. */
+.card .link-words { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.card .link-address {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.card .link-words { font: 12.5px/1.45 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.card .link-address { font: 11.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--cb-link); }
+.card .link-words + .link-address { color: var(--cb-faint); }
+.card .link-line:hover .link-address {
+  color: var(--cb-link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--cb-link) 50%, transparent);
+  text-underline-offset: 3px;
+}
 /* A long OCR read scrolls rather than squeezing the picture; only a pane
    too short for both gives way, the picture down to 96px, so the foot is
    never pushed out of the card. */

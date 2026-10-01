@@ -11,6 +11,10 @@ import type { Entry, ExtensionShortcut, ListAnswer, OwnShortcuts, Request, Short
 
 export type FileItem = { name: string; dir?: string; size?: number; folder?: boolean };
 
+/** A web address in a text or rich copy (src/links.rs): where it goes, and
+ *  the words a rich copy links it under, when they are not the address. */
+export type Link = { url: string; text?: string };
+
 type Answers = {
   list: ListAnswer;
   welcome: { from: string | null; version: string };
@@ -24,6 +28,9 @@ type Answers = {
     /** A copy of several files, one by one (at most 200), and how many in all. */
     files?: FileItem[] | null;
     fileCount?: number;
+    /** A text or rich copy's web addresses (at most 50), and how many in all. */
+    links?: Link[] | null;
+    linkCount?: number;
   };
   paste: Record<string, never>;
   drag: Record<string, never>;

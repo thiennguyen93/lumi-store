@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.60.3] - 2026-10-01
+
+### Fixed
+
+- What you copy while the panel is open, pinned or not, shows up in it straight away.
+
+## [0.60.2] - 2026-10-01
+
+### Changed
+
+- A copy's links are found once, when it is copied, instead of each time its preview is shown.
+
+## [0.60.1] - 2026-10-01
+
+### Added
+
+- Links in rich text can be clicked in the preview. Plain text stays plain, to select and copy; its links are listed under it.
+
+## [0.59.0] - 2026-10-01
+
+### Added
+
+- Text and rich text show the links they contain under their preview, each opened in the browser with a click.
+
+### Fixed
+
+- Links in rich text copied from TextEdit or Pages no longer drop out of the preview.
+
 ## [0.58.3] - 2026-09-30
 
 ### Changed
