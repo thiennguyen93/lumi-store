@@ -152,6 +152,33 @@ review. The page's CSP (`default-src 'self'`) still applies: production
 builds only, no inline `<script>`. `ext/dev.thiennguyen.clipboard/web/` is
 a working example.
 
+### First-party private entries
+
+The store owner's own extensions may be closed source. Such an entry is a
+private repo pinned as a submodule like any other, with two differences:
+
+- `update = none` on its submodule in `.gitmodules`, so a recursive
+  checkout — a contributor's, or CI's — skips it rather than failing on a
+  repo it cannot read;
+- `private = true` on its entry in `extensions.toml`.
+
+CI checks it out with a read-only deploy key (`scripts/fetch-private.sh`,
+secret `SCREENSHOT_DEPLOY_KEY`) in the entry's own build leg and in the
+signing job, and deletes the key before any build script runs. The package
+is still built from the pinned source and signed by CI — no developer-built
+binary — and is published like every other, so its wasm and ui/ are
+public; only the source is not. A fork's pull request has no key, and
+`publish.py --check` skips the entry and says so.
+
+To check it out locally, with access to the repo:
+
+```bash
+git submodule update --init --checkout ext/dev.thiennguyen.screenshot
+```
+
+This is not open to third-party submissions: the store's promise to
+everyone else is still a public repo, reviewed before it ships.
+
 ## Store pictures
 
 The first-party extensions' `screenshots` are promo pages: a headline over
