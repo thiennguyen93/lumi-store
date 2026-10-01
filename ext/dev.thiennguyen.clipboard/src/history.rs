@@ -23,6 +23,12 @@ use serde::{Deserialize, Serialize};
 /// read; a field added with a default is not one.
 pub const INDEX_VERSION: u32 = 1;
 
+/// The upkeep `lib` brings rows kept by older builds up to date with
+/// (`lib`'s `Upkeep`), once per index. Bumped with every rule added to it or
+/// changed, so that every index is gone over again, once. An index kept
+/// before upkeep was counted reads as 0, and is gone over.
+pub const UPKEEP: u32 = 1;
+
 /// How many characters of text a row's title keeps. The panel draws one
 /// line, so more is only weight in the index.
 pub const TITLE_CHARS: usize = 200;
@@ -178,7 +184,7 @@ pub struct Entry {
     pub file_ext: String,
     /// How many files a file row holds, when more than one — so its row can
     /// look like several. 0 for one file, anything else, and rows kept before
-    /// this (`lib::count_file_rows` fills those in).
+    /// this (`lib`'s upkeep fills those in).
     #[serde(default, skip_serializing_if = "is_zero")]
     pub file_count: u32,
 }
@@ -202,11 +208,16 @@ pub struct Index {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub trash: Vec<Entry>,
     /// Every row's `search` and `ocr_search` are kept as copied, case and
-    /// all. Rows kept before that hold them lowercased; `lib`'s
-    /// `recase_search` reads those again from their records, once, and sets
-    /// this. An index that starts empty starts with it set.
+    /// all. Rows kept before that hold them lowercased; `lib`'s upkeep reads
+    /// those again from their records, once, and sets this. An index that
+    /// starts empty starts with it set.
     #[serde(default, rename = "searchAsCopied", skip_serializing_if = "is_false")]
     pub search_as_copied: bool,
+    /// The `UPKEEP` its rows were last brought up to date by; 0 for never.
+    /// An index that starts empty starts up to date: nothing in it was kept
+    /// the old way.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub upkeep: u32,
 }
 
 /// An item's full content, stored under `item.<id>`.
@@ -348,6 +359,7 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
     // Nothing kept yet: nothing kept the old way, so nothing to read again.
     if index.items.is_empty() && index.trash.is_empty() {
         index.search_as_copied = true;
+        index.upkeep = UPKEEP;
     }
     index.items.push(entry);
     let evicted = evict(index, rules.size, rules.keep_ms, copy_at);

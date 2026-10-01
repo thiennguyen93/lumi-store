@@ -24,6 +24,7 @@ use history::{Copy, Index, Order, Outcome, Rules};
 use host::{Host, PutError};
 use lumi_extension_api as lumi;
 use serde_json::{json, Value};
+use std::collections::{HashMap, HashSet};
 
 /// The panel's `[[window]]` name.
 pub const PANEL: &str = "history";
@@ -353,14 +354,28 @@ fn read_index(host: &impl Host) -> Result<(Index, Option<u64>), String> {
 /// wrote it in between. `change` runs once per attempt against a fresh copy.
 fn update_index<T>(
     host: &impl Host,
-    mut change: impl FnMut(&mut Index) -> Result<T, String>,
+    change: impl FnMut(&mut Index) -> Result<T, String>,
 ) -> Result<T, String> {
+    write_index(host, None, change).map(|(answer, _)| answer)
+}
+
+/// `update_index`, from an index already read (`read`, at its revision) when
+/// there is one — read again only if somebody wrote it since — answering the
+/// index as written too.
+fn write_index<T>(
+    host: &impl Host,
+    mut read: Option<(Index, Option<u64>)>,
+    mut change: impl FnMut(&mut Index) -> Result<T, String>,
+) -> Result<(T, Index), String> {
     for _ in 0..CAS_ATTEMPTS {
-        let (mut index, rev) = read_index(host)?;
+        let (mut index, rev) = match read.take() {
+            Some(read) => read,
+            None => read_index(host)?,
+        };
         let answer = change(&mut index)?;
         let text = serde_json::to_string(&index).map_err(|err| err.to_string())?;
         match host.put(INDEX, &text, rev) {
-            Ok(_) => return Ok(answer),
+            Ok(_) => return Ok((answer, index)),
             Err(PutError::Conflict) => continue,
             Err(PutError::Failed(err)) => return Err(err),
         }
@@ -368,72 +383,120 @@ fn update_index<T>(
     Err("the history was busy; try again".to_string())
 }
 
-/// Drop the rows older than the keep, by the clock now rather than at a
-/// copy. One read when nothing has aged out.
-fn expire(host: &impl Host, prefs: &Prefs) -> Result<(), String> {
+/// What opening the panel does to the history, on one read of the index —
+/// and no write at all when there is nothing to do, as on most openings:
+/// - what the last panel deleted goes for good: ⌘Z can no longer want it;
+/// - what has aged out since the last copy goes: with nothing copied for a
+///   day, a day's keep still ends;
+/// - once per `history::UPKEEP`, rows kept by older builds are brought up
+///   to date (`Upkeep`).
+///
+/// Answers the index as it now stands, for the list.
+fn open_history(host: &impl Host, prefs: &Prefs) -> Result<Index, String> {
+    let (index, rev) = read_index(host)?;
     let now = host.now();
     let cutoff = now.saturating_sub(prefs.rules.keep_ms.unwrap_or(i64::MAX));
-    let (index, _) = read_index(host)?;
-    if !index.items.iter().any(|e| e.pin.is_none() && e.last < cutoff) {
-        return Ok(());
+    let aged = index.items.iter().any(|e| e.pin.is_none() && e.last < cutoff);
+    let upkeep = (index.upkeep < history::UPKEEP).then(|| Upkeep::of(host, &index));
+    if index.trash.is_empty() && !aged && upkeep.is_none() {
+        return Ok(index);
     }
-    let gone = update_index(host, |index| {
-        Ok(history::evict(index, prefs.rules.size, prefs.rules.keep_ms, now))
+    let ((gone, expired), index) = write_index(host, Some((index, rev)), |index| {
+        let mut gone = history::empty_trash(index);
+        let aged_out = history::evict(index, prefs.rules.size, prefs.rules.keep_ms, now);
+        let expired = !aged_out.is_empty();
+        gone.extend(aged_out);
+        if let Some(upkeep) = &upkeep {
+            upkeep.apply(index);
+        }
+        Ok((gone, expired))
     })?;
     forget(host, &gone);
-    tell_dashboard(host);
-    Ok(())
+    if expired {
+        tell_dashboard(host);
+    }
+    Ok(index)
 }
 
-/// File rows kept before titles were read by name carry Finder's
-/// file-reference id as their title (`/.file/id=6571367.2286…`). Each is
-/// titled again from its record — by the path Lumi resolved, or by the names
-/// Finder wrote beside it — once, when the panel opens; none left is one read.
-fn rename_file_rows(host: &impl Host) -> Result<(), String> {
-    let (index, _) = read_index(host)?;
-    let mut renamed = std::collections::HashMap::new();
-    for entry in index.items.iter().filter(|e| e.kind == history::Kind::File && e.title.contains("/.file/id=")) {
-        if let Ok(record) = read_record(host, &entry.id) {
-            let title = history::title_of(&record.items, history::Kind::File);
-            if !title.is_empty() && title != entry.title {
-                renamed.insert(entry.id.clone(), (title, history::file_ext_of(&record.items)));
+/// Rows kept by older builds, brought up to date from their records — once
+/// per `history::UPKEEP`, which is bumped with any rule here:
+/// - file rows kept before titles were read by name carry Finder's
+///   file-reference id as their title (`/.file/id=6571367.2286…`): titled
+///   again, by the path Lumi resolved or the names Finder wrote beside it;
+/// - file rows kept before `file_count` say they hold several files only in
+///   their title ("a.mp4 + 2 more"): counted;
+/// - rows kept before colours were told apart from what came with them are
+///   Rich (a colour copied from an editor, HTML and all) or Text
+///   (`#rrggbbaa`, `rgb()`, `hsl()`): given the kind their record says;
+/// - rows kept before search text was kept as copied hold it lowercased
+///   (`Index::search_as_copied` unset): given their text as copied, so a
+///   row found far into its text shows that stretch as it was written.
+///
+/// A row that needs any of it has its record read once. A record that
+/// cannot be read leaves its row as it was — a row that still works. Worked
+/// out before the write and applied by id, so it lands the same on an index
+/// read again after a race.
+#[derive(Default)]
+struct Upkeep {
+    titles: HashMap<String, (String, String)>,
+    counts: HashMap<String, u32>,
+    colors: HashSet<String>,
+    /// Each row's search text as copied, and the text read in its image —
+    /// `None` when the index holds them as copied already.
+    searches: Option<HashMap<String, (String, Option<String>)>>,
+}
+
+impl Upkeep {
+    fn of(host: &impl Host, index: &Index) -> Upkeep {
+        use history::Kind;
+        let mut upkeep = Upkeep { searches: (!index.search_as_copied).then(HashMap::new), ..Upkeep::default() };
+        for entry in &index.items {
+            let by_id = entry.kind == Kind::File && entry.title.contains("/.file/id=");
+            let uncounted = entry.kind == Kind::File
+                && entry.file_count == 0
+                && entry.title.contains(" + ")
+                && entry.title.ends_with(" more");
+            let colour = matches!(entry.kind, Kind::Rich | Kind::Text) && history::is_color(&entry.title);
+            if !(by_id || uncounted || colour || upkeep.searches.is_some()) {
+                continue;
+            }
+            let Ok(record) = read_record(host, &entry.id) else { continue };
+            if by_id {
+                let title = history::title_of(&record.items, Kind::File);
+                if !title.is_empty() && title != entry.title {
+                    upkeep.titles.insert(entry.id.clone(), (title, history::file_ext_of(&record.items)));
+                }
+            }
+            if uncounted {
+                let count = history::file_count_of(&record.items);
+                if count > 0 {
+                    upkeep.counts.insert(entry.id.clone(), count);
+                }
+            }
+            if colour && history::kind_of(&record.items) == Kind::Color {
+                upkeep.colors.insert(entry.id.clone());
+            }
+            if let Some(searches) = &mut upkeep.searches {
+                let read = record.ocr.as_deref().map(history::ocr_search_of);
+                searches.insert(entry.id.clone(), (history::search_of(&record.items), read));
             }
         }
+        upkeep
     }
-    if renamed.is_empty() {
-        return Ok(());
-    }
-    update_index(host, |index| {
+
+    fn apply(&self, index: &mut Index) {
         for entry in &mut index.items {
-            if let Some((title, ext)) = renamed.get(&entry.id) {
+            if let Some((title, ext)) = self.titles.get(&entry.id) {
                 entry.title = title.clone();
                 entry.file_ext = ext.clone();
             }
-        }
-        Ok(())
-    })
-}
-
-/// Rows kept before search text was kept as copied hold it lowercased, so
-/// a row found far into its text shows that stretch in lower case. Every
-/// row is read again from its record and given its text as copied — once:
-/// the index says when it is done. A record that cannot be read keeps what
-/// it had, which still finds it. Trashed rows too, since ⌘Z brings them back.
-fn recase_search(host: &impl Host) -> Result<(), String> {
-    let (index, _) = read_index(host)?;
-    if index.search_as_copied {
-        return Ok(());
-    }
-    let mut fresh = std::collections::HashMap::new();
-    for entry in index.items.iter().chain(&index.trash) {
-        if let Ok(record) = read_record(host, &entry.id) {
-            let read = record.ocr.as_deref().map(history::ocr_search_of);
-            fresh.insert(entry.id.clone(), (history::search_of(&record.items), read));
-        }
-    }
-    update_index(host, |index| {
-        for entry in index.items.iter_mut().chain(index.trash.iter_mut()) {
-            if let Some((search, read)) = fresh.get(&entry.id) {
+            if let Some(count) = self.counts.get(&entry.id) {
+                entry.file_count = *count;
+            }
+            if self.colors.contains(&entry.id) {
+                entry.kind = history::Kind::Color;
+            }
+            if let Some((search, read)) = self.searches.as_ref().and_then(|searches| searches.get(&entry.id)) {
                 entry.search = search.clone();
                 if let Some(read) = read {
                     entry.ocr_search = read.clone();
@@ -441,65 +504,8 @@ fn recase_search(host: &impl Host) -> Result<(), String> {
             }
         }
         index.search_as_copied = true;
-        Ok(())
-    })
-}
-
-/// File rows kept before `file_count` hold several files with nothing to say
-/// so but their title ("a.mp4 + 2 more"). Only those are read again, from
-/// their records, and counted — once, since a counted row has a count.
-fn count_file_rows(host: &impl Host) -> Result<(), String> {
-    let (index, _) = read_index(host)?;
-    let mut counted = std::collections::HashMap::new();
-    let several = |e: &history::Entry| e.kind == history::Kind::File && e.file_count == 0 && e.title.contains(" + ") && e.title.ends_with(" more");
-    for entry in index.items.iter().filter(|e| several(e)) {
-        if let Ok(record) = read_record(host, &entry.id) {
-            let count = history::file_count_of(&record.items);
-            if count > 0 {
-                counted.insert(entry.id.clone(), count);
-            }
-        }
+        index.upkeep = history::UPKEEP;
     }
-    if counted.is_empty() {
-        return Ok(());
-    }
-    update_index(host, |index| {
-        for entry in &mut index.items {
-            if let Some(count) = counted.get(&entry.id) {
-                entry.file_count = *count;
-            }
-        }
-        Ok(())
-    })
-}
-
-/// Rows kept before colours were told apart from what came with them are
-/// Rich (a colour copied from an editor, HTML and all) or Text (`#rrggbbaa`,
-/// `rgb()`, `hsl()`). Only rows whose title reads as a colour are read again
-/// and given the kind their record says — once, since a Color row is not
-/// looked at again.
-fn recolor_rows(host: &impl Host) -> Result<(), String> {
-    let (index, _) = read_index(host)?;
-    let mut recolored = std::collections::HashSet::new();
-    let maybe = |e: &history::Entry| matches!(e.kind, history::Kind::Rich | history::Kind::Text) && history::is_color(&e.title);
-    for entry in index.items.iter().chain(&index.trash).filter(|e| maybe(e)) {
-        if let Ok(record) = read_record(host, &entry.id) {
-            if history::kind_of(&record.items) == history::Kind::Color {
-                recolored.insert(entry.id.clone());
-            }
-        }
-    }
-    if recolored.is_empty() {
-        return Ok(());
-    }
-    update_index(host, |index| {
-        for entry in index.items.iter_mut().chain(index.trash.iter_mut()) {
-            if recolored.contains(&entry.id) {
-                entry.kind = history::Kind::Color;
-            }
-        }
-        Ok(())
-    })
 }
 
 /// Delete what an evicted or removed row held. Best effort: a record or
@@ -650,24 +656,14 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
     match request["kind"].as_str().unwrap_or_default() {
         "list" => {
             let prefs = prefs(host);
-            // The panel's first list since it opened: what was deleted
-            // last time can no longer be undone, so it goes for good now.
-            if request["opening"].as_bool() == Some(true) {
-                let (index, _) = read_index(host)?;
-                if !index.trash.is_empty() {
-                    let gone = update_index(host, |index| Ok(history::empty_trash(index)))?;
-                    forget(host, &gone);
-                }
-                // And what has aged out since the last copy: with nothing
-                // copied for a day, a day's keep still ends.
-                expire(host, &prefs)?;
-                // Best effort: a stale title is only a title.
-                let _ = rename_file_rows(host);
-                let _ = count_file_rows(host);
-                let _ = recolor_rows(host);
-                let _ = recase_search(host);
-            }
-            let (index, _) = read_index(host)?;
+            // The panel's first list since it opened tidies the history as it
+            // reads it (`open_history`); a list asked again — after a copy, a
+            // pin, a delete — only reads it.
+            let index = if request["opening"].as_bool() == Some(true) {
+                open_history(host, &prefs)?
+            } else {
+                read_index(host)?.0
+            };
             let mut items = history::sorted(&index, prefs.order);
             for entry in &mut items {
                 // Its own field (`ocrSearch`), so the panel can say a row
@@ -1180,6 +1176,7 @@ mod tests {
         // As an older build kept it: lowercased, and nothing to say it was.
         update_index(&host, |index| {
             index.search_as_copied = false;
+            index.upkeep = 0;
             for entry in &mut index.items {
                 entry.search = entry.search.to_lowercase();
                 entry.ocr_search = entry.ocr_search.to_lowercase();
@@ -1215,6 +1212,7 @@ mod tests {
         // As an older build kept it.
         update_index(&host, |index| {
             index.items[0].kind = history::Kind::Rich;
+            index.upkeep = 0;
             Ok(())
         })
         .unwrap();
@@ -1239,6 +1237,7 @@ mod tests {
         on_event(&host, "clipboard", FIXTURE).unwrap();
         update_index(&host, |index| {
             index.search_as_copied = false;
+            index.upkeep = 0;
             index.items[0].search = index.items[0].search.to_lowercase();
             Ok(())
         })
@@ -1248,6 +1247,58 @@ mod tests {
         other["hash"] = json!("another");
         on_event(&host, "clipboard", &other.to_string()).unwrap();
         assert!(!read_index(&host).unwrap().0.search_as_copied);
+        assert_eq!(read_index(&host).unwrap().0.upkeep, 0, "nor the rest of the upkeep");
+    }
+
+    #[test]
+    fn opening_the_panel_reads_the_index_once_and_writes_it_only_with_something_to_do() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "one")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 2, "two")).unwrap();
+        let index_reads = |host: &Memory| host.reads.borrow().iter().filter(|key| *key == INDEX).count();
+
+        host.reads.borrow_mut().clear();
+        let rev = host.kv.borrow()[INDEX].rev;
+        let rows = ui(&host, &json!({"kind": "list", "opening": true})).unwrap()["items"].as_array().unwrap().len();
+        assert_eq!(rows, 2);
+        assert_eq!(index_reads(&host), 1);
+        assert_eq!(host.kv.borrow()[INDEX].rev, rev, "nothing to do, nothing written");
+
+        // Something deleted last time: one read, one write, and the list is
+        // the index as written.
+        ui(&host, &json!({"kind": "delete", "id": "id1"})).unwrap();
+        host.reads.borrow_mut().clear();
+        let shown = ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        assert_eq!(shown["items"].as_array().unwrap().len(), 1);
+        assert_eq!(index_reads(&host), 1);
+        assert!(read_index(&host).unwrap().0.trash.is_empty());
+        assert!(!host.kv.borrow().contains_key("item.id1"));
+    }
+
+    #[test]
+    fn rows_of_an_older_build_are_brought_up_to_date_once_and_then_not_looked_at() {
+        let host = Memory::default();
+        // A row whose title reads as a colour while its record is no colour:
+        // the upkeep reads its record, and would at every opening if it did
+        // not say it was done.
+        on_event(&host, "clipboard", &event("h1", 1, "#fff\nand more")).unwrap();
+        update_index(&host, |index| {
+            index.items[0].title = "#fff".into();
+            index.upkeep = 0;
+            Ok(())
+        })
+        .unwrap();
+        let record_reads = |host: &Memory| host.reads.borrow().iter().filter(|key| key.starts_with("item.")).count();
+
+        host.reads.borrow_mut().clear();
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        assert_eq!(record_reads(&host), 1);
+        assert_eq!(read_index(&host).unwrap().0.upkeep, history::UPKEEP);
+        assert_eq!(read_index(&host).unwrap().0.items[0].kind, history::Kind::Text, "no colour after all");
+
+        host.reads.borrow_mut().clear();
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        assert_eq!(record_reads(&host), 0, "done once");
     }
 
     fn list(host: &Memory) -> Vec<Value> {
@@ -1255,6 +1306,44 @@ mod tests {
             .as_array()
             .unwrap()
             .clone()
+    }
+
+    /// A full history: `MAX_ITEMS` text rows, each with a kilobyte of
+    /// search text — the most an index holds.
+    fn full_history() -> Memory {
+        let host = Memory::default();
+        let mut index = Index::default();
+        let rules = Rules::new(MAX_ITEMS, vec![], "").0;
+        for n in 0..MAX_ITEMS {
+            let text = format!("{n} {}", "lorem ipsum dolor sit amet ".repeat(40));
+            let copy: history::Copy = serde_json::from_str(&event(&format!("h{n}"), n as i64, &text)).unwrap();
+            history::apply(&mut index, copy, &rules, format!("id{n}"));
+        }
+        host.put(INDEX, &serde_json::to_string(&index).unwrap(), None).unwrap();
+        host
+    }
+
+    /// `cargo test --release --lib opening_a_full_history -- --ignored --nocapture`
+    #[test]
+    #[ignore = "a measurement, not a check"]
+    fn opening_a_full_history_costs() {
+        let host = full_history();
+        let bytes = host.kv.borrow()[INDEX].value.len();
+        let runs = 50;
+        let start = std::time::Instant::now();
+        for _ in 0..runs {
+            ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        }
+        let each = start.elapsed() / runs;
+        host.reads.borrow_mut().clear();
+        ui(&host, &json!({"kind": "list", "opening": true})).unwrap();
+        let reads = host.reads.borrow();
+        let index_reads = reads.iter().filter(|key| *key == INDEX).count();
+        let record_reads = reads.iter().filter(|key| key.starts_with("item.")).count();
+        println!(
+            "opening a list of {MAX_ITEMS} rows ({} KB index): {each:?} a call, {index_reads} index reads, {record_reads} record reads",
+            bytes / 1024
+        );
     }
 
     #[test]
@@ -1591,6 +1680,7 @@ mod tests {
         let (mut index, rev) = read_index(&host).unwrap();
         index.items[0].title = "/.file/id=6571367.228661126".to_string();
         index.items[0].file_ext = String::new();
+        index.upkeep = 0;
         host.put(INDEX, &serde_json::to_string(&index).unwrap(), rev).unwrap();
         assert_eq!(list(&host)[0]["title"], "/.file/id=6571367.228661126");
 

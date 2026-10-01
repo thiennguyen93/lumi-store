@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.60.4] - 2026-10-01
+
+### Changed
+
+- The panel opens faster with a long history: it reads the history once, and brings items kept by older versions up to date only once.
+
 ## [0.60.3] - 2026-10-01
 
 ### Fixed

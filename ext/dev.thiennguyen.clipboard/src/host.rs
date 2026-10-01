@@ -267,6 +267,8 @@ pub mod memory {
     #[derive(Default)]
     pub struct Memory {
         pub kv: RefCell<BTreeMap<String, Stored>>,
+        /// Every key `get` read, in order — what a request costs in reads.
+        pub reads: RefCell<Vec<String>>,
         pub blobs: RefCell<BTreeSet<String>>,
         pub pasted: RefCell<Vec<Vec<Vec<Rep>>>>,
         pub keystrokes: RefCell<Vec<bool>>,
@@ -289,6 +291,7 @@ pub mod memory {
 
     impl Host for Memory {
         fn get(&self, key: &str) -> Result<Option<Stored>, String> {
+            self.reads.borrow_mut().push(key.to_string());
             Ok(self.kv.borrow().get(key).cloned())
         }
 
