@@ -92,6 +92,8 @@ KEY_FILE = os.environ.get("STORE_KEY_FILE", "")
 # What Lumi lets an extension declare.
 CAPABILITIES = {
     "accessibility", "applications", "clipboard", "clipboard-history", "config", "input", "network",
+    # Lumi 1.30: the `screen` interface (capture, and a person's area drag).
+    "screen",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`. Checked one way only, as Lumi checks it: an event
@@ -354,6 +356,14 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"the window {name} sets a material, which only a panel has")
         if material not in ("", "popover", "hud", "sidebar"):
             fail(entry_id, f'the panel {name} asks for material {material!r}; a panel\'s material is "popover", "hud" or "sidebar"')
+        # `manifest.rs`'s title bar rule, same sentences.
+        titlebar = str(window.get("titlebar", "")).strip()
+        if titlebar == "unified" and kind == "panel":
+            fail(entry_id, f"the panel {name} asks for a unified title bar; a panel has no title bar to unify")
+        if titlebar not in ("", "standard", "unified"):
+            fail(entry_id, f'the window {name} asks for titlebar {titlebar!r}; a title bar is "standard" or "unified"')
+        if "titlebar-height" in window and titlebar != "unified":
+            fail(entry_id, f"the window {name} sets a titlebar-height, which only a unified title bar has")
     check_page_tabs(entry_id, manifest)
     check_shortcuts(entry_id, manifest)
     settings_tab = ext.get("settings-tab", ext.get("settings_tab", True))

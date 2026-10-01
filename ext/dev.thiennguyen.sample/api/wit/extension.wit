@@ -72,7 +72,7 @@ interface clipboard {
         data: data,
     }
 
-    /// Replace the board with these items. At most 32 MB in all. Lumi
+    /// Replace the board with these items. At most 160 MB in all. Lumi
     /// marks the board as written by this extension, so the extension can
     /// tell its own writes apart when it hears a copy. Added in 0.3.
     write-all: func(items: list<list<rep>>) -> result<_, string>;
@@ -102,7 +102,7 @@ interface clipboard {
     /// carries the file; an image with no file becomes a PNG file where a
     /// file is wanted (Finder, the desktop) and stays an image everywhere
     /// else; anything else goes as its types, like `write-all`. The board
-    /// the person copies with is not touched. At most 32 MB in all.
+    /// the person copies with is not touched. At most 160 MB in all.
     ///
     /// Costs `clipboard`. Answers only one of the extension's windows the
     /// person is using, and only while the mouse button is still down in
@@ -352,6 +352,14 @@ interface ui {
     /// something the person did in one of your windows. Added in Lumi 1.29.
     set-pinned: func(name: string, pinned: bool) -> result<_, string>;
 
+    /// Make one of your windows' unified title bar `height` points tall —
+    /// taller or shorter than the manifest's `titlebar-height` — and macOS's
+    /// traffic lights move to stay centred in it. Answers the height it
+    /// became, clamped to 32–96 as the manifest's is; draw your toolbar at
+    /// that. Only a window declared `titlebar = "unified"` that is open; the
+    /// next open starts from the manifest's height again. Added in Lumi 1.30.
+    set-titlebar-height: func(name: string, height: f64) -> result<f64, string>;
+
     /// Send `message`, JSON text, to one of this extension's own windows
     /// or embedded pages: a declared window by its manifest `name`, or a
     /// page by `:about`, `:settings` or `:page:<name>`. It arrives as a
@@ -450,6 +458,110 @@ interface storage {
     usage: func() -> result<space, string>;
 }
 
+/// The pixels on screen. Costs `screen` — and macOS's Screen Recording
+/// permission, which is Lumi's: granted once, in System Settings, for every
+/// extension that declares `screen`. The capability is what Lumi lets the
+/// extension do; the permission is what macOS lets Lumi do. A capture
+/// without the permission is refused with a sentence saying where to turn
+/// it on; nothing here asks macOS for it, because a dialog is only shown
+/// while Lumi's own settings window is in front.
+///
+/// Coordinates are points, origin at the top-left of the main display, y
+/// down — the space every display and window frame on macOS is reported
+/// in. Lumi's own windows, this extension's included, are never in the
+/// picture: the one asking is usually the one with a window up.
+///
+/// Needs macOS 14; below it every capture is refused by name. Added to 0.3
+/// in Lumi 1.30 without a new world version: an existing component imports
+/// nothing new and is unaffected, and one that calls this needs a Lumi that
+/// has it, which its manifest's `min-lumi-version` says.
+interface screen {
+    record rect {
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    }
+
+    /// Which window to capture, and how.
+    record window {
+        /// The id `select-window` answered — or `none` for the frontmost
+        /// ordinary window that is not Lumi's.
+        id: option<u32>,
+        /// The shadow macOS draws round the window too, in the picture's
+        /// alpha, as far as it reaches — tens of points on each side, most
+        /// below. A window whose shadow cannot be placed is taken without
+        /// it; `frame` tells: it is the window's own frame then.
+        shadow: bool,
+    }
+
+    variant target {
+        /// The whole display the pointer is on.
+        display,
+        /// One window, cut to what it draws: an application's window is
+        /// all of it, its rounded corners transparent; the Dock is its bar,
+        /// not the display-sized window macOS draws it on. The menu bar,
+        /// which macOS keeps no picture of, is what is on screen where it
+        /// is. `frame` says where the picture is. Refused if the window
+        /// has closed since.
+        window(window),
+        /// This area, clipped to the one display it covers most of.
+        area(rect),
+    }
+
+    /// A window the person picked.
+    record picked-window {
+        /// The window server's number for it: hand it to `capture` as a
+        /// `window`'s `id`.
+        id: u32,
+        /// Where it is on screen, in points.
+        frame: rect,
+    }
+
+    record shot {
+        /// The picture, a PNG in this extension's storage: a page shows it
+        /// at `/__lumi__/blob/<id>`, `clipboard` takes it as `blob`, and
+        /// `storage.blob-save` hands it to the person. It counts against
+        /// the store's space until it is deleted.
+        blob: string,
+        /// In pixels, at the display's own resolution.
+        width: u32,
+        height: u32,
+        /// Pixels per point.
+        scale: f64,
+        /// Where on screen the picture came from, in points.
+        frame: rect,
+    }
+
+    /// Whether Lumi holds Screen Recording, as far as macOS will say
+    /// without a capture: `true` is reliable, `false` may be stale for a
+    /// permission given since Lumi started — macOS caches the answer, and
+    /// only a capture tells for certain.
+    permitted: func() -> result<bool, string>;
+    /// Take one picture. Only for something the person did — a command
+    /// they pressed or a press in one of the extension's windows — never
+    /// from `on-event` or a lifecycle hook.
+    capture: func(target: target) -> result<shot, string>;
+    /// Let the person drag out an area: every display dims, the pointer
+    /// becomes a crosshair, and the area they drag is the answer — `none`
+    /// for Escape, a right click, or two minutes with no answer. Takes no
+    /// picture; hand the area to `capture` for one. Needs no macOS
+    /// permission, and the time the person takes is not counted against the
+    /// run. Only for something the person did, as `capture`.
+    select-area: func() -> result<option<rect>, string>;
+    /// Let the person pick a window: every display dims, the window under
+    /// the pointer lights up, and the one they click is the answer — `none`
+    /// for Escape, a right click, or two minutes with no answer.
+    /// Applications' windows, the menu bar, its items and the Dock are
+    /// offered; Lumi's own windows never are. Takes no picture; hand the id
+    /// to `capture` as a `window`'s for one. Needs no macOS permission — but
+    /// without Screen Recording the Dock is not offered, since where it is
+    /// is read from a picture of it. The person's time is not counted
+    /// against the run, and only for something the person did, as
+    /// `select-area`.
+    select-window: func() -> result<option<picked-window>, string>;
+}
+
 world extension {
     import selection;
     import clipboard;
@@ -462,6 +574,7 @@ world extension {
     import config;
     import ui;
     import storage;
+    import screen;
 
     /// Run one of the commands the manifest declares.
     ///
