@@ -340,7 +340,7 @@ fn prefs(host: &impl Host) -> Prefs {
             Some("dark") => "dark",
             _ => "system",
         },
-        match_snippets: snippets::Matching::parse(s["matchSnippets"].as_str()),
+        match_snippets: snippets::Matching::from_settings(&s["matchSnippets"], s["snippetsIn"].as_str()),
         snippet_profiles: snippets::picked(s["snippetProfiles"].as_str().unwrap_or_default()),
     }
 }
@@ -1728,16 +1728,16 @@ mod tests {
         assert_eq!(host.found.borrow().last().unwrap(), &(";addr".to_string(), host::Within::Active));
 
         // Every profile's: one entry naming both.
-        *host.settings.borrow_mut() = json!({ "matchSnippets": "all" });
+        *host.settings.borrow_mut() = json!({ "matchSnippets": "true", "snippetsIn": "all" });
         let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
         assert_eq!(shown["snippets"][0]["profiles"], json!(["Default", "Work"]));
 
         // The ticked ones; none ticked, nothing asked.
-        *host.settings.borrow_mut() = json!({ "matchSnippets": "selected", "snippetProfiles": "default" });
+        *host.settings.borrow_mut() = json!({ "matchSnippets": "true", "snippetsIn": "selected", "snippetProfiles": "default" });
         let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
         assert_eq!(shown["snippets"][0]["profiles"], json!(["Default"]));
         let asked = host.found.borrow().len();
-        for off in [json!({ "matchSnippets": "selected" }), json!({ "matchSnippets": "off" })] {
+        for off in [json!({ "snippetsIn": "selected" }), json!({ "matchSnippets": "false", "snippetsIn": "all" })] {
             *host.settings.borrow_mut() = off;
             let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
             assert!(shown["snippets"].is_null());

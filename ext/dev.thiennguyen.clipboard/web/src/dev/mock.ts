@@ -124,12 +124,17 @@ let previewWidth: number | null = null;
 let pdfFit: { pane?: "width" | "height"; zoomed?: "width" | "height" } = {};
 // The mock's profiles, Work live, and what each snippet trigger expands to
 // in them — as `preview` answers it (src/snippets.rs).
+// A hundred of them, so the Look in menu is seen at the size it is built for.
 const MOCK_BOOK = {
   active: "p_work",
   profiles: [
     { id: "default", name: "Default" },
     { id: "p_work", name: "Work" },
     { id: "p_home", name: "Home" },
+    ...Array.from({ length: 97 }, (_, i) => ({
+      id: `p_${i}`,
+      name: `${["Client", "Project", "Team", "Studio", "Agency", "Lab", "Shop", "Ops"][i % 8]} ${String(i + 1).padStart(3, "0")}`,
+    })),
   ],
 };
 const MOCK_SNIPPETS: Record<string, { profile: string; text: () => string; dynamic: boolean }[]> = {
@@ -143,11 +148,11 @@ const MOCK_SNIPPETS: Record<string, { profile: string; text: () => string; dynam
 
 function mockExpansions(title: string) {
   const ids =
-    settings.matchSnippets === "off"
+    settings.matchSnippets === "false"
       ? []
-      : settings.matchSnippets === "all"
+      : settings.snippetsIn === "all"
         ? MOCK_BOOK.profiles.map((p) => p.id)
-        : settings.matchSnippets === "selected"
+        : settings.snippetsIn === "selected"
           ? (settings.snippetProfiles ?? "").split(",").filter(Boolean)
           : [MOCK_BOOK.active];
   const found: { text: string; profiles: string[]; dynamic: boolean; links: { url: string }[] }[] = [];
@@ -173,8 +178,9 @@ let settings: Record<string, string> = {
   appearance: "popover",
   ignoreApps: "com.example.terminal",
   ignorePatterns: "^sk-[A-Za-z0-9]{20,}$\n\\b\\d{6}\\b",
-  matchSnippets: "current",
-  snippetProfiles: "p_work,p_gone",
+  matchSnippets: "true",
+  snippetsIn: "current",
+  snippetProfiles: "p_work,p_home,p_3,p_gone",
 };
 let trash: Entry[] = [];
 

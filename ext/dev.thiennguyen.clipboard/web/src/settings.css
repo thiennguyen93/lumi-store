@@ -341,9 +341,10 @@ span.keycap { cursor: default; }
   .row:not(.col) { flex-wrap: wrap; }
 }
 
-/* "Match snippets" (MatchMenu.tsx): a pop-up button that reads like the
-   select above it, and its menu — the Selected row flies out a submenu of
-   profiles to tick. A hint that has gone bad (nothing ticked) is red. */
+/* "Look in" under Match snippets (LookIn.tsx): a pop-up button that reads
+   like the select above it, and its menu — Selected Profiles flies out a
+   submenu with a search field over every profile, which scrolls rather
+   than grows. A hint gone bad (nothing ticked) is red. */
 .lbl small.bad { color: var(--st-bad); }
 .row > .pop { flex: none; }
 .pop { position: relative; }
@@ -353,8 +354,8 @@ span.keycap { cursor: default; }
   align-items: center;
   gap: 6px;
   box-sizing: border-box;
-  min-width: 130px;
-  max-width: 260px;
+  min-width: 150px;
+  max-width: 240px;
   height: 22px;
   padding: 0 6px 0 9px;
   border: 1px solid var(--st-line);
@@ -373,20 +374,23 @@ span.keycap { cursor: default; }
   z-index: 3;
   display: flex;
   flex-direction: column;
-  min-width: 180px;
+  min-width: 190px;
+  max-width: calc(100vw - 48px);
   box-sizing: border-box;
   padding: 5px;
   border: 1px solid var(--st-line);
   border-radius: 8px;
   background: var(--st-raised);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.12);
+  outline: none;
 }
-.pop-menu hr { width: calc(100% - 14px); margin: 4px 7px; border: 0; border-top: 1px solid var(--st-line); }
+.pop-menu.up { top: auto; bottom: calc(100% + 4px); }
 .pop-parent { position: relative; display: flex; flex-direction: column; }
-.pop-sub { top: -6px; right: auto; left: calc(100% + 4px); max-height: 232px; overflow-y: auto; overscroll-behavior: contain; }
+.pop-sub { top: -6px; right: auto; left: calc(100% + 4px); width: 250px; }
 .pop-sub.left { left: auto; right: calc(100% + 4px); }
+.pop-more { margin-left: auto; padding-left: 16px; display: grid; place-items: center; }
+.pop-menu hr { width: calc(100% - 14px); margin: 4px 7px; border: 0; border-top: 1px solid var(--st-line); }
 .pop-item {
-  all: unset;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -395,10 +399,10 @@ span.keycap { cursor: default; }
   border-radius: 5px;
   font-size: 12.5px;
   white-space: nowrap;
+  cursor: default;
 }
 .pop-item.on { background: var(--st-accent); color: #fff; }
 .pop-mark { display: grid; place-items: center; width: 14px; flex: none; }
-.pop-more { margin-left: auto; padding-left: 16px; display: grid; place-items: center; }
 .pop-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .pop-tag {
   padding: 0 6px;
@@ -408,7 +412,28 @@ span.keycap { cursor: default; }
   font-size: 11px;
   line-height: 16px;
 }
+/* "In use" beside the live profile's name, in Look in's hint. */
+.lbl small .pop-tag { margin-left: 6px; vertical-align: 1px; }
 .pop-item.on .pop-tag { background: rgba(255, 255, 255, 0.22); color: #fff; }
 .pop-item.gone { color: var(--st-dim); }
 .pop-item.gone.on { color: rgba(255, 255, 255, 0.85); }
-.pop-none { margin: 4px 8px; font-size: 12px; color: var(--st-dim); }
+.pop-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 4px 4px;
+  padding: 0 7px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--st-field);
+}
+.pop-search .glyph { color: var(--st-dim); }
+.pop-search input {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+}
+.pop-list { max-height: 264px; overflow-y: auto; overscroll-behavior: contain; }
+.pop-none { margin: 4px 8px; font-size: 11.5px; color: var(--st-dim); }
+

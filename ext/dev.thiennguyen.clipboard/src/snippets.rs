@@ -24,7 +24,8 @@ use serde::{Deserialize, Serialize};
 /// typed. A longer copy is not asked about at all.
 pub const LONGEST: usize = 64;
 
-/// The `matchSnippets` setting.
+/// Whose snippets a copy is looked up in: the `matchSnippets` switch and,
+/// while it is on, the `snippetsIn` choice.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Matching {
     Off,
@@ -36,9 +37,16 @@ pub enum Matching {
 }
 
 impl Matching {
-    pub fn parse(word: Option<&str>) -> Self {
-        match word {
-            Some("off") => Matching::Off,
+    /// From the switch (a bool, or text as Lumi stores it) and the choice.
+    /// An earlier build kept both in `matchSnippets` — "off", "current",
+    /// "all" or "selected" — so a word of those stands in for the choice
+    /// until one is saved.
+    pub fn from_settings(switch: &serde_json::Value, choice: Option<&str>) -> Self {
+        let earlier = switch.as_str();
+        if matches!(switch, serde_json::Value::Bool(false)) || matches!(earlier, Some("false" | "off")) {
+            return Matching::Off;
+        }
+        match choice.or(earlier) {
             Some("all") => Matching::All,
             Some("selected") => Matching::Selected,
             _ => Matching::Current,
@@ -216,10 +224,19 @@ mod tests {
 
     #[test]
     fn the_setting_reads_as_whose_snippets() {
-        assert_eq!(within(Matching::parse(None), &[]), Some(Within::Active));
-        assert_eq!(within(Matching::parse(Some("off")), &[]), None);
-        assert_eq!(within(Matching::parse(Some("all")), &[]), Some(Within::All));
-        assert_eq!(within(Matching::parse(Some("selected")), &[]), None, "nothing ticked, nothing asked");
+        use serde_json::json;
+        let read = |switch: serde_json::Value, choice: Option<&str>| Matching::from_settings(&switch, choice);
+        assert_eq!(read(serde_json::Value::Null, None), Matching::Current, "on, the profile in use, by default");
+        assert_eq!(read(json!("true"), Some("all")), Matching::All);
+        assert_eq!(read(json!(true), Some("selected")), Matching::Selected);
+        for off in [json!(false), json!("false"), json!("off")] {
+            assert_eq!(read(off, Some("all")), Matching::Off);
+        }
+        // What an earlier build saved in the one field.
+        assert_eq!(read(json!("all"), None), Matching::All);
+        assert_eq!(read(json!("selected"), None), Matching::Selected);
+        assert_eq!(within(Matching::Off, &[]), None);
+        assert_eq!(within(Matching::Selected, &[]), None, "nothing ticked, nothing asked");
         let ids = picked(" p_work, default,,p_work, ../x ");
         assert_eq!(ids, ["p_work", "default"]);
         assert_eq!(within(Matching::Selected, &ids), Some(Within::Only(ids.clone())));

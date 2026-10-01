@@ -9,7 +9,7 @@ import { createRoot } from "react-dom/client";
 import { acceleratorGlyphs, comboOf, comboText, DEFAULT_PIN_KEY, glyphs, parseCombo, refusal } from "./keys";
 import { shortcuts } from "./bridge";
 import { KEEP_LABELS, type OwnShortcuts, type Stats } from "./types";
-import { type Book, type Matching, MatchMenu } from "./MatchMenu";
+import { type Book, LookIn, type Scope, SCOPES } from "./LookIn";
 import "./settings.css";
 
 if (import.meta.env.DEV) {
@@ -34,7 +34,8 @@ interface Values {
   appearance: Glass;
   ignoreApps: string[];
   ignorePatterns: string;
-  matchSnippets: Matching;
+  matchSnippets: boolean;
+  snippetsIn: Scope;
   snippetProfiles: string[];
 }
 
@@ -72,23 +73,30 @@ const ORDERS: { value: Order; label: string }[] = [
   { value: "used", label: "Most used" },
 ];
 
-const MATCHES: Matching[] = ["off", "current", "all", "selected"];
-
-/** What "Match snippets" does, said under it — with the live profile's
- *  name when Lumi has told it. */
-function matchHint(matching: Matching, picked: string[], book: Book | null): string {
-  const live = book?.profiles.find((p) => p.id === book.active)?.name;
-  switch (matching) {
-    case "off":
-      return "A copy is not looked up as a snippet trigger";
-    case "current":
-      return `A copy that is a trigger in ${live ? `“${live}”` : "the profile in use"} shows what it expands to`;
+/** What "Look in" comes to, said under it: the live profile by name when
+ *  Lumi has told it, how many in all, or the ones ticked. */
+function lookHint(scope: Scope, picked: string[], book: Book | null): ReactNode {
+  const name = (id: string) => book?.profiles.find((p) => p.id === id)?.name;
+  switch (scope) {
+    case "current": {
+      const live = book && name(book.active);
+      // Tagged as the menu tags it, so the name reads as the live one.
+      return live ? (
+        <>
+          {live}
+          <span className="pop-tag">In use</span>
+        </>
+      ) : (
+        "The profile in use"
+      );
+    }
     case "all":
-      return "A copy that is a trigger in any profile shows what it expands to";
-    case "selected":
-      return picked.length
-        ? "A copy that is a trigger in a ticked profile shows what it expands to"
-        : "Nothing is ticked under Selected, so nothing is matched";
+      return book ? `Every profile, all ${book.profiles.length}` : "Every profile";
+    case "selected": {
+      if (!picked.length) return "Nothing is ticked, so nothing is matched";
+      const names = picked.map((id) => name(id) ?? "a deleted profile");
+      return names.length <= 3 ? names.join(", ") : `${names.slice(0, 2).join(", ")} and ${names.length - 2} more`;
+    }
   }
 }
 
@@ -120,7 +128,11 @@ function read(raw: Record<string, unknown>): Values {
       .map((l) => l.trim())
       .filter(Boolean),
     ignorePatterns: text(raw.ignorePatterns, ""),
-    matchSnippets: (MATCHES.includes(raw.matchSnippets as Matching) ? raw.matchSnippets : "current") as Matching,
+    // An earlier build kept the choice in this one field, "off" among them.
+    matchSnippets: !["false", "off"].includes(text(raw.matchSnippets, "true")),
+    snippetsIn: (SCOPES.find((s) => s.value === raw.snippetsIn) ??
+      SCOPES.find((s) => s.value === raw.matchSnippets) ??
+      SCOPES[0]!).value,
     snippetProfiles: text(raw.snippetProfiles, "")
       .split(",")
       .map((id) => id.trim())
@@ -142,7 +154,8 @@ function written(v: Values): Record<string, string> {
     appearance: v.appearance,
     ignoreApps: v.ignoreApps.join("\n"),
     ignorePatterns: v.ignorePatterns,
-    matchSnippets: v.matchSnippets,
+    matchSnippets: String(v.matchSnippets),
+    snippetsIn: v.snippetsIn,
     snippetProfiles: v.snippetProfiles.join(","),
   };
 }
@@ -269,18 +282,27 @@ function Settings() {
       <section>
         <h3>Snippets</h3>
         <div className="group">
-          <Row
-            label="Match snippets"
-            hint={matchHint(values.matchSnippets, values.snippetProfiles, book)}
-            bad={values.matchSnippets === "selected" && !values.snippetProfiles.length}
-          >
-            <MatchMenu
-              matching={values.matchSnippets}
-              picked={values.snippetProfiles}
-              book={book}
-              onChange={(patch) => change(patch, true)}
+          <Row label="Match snippets" hint="A copy that is a snippet trigger shows what it expands to">
+            <Toggle
+              on={values.matchSnippets}
+              label="Match snippets"
+              onChange={(matchSnippets) => change({ matchSnippets }, true)}
             />
           </Row>
+          {values.matchSnippets && (
+            <Row
+              label="Look in"
+              hint={lookHint(values.snippetsIn, values.snippetProfiles, book)}
+              bad={values.snippetsIn === "selected" && !values.snippetProfiles.length}
+            >
+              <LookIn
+                scope={values.snippetsIn}
+                picked={values.snippetProfiles}
+                book={book}
+                onChange={(patch) => change(patch, true)}
+              />
+            </Row>
+          )}
         </div>
       </section>
 
@@ -383,7 +405,7 @@ function Settings() {
   );
 }
 
-function Row({ label, hint, bad = false, children }: { label: string; hint?: string; bad?: boolean; children: ReactNode }) {
+function Row({ label, hint, bad = false, children }: { label: string; hint?: ReactNode; bad?: boolean; children: ReactNode }) {
   return (
     <div className="row">
       <div className="lbl">
