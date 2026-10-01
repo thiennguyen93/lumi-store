@@ -38,16 +38,18 @@
 #          `publish.py --sign-built` is that step, and says why at length.
 #   discussions
 #          beside the others: one GitHub Discussion per extension, for
-#          hearts and feedback. `discussions: write` and nothing else.
+#          hearts and feedback. `discussions: write`, and the private
+#          entries' manifests to title their threads by.
 #
 # **Private entries** (`private = true` in extensions.toml) are the store
 # owner's closed-source extensions: private repos, pinned as submodules
 # marked `update = none`, so every recursive checkout here skips them.
 # `scripts/fetch-private.sh` checks them out with a read-only deploy key,
-# which opens that one repository and nothing else, in two places only:
+# which opens that one repository and nothing else, in three places only:
 # the entry's own build leg — before `publish.py --build`, with the key
-# deleted by the time any build script runs — and the sign job, which
-# packs their manifests and icons and runs no submission's code. Their
+# deleted by the time any build script runs — the sign job, which packs
+# their manifests and icons, and the discussions job, which reads their
+# names for the threads; the last two run no submission's code. Their
 # source never crosses between jobs as an artifact: artifacts of a public
 # repository can be downloaded by anyone. What they compile is published
 # like every other package.
@@ -142,11 +144,13 @@ jobs:
 
   # One GitHub Discussion per extension, the thread Lumi reads hearts from
   # (`scripts/discussions.py` says how). Its own job because it is the
-  # only one that needs `discussions: write`: no key here, no build, and
-  # the manifests are read as files. `continue-on-error` because a like
+  # only one that needs `discussions: write`: no build, and the manifests
+  # are read as files — the private entries' too, fetched with the deploy
+  # key as the sign job fetches them. `continue-on-error` because a like
   # button is not worth holding a release for — when this fails, the
-  # index carries `discussion: null` and Lumi hides the hearts until the
-  # next run.
+  # index carries `discussion: null` for every extension and Lumi hides
+  # the hearts until the next run, which is why a private source that
+  # cannot be fetched only leaves that one entry's thread as it is.
   discussions:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -160,6 +164,12 @@ jobs:
         with:
           submodules: recursive
           persist-credentials: false
+      # The private entries' manifests, for their threads' titles. Nothing
+      # from them runs here, and the key is gone before the next step.
+      - name: Private sources
+        env:
+          DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+        run: scripts/fetch-private.sh
       - id: sync
         env:
           GH_TOKEN: ${{ github.token }}
