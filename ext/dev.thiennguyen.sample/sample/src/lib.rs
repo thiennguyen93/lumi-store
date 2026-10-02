@@ -76,8 +76,9 @@ impl lumi::Guest for Sample {
         // where Lumi names it `:settings`. A colon is outside every window
         // name, so the two can never be confused.
         // And its Welcome window, which asks for the same `about` and
-        // `open-settings` the settings page does.
-        if window != "settings" && window != ":settings" && window != "welcome" {
+        // `open-settings` the settings page does — and the two unified
+        // windows, whose band buttons ask for `titlebar-height`.
+        if !["settings", ":settings", "welcome", "unified", "unified-tall"].contains(&window.as_str()) {
             return Err(format!("the sample has no {window} window"));
         }
         let parsed: serde_json::Value =
@@ -101,9 +102,116 @@ impl lumi::Guest for Sample {
             // storage, and the same pasted — which this manifest cannot
             // pay for (`input`), so the tests watch it refused.
             Some("write-all") => return write_all(),
+            // A blob handed to the person as a file, under the name asked.
+            Some("save-blob") => {
+                let name = parsed.get("name").and_then(|n| n.as_str()).unwrap_or("sample.png");
+                let blob = lumi::storage::blob_write(&[0x89, b'P', b'N', b'G'])?;
+                let saved = lumi::storage::blob_save(&blob, name);
+                lumi::storage::blob_delete(&blob)?;
+                saved?;
+                return Ok(serde_json::json!({ "saved": true }).to_string());
+            }
+            // A picture of an area, read back out of the store and deleted:
+            // what reaches a page is the blob's size, which is how the tests
+            // see that the picture went into storage rather than across.
+            Some("capture") => {
+                let area = lumi::screen::Rect { x: 10.0, y: 20.0, width: 30.0, height: 40.0 };
+                let shot = lumi::screen::capture(lumi::screen::Target::Area(area))?;
+                let bytes = lumi::storage::blob_read(&shot.blob)?;
+                lumi::storage::blob_delete(&shot.blob)?;
+                return Ok(serde_json::json!({
+                    "bytes": bytes.len(),
+                    "width": shot.width,
+                    "height": shot.height,
+                    "scale": shot.scale,
+                    "frame": [shot.frame.x, shot.frame.y, shot.frame.width, shot.frame.height],
+                })
+                .to_string());
+            }
+            // A blob the page uploaded (`PUT /__lumi__/blob`), measured from
+            // this side and deleted: how big Lumi says it is, which the
+            // page compares with what it sent.
+            Some("blob-size") => {
+                let id = parsed.get("blob").and_then(|b| b.as_str()).unwrap_or("");
+                let size = lumi::storage::blobs()?
+                    .into_iter()
+                    .find(|(blob, _)| blob == id)
+                    .map(|(_, size)| size)
+                    .ok_or_else(|| format!("no blob {id}"))?;
+                lumi::storage::blob_delete(id)?;
+                return Ok(serde_json::json!({ "bytes": size }).to_string());
+            }
+            // The unified window's band, taller or shorter, from its own
+            // toolbar's buttons: answers the height it became.
+            Some("titlebar-height") => {
+                let asked = parsed.get("height").and_then(|h| h.as_f64()).unwrap_or(52.0);
+                let height = lumi::set_titlebar_height(&window, asked)?;
+                return Ok(serde_json::json!({ "height": height }).to_string());
+            }
+            // The person's window, then a picture of it by its id.
+            Some("pick") => {
+                let Some(picked) = lumi::screen::select_window()? else {
+                    return Ok(serde_json::json!({ "window": null }).to_string());
+                };
+                let window = lumi::screen::Window { id: Some(picked.id), shadow: false };
+                let shot = lumi::screen::capture(lumi::screen::Target::Window(window))?;
+                lumi::storage::blob_delete(&shot.blob)?;
+                return Ok(serde_json::json!({ "window": picked.id }).to_string());
+            }
+            // The person's area, then a picture of it: the two calls a
+            // screenshot tool makes, in the order it makes them.
+            Some("select") => {
+                let Some(area) = lumi::screen::select_area()? else {
+                    return Ok(serde_json::json!({ "area": null }).to_string());
+                };
+                let shot = lumi::screen::capture(lumi::screen::Target::Area(area))?;
+                lumi::storage::blob_delete(&shot.blob)?;
+                return Ok(serde_json::json!({
+                    "area": [area.x, area.y, area.width, area.height],
+                })
+                .to_string());
+            }
+            // Which snippets a text is the trigger of, and each one expanded
+            // — or why it was not: `within` is "active", "all" or a list of
+            // profile ids.
+            Some("snippets") => {
+                use lumi::snippets::{self, Within};
+                let text = parsed.get("text").and_then(|t| t.as_str()).unwrap_or("");
+                let within = match parsed.get("within") {
+                    Some(serde_json::Value::Array(ids)) => Within::Only(
+                        ids.iter().filter_map(|id| id.as_str().map(str::to_string)).collect(),
+                    ),
+                    Some(serde_json::Value::String(all)) if all == "all" => Within::All,
+                    _ => Within::Active,
+                };
+                let hits: Vec<serde_json::Value> = snippets::find(text, within)?
+                    .into_iter()
+                    .map(|hit| {
+                        let expanded = snippets::expand(&hit.profile, &hit.snippet, text);
+                        serde_json::json!({
+                            "profile": hit.profile,
+                            "snippet": hit.snippet,
+                            "trigger": hit.trigger,
+                            "revision": hit.revision,
+                            "fixed": hit.fixed,
+                            "text": expanded.as_ref().ok().map(|e| e.text.clone()),
+                            "sealed": expanded.as_ref().ok().map(|e| e.sealed),
+                            "error": expanded.err(),
+                        })
+                    })
+                    .collect();
+                return Ok(serde_json::json!({ "hits": hits }).to_string());
+            }
             Some("paste") => {
                 lumi::paste(&[vec![text_rep("pasted")]])?;
                 return Ok(serde_json::json!({ "pasted": true }).to_string());
+            }
+            // A press on an item that starts to move: one text item, and
+            // the page's choice about closing after the drop.
+            Some("drag") => {
+                let close = parsed.get("closeOnDrop").and_then(|c| c.as_bool()).unwrap_or(false);
+                lumi::drag(&[vec![text_rep("dragged")]], close)?;
+                return Ok(serde_json::json!({ "dragged": true }).to_string());
             }
             // Esc in a window: closed by name, the way it was opened.
             Some("close") => {
@@ -169,6 +277,9 @@ impl lumi::Guest for Sample {
     fn on_event(name: String, payload: String) -> Result<(), String> {
         if name == "paste" {
             return lumi::paste(&[vec![text_rep(&payload)]]);
+        }
+        if name == "capture" {
+            return lumi::screen::capture(lumi::screen::Target::Display).map(|_| ());
         }
         lumi::storage::put("last-event", &format!("{name} {payload}"), None)
             .map(|_| ())

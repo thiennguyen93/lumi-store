@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.12.0] - 2026-10-02
+
+### Added
+
+- The Changelog tab on its page in Lumi is renamed **What's new**, to show how an extension changes one of Lumi's own tabs.
+- Two windows whose toolbar is their title bar, one with a taller band, to show `titlebar = "unified"`.
+
+### Changed
+
+- Needs Lumi 1.31.0.
+
 ## [0.11.1] - 2026-09-30
 
 ### Added

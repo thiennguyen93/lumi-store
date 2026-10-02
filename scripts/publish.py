@@ -153,7 +153,17 @@ COMPONENT_HEADER = b"\x00asm\x0d\x00\x01\x00"
 # [[shortcut]], reserved whether or not a manifest declares one.
 MAX_PAGES = 4
 MAX_PAGE_LABEL = 24
-RESERVED_PAGE_LABELS = {"about", "settings", "permissions", "shortcuts"}
+# Lumi's own tabs (`ext::manifest::BuiltinTab`), word → default label. One
+# table, as in Lumi: `[tabs.<word>]` may rename, hide or page any of them,
+# and every default label is reserved from a [[page]]. A tab Lumi adds is a
+# line here.
+BUILTIN_TABS = {
+    "about": "About",
+    "settings": "Settings",
+    "shortcuts": "Shortcuts",
+    "changelog": "Changelog",
+}
+RESERVED_PAGE_LABELS = {label.lower() for label in BUILTIN_TABS.values()} | {"permissions"}
 MAX_ICON = 64 * 1024
 # The store's shelves: an entry's `category` in extensions.toml is one of
 # these, and Lumi's Extension Store filters Discover by them. The store's
@@ -368,12 +378,8 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"the window {name} sets a titlebar-height, which only a unified title bar has")
     check_page_tabs(entry_id, manifest)
     check_shortcuts(entry_id, manifest)
-    settings_tab = ext.get("settings-tab", ext.get("settings_tab", True))
-    if not isinstance(settings_tab, bool):
-        fail(entry_id, f"settings-tab = {settings_tab!r} is not true or false")
-    if not settings_tab and str(ext.get("settings-page", ext.get("settings_page", ""))).strip():
-        fail(entry_id, "settings-tab = false hides the tab settings-page draws in — leave one of them out")
-    for noun, path in declared_pages(manifest):
+    check_tabs(entry_id, manifest)
+    for noun, path in declared_pages(entry_id, manifest):
         if not is_valid_ui_path(path):
             fail(entry_id, f"the {noun} points at {path!r}, which is not a plain relative path")
     install = manifest.get("install")
@@ -420,12 +426,94 @@ def check_shortcuts(entry_id: str, manifest: dict):
         if spelled in keys:
             fail(entry_id, f"two [[shortcut]]s ask for {key} — one combination runs one command")
         keys.add(spelled)
+
+
+def check_tabs(entry_id: str, manifest: dict):
+    """`[tabs.<name>]` and the older keys that say the same things, held to
+    Lumi's `manifest::tabs` — one set of rules asked of every one of Lumi's
+    tabs, in the same order and the same sentences, so a tab Lumi adds is a
+    line in BUILTIN_TABS and nothing here. Returns `{word: {label, page,
+    hidden}}` for `declared_pages`."""
     ext = manifest.get("extension", {})
-    shortcuts_tab = ext.get("shortcuts-tab", ext.get("shortcuts_tab", True))
-    if not isinstance(shortcuts_tab, bool):
-        fail(entry_id, f"shortcuts-tab = {shortcuts_tab!r} is not true or false")
-    if not shortcuts_tab and not manifest.get("shortcut"):
-        fail(entry_id, "shortcuts-tab = false hides the tab [[shortcut]] draws in, and this manifest declares none")
+    raw = manifest.get("tabs", {})
+    if not isinstance(raw, dict):
+        fail(entry_id, "tabs is a table of tables: [tabs.changelog], [tabs.settings], …")
+    tabs = {word: {"label": label, "page": None, "hidden": False} for word, label in BUILTIN_TABS.items()}
+    spelled = {word: {"page": None, "hidden": None} for word in BUILTIN_TABS}
+    offered = ", ".join(list(BUILTIN_TABS)[:-1]) + " and " + list(BUILTIN_TABS)[-1]
+
+    def ui_path(key, path):
+        if not is_valid_ui_path(path):
+            fail(entry_id, f"{key} points at {path!r}, which is not a plain relative path into ui/")
+        return path
+
+    for word, table in raw.items():
+        if word not in BUILTIN_TABS:
+            fail(entry_id, f"[tabs.{word}] is not one of Lumi's tabs — {offered} are")
+        if not isinstance(table, dict):
+            fail(entry_id, f"[tabs.{word}] is a table")
+        key = f"[tabs.{word}]"
+        label = str(table.get("label", "")).strip()
+        if label:
+            if len(label) > MAX_PAGE_LABEL:
+                fail(entry_id, f"{key} label {label!r} is longer than {MAX_PAGE_LABEL} characters — it is a tab, and a tab holds a word or two")
+            if label.lower() in RESERVED_PAGE_LABELS and label.lower() != BUILTIN_TABS[word].lower():
+                fail(entry_id, f"{key} may not be labelled {label!r}: that is the name of another of Lumi's tabs, and Permissions is always Lumi's")
+            tabs[word]["label"] = label
+        page = str(table.get("page", "")).strip()
+        if page:
+            tabs[word]["page"] = ui_path(f"{key} page", page)
+            spelled[word]["page"] = f"{key} page"
+        if "hidden" in table:
+            if not isinstance(table["hidden"], bool):
+                fail(entry_id, f"{key} hidden = {table['hidden']!r} is not true or false")
+            tabs[word]["hidden"] = table["hidden"]
+            spelled[word]["hidden"] = f"{key} hidden"
+
+    # The older spellings, each saying one thing a [tabs] field says.
+    for word, keys in (("about", ("about",)), ("settings", ("settings-page", "settings_page"))):
+        key = keys[0]
+        value = next((str(ext[k]).strip() for k in keys if k in ext), "")
+        if not value:
+            continue
+        if spelled[word]["page"]:
+            fail(entry_id, f"{key} and {spelled[word]['page']} both name the {BUILTIN_TABS[word]} tab's page — keep one")
+        tabs[word]["page"] = ui_path(key, value)
+        spelled[word]["page"] = key
+    for word, keys in (("settings", ("settings-tab", "settings_tab")), ("shortcuts", ("shortcuts-tab", "shortcuts_tab"))):
+        key = keys[0]
+        present = [k for k in keys if k in ext]
+        if not present:
+            continue
+        shown = ext[present[0]]
+        if not isinstance(shown, bool):
+            fail(entry_id, f"{key} = {shown!r} is not true or false")
+        if spelled[word]["hidden"]:
+            fail(entry_id, f"{key} and {spelled[word]['hidden']} both say whether the {BUILTIN_TABS[word]} tab is drawn — keep one")
+        tabs[word]["hidden"] = not shown
+        spelled[word]["hidden"] = f"{key} = {'true' if shown else 'false'}"
+
+    for word, decl in tabs.items():
+        if not decl["hidden"]:
+            continue
+        hidden_key = spelled[word]["hidden"] or f"[tabs.{word}] hidden"
+        if word == "about":
+            fail(entry_id, f"{hidden_key}: the About tab cannot be hidden — it is where an extension's page opens when every other tab is gone")
+        if spelled[word]["page"]:
+            fail(entry_id, f"{hidden_key} hides the tab {spelled[word]['page']} draws in — leave one of them out")
+        # Only the Shortcuts tab can be known empty from the manifest alone.
+        if word == "shortcuts" and not manifest.get("shortcut"):
+            fail(entry_id, f"{hidden_key} hides the {BUILTIN_TABS[word]} tab, and this manifest gives Lumi nothing to draw in it")
+
+    seen = [str(page.get("label", "")).strip() or page.get("name", "") for page in manifest.get("page", [])]
+    seen = [label.lower() for label in seen]
+    for decl in tabs.values():
+        if decl["hidden"]:
+            continue
+        if decl["label"].lower() in seen:
+            fail(entry_id, f"two tabs are labelled {decl['label']!r}")
+        seen.append(decl["label"].lower())
+    return tabs
 
 
 def check_page_tabs(entry_id: str, manifest: dict):
@@ -459,21 +547,18 @@ def check_page_tabs(entry_id: str, manifest: dict):
                 fail(entry_id, f"the page {name}'s {switch} = {page.get(switch)!r} is not true or false")
 
 
-def declared_pages(manifest: dict) -> list:
+def declared_pages(entry_id: str, manifest: dict) -> list:
     """Every ui/ page the manifest names outside [[window]], as (noun, path):
-    the extension's own About and Settings pages and its installer. Lumi's
-    installer refuses a package naming a page it does not ship — the About
+    a page drawn in one of Lumi's tabs, each [[page]], and the installer.
+    Lumi's installer refuses a package naming a page it does not ship — a
     tab opening on a 404, an Install button that opens nothing — so they are
     held to the window rule here, in both halves: a plain path, and a file
-    that is actually there."""
-    ext = manifest.get("extension", {})
+    that is actually there. The tabs are read through `check_tabs`, so the
+    older keys and [tabs] land in one list."""
     pages = []
-    about = str(ext.get("about", "")).strip()
-    if about:
-        pages.append(("about page", about))
-    settings_page = str(ext.get("settings-page", ext.get("settings_page", ""))).strip()
-    if settings_page:
-        pages.append(("settings page", settings_page))
+    for word, decl in check_tabs(entry_id, manifest).items():
+        if decl["page"]:
+            pages.append((f"{BUILTIN_TABS[word]} tab's page", decl["page"]))
     for page in manifest.get("page", []):
         path = str(page.get("path", "")).strip() or "index.html"
         pages.append((f"page {page.get('name', '')}", path))
@@ -622,11 +707,20 @@ def ui_members(entry_id: str, ui_dir: Path) -> list:
 def pack(entry_id: str, manifest_path: Path, wasm_path: Path, icon_path, ui_dir: Path) -> bytes:
     """A reproducible tarball: fixed metadata, fixed order, no gzip
     timestamp — an unchanged extension republished is identical bytes,
-    so mirrors and caches can compare instead of guessing."""
+    so mirrors and caches can compare instead of guessing.
+
+    `CHANGELOG.md` rides in the package as well as being published beside
+    it: Lumi's Changelog tab reads the installed copy's, so it says what
+    that Mac has and needs neither the store nor the network. It is the
+    reviewed source's file, already held to `changelog_of` before this
+    runs; a Lumi older than the tab ignores the member."""
     buffer = io.BytesIO()
     members = [("manifest.toml", manifest_path)]
     if icon_path is not None:
         members.append(("icon.svg", icon_path))
+    changelog = manifest_path.parent / "CHANGELOG.md"
+    if changelog.is_file():
+        members.append(("CHANGELOG.md", changelog))
     members.extend(ui_members(entry_id, ui_dir))
     members.append(("extension.wasm", wasm_path))
     with tarfile.open(fileobj=buffer, mode="w") as tar:
@@ -967,7 +1061,7 @@ def check_ui(entry_id: str, manifest: dict, ui_dir: Path):
         declared = window.get("path", "") or "index.html"
         if not (ui_dir / declared).is_file():
             fail(entry_id, f"window {window.get('name')} points at ui/{declared}, which does not exist")
-    for noun, declared in declared_pages(manifest):
+    for noun, declared in declared_pages(entry_id, manifest):
         if not (ui_dir / declared).is_file():
             fail(entry_id, f"the {noun} points at ui/{declared}, which does not exist")
     for command in manifest.get("command", []):
