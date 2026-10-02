@@ -559,10 +559,13 @@ interface screen {
         frame: rect,
     }
 
-    /// Whether Lumi holds Screen Recording, as far as macOS will say
-    /// without a capture: `true` is reliable, `false` may be stale for a
-    /// permission given since Lumi started — macOS caches the answer, and
-    /// only a capture tells for certain.
+    /// Whether Lumi holds Screen Recording. Takes no picture, and is
+    /// right for a permission given since Lumi started too — for a status
+    /// line, say. Without the permission `capture`, `select-area` and
+    /// `select-window` are refused, and Lumi itself asks for it: your
+    /// extension never does, and need not ask this first. The same answer
+    /// as `permissions.check(screen-recording)`, which comes with the rest
+    /// of the toolset for asking first.
     permitted: func() -> result<bool, string>;
     /// Take one picture. Only for something the person did — a command
     /// they pressed or a press in one of the extension's windows — never
@@ -571,18 +574,18 @@ interface screen {
     /// Let the person drag out an area: every display dims, the pointer
     /// becomes a crosshair, and the area they drag is the answer — `none`
     /// for Escape, a right click, or two minutes with no answer. Takes no
-    /// picture; hand the area to `capture` for one. Needs no macOS
-    /// permission, and the time the person takes is not counted against the
-    /// run. Only for something the person did, as `capture`.
+    /// picture; hand the area to `capture` for one. Refused at once without
+    /// Screen Recording, as `capture` would be — nobody drags out an area
+    /// that cannot be captured. The time the person takes is not counted
+    /// against the run. Only for something the person did, as `capture`.
     select-area: func() -> result<option<rect>, string>;
     /// Let the person pick a window: every display dims, the window under
     /// the pointer lights up, and the one they click is the answer — `none`
     /// for Escape, a right click, or two minutes with no answer.
     /// Applications' windows, the menu bar, its items and the Dock are
     /// offered; Lumi's own windows never are. Takes no picture; hand the id
-    /// to `capture` as a `window`'s for one. Needs no macOS permission — but
-    /// without Screen Recording the Dock is not offered, since where it is
-    /// is read from a picture of it. The person's time is not counted
+    /// to `capture` as a `window`'s for one. Refused at once without Screen
+    /// Recording, as `select-area` is. The person's time is not counted
     /// against the run, and only for something the person did, as
     /// `select-area`.
     select-window: func() -> result<option<picked-window>, string>;
@@ -657,6 +660,68 @@ interface snippets {
     expand: func(profile: string, snippet: string, text: string) -> result<expansion, string>;
 }
 
+/// macOS permissions Lumi holds on behalf of every extension. The grant is
+/// always Lumi's — macOS credits the app, never an extension inside it — so
+/// your extension asks Lumi, and Lumi asks macOS.
+///
+/// Two ways to use it. The one-liner: `ask`, and Lumi shows its own sheet in
+/// Settings, with your extension's name, walking the person through macOS's
+/// questions. Or draw your own guidance in one of your windows and build it
+/// from `check`, `request` and `open-system-settings`.
+///
+/// Each permission is reachable only by an extension declaring the
+/// capability that needs it — screen-recording needs `screen` — so nobody is
+/// asked for a permission the review sheet did not show. Every call costs
+/// budget; `ask`, `request` and `open-system-settings` also answer only
+/// something the person did — a command or a press in one of your windows —
+/// never `on-event` or a lifecycle hook.
+///
+/// Added to 0.3 in Lumi 1.33 without a new world version: an existing
+/// component imports nothing new and is unaffected, and one that calls this
+/// needs a Lumi that has it, which its manifest's `min-lumi-version` says.
+interface permissions {
+    enum permission {
+        /// Capturing the screen — `screen.capture`, `select-area`,
+        /// `select-window`. Needs the `screen` capability.
+        screen-recording,
+    }
+
+    enum state {
+        granted,
+        not-granted,
+    }
+
+    /// What `request` did.
+    enum requested {
+        /// macOS was asked. Its dialog shows once in Lumi's life; after that
+        /// asking is silent, and the switch is in System Settings.
+        asked,
+        /// Nothing to ask: Lumi already has it.
+        already-granted,
+        /// Not asked: Lumi's flow editor has unsaved changes, and turning
+        /// the permission on can offer to quit Lumi, which would stop to ask
+        /// about them. Ask the person to save or close the flow, or call
+        /// `ask`, whose sheet says so.
+        flow-editor-open,
+        /// Not asked: no window of Lumi's is up — a panel never makes one —
+        /// and macOS only lists an app that asked from a window. Ask from one
+        /// of your windows, or call `ask`.
+        no-window,
+    }
+
+    /// Whether Lumi holds it now. Takes no picture and asks nothing.
+    check: func(p: permission) -> result<state, string>;
+    /// Lumi's own sheet in Settings, worded with your extension's name. Comes
+    /// back as soon as the sheet is up; the person answers in their own time.
+    /// Does nothing when Lumi already holds the permission.
+    ask: func(p: permission) -> result<_, string>;
+    /// macOS's own request, for a page of your own that has explained it
+    /// first. Say before calling it that macOS's first button is Deny.
+    request: func(p: permission) -> result<requested, string>;
+    /// System Settings at the permission's list, where Lumi's switch is.
+    open-system-settings: func(p: permission) -> result<_, string>;
+}
+
 world extension {
     import selection;
     import clipboard;
@@ -671,6 +736,7 @@ world extension {
     import storage;
     import screen;
     import snippets;
+    import permissions;
 
     /// Run one of the commands the manifest declares.
     ///

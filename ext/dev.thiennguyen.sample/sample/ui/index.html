@@ -39,6 +39,25 @@
   <button id="go">Open in Google Translate</button>
   <p class="muted" id="said"></p>
 
+  <!-- Lumi's permissions, both ways an extension can use them: Lumi's own
+       sheet in one call, or the three pieces a page like this one builds
+       its own guidance from. The grant is always Lumi's. -->
+  <h2>Permissions</h2>
+  <p class="muted">
+    Screen Recording belongs to Lumi, which asks macOS for it. Ask with Lumi's
+    own sheet, or build your own page: check, request, then System Settings.
+    When macOS asks, its first button is <strong>Deny</strong> — choose
+    <strong>Open System Settings</strong>.
+  </p>
+  <p class="muted">Screen Recording: <strong id="permission-state">—</strong></p>
+  <div class="row">
+    <button id="permission-check">Check</button>
+    <button id="permission-ask">Ask with Lumi's sheet</button>
+    <button id="permission-request">Ask macOS</button>
+    <button id="permission-open">Open System Settings</button>
+  </div>
+  <p class="muted" id="permission-said"></p>
+
   <p class="muted" id="running"></p>
 
   <script src="app.js"></script>

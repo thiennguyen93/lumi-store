@@ -110,6 +110,40 @@ document.getElementById("go").addEventListener("click", async () => {
   }
 });
 
+// Lumi's permissions — each press is one `lumi::permissions` call in the
+// wasm, which is where the capability gate and the person-behind-it rule
+// are applied; the page only draws.
+const permissionState = document.getElementById("permission-state");
+const permissionSaid = document.getElementById("permission-said");
+
+// What `request` answered, worded for the person reading this page.
+const REQUESTED = {
+  asked: "macOS was asked. If no dialog appeared, it already asked once — use Open System Settings.",
+  alreadyGranted: "Lumi already has it.",
+  flowEditorOpen: "Not asked: save or close the unsaved flow in Lumi's flow editor first.",
+  noWindow: "Not asked: open this page in its own window, or use Lumi's sheet.",
+};
+
+async function permission(what) {
+  permissionSaid.textContent = "";
+  try {
+    const { permission: answer } = await call({ kind: "permissions", do: what });
+    if (what === "check") {
+      permissionState.textContent = answer === "granted" ? "granted" : "not granted";
+    } else if (what === "request") {
+      permissionSaid.textContent = REQUESTED[answer] || answer;
+    }
+  } catch (err) {
+    permissionSaid.textContent = String(err.message || err);
+  }
+}
+
+document.getElementById("permission-check").addEventListener("click", () => permission("check"));
+document.getElementById("permission-ask").addEventListener("click", () => permission("ask"));
+document.getElementById("permission-request").addEventListener("click", () => permission("request"));
+document.getElementById("permission-open").addEventListener("click", () => permission("open"));
+
 load().then(refreshPreview);
+permission("check");
 showProfile();
 showRunning();
