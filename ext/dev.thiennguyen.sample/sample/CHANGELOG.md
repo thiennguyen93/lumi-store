@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.14.0] - 2026-10-02
+
+### Added
+
+- Rows of its own in Lumi's menu bar menu: **Translate Selection**, a **Translate To** submenu whose tick follows the language picked, and **Sample Settings…** — the `lumi::menu` calls, set on install and update.
+
+### Changed
+
+- Declares `menu`, the capability its menu bar rows need.
+
 ## [0.13.0] - 2026-10-02
 
 ### Added

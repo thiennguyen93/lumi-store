@@ -6,10 +6,10 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.13.0"
+version = "0.14.0"
 # 1.33.0: the floor is the newest host function the code calls, not the
 # world it was built for. WIT 0.3 grew `screen` in 1.30, `snippets` in
-# 1.31 and `permissions` in 1.33 without a new world version, and the component imports what it
+# 1.31 and `permissions` and `menu` in 1.33 without a new world version, and the component imports what it
 # calls — its test hooks reach both — so an older Lumi could not
 # instantiate it. ([tabs] below is the other direction: an older Lumi
 # ignores the table and draws its own tabs, so it sets no floor.)
@@ -47,7 +47,8 @@ menu = "auto"
 # capability Screen Recording is for, and without it every `permissions`
 # call about Screen Recording is refused by name. The sample takes no
 # picture itself; the review sheet still says what the word allows.
-capabilities = ["accessibility", "applications", "clipboard", "network", "screen"]
+# `menu` for its rows in Lumi's menu bar menu (`draw_menu` in src/lib.rs).
+capabilities = ["accessibility", "applications", "clipboard", "menu", "network", "screen"]
 
 # Pictures for this extension's page in Lumi's Extension Store: its About
 # page and its Settings page. The store publishes them beside the package;

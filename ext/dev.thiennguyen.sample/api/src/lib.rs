@@ -54,7 +54,7 @@
 //! a web address), `fetch` needs `network`, everything in [`config`]
 //! needs `config`, [`screen`] needs `screen`, [`snippets`] needs
 //! `snippets`, and [`permissions`] needs the capability of the permission
-//! asked about — `screen` for Screen Recording. `alert`, `settings`, `profiles`, [`storage`] and
+//! asked about — `screen` for Screen Recording, and [`menu`] needs `menu`. `alert`, `settings`, `profiles`, [`storage`] and
 //! [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
@@ -725,6 +725,150 @@ pub mod permissions {
     /// System Settings at the permission's list, where Lumi's switch is.
     pub fn open_system_settings(permission: Permission) -> Result<(), String> {
         wit::open_system_settings(permission)
+    }
+}
+
+/// Your extension's own rows in Lumi's menu bar menu, built while it runs.
+/// Every function here needs the `menu` capability.
+///
+/// Lumi draws them in a section of their own after Recent: a submenu titled
+/// with your extension's name and icon — or, when the whole tree is one
+/// plain [`Entry::item`], that item on its own with your icon beside it, so
+/// its label has to say what it does. Lumi keeps the last tree you set,
+/// across restarts and updates, and draws it without running your code: set
+/// it once when you are installed, and again whenever a row should change.
+///
+/// ```ignore
+/// use lumi_extension_api::menu::{self, Entry};
+///
+/// fn draw(paused: bool) -> Result<(), String> {
+///     menu::set(&[
+///         Entry::item("show", "Show History…"),
+///         Entry::check("pause", "Pause Recording", paused),
+///         Entry::separator("s1"),
+///         Entry::submenu("pins", "Pinned"),
+///         Entry::item("pin.1", "hi@example.com").under("pins"),
+///         Entry::item("count", "1,204 items").disabled(),
+///     ])
+/// }
+/// ```
+///
+/// A press arrives at [`Guest::run_ui`](crate::Guest::run_ui) with the
+/// window `:menu`; [`pressed`] reads it. It is something the person did, so
+/// the handler may open a window or paste. Lumi never flips a check row
+/// itself — set the tree again with the new state:
+///
+/// ```ignore
+/// fn run_ui(window: String, request: String) -> Result<String, String> {
+///     if let Some(id) = menu::pressed(&window, &request) {
+///         if id == "pause" { /* flip your state, then */ draw(!paused)?; }
+///         return Ok(String::new());
+///     }
+///     // … your windows' requests …
+/// }
+/// ```
+///
+/// At most 64 entries, ids of 1 to 64 bytes and unique, a `parent` that
+/// names a submenu listed before it, and two levels of submenu below your
+/// own. Switching your extension off hides the rows; uninstalling removes
+/// them.
+///
+/// Needs Lumi 1.33.0 or later — say so with `min-lumi-version`.
+pub mod menu {
+    use super::lumi::ext::menu as wit;
+
+    pub use wit::Kind;
+
+    /// The `run-ui` window a press on one of your rows arrives as.
+    pub const WINDOW: &str = ":menu";
+
+    /// One row. Build it with the constructors, then [`Entry::under`],
+    /// [`Entry::disabled`] as needed.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Entry {
+        pub id: String,
+        pub parent: Option<String>,
+        pub kind: Kind,
+        pub label: String,
+        pub enabled: bool,
+        pub checked: bool,
+    }
+
+    impl Entry {
+        fn new(id: &str, kind: Kind, label: &str, checked: bool) -> Self {
+            Entry {
+                id: id.to_string(),
+                parent: None,
+                kind,
+                label: label.to_string(),
+                enabled: true,
+                checked,
+            }
+        }
+
+        /// A row that is pressed.
+        pub fn item(id: &str, label: &str) -> Self {
+            Self::new(id, Kind::Item, label, false)
+        }
+
+        /// A row with a tick when `checked`.
+        pub fn check(id: &str, label: &str, checked: bool) -> Self {
+            Self::new(id, Kind::Check, label, checked)
+        }
+
+        /// A line between rows. Needs an id like every entry.
+        pub fn separator(id: &str) -> Self {
+            Self::new(id, Kind::Separator, "", false)
+        }
+
+        /// A row opening the entries put [`under`](Entry::under) it. One
+        /// left empty is not drawn.
+        pub fn submenu(id: &str, label: &str) -> Self {
+            Self::new(id, Kind::Submenu, label, false)
+        }
+
+        /// Inside the submenu `parent`, which has to come earlier in the list.
+        pub fn under(mut self, parent: &str) -> Self {
+            self.parent = Some(parent.to_string());
+            self
+        }
+
+        /// Dimmed and not pressable — a status line.
+        pub fn disabled(mut self) -> Self {
+            self.enabled = false;
+            self
+        }
+    }
+
+    /// Replace your whole tree. An empty slice is [`clear`].
+    pub fn set(entries: &[Entry]) -> Result<(), String> {
+        let entries: Vec<wit::Entry> = entries
+            .iter()
+            .map(|e| wit::Entry {
+                id: e.id.clone(),
+                parent: e.parent.clone(),
+                kind: e.kind,
+                label: e.label.clone(),
+                enabled: e.enabled,
+                checked: e.checked,
+            })
+            .collect();
+        wit::set(&entries)
+    }
+
+    /// Take your rows out of the menu.
+    pub fn clear() -> Result<(), String> {
+        wit::clear()
+    }
+
+    /// The id of the row pressed, when `run_ui` was called for a press on
+    /// your menu rather than by one of your windows.
+    pub fn pressed(window: &str, request: &str) -> Option<String> {
+        if window != WINDOW {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(request).ok()?;
+        value.get("id")?.as_str().map(str::to_string)
     }
 }
 
