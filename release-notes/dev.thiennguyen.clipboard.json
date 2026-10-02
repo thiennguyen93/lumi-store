@@ -1,409 +1,439 @@
 {
-  "0.57.0": {
-    "notesSha256": "6e9a433d6fd3a527aaa6c8a6903a2bbb8d6368911ece0e2130e134ed069d8ef1",
+  "0.66.1": {
+    "notesSha256": "a718405e79938019231d429acf57385558f9c4380ace361a438808a23bb07a3c",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Colour formats now recognised and converted",
+          "headline": "Faster keyboard focus when the panel is pinned",
           "items": [
-            "Colours written as rgb(), rgba(), hsl() or hsla() are now recognised as colours",
-            "A copied colour's preview shows it in hex, rgb() and hsl() formats to copy from"
+            "Pinned panel gets keyboard focus immediately when you press Show clipboard history from another app"
           ]
         },
         "vi": {
-          "headline": "Nhận diện và chuyển đổi định dạng màu",
+          "headline": "Lấy nét bàn phím nhanh hơn khi bảng được ghim",
           "items": [
-            "Màu viết dưới dạng rgb(), rgba(), hsl() hoặc hsla() giờ được nhận diện là màu",
-            "Xem trước màu đã sao chép hiển thị dạng hex, rgb() và hsl() để sao chép"
+            "Bảng được ghim nhận nét bàn phím ngay lập tức khi bạn nhấn Hiện lịch sử clipboard từ ứng dụng khác"
           ]
         }
       }
     }
   },
-  "0.54.11": {
-    "notesSha256": "fe92481f4224ed6cf83790f94d71c916975a64c387997cace382e3ed3ff6ad4b",
+  "0.66.0": {
+    "notesSha256": "2214f7470bf0bf64d629781a2f499ae6e04c7af0f93c756fb9209f365931331c",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Smoother scrolling and a more stable text-recognition panel",
+          "headline": "More control over when the panel appears and disappears",
           "items": [
-            "Long lists now fade at the edge when there is more content to scroll",
-            "The text-recognition panel no longer collapses when it has little to show"
+            "Show clipboard history now only opens the panel and never closes it",
+            "When the panel is already open, the shortcut brings focus back and blinks the selection",
+            "Two new commands let you assign your own shortcuts to hide or toggle the panel",
+            "Press Escape or use the new Hide command to close the panel"
           ]
         },
         "vi": {
-          "headline": "Cuộn mượt hơn và bảng nhận diện văn bản ổn định hơn",
+          "headline": "Kiểm soát tốt hơn khi bảng điều khiển hiện và ẩn",
           "items": [
-            "Danh sách dài giờ mờ dần ở rìa khi còn nội dung để cuộn",
-            "Bảng nhận diện văn bản không còn bị thu nhỏ khi có ít nội dung hiển thị"
+            "Hiện lịch sử clipboard giờ chỉ mở bảng và không bao giờ đóng nó",
+            "Khi bảng đã mở, phím tắt sẽ đưa tiêu điểm về và nhấp nháy mục đang chọn",
+            "Hai lệnh mới cho phép bạn gán phím tắt riêng để ẩn hoặc bật tắt bảng",
+            "Nhấn Escape hoặc dùng lệnh Ẩn mới để đóng bảng"
           ]
         }
       }
     }
   },
-  "0.54.6": {
-    "notesSha256": "ddc8b47a65a593fdce6110f8b3aba85a1afd9bde19642d66b515d3443c151a66",
+  "0.65.1": {
+    "notesSha256": "55747f960af878a6467c076d10344ad474c33bafa5f29ec2cec900f076e0dc75",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "PDF viewing preferences now saved per panel",
+          "headline": "Scroll bars no longer cover text",
           "items": [
-            "Each panel remembers your preferred PDF fit mode"
+            "Scroll bars in the preview now sit along the right edge instead of covering text"
           ]
         },
         "vi": {
-          "headline": "Tùy chọn xem PDF được lưu riêng cho từng bảng",
+          "headline": "Thanh cuộn không còn che chữ",
           "items": [
-            "Mỗi bảng ghi nhớ chế độ hiển thị PDF bạn ưa thích"
+            "Thanh cuộn trong bản xem trước giờ nằm sát mép phải thay vì che chữ"
           ]
         }
       }
     }
   },
-  "0.54.2": {
-    "notesSha256": "5bf8d40906bc496b8d29394068840cc6a8296a2061c01e77ecce9491305288d0",
+  "0.65.0": {
+    "notesSha256": "d32c50a43d6b754eaa0fb20259ca376538724b35442176143dd1091a6bdde23c",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Fixed keyboard shortcut conflict with preview expansion",
+          "headline": "Resize the preview by dragging the divider",
           "items": [
-            "Fixed pinned items moving to different letters when Command-Y expands the preview"
+            "Drag the line across the preview up or down to adjust the space between the image and text",
+            "The divider stays where you place it as you move through items",
+            "Double-click the divider to reset it to its original position"
           ]
         },
         "vi": {
-          "headline": "Sửa xung đột phím tắt khi mở rộng xem trước",
+          "headline": "Thay đổi kích thước xem trước bằng cách kéo đường phân chia",
           "items": [
-            "Sửa lỗi mục đã ghim chuyển sang chữ cái khác khi Command-Y mở rộng xem trước"
+            "Kéo đường ngang trong khung xem trước lên hoặc xuống để điều chỉnh không gian giữa hình ảnh và văn bản",
+            "Đường phân chia giữ nguyên vị trí khi bạn di chuyển qua các mục",
+            "Nhấp đúp vào đường phân chia để đặt lại về vị trí ban đầu"
           ]
         }
       }
     }
   },
-  "0.53.3": {
-    "notesSha256": "c9660e1fa48ea4696b8be9e20fc74165f5cc36d76d36b056c8fc80fc8f8a623b",
+  "0.64.0": {
+    "notesSha256": "97ff4102e1530bbd222139535f16162986c0b6cfde6466a8784a024b44abf397",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Zoomed view for PDF previews",
+          "headline": "Panel shortcut now refocuses when pinned",
           "items": [
-            "You can now zoom in on PDF previews to see details more clearly"
+            "When the panel is pinned and another app is active, the shortcut brings keyboard focus back to the panel",
+            "The selected item blinks briefly to show the panel is ready for searching or navigation",
+            "If the command menu is open, the chosen action blinks instead",
+            "Press the shortcut again to hide the panel"
           ]
         },
         "vi": {
-          "headline": "Phóng to xem trước PDF",
+          "headline": "Phím tắt giờ đưa tiêu điểm về bảng khi ghim",
           "items": [
-            "Giờ bạn có thể phóng to bản xem trước PDF để xem rõ hơn"
+            "Khi bảng đang ghim và bạn dùng ứng dụng khác, phím tắt đưa bàn phím về bảng",
+            "Mục đang chọn nhấp nháy để báo bảng sẵn sàng tìm kiếm hoặc di chuyển",
+            "Nếu menu lệnh đang mở, hành động đã chọn sẽ nhấp nháy",
+            "Nhấn phím tắt lần nữa để ẩn bảng"
           ]
         }
       }
     }
   },
-  "0.52.4": {
-    "notesSha256": "5b2575b8de5cf9a9aa80712c89ab4462eff89ceab03b10bbd27b3f8b04257412",
+  "0.63.26": {
+    "notesSha256": "dde792e136600dd5d2503530266c356ff84530d8a460f317026bb38e17572a7f",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Simpler welcome tour",
+          "headline": "Snippets in the panel",
           "items": [
-            "The welcome tour now uses clearer wording"
+            "Copy a snippet trigger and the preview shows what it expands to",
+            "Web addresses in snippet previews turn into links and can be copied",
+            "Click the heading in a snippet preview to fold it away",
+            "Snippets that change each time are expanded again when you return to them",
+            "Settings has a new Snippets section to turn matching on or off",
+            "Choose which snippet profiles to search in Settings under Snippets"
           ]
         },
         "vi": {
-          "headline": "Hướng dẫn chào mừng rõ ràng hơn",
+          "headline": "Snippet trong bảng điều khiển",
           "items": [
-            "Hướng dẫn chào mừng giờ dùng từ ngữ dễ hiểu hơn"
+            "Sao chép mã kích hoạt snippet để xem nội dung mở rộng trong bản xem trước",
+            "Địa chỉ web trong bản xem trước snippet có thể nhấp và sao chép",
+            "Nhấp vào tiêu đề trong bản xem trước snippet để thu gọn",
+            "Snippet thay đổi mỗi lần sẽ được mở rộng lại khi bạn quay lại",
+            "Cài đặt có mục Snippet mới để bật hoặc tắt tính năng khớp",
+            "Chọn hồ sơ snippet nào để tìm kiếm trong Cài đặt mục Snippet"
           ]
         }
       }
     }
   },
-  "0.52.3": {
-    "notesSha256": "f980e398560814319f383abb1cdfe140fe7cc1b115e992fcc5fdd376aaae1285",
+  "0.62.1": {
+    "notesSha256": "22d1a243d4c91ffddf1a291e0aee22108b5f836bdf087e87ed514a76ca12c939",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Pin the panel or pin an item with new shortcuts",
+          "headline": "Fixed search field overflow in actions menu",
           "items": [
-            "Press Command-Shift-P to pin the panel open while you paste multiple items",
-            "Press Command-P to pin an item (changed from Option-P)"
+            "The search field in the actions menu no longer extends beyond the menu edge"
           ]
         },
         "vi": {
-          "headline": "Ghim bảng điều khiển hoặc ghim mục với phím tắt mới",
+          "headline": "Sửa lỗi ô tìm kiếm tràn ra ngoài menu hành động",
           "items": [
-            "Nhấn Command-Shift-P để ghim bảng điều khiển mở khi dán nhiều mục",
-            "Nhấn Command-P để ghim một mục (đã đổi từ Option-P)"
+            "Ô tìm kiếm trong menu hành động không còn vượt ra ngoài viền menu"
           ]
         }
       }
     }
   },
-  "0.51.6": {
-    "notesSha256": "be7c8c43b52421f04cdaaf354e615f440b1d7118a3f5b2b073655400102bc27a",
+  "0.62.0": {
+    "notesSha256": "3a869a438a74dc4078a72e51f16670ae7189ae2c7fb947a387c67caa42c1050d",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Improved file icon visibility",
+          "headline": "Highlights in the actions menu",
           "items": [
-            "File icons are easier to tell apart in light and dark mode"
+            "The actions menu highlights the letters you typed in each matching action"
           ]
         },
         "vi": {
-          "headline": "Cải thiện hiển thị biểu tượng tệp",
+          "headline": "Làm nổi bật trong menu hành động",
           "items": [
-            "Biểu tượng tệp dễ phân biệt hơn ở chế độ sáng và tối"
+            "Menu hành động làm nổi bật các chữ cái bạn đã gõ trong mỗi hành động khớp"
           ]
         }
       }
     }
   },
-  "0.51.5": {
-    "notesSha256": "fb3b38a618a8d1d34a293a421b309ab8eb0d2a025b0386a4b77127a5499eb1da",
+  "0.61.0": {
+    "notesSha256": "bda4325ea323d3b43166fbec248bdf19c54a66a0c06c8456498a1d04de77eb81",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Drag images from the preview",
+          "headline": "Faster actions menu with shorthand search",
           "items": [
-            "Images in the preview can now be dragged into other apps"
+            "The actions menu recognizes shorthand: type first letters of each word like delall or sif to find commands"
           ]
         },
         "vi": {
-          "headline": "Kéo hình ảnh từ bản xem trước",
+          "headline": "Menu hành động nhanh hơn với tìm kiếm viết tắt",
           "items": [
-            "Giờ đây có thể kéo hình ảnh từ bản xem trước sang ứng dụng khác"
+            "Menu hành động nhận dạng viết tắt: gõ chữ cái đầu mỗi từ như delall hay sif để tìm lệnh nhanh"
           ]
         }
       }
     }
   },
-  "0.51.4": {
-    "notesSha256": "c256e52c6d8a1f419754bdeaa476004d9ab95f70170c0fe767f2fbf6b1f45fad",
+  "0.60.8": {
+    "notesSha256": "e54ab2b3ec26bbecc5ab2fb89641b801dba4c5943d786f094d68a13fe0606e85",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Faster app selection in Settings",
+          "headline": "Smarter search in the actions menu",
           "items": [
-            "Choosing an app in Settings now suggests matches as you type its name or bundle id"
+            "Searching the actions menu now matches the start of words instead of any substring"
           ]
         },
         "vi": {
-          "headline": "Chọn ứng dụng nhanh hơn trong Cài đặt",
+          "headline": "Tìm kiếm thông minh hơn trong menu hành động",
           "items": [
-            "Chọn ứng dụng trong Cài đặt giờ gợi ý kết quả khi bạn gõ tên hoặc bundle id"
+            "Tìm kiếm trong menu hành động giờ khớp với đầu từ thay vì bất kỳ chuỗi ký tự nào"
           ]
         }
       }
     }
   },
-  "0.51.2": {
-    "notesSha256": "8bfef2c53c7969543fd12fb3fb42165c8b4319a056eeb0760fc1a38c7ee9853a",
+  "0.60.7": {
+    "notesSha256": "7d1465cb0ac019522fb700fcfad32f48b40f20baa03b6820d97b983e7adc26a8",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Search now preserves letter case correctly",
+          "headline": "Actions menu reordered for easier access",
           "items": [
-            "Search now preserves letter case when reading history for the first time"
+            "The actions menu now reads from bottom to top with Paste closest to the search field",
+            "Arrow keys now move in the direction they point in the actions menu"
           ]
         },
         "vi": {
-          "headline": "Tìm kiếm giữ nguyên chữ hoa chữ thường",
+          "headline": "Sắp xếp lại menu thao tác để dễ truy cập hơn",
           "items": [
-            "Tìm kiếm giờ giữ nguyên chữ hoa chữ thường khi đọc lịch sử lần đầu"
+            "Menu thao tác giờ đọc từ dưới lên trên với Dán ở gần ô tìm kiếm nhất",
+            "Phím mũi tên giờ di chuyển theo hướng chúng chỉ trong menu thao tác"
           ]
         }
       }
     }
   },
-  "0.51.1": {
-    "notesSha256": "a727c2b345ff895aae0e8909d36389dcb3b3a75650d953370de96ed29bb9307c",
+  "0.60.6": {
+    "notesSha256": "201f9a1b769fdf7a219ae5c3f89c5c43bab923908cdec7f8b4a71f2d98e04e00",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Search now preserves original text casing",
+          "headline": "Search field moved in actions menu",
           "items": [
-            "Search now preserves the original casing of copied text"
+            "The search field in the actions menu now sits at the bottom and stays in place while you type"
           ]
         },
         "vi": {
-          "headline": "Tìm kiếm giữ nguyên chữ hoa chữ thường",
+          "headline": "Di chuyển ô tìm kiếm trong menu hành động",
           "items": [
-            "Tìm kiếm giờ giữ nguyên chữ hoa chữ thường của văn bản đã sao chép"
+            "Ô tìm kiếm trong menu hành động giờ nằm ở dưới cùng và giữ nguyên vị trí khi bạn gõ"
           ]
         }
       }
     }
   },
-  "0.51.0": {
-    "notesSha256": "362d38a11722f4676da7de630efe3f3cb9d8fe738a6350a2f3768bef77e3d88b",
+  "0.60.5": {
+    "notesSha256": "b86368ad1c5f2feef7fefa6e3ff0804084f517924a5f545b7fd72ba98f7d430b",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Welcome tour now includes privacy information",
+          "headline": "Actions menu improvements",
           "items": [
-            "The Welcome tour now has a sixth step explaining privacy"
+            "The actions menu now shows all actions completely instead of cutting off the last one",
+            "When the panel is too short, the actions list scrolls and fades at the edges",
+            "Arrow keys keep the selected action visible when scrolling"
           ]
         },
         "vi": {
-          "headline": "Hướng dẫn chào mừng giờ có thông tin về quyền riêng tư",
+          "headline": "Cải thiện menu thao tác",
           "items": [
-            "Hướng dẫn chào mừng giờ có thêm bước thứ sáu giải thích về quyền riêng tư"
+            "Menu thao tác giờ hiển thị đầy đủ các mục thay vì cắt mất mục cuối",
+            "Khi bảng điều khiển quá ngắn, danh sách sẽ cuộn và mờ dần ở các cạnh",
+            "Phím mũi tên giữ thao tác đang chọn luôn hiển thị khi cuộn"
           ]
         }
       }
     }
   },
-  "0.50.0": {
-    "notesSha256": "dd85231543c46c24477056662de2f251169efd60bb69d76b4c7af2998c2dffcd",
+  "0.60.4": {
+    "notesSha256": "e5520b3bab05115bde820771cfb7e42e4604b4c1d3bc77e53f80c1f029ecac82",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Separate search for text in images",
+          "headline": "Faster panel opening with long history",
           "items": [
-            "Searching the text recognised in images is now separate from searching what you copied"
+            "The panel opens faster when you have a long history"
           ]
         },
         "vi": {
-          "headline": "Tìm kiếm riêng cho văn bản trong ảnh",
+          "headline": "Mở bảng nhanh hơn với lịch sử dài",
           "items": [
-            "Tìm kiếm văn bản nhận diện trong ảnh giờ tách biệt với tìm kiếm nội dung đã sao chép"
+            "Bảng mở nhanh hơn khi bạn có lịch sử dài"
           ]
         }
       }
     }
   },
-  "0.49.1": {
-    "notesSha256": "de7fb4405b102b7223609802d6a5e5dfd6acb6d958b41f219c69e789922abb0b",
+  "0.60.3": {
+    "notesSha256": "f449cc2da26db4f6d568279a169ee94788446cb2c952ad3a4b36b6d7f009a0d0",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Welcome tour improvements",
+          "headline": "Instant clipboard updates",
           "items": [
-            "The Welcome tour now has five steps instead of four",
-            "Fixed keyboard navigation in the Welcome tour"
+            "What you copy while the panel is open now shows up in it straight away"
           ]
         },
         "vi": {
-          "headline": "Cải thiện hướng dẫn chào mừng",
+          "headline": "Cập nhật clipboard tức thì",
           "items": [
-            "Hướng dẫn chào mừng giờ có năm bước thay vì bốn",
-            "Sửa lỗi điều hướng bàn phím trong hướng dẫn chào mừng"
+            "Nội dung bạn sao chép khi bảng điều khiển đang mở giờ hiện lên ngay lập tức"
           ]
         }
       }
     }
   },
-  "0.46.15": {
-    "notesSha256": "498e1c7cf66aee63b26c6d757c195bfe3722d02149affe15c80dcd224303253e",
+  "0.60.2": {
+    "notesSha256": "c82ce013c490451ccd71ec434200e0d6d1c64580ee5f5c9e82a000a315d099c6",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Welcome window update",
+          "headline": "Faster previews",
           "items": [
-            "The Welcome window now copies lumikeys.app as its example"
+            "Previews load faster because links are now detected when you copy, not when you view"
           ]
         },
         "vi": {
-          "headline": "Cập nhật cửa sổ Chào mừng",
+          "headline": "Xem trước nhanh hơn",
           "items": [
-            "Cửa sổ Chào mừng giờ sao chép lumikeys.app làm ví dụ"
+            "Xem trước hiển thị nhanh hơn vì liên kết được phát hiện khi sao chép, không phải khi xem"
           ]
         }
       }
     }
   },
-  "0.46.14": {
-    "notesSha256": "b455b51bb6b0b651576b94c0f7c36efd8c6bf46351c8c268f55ab3ddafe7d1c5",
+  "0.60.1": {
+    "notesSha256": "197f7d392777500308c5d6f5cc2d47ffaf129fa88681e6976604961e3e19bf7e",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Extension Store screenshots added",
+          "headline": "Links in rich text previews are now clickable",
           "items": [
-            "Extension Store now shows screenshots of the extension"
+            "Links in rich text can be clicked in the preview",
+            "Plain text stays plain so you can select and copy it",
+            "Links from plain text are listed below the preview"
           ]
         },
         "vi": {
-          "headline": "Thêm ảnh chụp màn hình cho Cửa hàng Tiện ích",
+          "headline": "Liên kết trong bản xem trước rich text giờ có thể nhấp được",
           "items": [
-            "Cửa hàng Tiện ích giờ hiển thị ảnh chụp màn hình của tiện ích"
+            "Liên kết trong rich text có thể nhấp trực tiếp trong bản xem trước",
+            "Văn bản thuần vẫn giữ nguyên để bạn chọn và sao chép",
+            "Liên kết từ văn bản thuần được liệt kê bên dưới bản xem trước"
           ]
         }
       }
     }
   },
-  "0.46.13": {
-    "notesSha256": "9e42bd5f5b395b52e8d517fd6b2ea7e520e410e9f5b8a16827d0ddc92e5cfee5",
+  "0.59.0": {
+    "notesSha256": "83c76cad5bc86c279bd815b787e165d625957ac840bc94928a0c2ab5aece67bc",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Links in previews are now clickable",
+          "headline": "Links in copied text now appear and open with a click",
           "items": [
-            "Links in the preview can now be clicked to open them"
+            "Text and rich text show the links they contain under their preview",
+            "Click any link to open it in your browser",
+            "Links in rich text from TextEdit or Pages no longer disappear from the preview"
           ]
         },
         "vi": {
-          "headline": "Liên kết trong bản xem trước giờ có thể nhấp được",
+          "headline": "Liên kết trong văn bản đã sao chép hiện hiển thị và mở được",
           "items": [
-            "Liên kết trong bản xem trước giờ có thể nhấp để mở"
+            "Văn bản thuần và văn bản định dạng hiển thị các liên kết chứa bên trong dưới phần xem trước",
+            "Nhấp vào bất kỳ liên kết nào để mở trong trình duyệt",
+            "Liên kết trong văn bản định dạng từ TextEdit hoặc Pages không còn biến mất khỏi phần xem trước"
           ]
         }
       }
     }
   },
-  "0.46.11": {
-    "notesSha256": "ac0039b6c7e65d8fe080357a5626535dcbf5b1ace699573117155b9b601c6ec4",
+  "0.58.3": {
+    "notesSha256": "3cefdecadaff9a9ef53feee9ef9bc539f5ca7ea250e40f913d93f766e6832323",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Renamed and improved search",
+          "headline": "Updated extension homepage",
           "items": [
-            "The extension is now called Clipboard Manager",
-            "Search works better at finding what you copied"
+            "The extension's homepage now points to its page on lumikeys.app"
           ]
         },
         "vi": {
-          "headline": "Đổi tên và cải thiện tìm kiếm",
+          "headline": "Cập nhật trang chủ tiện ích",
           "items": [
-            "Tiện ích giờ có tên là Clipboard Manager",
-            "Tìm kiếm hoạt động tốt hơn khi tìm nội dung đã sao chép"
+            "Trang chủ của tiện ích giờ trỏ đến trang của nó trên lumikeys.app"
           ]
         }
       }
     }
   },
-  "0.46.8": {
-    "notesSha256": "095901636b0e4e3476bf499940f8f6556650ccb45afd2515e88f22b85e23558d",
+  "0.58.2": {
+    "notesSha256": "40cd65a6c966894de104612c4b19cf0bf0616aadc0ceb6e793a7d772859c3629",
     "summary": {
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Redesigned welcome screen with live preview",
+          "headline": "Updated documentation and store links",
           "items": [
-            "The welcome screen now shows a live preview of the clipboard panel"
+            "About panel now links to the extension page and store on lumikeys.app"
           ]
         },
         "vi": {
-          "headline": "Màn hình chào mừng mới với bản xem trước trực tiếp",
+          "headline": "Cập nhật liên kết tài liệu và cửa hàng",
           "items": [
-            "Màn hình chào mừng giờ hiển thị bản xem trước trực tiếp của bảng clipboard"
+            "Bảng Giới thiệu giờ liên kết đến trang tiện ích và cửa hàng trên lumikeys.app"
           ]
         }
       }
