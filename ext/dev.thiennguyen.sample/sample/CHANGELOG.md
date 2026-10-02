@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.13.0] - 2026-10-02
+
+### Added
+
+- A **Permissions** part on the settings page: check, ask with Lumi's own sheet, ask macOS directly, and open System Settings — the four calls in `lumi::permissions`, for Screen Recording.
+
+### Changed
+
+- Needs Lumi 1.33.0, and declares `screen`, the capability Screen Recording is for.
+
 ## [0.12.0] - 2026-10-02
 
 ### Added

@@ -52,8 +52,9 @@
 //! `accessibility` — and answers only a command or one of your windows,
 //! never [`Guest::on_event`] or [`Guest::on_lifecycle`] —, `open_url` needs `applications` (plus `network` for
 //! a web address), `fetch` needs `network`, everything in [`config`]
-//! needs `config`, [`screen`] needs `screen`, and [`snippets`] needs
-//! `snippets`. `alert`, `settings`, `profiles`, [`storage`] and
+//! needs `config`, [`screen`] needs `screen`, [`snippets`] needs
+//! `snippets`, and [`permissions`] needs the capability of the permission
+//! asked about — `screen` for Screen Recording. `alert`, `settings`, `profiles`, [`storage`] and
 //! [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
@@ -542,10 +543,11 @@ pub mod storage {
 /// down. Lumi's own windows, yours included, are never in the picture.
 ///
 /// Capturing also needs macOS's Screen Recording permission, which is
-/// Lumi's, not yours: the person turns it on once, in System Settings, for
-/// every extension that declares `screen`. Without it a capture is refused
-/// with a sentence saying where the switch is — show it to them. Capturing
-/// needs macOS 14 or later.
+/// Lumi's, not yours: the person allows it once, for every extension that
+/// declares `screen`. You never ask for it. Without it a capture is refused
+/// with a sentence, and Lumi opens its Settings to ask for the permission
+/// itself — return the refusal as your command's error. Capturing needs
+/// macOS 14 or later.
 ///
 /// ```ignore
 /// use lumi_extension_api::screen::{self, Target};
@@ -561,10 +563,11 @@ pub mod screen {
 
     pub use wit::{PickedWindow, Rect, Shot, Target, Window};
 
-    /// Whether Lumi holds Screen Recording, as far as macOS will say
-    /// without trying. `true` is reliable; `false` may be stale for a
-    /// permission given since Lumi started — only [`capture`] tells for
-    /// certain. Use it to word a hint, never to refuse to try.
+    /// Whether Lumi holds Screen Recording. Takes no picture, and is right
+    /// for a permission given since Lumi started too — for a status line,
+    /// say. You need not ask it first: without the permission [`capture`],
+    /// [`select_area`] and [`select_window`] are refused, and Lumi asks. To
+    /// ask before, see [`permissions`](crate::permissions).
     pub fn permitted() -> Result<bool, String> {
         wit::permitted()
     }
@@ -578,8 +581,9 @@ pub mod screen {
     /// Let the person drag out an area of the screen: every display dims,
     /// the pointer becomes a crosshair, and what they drag is the answer.
     /// `None` when they press Escape, right-click, or leave it for two
-    /// minutes. Takes no picture — pass the area to [`capture`] — and needs
-    /// no macOS permission. The time they take is not counted against your
+    /// minutes. Takes no picture — pass the area to [`capture`]. Refused at
+    /// once without Screen Recording, so nobody drags out an area that
+    /// cannot be captured. The time they take is not counted against your
     /// run. Only while answering a press, like [`capture`].
     pub fn select_area() -> Result<Option<Rect>, String> {
         wit::select_area()
@@ -589,11 +593,10 @@ pub mod screen {
     /// the pointer lights up, and the one they click is the answer. `None`
     /// when they press Escape, right-click, or leave it for two minutes.
     /// Applications' windows, the menu bar, its items and the Dock are
-    /// offered — the Dock only with Screen Recording — and Lumi's own
-    /// windows never are. Takes no picture — pass
+    /// offered, and Lumi's own windows never are. Takes no picture — pass
     /// `Target::Window(Window { id: Some(picked.id), shadow })` to
-    /// [`capture`] — and needs no macOS permission. Only while answering a
-    /// press.
+    /// [`capture`]. Refused at once without Screen Recording, like
+    /// [`select_area`]. Only while answering a press.
     pub fn select_window() -> Result<Option<PickedWindow>, String> {
         wit::select_window()
     }
@@ -649,6 +652,79 @@ pub mod snippets {
     /// a random value, whatever a script computes.
     pub fn expand(profile: &str, snippet: &str, text: &str) -> Result<Expansion, String> {
         wit::expand(profile, snippet, text)
+    }
+}
+
+/// macOS permissions Lumi holds on behalf of every extension. The grant is
+/// always Lumi's — macOS credits the app, never an extension inside it — so
+/// you ask Lumi, and Lumi asks macOS. Each permission needs the capability
+/// it is for: [`Permission::ScreenRecording`] needs `screen`.
+///
+/// You rarely need this at all: without Screen Recording a capture or a
+/// `select_area` is refused and Lumi shows its own sheet by itself. Reach for
+/// it to ask *before* — on a Welcome page, say — and pick one of two recipes.
+///
+/// **Lumi's sheet**, one call. Lumi opens Settings on a sheet with your
+/// extension's name that walks the person through macOS's questions:
+///
+/// ```ignore
+/// use lumi_extension_api::permissions::{self, Permission};
+/// permissions::ask(Permission::ScreenRecording)?;
+/// ```
+///
+/// **Your own page.** Explain it in your words, then ask macOS directly —
+/// from one of your windows, which is what lets macOS list Lumi. Tell the
+/// person first that macOS's first button is Deny:
+///
+/// ```ignore
+/// use lumi_extension_api::permissions::{self, Permission, Requested, State};
+/// if permissions::check(Permission::ScreenRecording)? == State::NotGranted {
+///     match permissions::request(Permission::ScreenRecording)? {
+///         Requested::Asked | Requested::AlreadyGranted => {}
+///         // Not asked — fall back to Lumi's sheet, which says why.
+///         Requested::FlowEditorOpen | Requested::NoWindow => {
+///             permissions::ask(Permission::ScreenRecording)?
+///         }
+///     }
+///     // macOS shows its dialog once in Lumi's life; after that the switch
+///     // is in System Settings:
+///     permissions::open_system_settings(Permission::ScreenRecording)?;
+/// }
+/// ```
+///
+/// `ask`, `request` and `open_system_settings` answer only something the
+/// person did — a command or a press in one of your windows — never
+/// [`Guest::on_event`](crate::Guest::on_event) or a lifecycle hook. `check`
+/// is a question and works anywhere.
+///
+/// Needs Lumi 1.33.0 or later — say so with `min-lumi-version`.
+pub mod permissions {
+    use super::lumi::ext::permissions as wit;
+
+    pub use wit::{Permission, Requested, State};
+
+    /// Whether Lumi holds `permission` now. Takes no picture and asks
+    /// nothing.
+    pub fn check(permission: Permission) -> Result<State, String> {
+        wit::check(permission)
+    }
+
+    /// Lumi's own sheet in Settings, worded with your extension's name.
+    /// Comes back as soon as the sheet is up; does nothing when Lumi already
+    /// holds the permission.
+    pub fn ask(permission: Permission) -> Result<(), String> {
+        wit::ask(permission)
+    }
+
+    /// macOS's own request, for a page of yours that explained it first.
+    /// [`Requested`] says whether macOS was asked, or why not.
+    pub fn request(permission: Permission) -> Result<Requested, String> {
+        wit::request(permission)
+    }
+
+    /// System Settings at the permission's list, where Lumi's switch is.
+    pub fn open_system_settings(permission: Permission) -> Result<(), String> {
+        wit::open_system_settings(permission)
     }
 }
 

@@ -65,3 +65,11 @@ body.installer .actions button,
 body.dialog .actions button {
   margin-top: 0;
 }
+
+/* The four permission buttons, side by side and wrapping when the page is
+   narrow — Lumi's sheet has no `.row`, so the sample says it here. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

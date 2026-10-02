@@ -6,14 +6,14 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.12.0"
-# 1.31.0: the floor is the newest host function the code calls, not the
-# world it was built for. WIT 0.3 grew `screen` in 1.30 and `snippets` in
-# 1.31 without a new world version, and the component imports what it
+version = "0.13.0"
+# 1.33.0: the floor is the newest host function the code calls, not the
+# world it was built for. WIT 0.3 grew `screen` in 1.30, `snippets` in
+# 1.31 and `permissions` in 1.33 without a new world version, and the component imports what it
 # calls — its test hooks reach both — so an older Lumi could not
 # instantiate it. ([tabs] below is the other direction: an older Lumi
 # ignores the table and draws its own tabs, so it sets no floor.)
-min-lumi-version = "1.31.0"
+min-lumi-version = "1.33.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
@@ -43,7 +43,11 @@ menu = "auto"
 # the one before it. (`about` and `settings-page` above are the older
 # spelling of `[tabs.about] page` and `[tabs.settings] page`.)
 
-capabilities = ["accessibility", "applications", "clipboard", "network"]
+# `screen` for the Permissions part of the settings page: it is the
+# capability Screen Recording is for, and without it every `permissions`
+# call about Screen Recording is refused by name. The sample takes no
+# picture itself; the review sheet still says what the word allows.
+capabilities = ["accessibility", "applications", "clipboard", "network", "screen"]
 
 # Pictures for this extension's page in Lumi's Extension Store: its About
 # page and its Settings page. The store publishes them beside the package;

@@ -171,6 +171,36 @@ impl lumi::Guest for Sample {
                 })
                 .to_string());
             }
+            // Lumi's permissions, the four calls: `do` is "check", "ask",
+            // "request" or "open". The sample's own manifest does not declare
+            // `screen`, so in the sample as shipped each one is refused by
+            // name — the point of the arm is the host's tests, which stage a
+            // manifest that does.
+            Some("permissions") => {
+                use lumi::permissions::{self, Permission, Requested, State};
+                let screen = Permission::ScreenRecording;
+                let answer = match parsed.get("do").and_then(|d| d.as_str()).unwrap_or("check") {
+                    "ask" => permissions::ask(screen).map(|()| "asked".to_string()),
+                    "request" => permissions::request(screen).map(|requested| {
+                        match requested {
+                            Requested::Asked => "asked",
+                            Requested::AlreadyGranted => "alreadyGranted",
+                            Requested::FlowEditorOpen => "flowEditorOpen",
+                            Requested::NoWindow => "noWindow",
+                        }
+                        .to_string()
+                    }),
+                    "open" => permissions::open_system_settings(screen).map(|()| "opened".to_string()),
+                    _ => permissions::check(screen).map(|state| {
+                        match state {
+                            State::Granted => "granted",
+                            State::NotGranted => "notGranted",
+                        }
+                        .to_string()
+                    }),
+                }?;
+                return Ok(serde_json::json!({ "permission": answer }).to_string());
+            }
             // Which snippets a text is the trigger of, and each one expanded
             // — or why it was not: `within` is "active", "all" or a list of
             // profile ids.
