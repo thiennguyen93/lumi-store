@@ -155,6 +155,10 @@ COMPONENT_HEADER = b"\x00asm\x0d\x00\x01\x00"
 # [[shortcut]], reserved whether or not a manifest declares one.
 MAX_PAGES = 4
 MAX_PAGE_LABEL = 24
+# `ext::manifest`'s MAX_FOLDERS, MAX_FOLDER_NAME and MAX_FOLDER_LABEL.
+MAX_FOLDERS = 8
+MAX_FOLDER_NAME = 64
+MAX_FOLDER_LABEL = 60
 # Lumi's own tabs (`ext::manifest::BuiltinTab`), word → default label. One
 # table, as in Lumi: `[tabs.<word>]` may rename, hide or page any of them,
 # and every default label is reserved from a [[page]]. A tab Lumi adds is a
@@ -381,6 +385,7 @@ def check_manifest(entry_id: str, manifest: dict):
     check_page_tabs(entry_id, manifest)
     check_shortcuts(entry_id, manifest)
     check_tabs(entry_id, manifest)
+    check_folders(entry_id, manifest)
     for noun, path in declared_pages(entry_id, manifest):
         if not is_valid_ui_path(path):
             fail(entry_id, f"the {noun} points at {path!r}, which is not a plain relative path")
@@ -401,6 +406,30 @@ def check_manifest(entry_id: str, manifest: dict):
                 "name (lowercase words joined by '-') nor an .svg file under ui/",
             )
     return ext
+
+
+def check_folders(entry_id: str, manifest: dict):
+    """The [[folder]] declarations, held to Lumi's `manifest::parse`: a name
+    in the window alphabet of at most MAX_FOLDER_NAME, said once; a label —
+    required, since it is the review sheet's whole sentence about the
+    folder — of one line of at most MAX_FOLDER_LABEL; at most MAX_FOLDERS.
+    No path is a field at all: the person chooses the folder, in Lumi."""
+    folders = manifest.get("folder", [])
+    names = set()
+    for folder in folders:
+        name = folder.get("name", "")
+        if not isinstance(name, str) or not NAME_RE.match(name) or len(name) > MAX_FOLDER_NAME:
+            fail(entry_id, f"folder name {name!r} may hold only letters, digits, '-' and '_', up to {MAX_FOLDER_NAME} of them")
+        if name in names:
+            fail(entry_id, f"two folders are named {name}")
+        names.add(name)
+        label = str(folder.get("label", "")).strip()
+        if not label:
+            fail(entry_id, f"the folder {name} has no label — say what it is for, such as \"Save screenshots to\"")
+        if len(label) > MAX_FOLDER_LABEL or any(ord(c) < 32 or ord(c) == 127 for c in label):
+            fail(entry_id, f"the folder {name}'s label is one line of at most {MAX_FOLDER_LABEL} characters")
+    if len(folders) > MAX_FOLDERS:
+        fail(entry_id, f"the manifest declares {len(folders)} folders; at most {MAX_FOLDERS}")
 
 
 def check_shortcuts(entry_id: str, manifest: dict):
