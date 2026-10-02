@@ -96,6 +96,8 @@ CAPABILITIES = {
     "screen",
     # Lumi 1.31: the `snippets` interface (is this text a trigger; expand it).
     "snippets",
+    # Lumi 1.33: the `menu` interface (rows of its own in the menu bar menu).
+    "menu",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`. Checked one way only, as Lumi checks it: an event

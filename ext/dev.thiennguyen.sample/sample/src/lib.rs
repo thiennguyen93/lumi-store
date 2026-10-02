@@ -71,6 +71,11 @@ impl lumi::Guest for Sample {
     /// own convention — the host carries them opaquely, which is the
     /// point: an extension and its UI agree between themselves.
     fn run_ui(window: String, request: String) -> Result<String, String> {
+        // A press on one of the sample's rows in Lumi's menu bar menu, which
+        // arrives here as the window `:menu`.
+        if let Some(id) = lumi::menu::pressed(&window, &request) {
+            return menu_pressed(&id).map(|()| String::new());
+        }
         // The same page answers in two places: its own window, and the
         // Settings tab of the sample's page in Lumi's Extensions pane,
         // where Lumi names it `:settings`. A colon is outside every window
@@ -285,11 +290,19 @@ impl lumi::Guest for Sample {
         match event {
             // An ordinary declared window: the manifest's `[[window]]` is
             // the grant, exactly as for the `configure` command.
-            lumi::Lifecycle::Installed => lumi::open_window("welcome"),
+            // The menu first and the window regardless: a refused tree is a
+            // line in Lumi's log, not a reason to skip the welcome.
+            lumi::Lifecycle::Installed => {
+                let drawn = draw_menu();
+                lumi::open_window("welcome")?;
+                drawn
+            }
             // `from` is the version the manifest said before; the new one is
             // this build's own manifest, which the component does not read.
             lumi::Lifecycle::Updated(from) => {
-                lumi::alert(&format!("Sample was updated from {from}. Thanks for keeping it."))
+                let drawn = draw_menu();
+                lumi::alert(&format!("Sample was updated from {from}. Thanks for keeping it."))?;
+                drawn
             }
             // No window here — the files go the moment this returns, and
             // Lumi refuses the open by name. A page in the browser is where
@@ -314,6 +327,59 @@ impl lumi::Guest for Sample {
         lumi::storage::put("last-event", &format!("{name} {payload}"), None)
             .map(|_| ())
             .map_err(lumi::storage::PutError::into_message)
+    }
+}
+
+/// The languages the menu offers, as Google Translate's codes and the
+/// menu's words.
+const MENU_TARGETS: &[(&str, &str)] = &[("vi", "Vietnamese"), ("en", "English"), ("ja", "Japanese")];
+
+/// The storage key holding the language the menu translates into.
+const MENU_TARGET: &str = "menu-target";
+
+fn menu_target() -> String {
+    lumi::storage::get(MENU_TARGET)
+        .ok()
+        .flatten()
+        .map(|entry| entry.value)
+        .unwrap_or_else(|| "vi".to_string())
+}
+
+/// The sample's rows in Lumi's menu bar menu: a command, a choice kept in
+/// storage and shown as ticks, and a window. Set on install and on update,
+/// and again after every press that changes what a row shows — Lumi keeps
+/// the tree between runs, and never flips a tick by itself.
+fn draw_menu() -> Result<(), String> {
+    use lumi::menu::Entry;
+    let target = menu_target();
+    let mut entries = vec![
+        Entry::item("translate", "Translate Selection"),
+        Entry::separator("s1"),
+        Entry::submenu("to", "Translate To"),
+    ];
+    for (code, name) in MENU_TARGETS {
+        entries.push(Entry::check(&format!("to.{code}"), name, *code == target).under("to"));
+    }
+    entries.push(Entry::separator("s2"));
+    entries.push(Entry::item("settings", "Sample Settings…"));
+    lumi::menu::set(&entries)
+}
+
+fn menu_pressed(id: &str) -> Result<(), String> {
+    match id {
+        "translate" => {
+            let params = serde_json::json!({ "target": menu_target() }).to_string();
+            translate(&params).map(|_| ())
+        }
+        "settings" => lumi::open_window("settings"),
+        _ => {
+            let Some(code) = id.strip_prefix("to.") else {
+                return Err(format!("the sample has no {id} row"));
+            };
+            let rev = lumi::storage::get(MENU_TARGET)?.map(|entry| entry.rev);
+            lumi::storage::put(MENU_TARGET, code, rev).map_err(lumi::storage::PutError::into_message)?;
+            draw_menu()
+        }
     }
 }
 

@@ -722,6 +722,59 @@ interface permissions {
     open-system-settings: func(p: permission) -> result<_, string>;
 }
 
+/// Your extension's own rows in Lumi's menu bar menu, built while it runs.
+///
+/// Lumi draws them in a section of their own after Recent: one submenu
+/// titled with your extension's name and icon, or — when the whole tree is a
+/// single plain item — that item on its own, with your icon beside it, so
+/// its label has to say what it does. Nothing you set lands among Lumi's own
+/// rows. A press comes back through `run-ui` with `window` set to `:menu`
+/// and `request` set to `{"v":1,"id":"<entry id>"}`: something the person
+/// did, so it may open a window, paste, or ask for a permission.
+///
+/// Lumi keeps the last tree you set, across restarts and updates, and draws
+/// it without running your code — set it once from `on-lifecycle` and again
+/// whenever something it shows changes. Switching the extension off hides
+/// it; uninstalling removes it. Lumi never flips a check row by itself: a
+/// press is told to you, and the row shows what you set next.
+///
+/// Needs the `menu` capability. Every call costs budget. Added to 0.3 in
+/// Lumi 1.33 without a new world version, the way `permissions` was.
+interface menu {
+    enum kind {
+        item,
+        /// An item with a tick when `checked`.
+        check,
+        separator,
+        /// Holds the entries whose `parent` is its `id`. One left empty is
+        /// not drawn.
+        submenu,
+    }
+
+    record entry {
+        /// Yours: unique within the tree, at most 64 bytes, and what a press
+        /// tells you back. A separator needs one too.
+        id: string,
+        /// `none` for the top of your submenu, or the `id` of a `submenu`
+        /// entry that comes earlier in the list. Two levels of submenu below
+        /// your own at most.
+        parent: option<string>,
+        kind: kind,
+        /// What the row says; ignored on a separator. Cut to the menu's width.
+        label: string,
+        /// A disabled row is drawn dimmed and cannot be pressed — the shape
+        /// of a status line.
+        enabled: bool,
+        /// Read on a `check` entry only.
+        checked: bool,
+    }
+
+    /// Replace your whole tree. At most 64 entries. An empty list is `clear`.
+    set: func(entries: list<entry>) -> result<_, string>;
+    /// Take your rows out of the menu.
+    clear: func() -> result<_, string>;
+}
+
 world extension {
     import selection;
     import clipboard;
@@ -737,6 +790,7 @@ world extension {
     import screen;
     import snippets;
     import permissions;
+    import menu;
 
     /// Run one of the commands the manifest declares.
     ///
@@ -760,7 +814,8 @@ world extension {
     ///
     /// `window` is the declared window the request came from — the host
     /// resolved it from the webview itself, so it cannot be spoofed by the
-    /// page. `request` is whatever the window's JavaScript posted to
+    /// page — or `:menu` for a press on one of your `menu` rows.
+    /// `request` is whatever the window's JavaScript posted to
     /// `/__lumi__/call`, and the answer is handed back as the response
     /// body — both opaque strings, JSON by convention, because the dialect
     /// between an extension and its own UI is nobody's business but the
