@@ -479,6 +479,13 @@ interface storage {
     /// Only for something the person did: a command they pressed or a
     /// press in one of the extension's windows. Added in Lumi 1.26.
     blob-save: func(id: string, name: string) -> result<_, string>;
+    /// `blob-save`, with every `{date}` and `{time}` in `name` filled in
+    /// from this Mac's clock and time zone — `2026-10-02` and `14.03.11`,
+    /// the way macOS names a screenshot — before the name is checked. For a
+    /// component, which knows the time only in UTC. The name as filled in is
+    /// never told back: handed back beside the clock the component already
+    /// has, it would say the person's time zone. Added in Lumi 1.34.
+    blob-save-dated: func(id: string, name: string) -> result<_, string>;
     /// Every blob and its size in bytes, sorted by id.
     blobs: func() -> result<list<tuple<string, u64>>, string>;
     usage: func() -> result<space, string>;
@@ -544,13 +551,44 @@ interface screen {
         frame: rect,
     }
 
+    /// The file a picture is written as.
+    enum format {
+        /// Lossless, transparency kept: a window's rounded corners and its
+        /// shadow stay transparent. `public.png` on the clipboard.
+        png,
+        /// Smaller, at `quality`. JPEG holds no transparency, so a
+        /// picture is laid on white first — a window's corners and shadow
+        /// are drawn over white, as macOS's own JPEG screenshots are.
+        /// `public.jpeg` on the clipboard.
+        jpeg,
+    }
+
+    /// How many pixels a point of the screen becomes.
+    enum resolution {
+        /// The display's own: two pixels a point on a Retina display.
+        native,
+        /// One pixel a point, the size the picture had on screen.
+        points,
+    }
+
+    /// How `capture-as` hands a picture over.
+    record encoding {
+        format: format,
+        /// For `jpeg`, from 1 (smallest) to 100 (best); outside that range
+        /// it is brought inside. Not read for `png`.
+        quality: u8,
+        resolution: resolution,
+    }
+
     record shot {
-        /// The picture, a PNG in this extension's storage: a page shows it
-        /// at `/__lumi__/blob/<id>`, `clipboard` takes it as `blob`, and
+        /// The picture, in this extension's storage — a PNG from `capture`,
+        /// the encoding asked for from `capture-as`: a page shows it at
+        /// `/__lumi__/blob/<id>`, `clipboard` takes it as `blob`, and
         /// `storage.blob-save` hands it to the person. It counts against
         /// the store's space until it is deleted.
         blob: string,
-        /// In pixels, at the display's own resolution.
+        /// In pixels: at the display's own resolution, or one a point for
+        /// `resolution.points`.
         width: u32,
         height: u32,
         /// Pixels per point.
@@ -571,6 +609,11 @@ interface screen {
     /// they pressed or a press in one of the extension's windows — never
     /// from `on-event` or a lifecycle hook.
     capture: func(target: target) -> result<shot, string>;
+    /// `capture`, written as `encoding` says: the picture is taken at that
+    /// resolution and encoded once, by Lumi, so an extension with no page
+    /// on screen can still hand over a JPEG or a picture at screen size.
+    /// The same rules as `capture`. Added in Lumi 1.34.
+    capture-as: func(target: target, encoding: encoding) -> result<shot, string>;
     /// Let the person drag out an area: every display dims, the pointer
     /// becomes a crosshair, and the area they drag is the answer — `none`
     /// for Escape, a right click, or two minutes with no answer. Takes no

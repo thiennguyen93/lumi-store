@@ -519,6 +519,20 @@ pub mod storage {
         wit::blob_save(id, name)
     }
 
+    /// [`blob_save`], with every `{date}` and `{time}` in `name` filled in
+    /// from the Mac's own clock and time zone — `2026-10-02`, `14.03.11` —
+    /// which your component cannot read: its clock is UTC. Lumi never tells
+    /// you the name it filled in.
+    ///
+    /// ```ignore
+    /// storage::blob_save_dated(&shot.blob, "Screenshot {date} at {time}.png")?;
+    /// ```
+    ///
+    /// Needs Lumi 1.34.0 or later.
+    pub fn blob_save_dated(id: &str, name: &str) -> Result<(), String> {
+        wit::blob_save_dated(id, name)
+    }
+
     /// Every blob and its size in bytes, sorted by id.
     pub fn blobs() -> Result<Vec<(String, u64)>, String> {
         wit::blobs()
@@ -561,7 +575,7 @@ pub mod storage {
 pub mod screen {
     use super::lumi::ext::screen as wit;
 
-    pub use wit::{PickedWindow, Rect, Shot, Target, Window};
+    pub use wit::{Encoding, Format, PickedWindow, Rect, Resolution, Shot, Target, Window};
 
     /// Whether Lumi holds Screen Recording. Takes no picture, and is right
     /// for a permission given since Lumi started too — for a status line,
@@ -576,6 +590,25 @@ pub mod screen {
     /// your windows — never from an event or a lifecycle hook.
     pub fn capture(target: Target) -> Result<Shot, String> {
         wit::capture(target)
+    }
+
+    /// [`capture`], written as `encoding` says — JPEG at a quality, or one
+    /// pixel a point rather than the display's own. Lumi takes the picture
+    /// at that size and encodes it once, so it is ready to copy or save
+    /// with no page of yours on screen. JPEG has no transparency: a
+    /// window's corners and shadow are laid on white.
+    ///
+    /// ```ignore
+    /// use lumi_extension_api::screen::{self, Encoding, Format, Resolution, Target};
+    /// let shot = screen::capture_as(
+    ///     Target::Display,
+    ///     Encoding { format: Format::Jpeg, quality: 85, resolution: Resolution::Points },
+    /// )?;
+    /// ```
+    ///
+    /// Needs Lumi 1.34.0 or later — say so with `min-lumi-version`.
+    pub fn capture_as(target: Target, encoding: Encoding) -> Result<Shot, String> {
+        wit::capture_as(target, encoding)
     }
 
     /// Let the person drag out an area of the screen: every display dims,
