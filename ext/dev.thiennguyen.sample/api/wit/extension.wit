@@ -765,6 +765,58 @@ interface permissions {
     open-system-settings: func(p: permission) -> result<_, string>;
 }
 
+/// Folders the person chose for this extension to write files into — a
+/// screenshot saved straight to a folder, an export, a backup.
+///
+/// Each is declared in the manifest by name, `[[folder]] name = "saves"
+/// label = "Save screenshots to"`, and the review sheet lists it: a name the
+/// manifest does not declare is refused. The person picks the folder itself
+/// in Lumi's own panel, from your `choose` or from the Permissions tab, and
+/// Lumi keeps it — your component is told the folder's name ("Desktop") and
+/// never its path. It follows the folder through a rename or a move.
+///
+/// Write only, and never over a file: a name already taken is written as
+/// "Name 2". Free of capability — the declaration is the grant — and every
+/// call costs budget. Added to 0.3 in Lumi 1.34 without a new world version.
+interface folders {
+    /// Why a write did not happen, in the three cases worth answering
+    /// differently: offer `choose`, say the folder moved away, or show the
+    /// sentence.
+    variant problem {
+        /// None is chosen yet, or the person forgot it.
+        not-chosen,
+        /// The folder chosen is no longer there.
+        gone,
+        refused(string),
+    }
+
+    record chosen {
+        /// The folder's own name, such as "Desktop" — for "Save to Desktop".
+        label: string,
+    }
+
+    /// The folder chosen for `name`, or `none`.
+    status: func(name: string) -> result<option<chosen>, string>;
+    /// Ask the person to choose a folder for `name`, in Lumi's Open panel
+    /// — `none` when they cancel, which leaves the earlier choice in place.
+    /// Only for something the person did: a command, or a press in one of
+    /// your windows. Their time choosing is not counted against the run.
+    choose: func(name: string) -> result<option<chosen>, string>;
+    /// Forget the folder chosen for `name`. One never chosen is not an error.
+    forget: func(name: string) -> result<_, string>;
+    /// Write the blob `blob` from your storage into the folder chosen for
+    /// `name`, as `file-name` — one name, no `/`, not starting with `.`, with
+    /// every `{date}` and `{time}` filled in from the Mac's clock as
+    /// `storage.blob-save-dated` fills them. A name already in the folder is
+    /// written as "Name 2", "Name 3"; nothing is ever written over. Any size
+    /// of blob: the bytes never pass through your component. Only for
+    /// something the person did.
+    write: func(name: string, file-name: string, blob: string) -> result<_, problem>;
+    /// Show the folder chosen for `name` in Finder. Only for something the
+    /// person did.
+    reveal: func(name: string) -> result<_, string>;
+}
+
 /// Your extension's own rows in Lumi's menu bar menu, built while it runs.
 ///
 /// Lumi draws them in a section of their own after Recent: one submenu
@@ -834,6 +886,7 @@ world extension {
     import snippets;
     import permissions;
     import menu;
+    import folders;
 
     /// Run one of the commands the manifest declares.
     ///

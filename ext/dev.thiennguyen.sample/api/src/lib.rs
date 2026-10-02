@@ -761,6 +761,76 @@ pub mod permissions {
     }
 }
 
+/// Folders the person chose for your extension to write files into — a
+/// screenshot saved straight to a folder, an export, a backup — so a save
+/// does not have to ask where every time.
+///
+/// Declare each in your manifest; the review sheet lists it, and a name you
+/// did not declare is refused:
+///
+/// ```toml
+/// [[folder]]
+/// name = "saves"
+/// label = "Save screenshots to"
+/// ```
+///
+/// The person picks the folder in Lumi's own panel — from your
+/// [`choose`](folders::choose), or from your extension's Permissions sheet —
+/// and Lumi keeps it. You are told its name ("Desktop") and never its path.
+/// Nothing is ever written over: a name already taken is written as
+/// "Name 2".
+///
+/// ```ignore
+/// use lumi_extension_api::folders::{self, Problem};
+/// match folders::write("saves", "Screenshot {date} at {time}.png", &shot.blob) {
+///     Ok(()) => {}
+///     // Nothing chosen, or the folder went away: ask where, this once.
+///     Err(Problem::NotChosen | Problem::Gone) => storage::blob_save_dated(&shot.blob, "Screenshot {date} at {time}.png")?,
+///     Err(Problem::Refused(said)) => return Err(said),
+/// }
+/// ```
+///
+/// Needs no capability — the declaration is the grant — and Lumi 1.34.0 or
+/// later; say so with `min-lumi-version`.
+pub mod folders {
+    use super::lumi::ext::folders as wit;
+
+    pub use wit::{Chosen, Problem};
+
+    /// The folder chosen for `name`, or `None`.
+    pub fn status(name: &str) -> Result<Option<Chosen>, String> {
+        wit::status(name)
+    }
+
+    /// Ask the person to choose a folder for `name`, in Lumi's Open panel —
+    /// `None` when they cancel, which keeps the earlier choice. Only while
+    /// answering a press; their time choosing is not counted against your
+    /// run.
+    pub fn choose(name: &str) -> Result<Option<Chosen>, String> {
+        wit::choose(name)
+    }
+
+    /// Forget the folder chosen for `name`.
+    pub fn forget(name: &str) -> Result<(), String> {
+        wit::forget(name)
+    }
+
+    /// Write blob `blob` from your storage into the folder chosen for
+    /// `name`, as `file_name` — one name, no `/`, not starting with `.`, with
+    /// every `{date}` and `{time}` filled in from the Mac's clock. A name
+    /// already there is written as "Name 2". Any size of blob. Only while
+    /// answering a press.
+    pub fn write(name: &str, file_name: &str, blob: &str) -> Result<(), Problem> {
+        wit::write(name, file_name, blob)
+    }
+
+    /// Show the folder chosen for `name` in Finder. Only while answering a
+    /// press.
+    pub fn reveal(name: &str) -> Result<(), String> {
+        wit::reveal(name)
+    }
+}
+
 /// Your extension's own rows in Lumi's menu bar menu, built while it runs.
 /// Every function here needs the `menu` capability.
 ///
