@@ -51,6 +51,9 @@ export interface ListAnswer {
   searchMode?: "exact" | "fuzzy" | "regexp" | "mixed";
   /** The panel's Pin key, as the setting spells it: "cmd+p". */
   pinKey?: string;
+  /** On the opening list only: the menu bar's Delete All Unpinned… opened
+   *  the panel to delete here, where ⌘Z can bring the rows back. */
+  clear?: boolean;
 }
 
 /** The About page's `stats` answer. `since` is Lumi's clock, in ms. */

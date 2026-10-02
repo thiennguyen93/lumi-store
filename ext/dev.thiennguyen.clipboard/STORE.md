@@ -7,6 +7,7 @@ Clipboard Manager remembers what you copy on this Mac and brings it back with on
 - **Search as you type**, including the text inside copied screenshots.
 - **Pins** for the things you keep reaching for, kept at the top.
 - **Drag an item out** into any app, or save a copied image as a file.
+- **In the menu bar.** Open the history, pause recording, or clear what is not pinned, from Lumi's menu. The menu shows nothing you copied.
 
 ## Private by design
 

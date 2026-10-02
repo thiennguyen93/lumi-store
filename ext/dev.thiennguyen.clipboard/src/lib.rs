@@ -44,6 +44,23 @@ pub const WELCOME: &str = "welcome";
 /// a page, and a page is told nothing about why it was opened.
 const WELCOME_FROM: &str = "welcome.from";
 
+/// Set while recording is paused from the menu bar menu: a copy made then
+/// is not kept. A key, not a setting, because it is a switch flipped and
+/// flipped back — the menu's tick — rather than a preference.
+const PAUSED: &str = "paused";
+
+/// Set when the menu bar menu's Delete All Unpinned… opened the panel to
+/// do it: the panel's first list answers `clear` and takes the key, and
+/// the panel deletes as its own action does, so ⌘Z brings the rows back.
+/// Done there rather than here because only an open panel can undo —
+/// opening it empties the trash — so a delete made from the menu with the
+/// panel shut could never be taken back.
+const CLEAR_ON_OPEN: &str = "menu.clear-on-open";
+
+/// What the panel is told when the menu asks it to delete while it is
+/// already up, and so will not list again as an opening.
+pub const CLEAR: &str = r#"{"kind":"clear"}"#;
+
 /// What Lumi calls the Dashboard tab (`[[page]] name = "dashboard"`) when
 /// it asks `run-ui` something. It is not a window of the manifest's, and it
 /// only reads: nothing it can send pastes, pins or forgets. The About page
@@ -87,18 +104,23 @@ const MAX_TRY: usize = 16 * 1024;
 const INDEX: &str = "index";
 
 /// Storage key of the preview pane's width, as the person last dragged it.
-const PREVIEW_WIDTH: &str = "panel.previewWidth";
+// Lowercase, as Lumi's storage requires (`menu.clear-on-open` too): spelt
+// `panel.previewWidth`, `panel.previewSplit` and `panel.pdfFit` until 0.67.0,
+// names Lumi refused, so none of the three was ever kept and there is
+// nothing under the old names to carry over. `host::memory` now holds keys
+// to the same rule, which is how this was found.
+const PREVIEW_WIDTH: &str = "panel.preview-width";
 
 /// Storage key of where the line across the preview sits, as the person
 /// last dragged it: the height of the part above it — a picture over the
 /// text read in it, or a copy over what it expands to. Missing, the page's
 /// default stands.
-const PREVIEW_SPLIT: &str = "panel.previewSplit";
+const PREVIEW_SPLIT: &str = "panel.preview-split";
 
 /// Storage key of what a PDF's 100% fits, as last picked on its bar: one
 /// for the pane beside the list and one for the zoomed panel, as
 /// `{"pane": "height", "zoomed": "width"}` — either may be missing.
-const PDF_FIT: &str = "panel.pdfFit";
+const PDF_FIT: &str = "panel.pdf-fit";
 
 /// What a stored width may be: a pane, not a sliver or a wall.
 const PREVIEW_WIDTHS: std::ops::RangeInclusive<u64> = 120..=2000;
@@ -135,6 +157,8 @@ impl lumi::Guest for Clipboard {
             WELCOME => welcome(&host::Lumi, &request),
             DASHBOARD => dashboard(&host::Lumi, &request),
             SETTINGS => settings(&host::Lumi, &request),
+            lumi::menu::WINDOW => menu_pressed(&host::Lumi, request["id"].as_str().unwrap_or_default())
+                .map(|()| json!({})),
             _ => return Err(format!("Clipboard Manager has no {window} window")),
         };
         answer.map(|answer| answer.to_string())
@@ -157,8 +181,15 @@ lumi::register!(Clipboard);
 /// extension without any help from here.
 pub fn on_lifecycle(host: &impl Host, event: &lumi::Lifecycle) -> Result<(), String> {
     match event {
-        lumi::Lifecycle::Installed => host.open_window(WELCOME),
+        // The menu bar rows first, best effort: Lumi keeps them from here
+        // on, and a refused tree is a line in Lumi's log, not a reason to
+        // skip the Welcome.
+        lumi::Lifecycle::Installed => {
+            let _ = draw_menu(host);
+            host.open_window(WELCOME)
+        }
         lumi::Lifecycle::Updated(from) => {
+            let _ = draw_menu(host);
             // Best effort, and before the window: a tour that cannot say
             // what changed is still the tour, and one opened before the
             // flag lands would read as a first install.
@@ -214,6 +245,70 @@ pub fn on_event(host: &impl Host, name: &str, payload: &str) -> Result<(), Strin
     tell_dashboard(host);
     tell_panel(host);
     Ok(())
+}
+
+/// The rows in Lumi's menu bar menu, set again whenever the tick changes.
+/// No content of the history in any of them: Lumi keeps the tree in a
+/// plain file, and the history is kept encrypted.
+fn draw_menu(host: &impl Host) -> Result<(), String> {
+    use lumi::menu::Entry;
+    host.set_menu(&[
+        Entry::item("show", "Show Clipboard History"),
+        Entry::check("pause", "Pause Recording", paused(host)),
+        Entry::separator("s1"),
+        Entry::item("clear", "Delete All Unpinned…"),
+        Entry::separator("s2"),
+        Entry::item("settings", "Settings…"),
+    ])
+}
+
+fn paused(host: &impl Host) -> bool {
+    matches!(host.get(PAUSED), Ok(Some(_)))
+}
+
+/// Whether the menu bar asked for a delete on this opening, and the ask
+/// taken so the next opening does not repeat it. A `Conflict` on the `put`
+/// above is the key already there — the same ask, made twice.
+fn take_clear(host: &impl Host) -> bool {
+    match host.get(CLEAR_ON_OPEN) {
+        Ok(Some(_)) => host.delete(CLEAR_ON_OPEN).is_ok(),
+        _ => false,
+    }
+}
+
+/// A press on one of the menu bar rows, which Lumi sends as the `:menu`
+/// window.
+fn menu_pressed(host: &impl Host, id: &str) -> Result<(), String> {
+    match id {
+        "show" => show_panel(host),
+        "pause" => {
+            // A `Conflict` on the put is the key already there: paused by a
+            // press a moment ago, which is what this press asked for too.
+            if paused(host) {
+                host.delete(PAUSED)?;
+            } else if let Err(PutError::Failed(err)) = host.put(PAUSED, "1", None) {
+                return Err(err);
+            }
+            draw_menu(host)
+        }
+        // Up already: it is told, and lists nothing as an opening. Shut:
+        // the key is left for its opening list, which a post could not
+        // reach before the page is listening.
+        "clear" => match host.window_state(PANEL)? {
+            Presence::Hidden => {
+                if let Err(PutError::Failed(err)) = host.put(CLEAR_ON_OPEN, "1", None) {
+                    return Err(err);
+                }
+                show_panel(host)
+            }
+            Presence::Up | Presence::Focused => {
+                host.post(PANEL, CLEAR)?;
+                show_panel(host)
+            }
+        },
+        "settings" => host.open_settings(),
+        _ => Err(format!("Clipboard Manager has no {id} row")),
+    }
 }
 
 /// What the panel is told when the history changed under it — a copy, a
@@ -577,6 +672,14 @@ fn on_copy(host: &impl Host, payload: &str) -> Result<(), String> {
     if copy.v != 1 {
         return Err(format!("clipboard event version {} is newer than this build", copy.v));
     }
+    // Paused from the menu bar: nothing kept, and the blobs Lumi wrote for
+    // the copy go with it, as for a copy the rules ignore.
+    if paused(host) {
+        for blob in history::blobs_of(&copy.items) {
+            let _ = host.delete_blob(&blob);
+        }
+        return Ok(());
+    }
     let prefs = prefs(host);
     let id = host.new_id()?;
 
@@ -756,6 +859,9 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "previewWidth": preview_width(host),
                 "previewSplit": preview_split(host),
                 "pdfFit": pdf_fit(host),
+                // The menu bar asked for Delete All Unpinned… and opened
+                // the panel to do it; taken on the opening list only.
+                "clear": request["opening"].as_bool() == Some(true) && take_clear(host),
             }))
         }
         "preview" => {
@@ -1542,6 +1648,76 @@ mod tests {
         host.conflicts.set(2);
         ui(&host, &json!({"kind": "pin", "id": "id1"})).unwrap();
         assert_eq!(list(&host)[0]["pin"], "b");
+    }
+
+    fn menu_ids(host: &Memory) -> Vec<(String, bool)> {
+        host.menu.borrow().iter().map(|e| (e.id.clone(), e.checked)).collect()
+    }
+
+    /// The menu bar rows are set on install and on update, and hold none of
+    /// the history: Lumi keeps the tree in a plain file.
+    #[test]
+    fn the_menu_is_set_on_install_and_on_update_and_shows_no_content() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "a secret")).unwrap();
+        on_lifecycle(&host, &lumi::Lifecycle::Installed).unwrap();
+        let ids: Vec<String> = menu_ids(&host).into_iter().map(|(id, _)| id).collect();
+        assert_eq!(ids, ["show", "pause", "s1", "clear", "s2", "settings"]);
+        assert!(host.menu.borrow().iter().all(|e| !e.label.contains("secret")));
+
+        host.menu.borrow_mut().clear();
+        on_lifecycle(&host, &lumi::Lifecycle::Updated("0.66.1".into())).unwrap();
+        assert_eq!(host.menu.borrow().len(), 6, "set again on an update");
+    }
+
+    /// Pause keeps nothing — the copy's blobs go too — and the tick follows.
+    #[test]
+    fn a_paused_history_keeps_no_copy_and_ticks_the_row() {
+        let host = Memory::default();
+        menu_pressed(&host, "pause").unwrap();
+        assert!(menu_ids(&host).contains(&("pause".to_string(), true)));
+
+        host.blobs.borrow_mut().insert("img".to_string());
+        on_event(&host, "clipboard", &image_event("h1", "img")).unwrap();
+        on_event(&host, "clipboard", &event("h2", 2, "two")).unwrap();
+        assert!(list(&host).is_empty(), "nothing kept while paused");
+        assert!(!host.blobs.borrow().contains("img"), "and its blob is gone");
+
+        menu_pressed(&host, "pause").unwrap();
+        assert!(menu_ids(&host).contains(&("pause".to_string(), false)));
+        on_event(&host, "clipboard", &event("h3", 3, "three")).unwrap();
+        assert_eq!(list(&host).len(), 1, "kept again once resumed");
+    }
+
+    /// Delete All Unpinned… is done by the panel, where ⌘Z can undo it: a
+    /// shut panel is opened and its opening list says so, once; an open one
+    /// is told.
+    #[test]
+    fn delete_all_unpinned_from_the_menu_is_left_to_the_panel() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "one")).unwrap();
+        menu_pressed(&host, "clear").unwrap();
+        assert!(host.up.borrow().contains(PANEL), "the panel is opened");
+        assert_eq!(list(&host).len(), 1, "and nothing is deleted here");
+
+        let opening = |host: &Memory| ui(host, &json!({"kind": "list", "opening": true})).unwrap()["clear"].clone();
+        assert_eq!(opening(&host), json!(true));
+        assert_eq!(opening(&host), json!(false), "taken by the first opening");
+
+        // Already up: told, not left for an opening that will not come.
+        menu_pressed(&host, "clear").unwrap();
+        assert!(host.posts.borrow().iter().any(|(w, m)| w == PANEL && m == CLEAR));
+        assert_eq!(opening(&host), json!(false));
+    }
+
+    #[test]
+    fn the_other_menu_rows_open_what_they_say() {
+        let host = Memory::default();
+        menu_pressed(&host, "show").unwrap();
+        assert!(host.up.borrow().contains(PANEL));
+        menu_pressed(&host, "settings").unwrap();
+        assert!(host.opened.borrow().contains(&"settings".to_string()));
+        assert!(menu_pressed(&host, "nope").is_err());
     }
 
     #[test]

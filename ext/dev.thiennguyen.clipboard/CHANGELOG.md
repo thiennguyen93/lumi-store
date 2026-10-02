@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.67.0] - 2026-10-02
+
+### Added
+
+- Clipboard Manager in Lumi's menu bar menu: **Show Clipboard History**, **Pause Recording**, **Delete All Unpinned…** and **Settings…**.
+- **Pause Recording** stops keeping what you copy until you untick it. Nothing copied while paused is recorded.
+- **Delete All Unpinned…** opens the panel and deletes there, so ⌘Z still brings everything back.
+
+### Fixed
+
+- The preview's width and split, and what a PDF fits, are kept between openings of the panel. They were never saved before.
+
+### Changed
+
+- Needs Lumi 1.33.0, and declares `menu`, the capability its menu bar rows need. The menu shows nothing you copied.
+
 ## [0.66.1] - 2026-10-02
 
 ### Changed

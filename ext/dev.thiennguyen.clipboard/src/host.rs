@@ -102,6 +102,8 @@ pub trait Host {
     fn save_blob(&self, blob: &str, name: &str) -> Result<(), String>;
     /// Lumi's Settings, on this extension's Settings tab.
     fn open_settings(&self) -> Result<(), String>;
+    /// This extension's rows in Lumi's menu bar menu, the whole tree.
+    fn set_menu(&self, entries: &[lumi_extension_api::menu::Entry]) -> Result<(), String>;
     fn settings(&self) -> serde_json::Value;
     /// Now, in ms since the epoch — the clock Lumi stamps copies with.
     fn now(&self) -> i64;
@@ -259,6 +261,10 @@ impl Host for Lumi {
         lumi_extension_api::open_settings()
     }
 
+    fn set_menu(&self, entries: &[lumi_extension_api::menu::Entry]) -> Result<(), String> {
+        lumi_extension_api::menu::set(entries)
+    }
+
     fn settings(&self) -> serde_json::Value {
         lumi_extension_api::settings()
     }
@@ -377,11 +383,28 @@ pub mod memory {
         /// Every `expand_snippet`, as "profile/snippet". A snippet that is
         /// not fixed expands to its text and how many times it has been.
         pub expanded: RefCell<Vec<String>>,
+        /// The menu bar tree last set.
+        pub menu: RefCell<Vec<lumi_extension_api::menu::Entry>>,
     }
 
     /// One of the mock's snippets, as (profile, snippet id, trigger, text,
     /// fixed, revision).
     pub type MockSnippet = (String, String, String, String, bool, String);
+
+    /// Lumi's rule for a storage key (`ext::storage::check_name`): 1–128
+    /// lowercase letters, digits, '.', '-' or '_', not starting with '.'.
+    /// Held here so a key Lumi refuses fails a test rather than a press.
+    fn storage_key(key: &str) -> Result<(), String> {
+        let ok = !key.is_empty()
+            && key.len() <= 128
+            && !key.starts_with('.')
+            && key.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || matches!(b, b'.' | b'-' | b'_'));
+        if ok {
+            Ok(())
+        } else {
+            Err(format!("{key:?} is not a storage key"))
+        }
+    }
 
     impl Memory {
         fn book(&self) -> (String, Vec<Profile>) {
@@ -396,11 +419,13 @@ pub mod memory {
 
     impl Host for Memory {
         fn get(&self, key: &str) -> Result<Option<Stored>, String> {
+            storage_key(key)?;
             self.reads.borrow_mut().push(key.to_string());
             Ok(self.kv.borrow().get(key).cloned())
         }
 
         fn put(&self, key: &str, value: &str, if_rev: Option<u64>) -> Result<u64, PutError> {
+            storage_key(key).map_err(PutError::Failed)?;
             if self.conflicts.get() > 0 {
                 self.conflicts.set(self.conflicts.get() - 1);
                 return Err(PutError::Conflict);
@@ -422,6 +447,7 @@ pub mod memory {
         }
 
         fn delete(&self, key: &str) -> Result<(), String> {
+            storage_key(key)?;
             self.kv.borrow_mut().remove(key);
             Ok(())
         }
@@ -509,6 +535,11 @@ pub mod memory {
 
         fn open_settings(&self) -> Result<(), String> {
             self.opened.borrow_mut().push("settings".to_string());
+            Ok(())
+        }
+
+        fn set_menu(&self, entries: &[lumi_extension_api::menu::Entry]) -> Result<(), String> {
+            *self.menu.borrow_mut() = entries.to_vec();
             Ok(())
         }
 

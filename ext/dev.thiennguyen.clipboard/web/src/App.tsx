@@ -61,6 +61,9 @@ export function App() {
   // paste, a copy or a link opened leaves it up. Every open starts
   // unpinned — Lumi takes the pin off when the panel goes.
   const [pinned, setPinned] = useState(false);
+  // The menu bar's Delete All Unpinned…, waiting for the rows it deletes to
+  // be on screen — they fold away as the panel's own delete folds them.
+  const [clearAsked, setClearAsked] = useState(false);
   // The preview has the whole panel, the list put aside. Kept while the
   // arrow keys move between rows, the way Quick Look stays up; a row that
   // cannot have it (`canZoom` — none today, or no row at all) ends it, so the
@@ -109,6 +112,7 @@ export function App() {
   const reload = useCallback(async (keepId: string | null, opening = false) => {
     const answer = await call({ kind: "list", opening });
     setRows(answer.items);
+    if (opening && answer.clear) setClearAsked(true);
     adoptWidth(answer.previewWidth);
     adoptSplit(answer.previewSplit);
     adoptFits(answer.pdfFit);
@@ -305,6 +309,22 @@ export function App() {
     },
     [deleting, rows],
   );
+
+  // Asked from the menu bar: the opening list said so, or the extension told
+  // a panel already up. Done once the rows are drawn, so they fold away.
+  useEffect(() => {
+    if (!clearAsked || rows === null) return;
+    setClearAsked(false);
+    removeAll(true);
+  }, [clearAsked, rows, removeAll]);
+
+  useEffect(() => {
+    const told = (event: Event) => {
+      if (isNews((event as CustomEvent<unknown>).detail, "clear")) setClearAsked(true);
+    };
+    window.addEventListener("lumi:message", told);
+    return () => window.removeEventListener("lumi:message", told);
+  }, []);
 
   /** ⌘Z: take back the last pin, unpin or delete — and the one before,
    *  and so on to when the panel opened. */
@@ -785,10 +805,11 @@ export function App() {
 }
 
 /** The extension's `{"kind": …}` news: `history`, the history changed under
- *  the panel; `summoned`, the panel was asked for again. A post is the
+ *  the panel; `summoned`, the panel was asked for again; `clear`, the menu
+ *  bar's Delete All Unpinned… pressed while the panel is up. A post is the
  *  extension's own JSON; checked anyway, so news of another shape — a later
  *  version's — is ignored. */
-function isNews(detail: unknown, kind: "history" | "summoned"): boolean {
+function isNews(detail: unknown, kind: "history" | "summoned" | "clear"): boolean {
   return typeof detail === "object" && detail !== null && (detail as { kind?: unknown }).kind === kind;
 }
 
