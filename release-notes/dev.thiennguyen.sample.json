@@ -1,4 +1,26 @@
 {
+  "0.12.0": {
+    "notesSha256": "bcac4053e282bf1ee94a39d0088c3973bed1dd8ed1201e6581201778a7a42a17",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "New windows and a renamed tab",
+          "items": [
+            "The Changelog tab is now called What's new",
+            "Added two example windows with unified title bars"
+          ]
+        },
+        "vi": {
+          "headline": "Cửa sổ mới và tab được đổi tên",
+          "items": [
+            "Tab Changelog giờ có tên là What's new",
+            "Thêm hai cửa sổ mẫu với thanh tiêu đề tích hợp"
+          ]
+        }
+      }
+    }
+  },
   "0.11.1": {
     "notesSha256": "feb938b90b420b2b44db9dcb5bc5a6941a3cdea78af38b77b6ca2bdf0eb6db19",
     "summary": {
