@@ -1,0 +1,63 @@
+<!doctype html>
+<!-- The sample's unified window: the page's toolbar is the window's title
+     bar. It draws the band Lumi says it has (`?bar=`), outlines the corner
+     the traffic lights take (`?lights=`), and moves the window from the
+     toolbar — everything a page with `titlebar = "unified"` has to do. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Unified title bar</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html, body { height: 100%; }
+    /* The band starts at the window's top-left corner, where the traffic
+       lights are: none of style.css's dialog inset. As specific as that
+       rule (`:root:not(...) body`), and later, so this one wins. */
+    :root body.unified { margin: 0; padding: 0; display: flex; flex-direction: column; background: Canvas; }
+    .band {
+      display: flex; align-items: center; gap: 8px; flex: none;
+      padding-right: 12px;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, CanvasText 4%, Canvas);
+    }
+    .lights {
+      flex: none; height: 100%;
+      outline: 1px dashed color-mix(in srgb, var(--accent) 70%, transparent);
+      outline-offset: -4px;
+    }
+    .band .grow { flex: 1; text-align: center; font-weight: 600; opacity: 0.7; }
+    main { flex: 1; padding: 16px 20px; overflow: auto; }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 12px 0; }
+    dt { opacity: 0.6; }
+    dd { margin: 0; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="unified">
+  <header class="band" id="band">
+    <div class="lights" id="lights" aria-hidden="true"></div>
+    <button type="button" id="shorter">Shorter</button>
+    <button type="button" id="taller">Taller</button>
+    <span class="grow">Drag here · double-click here</span>
+    <button type="button" id="upload">Upload 50 MB</button>
+    <button type="button" class="primary" id="ping">A control</button>
+  </header>
+  <main>
+    <h1>Unified title bar</h1>
+    <p class="muted">
+      The bar above is this page's own, standing in for the window's title
+      bar. The traffic lights should sit centred in it, inside the dashed
+      box. Dragging the bar anywhere but a button moves the window; a double
+      click there does what System Settings → Desktop &amp; Dock says a title
+      bar double click does.
+    </p>
+    <dl>
+      <dt>Address says</dt><dd id="said"></dd>
+      <dt>Page size</dt><dd id="size"></dd>
+      <dt>Band now</dt><dd id="band-now"></dd>
+      <dt>Last press</dt><dd id="last">—</dd>
+    </dl>
+  </main>
+  <script src="unified.js"></script>
+</body>
+</html>

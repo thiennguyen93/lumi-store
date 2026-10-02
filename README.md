@@ -105,6 +105,12 @@ after review.
    `perf` → Improved; chore, refactor, style, docs, test, ci and build
    left out) — a draft to reword, not the finished notes.
 
+   The file also rides inside your package, so Lumi's **Changelog** tab
+   on your extension's page reads it from the installed copy — what that
+   Mac has, offline included. `[tabs.changelog]` in your manifest renames
+   that tab, hides it or draws it with a page of your own; the same table
+   does the same for About, Settings and Shortcuts.
+
    The store publishes your newest 20 sections, named by their content.
    After a release merges, the store proposes a short summary of it in
    English and Vietnamese — a headline and up to six plain sentences, for

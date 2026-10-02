@@ -6,11 +6,14 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.11.1"
-# 1.25.0 for WIT 0.3: every component is built against one world, and a
-# Lumi that speaks 0.2 refuses a 0.3 build outright. (The window's storage
-# request, write-all and close came with it.)
-min-lumi-version = "1.25.0"
+version = "0.12.0"
+# 1.31.0: the floor is the newest host function the code calls, not the
+# world it was built for. WIT 0.3 grew `screen` in 1.30 and `snippets` in
+# 1.31 without a new world version, and the component imports what it
+# calls — its test hooks reach both — so an older Lumi could not
+# instantiate it. ([tabs] below is the other direction: an older Lumi
+# ignores the table and draws its own tabs, so it sets no floor.)
+min-lumi-version = "1.31.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
@@ -32,6 +35,13 @@ settings-page = "index.html"
 # (the default) puts two or more behind a submenu named after the extension
 # and lists a single command directly; `group` and `flat` force either.
 menu = "auto"
+
+# The tabs Lumi draws on this extension's page — About, Settings, Shortcuts
+# and Changelog — all answer to one table, `[tabs.<name>]`, with the same
+# three keys: `label`, `page` (a file under ui/ drawn in its place) and
+# `hidden`. Written at the end of this file, since a table ends
+# the one before it. (`about` and `settings-page` above are the older
+# spelling of `[tabs.about] page` and `[tabs.settings] page`.)
 
 capabilities = ["accessibility", "applications", "clipboard", "network"]
 
@@ -182,6 +192,29 @@ maximizable = false
 # The Welcome window, opened by the sample's own code the moment it is
 # installed — `on_lifecycle` in src/lib.rs. Declared like any other window:
 # the declaration is the grant, and the review sheet lists it.
+# A window whose page's toolbar is its title bar (`titlebar = "unified"`,
+# Lumi 1.30): macOS draws only the traffic lights over its corner. The
+# Developer pane's "Open unified window" opens it, to see the band, the
+# lights, the drag and the double click on a real window.
+[[window]]
+name = "unified"
+title = "Unified title bar"
+path = "unified.html"
+width = 720
+height = 460
+titlebar = "unified"
+
+# The same page in a taller band (`titlebar-height`): the traffic lights
+# should stay centred in it, lower down.
+[[window]]
+name = "unified-tall"
+title = "Unified title bar, 72 points"
+path = "unified.html"
+width = 720
+height = 460
+titlebar = "unified"
+titlebar-height = 72
+
 [[window]]
 name = "welcome"
 title = "Welcome to Sample"
@@ -225,3 +258,10 @@ page = "install.html"
 title = "Set up Sample"
 width = 420
 height = 380
+
+# The Changelog tab draws CHANGELOG.md, which rides in the package beside
+# this file. Renamed here to show the table; `hidden = true` would drop the
+# tab, and `page = "…"` would draw a page of this extension's own in it.
+# Lumi before 1.32.0 ignores the table and keeps its own name.
+[tabs.changelog]
+label = "What's new"
