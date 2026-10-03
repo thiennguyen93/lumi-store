@@ -887,8 +887,28 @@ interface menu {
         checked: bool,
     }
 
+    /// An `entry` that may carry an icon. A record of its own, not a field
+    /// on `entry`, so a build that calls `set` links exactly as before.
+    record row {
+        id: string,
+        parent: option<string>,
+        kind: kind,
+        label: string,
+        enabled: bool,
+        checked: bool,
+        /// Spelled as a `[[command]]` icon is: a Lucide icon's name from
+        /// Lumi's set ("scan"), or an `.svg` under your `ui/` of at most
+        /// 64 KiB. Drawn as a glyph in the menu's own ink, whatever colours
+        /// the file has. A name Lumi does not have, or a file gone since,
+        /// leaves the row without one. On an `item` or a `submenu` only: a
+        /// separator draws nothing and a `check` row draws its tick.
+        icon: option<string>,
+    }
+
     /// Replace your whole tree. At most 64 entries. An empty list is `clear`.
     set: func(entries: list<entry>) -> result<_, string>;
+    /// `set`, with an icon on any row. Added in Lumi 1.34.
+    set-rows: func(rows: list<row>) -> result<_, string>;
     /// Take your rows out of the menu.
     clear: func() -> result<_, string>;
 }
