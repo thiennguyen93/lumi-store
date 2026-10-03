@@ -919,6 +919,8 @@ pub mod menu {
         pub label: String,
         pub enabled: bool,
         pub checked: bool,
+        /// Set with [`Entry::icon`]; drawn by [`set_rows`] only.
+        pub icon: Option<String>,
     }
 
     impl Entry {
@@ -930,6 +932,7 @@ pub mod menu {
                 label: label.to_string(),
                 enabled: true,
                 checked,
+                icon: None,
             }
         }
 
@@ -965,10 +968,26 @@ pub mod menu {
             self.enabled = false;
             self
         }
+
+        /// A glyph beside the row, spelled as a `[[command]]` icon is: a
+        /// Lucide icon's name from Lumi's set (`"scan"`) or an `.svg` under
+        /// your `ui/`. Drawn in the menu's own ink. On an item or a submenu
+        /// only — a check row draws its tick. Needs [`set_rows`].
+        pub fn icon(mut self, icon: &str) -> Self {
+            self.icon = Some(icon.to_string());
+            self
+        }
     }
 
-    /// Replace your whole tree. An empty slice is [`clear`].
+    /// Replace your whole tree. An empty slice is [`clear`]. Draws no icons:
+    /// an entry given one is refused here, naming [`set_rows`].
     pub fn set(entries: &[Entry]) -> Result<(), String> {
+        if let Some(entry) = entries.iter().find(|e| e.icon.is_some()) {
+            return Err(format!(
+                "menu::set draws no icons, and {:?} has one: use menu::set_rows, which needs Lumi 1.34.0",
+                entry.id
+            ));
+        }
         let entries: Vec<wit::Entry> = entries
             .iter()
             .map(|e| wit::Entry {
@@ -981,6 +1000,27 @@ pub mod menu {
             })
             .collect();
         wit::set(&entries)
+    }
+
+    /// [`set`], drawing each entry's [`icon`](Entry::icon). Needs Lumi
+    /// 1.34.0 — say so with `min-lumi-version`. Apart from `set` because a
+    /// build that calls a function asks Lumi for it when it loads: `set`
+    /// reaching for this one too would make every extension with a menu
+    /// need 1.34, icons or not.
+    pub fn set_rows(entries: &[Entry]) -> Result<(), String> {
+        let rows: Vec<wit::Row> = entries
+            .iter()
+            .map(|e| wit::Row {
+                id: e.id.clone(),
+                parent: e.parent.clone(),
+                kind: e.kind,
+                label: e.label.clone(),
+                enabled: e.enabled,
+                checked: e.checked,
+                icon: e.icon.clone(),
+            })
+            .collect();
+        wit::set_rows(&rows)
     }
 
     /// Take your rows out of the menu.
