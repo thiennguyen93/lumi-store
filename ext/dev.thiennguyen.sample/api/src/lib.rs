@@ -283,9 +283,19 @@ pub fn open_settings() -> Result<(), String> {
 
 /// Choose the glass one of your panels opens on from now on — "popover",
 /// "hud" or "sidebar" — for an appearance setting. The panel's manifest
-/// entry must declare a `material`.
+/// entry must declare one of those three; a `"clear"` panel stays clear.
 pub fn set_material(name: &str, material: &str) -> Result<(), String> {
     lumi::ext::ui::set_material(name, material)
+}
+
+/// Choose where one of your panels opens from now on — `"cursor"`,
+/// `"center"`, `"top-left"`, `"top-right"`, `"bottom-left"` or
+/// `"bottom-right"`, the manifest's `position` words — for a setting that
+/// lets the person pick a corner. Call it before `open_window`; a panel that
+/// is already up moves there at once. A window is refused: macOS places it.
+/// Needs Lumi 1.34.0 or later — say so with `min-lumi-version`.
+pub fn set_position(name: &str, position: &str) -> Result<(), String> {
+    lumi::ext::ui::set_position(name, position)
 }
 
 /// Choose light or dark for one of your panels — "light", "dark" or
@@ -313,6 +323,20 @@ pub fn set_pinned(name: &str, pinned: bool) -> Result<(), String> {
 pub fn set_titlebar_height(name: &str, height: f64) -> Result<f64, String> {
     lumi::ext::ui::set_titlebar_height(name, height)
 }
+
+/// Give one of your open windows or panels a new content size, in points —
+/// to fit a list that grew, a stack of cards. Clamped to 240–1600 by
+/// 180–1200, as the manifest's `width` and `height` are; answers the size it
+/// became. A panel at a corner keeps that corner and grows away from it;
+/// anything else keeps its top-left. The next open starts at the manifest's
+/// size again. A page can do the same itself with `POST /__lumi__/size`.
+/// Needs Lumi 1.34.0 or later — say so with `min-lumi-version`.
+pub fn set_size(name: &str, width: f64, height: f64) -> Result<Size, String> {
+    lumi::ext::ui::set_size(name, width, height)
+}
+
+/// What [`set_size`] answers: the content size a window became.
+pub use lumi::ext::ui::Size;
 
 /// Send `message` (JSON text) to one of your own windows or pages — a
 /// window by its manifest `name`, or `":about"`, `":settings"`,

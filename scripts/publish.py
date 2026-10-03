@@ -156,6 +156,8 @@ COMPONENT_HEADER = b"\x00asm\x0d\x00\x01\x00"
 MAX_PAGES = 4
 MAX_PAGE_LABEL = 24
 # `ext::manifest`'s MAX_FOLDERS, MAX_FOLDER_NAME and MAX_FOLDER_LABEL.
+# `ext::manifest::PanelPosition::parse`'s words.
+PANEL_POSITIONS = ("", "cursor", "center", "top-left", "top-right", "bottom-left", "bottom-right")
 MAX_FOLDERS = 8
 MAX_FOLDER_NAME = 64
 MAX_FOLDER_LABEL = 60
@@ -366,14 +368,24 @@ def check_manifest(entry_id: str, manifest: dict):
         # "cursor" is the default, so saying it on a plain window is allowed.
         if position not in ("", "cursor") and kind == "window":
             fail(entry_id, f"the window {name} sets a position, which only a panel has")
-        if position not in ("", "cursor", "center"):
-            fail(entry_id, f'the panel {name} asks for position {position!r}; a panel opens at "cursor" or "center"')
+        if position not in PANEL_POSITIONS:
+            fail(
+                entry_id,
+                f'the panel {name} asks for position {position!r}; a panel opens at "cursor", "center", '
+                '"top-left", "top-right", "bottom-left" or "bottom-right"',
+            )
+        # `manifest.rs`'s focus rule: a panel's alone, and a boolean.
+        if "focus" in window:
+            if kind == "window":
+                fail(entry_id, f"the window {name} sets focus, which only a panel has — a window always takes the keyboard")
+            if not isinstance(window["focus"], bool):
+                fail(entry_id, f"the panel {name}'s focus = {window['focus']!r} is not true or false")
         # `manifest.rs`'s material rule, same sentences.
         material = str(window.get("material", "")).strip()
         if material and kind == "window":
             fail(entry_id, f"the window {name} sets a material, which only a panel has")
-        if material not in ("", "popover", "hud", "sidebar"):
-            fail(entry_id, f'the panel {name} asks for material {material!r}; a panel\'s material is "popover", "hud" or "sidebar"')
+        if material not in ("", "popover", "hud", "sidebar", "clear"):
+            fail(entry_id, f'the panel {name} asks for material {material!r}; a panel\'s material is "popover", "hud", "sidebar" or "clear"')
         # `manifest.rs`'s title bar rule, same sentences.
         titlebar = str(window.get("titlebar", "")).strip()
         if titlebar == "unified" and kind == "panel":
@@ -408,6 +420,9 @@ def check_manifest(entry_id: str, manifest: dict):
     return ext
 
 
+KNOWN_FOLDERS = ("pictures",)
+
+
 def check_folders(entry_id: str, manifest: dict):
     """The [[folder]] declarations, held to Lumi's `manifest::parse`: a name
     in the window alphabet of at most MAX_FOLDER_NAME, said once; a label —
@@ -428,6 +443,11 @@ def check_folders(entry_id: str, manifest: dict):
             fail(entry_id, f"the folder {name} has no label — say what it is for, such as \"Save screenshots to\"")
         if len(label) > MAX_FOLDER_LABEL or any(ord(c) < 32 or ord(c) == 127 for c in label):
             fail(entry_id, f"the folder {name}'s label is one line of at most {MAX_FOLDER_LABEL} characters")
+        # `manifest::KnownFolder`: one of macOS's own, never a path, and never
+        # one macOS guards.
+        default = str(folder.get("default", "")).strip()
+        if default and default not in KNOWN_FOLDERS:
+            fail(entry_id, f'the folder {name} defaults to {default!r}; a folder\'s default is "pictures" — or leave it out and the person chooses')
     if len(folders) > MAX_FOLDERS:
         fail(entry_id, f"the manifest declares {len(folders)} folders; at most {MAX_FOLDERS}")
 
