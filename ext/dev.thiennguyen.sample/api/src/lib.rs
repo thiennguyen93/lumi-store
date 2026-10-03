@@ -659,6 +659,65 @@ pub mod screen {
     }
 }
 
+/// Text in a picture, with where each line and word of it is — read by
+/// macOS's own recogniser. Lumi reads; what the text is for is yours.
+///
+/// What a read costs follows the picture. One already in your storage
+/// ([`Source::Blob`]) reaches nothing new: no capability, and it may be read
+/// from anywhere, an event included. The screen ([`Source::Screen`]) is a
+/// capture, with everything [`screen::capture`](crate::screen::capture)
+/// asks — the `screen` capability, Screen Recording, and a press behind it.
+///
+/// Positions are the picture's pixels, origin top-left. For the screen,
+/// `reading.frame` and `reading.scale` say where those pixels were: a point
+/// on screen is `frame.x + x / scale`, `frame.y + y / scale`.
+///
+/// ```ignore
+/// use lumi_extension_api::ocr::{self, Options, Source};
+/// let shot = lumi_extension_api::screen::capture(area)?;
+/// let reading = ocr::read(&Source::Blob(shot.blob.clone()), &Options { words: true, ..Options::default() })?;
+/// for line in &reading.lines {
+///     // line.text, line.frame, line.words — draw them over the picture.
+/// }
+/// ```
+///
+/// Half a second to two seconds a read at [`Level::Accurate`], counted
+/// against your run. Needs macOS 13 (14 for the screen) and Lumi 1.34.0 or
+/// later — say so with `min-lumi-version`.
+pub mod ocr {
+    use super::lumi::ext::ocr as wit;
+
+    pub use wit::{Alternative, Level, Line, Options, Point, Reading, Source, Word};
+
+    impl Default for Options {
+        /// Lumi's own reading: the accurate recogniser, languages told from
+        /// the picture, dictionary correction on, the default smallest text,
+        /// no alternatives and no word boxes.
+        fn default() -> Self {
+            Options {
+                level: Level::Accurate,
+                languages: Vec::new(),
+                language_correction: true,
+                minimum_text_height: None,
+                alternatives: 0,
+                words: false,
+            }
+        }
+    }
+
+    /// Read one picture. A blob that is not a picture, one over 64
+    /// megapixels, and the screen without a press behind it are refused
+    /// with a sentence saying so.
+    pub fn read(source: &Source, options: &Options) -> Result<Reading, String> {
+        wit::read(source, options)
+    }
+
+    /// The languages `level` reads, as [`Options::languages`] names them.
+    pub fn languages(level: Level) -> Result<Vec<String>, String> {
+        wit::languages(level)
+    }
+}
+
 /// The person's snippets, asked about a whole text: is it a trigger, and
 /// what does it expand to. For text that came from somewhere other than the
 /// keyboard — a copy in a history, a line in a document — when you want to
