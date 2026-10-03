@@ -357,9 +357,17 @@ interface ui {
 
     /// Choose the glass one of your panels opens on from now on:
     /// "popover", "hud" or "sidebar" — for a setting that lets the person
-    /// pick. Only a panel whose manifest declares a `material`. Takes effect
+    /// pick. Only a panel whose manifest declares one of those three — a
+    /// "clear" panel is clear for good. Takes effect
     /// the next time the panel is shown. Added in 0.3.
     set-material: func(name: string, material: string) -> result<_, string>;
+
+    /// Choose where one of your panels opens from now on — "cursor",
+    /// "center", "top-left", "top-right", "bottom-left" or "bottom-right",
+    /// the manifest's own `position` words — for a setting that lets the
+    /// person pick a corner. A panel that is up moves there at once. Added
+    /// in Lumi 1.34.
+    set-position: func(name: string, position: string) -> result<_, string>;
 
     /// Choose light or dark for one of your panels: "light", "dark", or
     /// "system" to follow macOS again — for a theme setting. The panel's
@@ -385,6 +393,21 @@ interface ui {
     /// that. Only a window declared `titlebar = "unified"` that is open; the
     /// next open starts from the manifest's height again. Added in Lumi 1.30.
     set-titlebar-height: func(name: string, height: f64) -> result<f64, string>;
+
+    /// A window's content size, in points.
+    record size {
+        width: f64,
+        height: f64,
+    }
+
+    /// Give one of your open windows or panels a new content size — to fit
+    /// what it shows, a list that grew, a stack of cards. Clamped as the
+    /// manifest's `width` and `height` are (240–1600 by 180–1200); answers
+    /// the size it became. The edge it is placed against stays still: a
+    /// panel at a corner keeps that corner, so it grows away from it, and
+    /// anything else keeps its top-left. Only a window that is open; the
+    /// next open starts from the manifest's size again. Added in Lumi 1.34.
+    set-size: func(name: string, width: f64, height: f64) -> result<size, string>;
 
     /// Send `message`, JSON text, to one of this extension's own windows
     /// or embedded pages: a declared window by its manifest `name`, or a
