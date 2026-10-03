@@ -1,0 +1,450 @@
+[
+ {
+  "version": "0.69.0",
+  "date": "2026-10-03",
+  "notes": "### Added\n\n- Select text right on a copied image in the preview: press on a word and drag across the words you want, or double-click a line. **⌘C** or **Copy** copies just those words; **⎋** lets them go. A press between words still drags the image out.\n\n### Fixed\n\n- Images whose text was never read are read now, when the panel opens or when **Search text in images** is turned on, so every image can be found by its words. This covers images copied while that setting was off, while Lumi was quitting, or in a quick run of copies.",
+  "notesSha256": "034df2f092c02883da0eea61c26e9b5f5199c06d4c77ed5d1cfbc0245c6fad47",
+  "summary": null
+ },
+ {
+  "version": "0.68.0",
+  "date": "2026-10-03",
+  "notes": "### Added\n\n- Icons beside every row of Clipboard Manager's menu in Lumi's menu bar.\n\n### Changed\n\n- **Pause Recording** in the menu bar reads **Resume Recording** while paused, in place of a tick.\n- Needs Lumi 1.34.0.",
+  "notesSha256": "835a7e3758ff83388d25e4b75e0cc9fa81f436ef12b318a6e95fb5943f32ef26",
+  "summary": null
+ },
+ {
+  "version": "0.67.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- Clipboard Manager in Lumi's menu bar menu: **Show Clipboard History**, **Pause Recording**, **Delete All Unpinned…** and **Settings…**.\n- **Pause Recording** stops keeping what you copy until you untick it. Nothing copied while paused is recorded.\n- **Delete All Unpinned…** opens the panel and deletes there, so ⌘Z still brings everything back.\n\n### Fixed\n\n- The preview's width and split, and what a PDF fits, are kept between openings of the panel. They were never saved before.\n\n### Changed\n\n- Needs Lumi 1.33.0, and declares `menu`, the capability its menu bar rows need. The menu shows nothing you copied.",
+  "notesSha256": "df1a8c9b3a285785458db2cf20bf8f3242de1f9a4c7e4d052c4268199dfa0f73",
+  "summary": null
+ },
+ {
+  "version": "0.66.1",
+  "date": "2026-10-02",
+  "notes": "### Changed\n\n- With the panel pinned and you working in another app, Show clipboard history gives it the keyboard back the moment you press it, before the selected item blinks: Clipboard Manager now asks Lumi where the panel stands instead of finding out from the panel. Needs Lumi 1.31.0.",
+  "notesSha256": "a718405e79938019231d429acf57385558f9c4380ace361a438808a23bb07a3c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster keyboard focus when the panel is pinned",
+     "items": [
+      "Pinned panel gets keyboard focus immediately when you press Show clipboard history from another app"
+     ]
+    },
+    "vi": {
+     "headline": "Lấy nét bàn phím nhanh hơn khi bảng được ghim",
+     "items": [
+      "Bảng được ghim nhận nét bàn phím ngay lập tức khi bạn nhấn Hiện lịch sử clipboard từ ứng dụng khác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.66.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- Two more commands, Hide clipboard history and Toggle clipboard history, for keys of your own in Lumi's Settings. The shortcut the extension comes with stays on Show clipboard history.\n\n### Changed\n\n- Show clipboard history only ever brings the panel up. Pressed while the panel is already up, pinned or not, it no longer puts it away: the panel takes the keyboard back if you were working in another app, and the selected item blinks so you know you can search or move through the list. Escape, Hide or Toggle put it away.",
+  "notesSha256": "2214f7470bf0bf64d629781a2f499ae6e04c7af0f93c756fb9209f365931331c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "More control over when the panel appears and disappears",
+     "items": [
+      "Show clipboard history now only opens the panel and never closes it",
+      "When the panel is already open, the shortcut brings focus back and blinks the selection",
+      "Two new commands let you assign your own shortcuts to hide or toggle the panel",
+      "Press Escape or use the new Hide command to close the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Kiểm soát tốt hơn khi bảng điều khiển hiện và ẩn",
+     "items": [
+      "Hiện lịch sử clipboard giờ chỉ mở bảng và không bao giờ đóng nó",
+      "Khi bảng đã mở, phím tắt sẽ đưa tiêu điểm về và nhấp nháy mục đang chọn",
+      "Hai lệnh mới cho phép bạn gán phím tắt riêng để ẩn hoặc bật tắt bảng",
+      "Nhấn Escape hoặc dùng lệnh Ẩn mới để đóng bảng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.65.1",
+  "date": "2026-10-02",
+  "notes": "### Fixed\n\n- A long copy's scroll bar no longer covers its last letters. Every scroll bar in the preview — the copy, what it expands to, the text read in an image, the list of links — now sits in one line along the right edge.",
+  "notesSha256": "55747f960af878a6467c076d10344ad474c33bafa5f29ec2cec900f076e0dc75",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Scroll bars no longer cover text",
+     "items": [
+      "Scroll bars in the preview now sit along the right edge instead of covering text"
+     ]
+    },
+    "vi": {
+     "headline": "Thanh cuộn không còn che chữ",
+     "items": [
+      "Thanh cuộn trong bản xem trước giờ nằm sát mép phải thay vì che chữ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.65.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- Drag the line across the preview up or down to give more room to either side: the picture or the text read in it, or a copy or what it expands to. The line stays where you leave it for both kinds, so it holds still as you move through the list. Double-click the line to put it back where it was.",
+  "notesSha256": "d32c50a43d6b754eaa0fb20259ca376538724b35442176143dd1091a6bdde23c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Resize the preview by dragging the divider",
+     "items": [
+      "Drag the line across the preview up or down to adjust the space between the image and text",
+      "The divider stays where you place it as you move through items",
+      "Double-click the divider to reset it to its original position"
+     ]
+    },
+    "vi": {
+     "headline": "Thay đổi kích thước xem trước bằng cách kéo đường phân chia",
+     "items": [
+      "Kéo đường ngang trong khung xem trước lên hoặc xuống để điều chỉnh không gian giữa hình ảnh và văn bản",
+      "Đường phân chia giữ nguyên vị trí khi bạn di chuyển qua các mục",
+      "Nhấp đúp vào đường phân chia để đặt lại về vị trí ban đầu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.64.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- With the panel pinned and you working in another app, the shortcut gives the panel the keyboard back where it stands, and the selected item now blinks to say so, so you know you can search or move through the list right away. With the ⌘K menu up, its chosen action blinks instead. Press the shortcut again to put the panel away.",
+  "notesSha256": "97ff4102e1530bbd222139535f16162986c0b6cfde6466a8784a024b44abf397",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Panel shortcut now refocuses when pinned",
+     "items": [
+      "When the panel is pinned and another app is active, the shortcut brings keyboard focus back to the panel",
+      "The selected item blinks briefly to show the panel is ready for searching or navigation",
+      "If the command menu is open, the chosen action blinks instead",
+      "Press the shortcut again to hide the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Phím tắt giờ đưa tiêu điểm về bảng khi ghim",
+     "items": [
+      "Khi bảng đang ghim và bạn dùng ứng dụng khác, phím tắt đưa bàn phím về bảng",
+      "Mục đang chọn nhấp nháy để báo bảng sẵn sàng tìm kiếm hoặc di chuyển",
+      "Nếu menu lệnh đang mở, hành động đã chọn sẽ nhấp nháy",
+      "Nhấn phím tắt lần nữa để ẩn bảng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.63.26",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- Copy one of your snippet triggers, such as `;addr`, and the preview shows what it expands to: its web addresses read as plain text and turn into links under the pointer, a button copies it, and clicking its heading folds it away. A snippet that comes out the same every time is remembered with the copy. One that changes, such as a date, is expanded again each time the panel shows it.\n- Settings has a new Snippets section. Match snippets switches it on or off. Look in picks the profile you're using (the default), every profile, or Selected Profiles. Once Selected Profiles is chosen, its submenu lists every profile with a search field on top, to find them by name and tick them however many you have. An open panel, pinned or not, follows at once when you switch, rename or remove a profile, change these settings or edit a snippet in Lumi, and a snippet that can change is expanded again each time you come back to it. Needs Lumi 1.31.0.",
+  "notesSha256": "dde792e136600dd5d2503530266c356ff84530d8a460f317026bb38e17572a7f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Snippets in the panel",
+     "items": [
+      "Copy a snippet trigger and the preview shows what it expands to",
+      "Web addresses in snippet previews turn into links and can be copied",
+      "Click the heading in a snippet preview to fold it away",
+      "Snippets that change each time are expanded again when you return to them",
+      "Settings has a new Snippets section to turn matching on or off",
+      "Choose which snippet profiles to search in Settings under Snippets"
+     ]
+    },
+    "vi": {
+     "headline": "Snippet trong bảng điều khiển",
+     "items": [
+      "Sao chép mã kích hoạt snippet để xem nội dung mở rộng trong bản xem trước",
+      "Địa chỉ web trong bản xem trước snippet có thể nhấp và sao chép",
+      "Nhấp vào tiêu đề trong bản xem trước snippet để thu gọn",
+      "Snippet thay đổi mỗi lần sẽ được mở rộng lại khi bạn quay lại",
+      "Cài đặt có mục Snippet mới để bật hoặc tắt tính năng khớp",
+      "Chọn hồ sơ snippet nào để tìm kiếm trong Cài đặt mục Snippet"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.62.1",
+  "date": "2026-10-01",
+  "notes": "### Fixed\n\n- The ⌘K actions menu's search field fits inside the menu instead of running past its right edge.",
+  "notesSha256": "22d1a243d4c91ffddf1a291e0aee22108b5f836bdf087e87ed514a76ca12c939",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed search field overflow in actions menu",
+     "items": [
+      "The search field in the actions menu no longer extends beyond the menu edge"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa lỗi ô tìm kiếm tràn ra ngoài menu hành động",
+     "items": [
+      "Ô tìm kiếm trong menu hành động không còn vượt ra ngoài viền menu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.62.0",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- The ⌘K actions menu highlights the letters you typed in each action it found, the way the history search does.",
+  "notesSha256": "3a869a438a74dc4078a72e51f16670ae7189ae2c7fb947a387c67caa42c1050d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Highlights in the actions menu",
+     "items": [
+      "The actions menu highlights the letters you typed in each matching action"
+     ]
+    },
+    "vi": {
+     "headline": "Làm nổi bật trong menu hành động",
+     "items": [
+      "Menu hành động làm nổi bật các chữ cái bạn đã gõ trong mỗi hành động khớp"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.61.0",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- The ⌘K actions menu takes shorthand: string together the starts of an action's words, as in \"delall\" for \"Delete all…\" or \"sif\" for \"Show in Finder\". The closest match comes first, right above the search field.",
+  "notesSha256": "bda4325ea323d3b43166fbec248bdf19c54a66a0c06c8456498a1d04de77eb81",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster actions menu with shorthand search",
+     "items": [
+      "The actions menu recognizes shorthand: type first letters of each word like delall or sif to find commands"
+     ]
+    },
+    "vi": {
+     "headline": "Menu hành động nhanh hơn với tìm kiếm viết tắt",
+     "items": [
+      "Menu hành động nhận dạng viết tắt: gõ chữ cái đầu mỗi từ như delall hay sif để tìm lệnh nhanh"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.8",
+  "date": "2026-10-01",
+  "notes": "### Fixed\n\n- Searching the ⌘K actions menu matches the start of a word: \"de\" finds the Delete actions, no longer \"Show in Finder\" for the \"de\" inside \"Finder\".",
+  "notesSha256": "e54ab2b3ec26bbecc5ab2fb89641b801dba4c5943d786f094d68a13fe0606e85",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Smarter search in the actions menu",
+     "items": [
+      "Searching the actions menu now matches the start of words instead of any substring"
+     ]
+    },
+    "vi": {
+     "headline": "Tìm kiếm thông minh hơn trong menu hành động",
+     "items": [
+      "Tìm kiếm trong menu hành động giờ khớp với đầu từ thay vì bất kỳ chuỗi ký tự nào"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.7",
+  "date": "2026-10-01",
+  "notes": "### Changed\n\n- The ⌘K actions menu reads from the bottom up: Paste sits right above the search field, the delete actions furthest from it. The arrow keys move the way they point.",
+  "notesSha256": "7d1465cb0ac019522fb700fcfad32f48b40f20baa03b6820d97b983e7adc26a8",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Actions menu reordered for easier access",
+     "items": [
+      "The actions menu now reads from bottom to top with Paste closest to the search field",
+      "Arrow keys now move in the direction they point in the actions menu"
+     ]
+    },
+    "vi": {
+     "headline": "Sắp xếp lại menu thao tác để dễ truy cập hơn",
+     "items": [
+      "Menu thao tác giờ đọc từ dưới lên trên với Dán ở gần ô tìm kiếm nhất",
+      "Phím mũi tên giờ di chuyển theo hướng chúng chỉ trong menu thao tác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.6",
+  "date": "2026-10-01",
+  "notes": "### Changed\n\n- The ⌘K actions menu has its search field at the bottom, next to the ⌘K that opens it. The field stays in place while you type and the list narrows above it.",
+  "notesSha256": "201f9a1b769fdf7a219ae5c3f89c5c43bab923908cdec7f8b4a71f2d98e04e00",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Search field moved in actions menu",
+     "items": [
+      "The search field in the actions menu now sits at the bottom and stays in place while you type"
+     ]
+    },
+    "vi": {
+     "headline": "Di chuyển ô tìm kiếm trong menu hành động",
+     "items": [
+      "Ô tìm kiếm trong menu hành động giờ nằm ở dưới cùng và giữ nguyên vị trí khi bạn gõ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.5",
+  "date": "2026-10-01",
+  "notes": "### Fixed\n\n- The ⌘K actions menu shows all its actions instead of cutting the last one in half. When the panel is too short for them all, the list scrolls, fades at the edge that has more, and the arrow keys keep the chosen action in view.",
+  "notesSha256": "b86368ad1c5f2feef7fefa6e3ff0804084f517924a5f545b7fd72ba98f7d430b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Actions menu improvements",
+     "items": [
+      "The actions menu now shows all actions completely instead of cutting off the last one",
+      "When the panel is too short, the actions list scrolls and fades at the edges",
+      "Arrow keys keep the selected action visible when scrolling"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện menu thao tác",
+     "items": [
+      "Menu thao tác giờ hiển thị đầy đủ các mục thay vì cắt mất mục cuối",
+      "Khi bảng điều khiển quá ngắn, danh sách sẽ cuộn và mờ dần ở các cạnh",
+      "Phím mũi tên giữ thao tác đang chọn luôn hiển thị khi cuộn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.4",
+  "date": "2026-10-01",
+  "notes": "### Changed\n\n- The panel opens faster with a long history: it reads the history once, and brings items kept by older versions up to date only once.",
+  "notesSha256": "e5520b3bab05115bde820771cfb7e42e4604b4c1d3bc77e53f80c1f029ecac82",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster panel opening with long history",
+     "items": [
+      "The panel opens faster when you have a long history"
+     ]
+    },
+    "vi": {
+     "headline": "Mở bảng nhanh hơn với lịch sử dài",
+     "items": [
+      "Bảng mở nhanh hơn khi bạn có lịch sử dài"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.3",
+  "date": "2026-10-01",
+  "notes": "### Fixed\n\n- What you copy while the panel is open, pinned or not, shows up in it straight away.",
+  "notesSha256": "f449cc2da26db4f6d568279a169ee94788446cb2c952ad3a4b36b6d7f009a0d0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Instant clipboard updates",
+     "items": [
+      "What you copy while the panel is open now shows up in it straight away"
+     ]
+    },
+    "vi": {
+     "headline": "Cập nhật clipboard tức thì",
+     "items": [
+      "Nội dung bạn sao chép khi bảng điều khiển đang mở giờ hiện lên ngay lập tức"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.2",
+  "date": "2026-10-01",
+  "notes": "### Changed\n\n- A copy's links are found once, when it is copied, instead of each time its preview is shown.",
+  "notesSha256": "c82ce013c490451ccd71ec434200e0d6d1c64580ee5f5c9e82a000a315d099c6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster previews",
+     "items": [
+      "Previews load faster because links are now detected when you copy, not when you view"
+     ]
+    },
+    "vi": {
+     "headline": "Xem trước nhanh hơn",
+     "items": [
+      "Xem trước hiển thị nhanh hơn vì liên kết được phát hiện khi sao chép, không phải khi xem"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.1",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- Links in rich text can be clicked in the preview. Plain text stays plain, to select and copy; its links are listed under it.",
+  "notesSha256": "197f7d392777500308c5d6f5cc2d47ffaf129fa88681e6976604961e3e19bf7e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Links in rich text previews are now clickable",
+     "items": [
+      "Links in rich text can be clicked in the preview",
+      "Plain text stays plain so you can select and copy it",
+      "Links from plain text are listed below the preview"
+     ]
+    },
+    "vi": {
+     "headline": "Liên kết trong bản xem trước rich text giờ có thể nhấp được",
+     "items": [
+      "Liên kết trong rich text có thể nhấp trực tiếp trong bản xem trước",
+      "Văn bản thuần vẫn giữ nguyên để bạn chọn và sao chép",
+      "Liên kết từ văn bản thuần được liệt kê bên dưới bản xem trước"
+     ]
+    }
+   }
+  }
+ }
+]

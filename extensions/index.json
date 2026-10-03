@@ -1,0 +1,134 @@
+[
+  {
+    "id": "dev.thiennguyen.sample",
+    "name": "Sample",
+    "version": "0.14.0",
+    "minLumiVersion": "1.33.0",
+    "description": "The reference extension: reads the selection, answers through the alert.",
+    "author": "Thien Nguyen",
+    "capabilities": [
+      "accessibility",
+      "applications",
+      "clipboard",
+      "menu",
+      "network",
+      "screen"
+    ],
+    "windows": [
+      "Sample settings",
+      "Unified title bar",
+      "Unified title bar, 72 points",
+      "Welcome to Sample"
+    ],
+    "icon": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-0e581a175aa9.svg",
+    "category": "Developer",
+    "featured": false,
+    "screenshots": [
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-ef981483beee.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-238ea6c1a612.png"
+    ],
+    "details": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-59164d76ec60.md",
+    "changelog": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-7230415ceddd.json",
+    "discussion": {
+      "number": 14,
+      "url": "https://github.com/thiennguyen93/lumi-store/discussions/14"
+    },
+    "size": 129998,
+    "commands": [
+      "Translate selection",
+      "Open sample settings",
+      "Spin forever (limit test)",
+      "Grow until refused (limit test)"
+    ],
+    "shortcuts": [],
+    "pages": [],
+    "package": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-0.14.0.tar.gz",
+    "signature": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-0.14.0.tar.gz.sig",
+    "sha256": "8c9db32213d05594ae58a1a86a96c2036d30fb482c1c133223cf275c5bb5e726"
+  },
+  {
+    "id": "dev.thiennguyen.keytest",
+    "name": "Keyboard Test",
+    "version": "0.3.1",
+    "minLumiVersion": "1.25.0",
+    "description": "Check every key of a MacBook keyboard, and catch keys that double-type.",
+    "author": "Thien Nguyen",
+    "capabilities": [],
+    "windows": [],
+    "icon": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-100e6bec00ae.svg",
+    "category": "Developer",
+    "featured": false,
+    "screenshots": [
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-e3d724e14a62.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-d34b3f4ffc98.png"
+    ],
+    "details": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-07c0c1ba2c1c.md",
+    "changelog": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-a0077d3cd6d5.json",
+    "discussion": {
+      "number": 15,
+      "url": "https://github.com/thiennguyen93/lumi-store/discussions/15"
+    },
+    "size": 45985,
+    "commands": [],
+    "shortcuts": [],
+    "pages": [
+      "Keyboard test"
+    ],
+    "package": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-0.3.1.tar.gz",
+    "signature": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-0.3.1.tar.gz.sig",
+    "sha256": "90eb25bb38acc3ee5c3c6d80a0ce3c8ffcd6886e6387b47029d14b0efe4b3eb2"
+  },
+  {
+    "id": "dev.thiennguyen.clipboard",
+    "name": "Clipboard Manager",
+    "version": "0.69.0",
+    "minLumiVersion": "1.34.0",
+    "description": "Keep what you copy \u2014 text, links, images and files \u2014 and paste it back from a panel.",
+    "author": "Thien Nguyen",
+    "capabilities": [
+      "clipboard",
+      "clipboard-history",
+      "input",
+      "accessibility",
+      "snippets",
+      "menu"
+    ],
+    "windows": [
+      "Welcome to Clipboard Manager",
+      "Clipboard Manager"
+    ],
+    "icon": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-d7f1b7de3cdf.svg",
+    "category": "Productivity",
+    "featured": true,
+    "screenshots": [
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-a269424e737e.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-e74ba58bab75.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-3b3fbc6dd3b2.png"
+    ],
+    "details": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-6872209de04e.md",
+    "changelog": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-d74bbefd898d.json",
+    "discussion": {
+      "number": 16,
+      "url": "https://github.com/thiennguyen93/lumi-store/discussions/16"
+    },
+    "size": 1538056,
+    "commands": [
+      "Show clipboard history",
+      "Hide clipboard history",
+      "Toggle clipboard history"
+    ],
+    "shortcuts": [
+      {
+        "command": "open",
+        "label": "Show clipboard history",
+        "key": "cmd+shift+c"
+      }
+    ],
+    "pages": [
+      "Dashboard"
+    ],
+    "package": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-0.69.0.tar.gz",
+    "signature": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-0.69.0.tar.gz.sig",
+    "sha256": "d67ef2836bce0daebeafc00ba5478ae4722eb261f034c1ed8c39f17168f6ad77"
+  }
+]
