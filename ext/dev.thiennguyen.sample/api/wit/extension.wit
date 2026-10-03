@@ -103,6 +103,8 @@ interface clipboard {
     /// file is wanted (Finder, the desktop) and stays an image everywhere
     /// else; anything else goes as its types, like `write-all`. The board
     /// the person copies with is not touched. At most 160 MB in all.
+    /// From Lumi 1.34 that PNG is a real file for every app, Electron apps
+    /// and browsers included, not only those that read a file promise.
     ///
     /// Costs `clipboard`. Answers only one of the extension's windows the
     /// person is using, and only while the mouse button is still down in
@@ -110,6 +112,18 @@ interface clipboard {
     /// making. Call it from the page when a press on an item starts to move.
     /// Added in Lumi 1.26.
     drag: func(items: list<list<rep>>, options: drag-options) -> result<_, string>;
+
+    /// `drag`, naming the files: `names[i]` is what item `i` is called where
+    /// it becomes a file — an image with no file of its own — without the
+    /// extension, which is the file's (`.png`). `{date}` and `{time}` are
+    /// filled in as `storage.blob-save-dated` fills them. Lumi makes it a
+    /// file name:
+    /// `/` and `:` become `-`, control characters and a leading dot go, and
+    /// it is cut to 120 characters. A `none`, an empty name or an item past
+    /// the end of the list is named the way macOS names a screenshot; an
+    /// item with a file URL keeps its file's own name. More names than items
+    /// is refused. The same costs and rules as `drag`. Added in Lumi 1.34.
+    drag-named: func(items: list<list<rep>>, names: list<option<string>>, options: drag-options) -> result<_, string>;
 }
 
 /// Lumi's own alert overlay, styled from Settings. Costs no capability,
