@@ -556,6 +556,33 @@ def check_tabs(entry_id: str, manifest: dict):
         if word == "shortcuts" and not manifest.get("shortcut"):
             fail(entry_id, f"{hidden_key} hides the {BUILTIN_TABS[word]} tab, and this manifest gives Lumi nothing to draw in it")
 
+    # `default = true`: the one tab the page opens on, held to Lumi's rule
+    # — one in the whole page, [[page]]s included, and never a tab the
+    # manifest itself takes away.
+    defaults = []
+    for page in manifest.get("page", []):
+        if "default" in page:
+            if not isinstance(page["default"], bool):
+                fail(entry_id, f"the page {page.get('name', '')}'s default = {page['default']!r} is not true or false")
+            if page["default"]:
+                defaults.append(f"the page {page.get('name', '')}")
+    for word in BUILTIN_TABS:
+        table = raw.get(word, {})
+        if "default" not in table:
+            continue
+        key = f"[tabs.{word}] default"
+        if not isinstance(table["default"], bool):
+            fail(entry_id, f"{key} = {table['default']!r} is not true or false")
+        if not table["default"]:
+            continue
+        if tabs[word]["hidden"]:
+            fail(entry_id, f"{key} opens the page on the {BUILTIN_TABS[word]} tab, which this manifest hides")
+        if word == "shortcuts" and not tabs[word]["page"] and not manifest.get("shortcut"):
+            fail(entry_id, f"{key} opens the page on the {BUILTIN_TABS[word]} tab, and this manifest gives Lumi nothing to draw in it")
+        defaults.append(key)
+    if len(defaults) > 1:
+        fail(entry_id, f"{defaults[0]} and {defaults[1]} both say default = true — a page opens on one tab, keep one")
+
     seen = [str(page.get("label", "")).strip() or page.get("name", "") for page in manifest.get("page", [])]
     seen = [label.lower() for label in seen]
     for decl in tabs.values():
