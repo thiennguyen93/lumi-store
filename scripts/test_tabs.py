@@ -79,9 +79,18 @@ class Tabs(unittest.TestCase):
             ("settings-tab = false\nsettings-page = \"s.html\"", "", "settings-tab = false hides the tab settings-page"),
             ("shortcuts-tab = false", "", "nothing to draw"),
             ("settings-tab = 1", "", "is not true or false"),
+            ("", "[tabs.settings]\ndefault = true\n[tabs.changelog]\ndefault = true\n", "both say default = true"),
+            ("", '[[page]]\nname = "log"\ndefault = true\n[tabs.about]\ndefault = true\n', "the page log and [tabs.about] default"),
+            ("", "[tabs.settings]\nhidden = true\ndefault = true\n", "which this manifest hides"),
+            ("", "[tabs.shortcuts]\ndefault = true\n", "nothing to draw"),
+            ("", '[tabs.settings]\ndefault = "yes"\n', "is not true or false"),
         ]:
             with self.subTest(said=said):
                 self.assertIn(said, refusal(extension, tables))
+
+    def test_one_tab_may_say_the_page_opens_on_it(self):
+        publish.check_tabs("dev.you.thing", manifest(tables="[tabs.settings]\ndefault = true\n"))
+        publish.check_tabs("dev.you.thing", manifest(tables='[[page]]\nname = "log"\ndefault = true\n'))
 
     def test_its_own_name_back_is_no_clash_and_a_hidden_tabs_label_is_free(self):
         publish.check_tabs("dev.you.thing", manifest(tables='[tabs.changelog]\nlabel = "changelog"\n'))
