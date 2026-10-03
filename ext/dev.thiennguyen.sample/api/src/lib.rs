@@ -205,8 +205,9 @@ pub fn paste(items: &[Vec<Rep>]) -> Result<(), String> {
 /// Drag whole items out of the window the person is pressing in, into
 /// whatever app they drop them on — Finder, a browser's upload field, a
 /// chat. A file URL carries the file; an image with no file becomes a PNG
-/// file where a file is wanted (Finder, the desktop) and stays an image
-/// elsewhere; anything else goes as its types, like [`write_clipboard`]. The
+/// file — for every app from Lumi 1.34, Electron apps and browsers included;
+/// before it, only those that read a file promise, such as Finder — and
+/// stays an image to an app that takes images; anything else goes as its types, like [`write_clipboard`]. The
 /// board the person copies with is not touched.
 ///
 /// `close_on_drop` takes your panels down after a drop that took the items;
@@ -218,6 +219,22 @@ pub fn paste(items: &[Vec<Rep>]) -> Result<(), String> {
 /// later — say so with `min-lumi-version`.
 pub fn drag(items: &[Vec<Rep>], close_on_drop: bool) -> Result<(), String> {
     lumi::ext::clipboard::drag(items, lumi::ext::clipboard::DragOptions { close_on_drop })
+}
+
+/// [`drag`], naming the files: `names[i]` is what item `i` is called where
+/// it becomes a file — an image with no file of its own — without the
+/// extension, which is the file's own (`.png`). `{date}` and `{time}` are
+/// filled in as [`storage::blob_save_dated`] fills them. Lumi makes it a file name:
+/// `/` and `:` become `-`, control characters and a leading dot go, and it
+/// is cut to 120 characters. `None`, an empty name, or an item past the end
+/// of `names` gets the name macOS gives a screenshot; an item with a file
+/// URL keeps its file's name. More names than items is refused.
+///
+/// A screenshot app passes the name its own file-name setting would save
+/// under, so a picture dragged out lands with the same name as one saved.
+/// Needs `clipboard` and Lumi 1.34.0 or later.
+pub fn drag_named(items: &[Vec<Rep>], names: &[Option<String>], close_on_drop: bool) -> Result<(), String> {
+    lumi::ext::clipboard::drag_named(items, names, lumi::ext::clipboard::DragOptions { close_on_drop })
 }
 
 /// One HTTP request, through the host — which is where the user's own
