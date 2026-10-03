@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.68.0] - 2026-10-03
+
+### Added
+
+- Icons beside every row of Clipboard Manager's menu in Lumi's menu bar.
+
+### Changed
+
+- **Pause Recording** in the menu bar reads **Resume Recording** while paused, in place of a tick.
+- Needs Lumi 1.34.0.
+
 ## [0.67.0] - 2026-10-02
 
 ### Added

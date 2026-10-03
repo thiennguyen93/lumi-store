@@ -262,7 +262,8 @@ impl Host for Lumi {
     }
 
     fn set_menu(&self, entries: &[lumi_extension_api::menu::Entry]) -> Result<(), String> {
-        lumi_extension_api::menu::set(entries)
+        // `set_rows`, for the rows' icons — Lumi 1.34.
+        lumi_extension_api::menu::set_rows(entries)
     }
 
     fn settings(&self) -> serde_json::Value {

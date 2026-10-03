@@ -253,12 +253,19 @@ pub fn on_event(host: &impl Host, name: &str, payload: &str) -> Result<(), Strin
 fn draw_menu(host: &impl Host) -> Result<(), String> {
     use lumi::menu::Entry;
     host.set_menu(&[
-        Entry::item("show", "Show Clipboard History"),
-        Entry::check("pause", "Pause Recording", paused(host)),
+        // Show wears the `open` command's own mark. Pause is a plain row that
+        // says what a press does next rather than a check row: a check row
+        // draws its tick where an icon would go, and the rest have one.
+        Entry::item("show", "Show Clipboard History").icon("clipboard-list"),
+        if paused(host) {
+            Entry::item("pause", "Resume Recording").icon("play")
+        } else {
+            Entry::item("pause", "Pause Recording").icon("pause")
+        },
         Entry::separator("s1"),
-        Entry::item("clear", "Delete All Unpinned…"),
+        Entry::item("clear", "Delete All Unpinned…").icon("trash-2"),
         Entry::separator("s2"),
-        Entry::item("settings", "Settings…"),
+        Entry::item("settings", "Settings…").icon("settings"),
     ])
 }
 
@@ -1650,8 +1657,8 @@ mod tests {
         assert_eq!(list(&host)[0]["pin"], "b");
     }
 
-    fn menu_ids(host: &Memory) -> Vec<(String, bool)> {
-        host.menu.borrow().iter().map(|e| (e.id.clone(), e.checked)).collect()
+    fn menu_ids(host: &Memory) -> Vec<(String, String)> {
+        host.menu.borrow().iter().map(|e| (e.id.clone(), e.label.clone())).collect()
     }
 
     /// The menu bar rows are set on install and on update, and hold none of
@@ -1663,6 +1670,14 @@ mod tests {
         on_lifecycle(&host, &lumi::Lifecycle::Installed).unwrap();
         let ids: Vec<String> = menu_ids(&host).into_iter().map(|(id, _)| id).collect();
         assert_eq!(ids, ["show", "pause", "s1", "clear", "s2", "settings"]);
+        let menu = host.menu.borrow();
+        let icons: Vec<Option<&str>> = menu.iter().map(|e| e.icon.as_deref()).collect();
+        assert_eq!(
+            icons,
+            [Some("clipboard-list"), Some("pause"), None, Some("trash-2"), None, Some("settings")],
+            "an icon on every row but a separator"
+        );
+        drop(menu);
         assert!(host.menu.borrow().iter().all(|e| !e.label.contains("secret")));
 
         host.menu.borrow_mut().clear();
@@ -1670,12 +1685,14 @@ mod tests {
         assert_eq!(host.menu.borrow().len(), 6, "set again on an update");
     }
 
-    /// Pause keeps nothing — the copy's blobs go too — and the tick follows.
+    /// Pause keeps nothing — the copy's blobs go too — and the row says
+    /// Resume until it is pressed again.
     #[test]
     fn a_paused_history_keeps_no_copy_and_ticks_the_row() {
         let host = Memory::default();
         menu_pressed(&host, "pause").unwrap();
-        assert!(menu_ids(&host).contains(&("pause".to_string(), true)));
+        assert!(menu_ids(&host).contains(&("pause".to_string(), "Resume Recording".to_string())));
+        assert!(host.menu.borrow().iter().any(|e| e.id == "pause" && e.icon.as_deref() == Some("play")));
 
         host.blobs.borrow_mut().insert("img".to_string());
         on_event(&host, "clipboard", &image_event("h1", "img")).unwrap();
@@ -1684,7 +1701,7 @@ mod tests {
         assert!(!host.blobs.borrow().contains("img"), "and its blob is gone");
 
         menu_pressed(&host, "pause").unwrap();
-        assert!(menu_ids(&host).contains(&("pause".to_string(), false)));
+        assert!(menu_ids(&host).contains(&("pause".to_string(), "Pause Recording".to_string())));
         on_event(&host, "clipboard", &event("h3", 3, "three")).unwrap();
         assert_eq!(list(&host).len(), 1, "kept again once resumed");
     }
