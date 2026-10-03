@@ -1,4 +1,80 @@
 {
+  "0.69.0": {
+    "notesSha256": "034df2f092c02883da0eea61c26e9b5f5199c06d4c77ed5d1cfbc0245c6fad47",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Select text on images and find every image by its words",
+          "items": [
+            "Select text directly on a copied image by dragging across words or double-clicking a line",
+            "Press Command-C or Copy to copy just the selected words, or press Escape to deselect",
+            "Images are now read for text when the panel opens or when Search text in images is turned on",
+            "Every image can be found by its words, even if copied while that setting was off"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn văn bản trên ảnh và tìm mọi ảnh theo nội dung chữ",
+          "items": [
+            "Chọn văn bản trực tiếp trên ảnh bằng cách kéo qua các từ hoặc nhấp đúp vào dòng",
+            "Nhấn Command-C hoặc Copy để chỉ sao chép phần đã chọn, hoặc nhấn Escape để bỏ chọn",
+            "Ảnh giờ được đọc văn bản khi mở bảng điều khiển hoặc khi bật tính năng Tìm chữ trong ảnh",
+            "Mọi ảnh giờ đều tìm được bằng nội dung chữ, kể cả ảnh sao chép khi tắt tính năng"
+          ]
+        }
+      }
+    }
+  },
+  "0.68.0": {
+    "notesSha256": "835a7e3758ff83388d25e4b75e0cc9fa81f436ef12b318a6e95fb5943f32ef26",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Icons in the menu and clearer pause state",
+          "items": [
+            "Every item in the menu bar now shows an icon",
+            "Pause Recording changes to Resume Recording when paused instead of showing a tick"
+          ]
+        },
+        "vi": {
+          "headline": "Biểu tượng trong menu và trạng thái tạm dừng rõ ràng hơn",
+          "items": [
+            "Mỗi mục trong thanh menu giờ đây hiển thị biểu tượng",
+            "Tạm dừng ghi nhận đổi thành Tiếp tục ghi nhận khi đang tạm dừng thay vì hiện dấu tick"
+          ]
+        }
+      }
+    }
+  },
+  "0.67.0": {
+    "notesSha256": "df1a8c9b3a285785458db2cf20bf8f3242de1f9a4c7e4d052c4268199dfa0f73",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Pause recording and manage history from the menu bar",
+          "items": [
+            "The menu bar menu now has Show Clipboard History, Pause Recording, Delete All Unpinned and Settings",
+            "Pause Recording stops saving what you copy until you turn it back on",
+            "Delete All Unpinned opens the panel and clears items there so you can undo",
+            "The preview width, split position and PDF zoom are now remembered when you close the panel",
+            "Requires Lumi 1.33.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Tạm dừng ghi lại và quản lý lịch sử từ thanh menu",
+          "items": [
+            "Menu trên thanh menu giờ có Hiện Lịch Sử Clipboard, Tạm Dừng Ghi Lại, Xóa Tất Cả Mục Chưa Ghim và Cài Đặt",
+            "Tạm Dừng Ghi Lại ngừng lưu những gì bạn sao chép cho đến khi bạn bật lại",
+            "Xóa Tất Cả Mục Chưa Ghim mở bảng điều khiển và xóa ở đó để bạn có thể hoàn tác",
+            "Độ rộng xem trước, vị trí chia và mức phóng to PDF giờ được ghi nhớ khi bạn đóng bảng",
+            "Yêu cầu Lumi 1.33.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
   "0.66.1": {
     "notesSha256": "a718405e79938019231d429acf57385558f9c4380ace361a438808a23bb07a3c",
     "summary": {
@@ -370,70 +446,6 @@
             "Liên kết trong rich text có thể nhấp trực tiếp trong bản xem trước",
             "Văn bản thuần vẫn giữ nguyên để bạn chọn và sao chép",
             "Liên kết từ văn bản thuần được liệt kê bên dưới bản xem trước"
-          ]
-        }
-      }
-    }
-  },
-  "0.59.0": {
-    "notesSha256": "83c76cad5bc86c279bd815b787e165d625957ac840bc94928a0c2ab5aece67bc",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Links in copied text now appear and open with a click",
-          "items": [
-            "Text and rich text show the links they contain under their preview",
-            "Click any link to open it in your browser",
-            "Links in rich text from TextEdit or Pages no longer disappear from the preview"
-          ]
-        },
-        "vi": {
-          "headline": "Liên kết trong văn bản đã sao chép hiện hiển thị và mở được",
-          "items": [
-            "Văn bản thuần và văn bản định dạng hiển thị các liên kết chứa bên trong dưới phần xem trước",
-            "Nhấp vào bất kỳ liên kết nào để mở trong trình duyệt",
-            "Liên kết trong văn bản định dạng từ TextEdit hoặc Pages không còn biến mất khỏi phần xem trước"
-          ]
-        }
-      }
-    }
-  },
-  "0.58.3": {
-    "notesSha256": "3cefdecadaff9a9ef53feee9ef9bc539f5ca7ea250e40f913d93f766e6832323",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Updated extension homepage",
-          "items": [
-            "The extension's homepage now points to its page on lumikeys.app"
-          ]
-        },
-        "vi": {
-          "headline": "Cập nhật trang chủ tiện ích",
-          "items": [
-            "Trang chủ của tiện ích giờ trỏ đến trang của nó trên lumikeys.app"
-          ]
-        }
-      }
-    }
-  },
-  "0.58.2": {
-    "notesSha256": "40cd65a6c966894de104612c4b19cf0bf0616aadc0ceb6e793a7d772859c3629",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Updated documentation and store links",
-          "items": [
-            "About panel now links to the extension page and store on lumikeys.app"
-          ]
-        },
-        "vi": {
-          "headline": "Cập nhật liên kết tài liệu và cửa hàng",
-          "items": [
-            "Bảng Giới thiệu giờ liên kết đến trang tiện ích và cửa hàng trên lumikeys.app"
           ]
         }
       }
