@@ -574,6 +574,22 @@ interface screen {
         frame: rect,
     }
 
+    /// Whose a window is and what it is called — `about-window`'s answer.
+    record window-info {
+        /// The window server's number for it: hand it to `capture` as a
+        /// `window`'s `id` to take this very window.
+        id: u32,
+        /// The application's own name, as the Dock and ⌘-Tab show it:
+        /// `Safari`, `Google Chrome`.
+        app: string,
+        /// `com.apple.Safari` — `none` for a process that is not an
+        /// application bundle.
+        bundle-id: option<string>,
+        /// The window's title, when it has one. `none` without Screen
+        /// Recording, which is what macOS keeps titles behind.
+        title: option<string>,
+    }
+
     /// The file a picture is written as.
     enum format {
         /// Lossless, transparency kept: a window's rounded corners and its
@@ -655,6 +671,16 @@ interface screen {
     /// against the run, and only for something the person did, as
     /// `select-area`.
     select-window: func() -> result<option<picked-window>, string>;
+    /// Whose window `window` is — an id from `select-window` — or, for
+    /// `none`, the window in front, the one `capture` takes for a `window`
+    /// with no id. `none` back for a window no longer on screen. The front
+    /// window comes back with its id: capture by that id, and the picture
+    /// is the window just described, even if another came to the front in
+    /// between. Takes no picture and needs no grant, though a title needs
+    /// Screen Recording. Only the windows `select-window` would offer are
+    /// described — never one of Lumi's. Only for something the person did,
+    /// as `capture`. Added in Lumi 1.34.
+    about-window: func(window: option<u32>) -> result<option<window-info>, string>;
 }
 
 /// Text in a picture, read by macOS's own recogniser, with where each line

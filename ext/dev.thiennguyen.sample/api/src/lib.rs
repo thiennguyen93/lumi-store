@@ -599,7 +599,7 @@ pub mod storage {
 pub mod screen {
     use super::lumi::ext::screen as wit;
 
-    pub use wit::{Encoding, Format, PickedWindow, Rect, Resolution, Shot, Target, Window};
+    pub use wit::{Encoding, Format, PickedWindow, Rect, Resolution, Shot, Target, Window, WindowInfo};
 
     /// Whether Lumi holds Screen Recording. Takes no picture, and is right
     /// for a permission given since Lumi started too — for a status line,
@@ -656,6 +656,31 @@ pub mod screen {
     /// [`select_area`]. Only while answering a press.
     pub fn select_window() -> Result<Option<PickedWindow>, String> {
         wit::select_window()
+    }
+
+    /// Whose a window is — the application's name, its bundle id, the
+    /// window's title — for `Some(id)` from [`select_window`], or for
+    /// `None` the window in front, the one [`capture`] takes for a
+    /// `Window` with no id. `None` back for a window no longer on screen.
+    ///
+    /// The front window comes back with its id. Capture by that id, and the
+    /// picture is the window just described even if another came to the
+    /// front in between:
+    ///
+    /// ```ignore
+    /// if let Some(front) = screen::about_window(None)? {
+    ///     let window = Window { id: Some(front.id), shadow: false };
+    ///     let shot = screen::capture(Target::Window(window))?;
+    ///     // label it `front.app`: "Safari"
+    /// }
+    /// ```
+    ///
+    /// Takes no picture and needs no permission, though `title` is `None`
+    /// without Screen Recording. Only the windows [`select_window`] would
+    /// offer are described, never Lumi's own. Only while answering a press.
+    /// Needs Lumi 1.34.
+    pub fn about_window(window: Option<u32>) -> Result<Option<WindowInfo>, String> {
+        wit::about_window(window)
     }
 }
 
