@@ -103,6 +103,16 @@ const MAX_TRY: usize = 16 * 1024;
 /// Storage key of the row list.
 const INDEX: &str = "index";
 
+/// How many images one `readImages` reads. Each is half a second to two
+/// seconds, and a run has fifteen; three leaves room for the writes and
+/// for a slow picture. The panel asks again while there are more.
+const READ_PER_CALL: usize = 3;
+
+/// How long after a copy its image is left to Lumi's own reader, which
+/// sends the text a second or two after the copy (`clipboard-ocr`):
+/// reading it here as well would be the same picture read twice.
+const LUMI_READS_FOR_MS: i64 = 60_000;
+
 /// Storage key of the preview pane's width, as the person last dragged it.
 // Lowercase, as Lumi's storage requires (`menu.clear-on-open` too): spelt
 // `panel.previewWidth`, `panel.previewSplit` and `panel.pdfFit` until 0.67.0,
@@ -871,6 +881,70 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "clear": request["opening"].as_bool() == Some(true) && take_clear(host),
             }))
         }
+        // Read the images Lumi's own reader never reached — reading was
+        // off when they were copied, Lumi quit first, or a burst of copies
+        // pushed them out of its queue — so every image can be found by
+        // its words. The panel asks once it has opened, and again while
+        // `more` says so; each answer reads a few, newest first. Done by
+        // this extension rather than Lumi because the row and its image are
+        // this extension's: Lumi forgets a copy once it is handed over.
+        "readImages" => {
+            let prefs = prefs(host);
+            if !prefs.ocr {
+                return Ok(json!({ "read": 0, "more": false }));
+            }
+            let (index, _) = read_index(host)?;
+            let pending = history::unread_images(&index, host.now(), LUMI_READS_FOR_MS, READ_PER_CALL + 1);
+            let more = pending.len() > READ_PER_CALL;
+            let mut read = Vec::new();
+            for (id, blob) in pending.into_iter().take(READ_PER_CALL) {
+                // A picture that cannot be read is marked read all the same:
+                // asked again it would fail again, on every opening.
+                let layout = host.read_image(&blob).ok();
+                if let Some(layout) = &layout {
+                    let text = layout.text();
+                    let layout = layout.clone();
+                    let _ = update_record(host, &id, |record| {
+                        record.ocr = Some(text.clone()).filter(|text| !text.trim().is_empty());
+                        record.ocr_layout = Some(layout.clone());
+                    });
+                }
+                read.push((id, layout.map(|layout| layout.text()).unwrap_or_default()));
+            }
+            if !read.is_empty() {
+                update_index(host, |index| {
+                    for (id, text) in &read {
+                        history::take_reading(index, id, text);
+                    }
+                    Ok(())
+                })?;
+                tell_panel(host);
+                tell_dashboard(host);
+            }
+            Ok(json!({ "read": read.len(), "more": more }))
+        }
+        // Where the text in a row's image is, for selecting it on the
+        // picture. Kept with the record once read; a row whose text came
+        // from Lumi's event has none yet, and its image is read now — once.
+        "layout" => {
+            let id = id()?;
+            if !prefs(host).ocr {
+                return Ok(json!({ "layout": null }));
+            }
+            let record = read_record(host, &id)?;
+            if let Some(layout) = record.ocr_layout {
+                return Ok(json!({ "layout": layout }));
+            }
+            let (index, _) = read_index(host)?;
+            let Some(blob) = index.items.iter().find(|e| e.id == id && e.kind == history::Kind::Image).and_then(|e| e.thumb.clone())
+            else {
+                return Ok(json!({ "layout": null }));
+            };
+            let layout = host.read_image(&blob)?;
+            let kept = layout.clone();
+            update_record(host, &id, |record| record.ocr_layout = Some(kept.clone()))?;
+            Ok(json!({ "layout": layout }))
+        }
         "preview" => {
             // The index carries a one-line title and lowercased search text,
             // neither of which is what the preview pane should show; the
@@ -880,6 +954,9 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let record = read_record(host, &id)?;
             let prefs = prefs(host);
             let ocr = record.ocr.as_deref().filter(|text| prefs.ocr && !text.trim().is_empty());
+            // Where that text is, when this extension has read the image
+            // itself; otherwise the page asks `layout` for it.
+            let layout = record.ocr_layout.as_ref().filter(|_| prefs.ocr);
             // The web addresses in a text or rich copy, for the list under
             // its text — as kept with it, not looked for again.
             let links = links_of_record(host, &id, &record);
@@ -889,6 +966,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "text": history::preview_text(&record.items),
                 "html": history::preview_html(&record.items),
                 "ocr": ocr,
+                "layout": layout,
                 "fileSize": history::files_size_of(&record.items),
                 "fileToken": history::file_token_of(&record.items),
                 // Several files: each one, for the list the preview draws.
@@ -1013,10 +1091,29 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             put_away(host, request)?;
             Ok(json!({}))
         }
+        // The text in a row's image: all of it, or — `from` and `to`, each
+        // `[line, word]` — the words the person selected on the picture.
+        // The words are put together here from what was read, never taken
+        // from the page, so this puts nothing on the board but the image's
+        // own text (`copyColor`'s rule).
         "copyText" => {
             let record = read_record(host, &id()?)?;
-            let text = record
-                .ocr
+            let end = |key: &str| -> Option<(usize, usize)> {
+                let pair = request[key].as_array()?;
+                Some((pair.first()?.as_u64()? as usize, pair.get(1)?.as_u64()? as usize))
+            };
+            let picked = match (end("from"), end("to")) {
+                (Some(from), Some(to)) => Some(
+                    record
+                        .ocr_layout
+                        .as_ref()
+                        .and_then(|layout| layout.text_between(from, to))
+                        .ok_or_else(|| "That text is no longer in the image's reading.".to_string())?,
+                ),
+                _ => None,
+            };
+            let text = picked
+                .or(record.ocr)
                 .filter(|text| prefs(host).ocr && !text.trim().is_empty())
                 .ok_or_else(|| "Lumi read no text in that image.".to_string())?;
             let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text), blob: None, file_size: None, path: None, file_token: None };
@@ -2500,5 +2597,123 @@ mod tests {
         let newer = json!({"v": 2, "at": 1, "hash": "h", "items": []}).to_string();
         assert!(on_event(&host, "clipboard", &newer).is_err());
         assert!(host.kv.borrow().is_empty());
+    }
+
+    /// Two lines, the first of two words, as the mock reads image `blob`.
+    fn readable(host: &Memory, blob: &str) {
+        use history::{Layout, LayoutLine, LayoutWord};
+        host.blobs.borrow_mut().insert(blob.into());
+        let word = |text: &str, x: f32| LayoutWord { text: text.into(), frame: [x, 0.0, 10.0, 5.0] };
+        host.images.borrow_mut().insert(
+            blob.into(),
+            Layout {
+                width: 100,
+                height: 50,
+                lines: vec![
+                    LayoutLine { text: "Invoice TOTAL".into(), frame: [0.0, 0.0, 40.0, 5.0], words: vec![word("Invoice", 0.0), word("TOTAL", 20.0)] },
+                    LayoutLine { text: "42".into(), frame: [0.0, 10.0, 10.0, 5.0], words: vec![word("42", 0.0)] },
+                ],
+            },
+        );
+    }
+
+    /// An image Lumi's reader never reached is read on the panel's ask —
+    /// newest first, a few per ask, `more` while some are left — and is
+    /// then found by its words like any other; one read is never read
+    /// again, text or none, and a fresh copy is left to Lumi.
+    #[test]
+    fn images_lumi_never_read_are_read_from_the_panel() {
+        let host = Memory::default();
+        for n in 1..=4 {
+            readable(&host, &format!("img{n}"));
+            // Copied a second apart, img4 last.
+            let copy = image_event(&format!("h{n}"), &format!("img{n}")).replace("\"at\":1", &format!("\"at\":{}", n * 1000));
+            on_event(&host, "clipboard", &copy).unwrap();
+        }
+        // Read by Lumi already, with nothing in it: not read again.
+        on_event(&host, "clipboard-ocr", &json!({"v": 1, "hash": "h4", "text": ""}).to_string()).unwrap();
+
+        let early = ui(&host, &json!({"kind": "readImages"})).unwrap();
+        assert_eq!(early, json!({"read": 0, "more": false}), "just copied: Lumi's to read");
+
+        host.now.set(10 * 60_000);
+        let first = ui(&host, &json!({"kind": "readImages"})).unwrap();
+        assert_eq!(first, json!({"read": 3, "more": false}));
+        assert_eq!(*host.read_images.borrow(), ["img3", "img2", "img1"], "newest first, never img4");
+        let rows = list(&host);
+        assert!(rows.iter().filter(|row| row["id"] != "id4").all(|row| row["ocr"] == true), "{rows:?}");
+        assert_eq!(rows.iter().find(|row| row["id"] == "id1").unwrap()["ocrSearch"], "Invoice TOTAL\n42");
+        assert!(host.posts.borrow().iter().any(|(_, message)| message == HISTORY_CHANGED), "the panel lists again");
+
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["ocr"], "Invoice TOTAL\n42");
+        assert_eq!(shown["layout"]["lines"][0]["words"][1]["text"], "TOTAL");
+
+        assert_eq!(ui(&host, &json!({"kind": "readImages"})).unwrap(), json!({"read": 0, "more": false}));
+        assert_eq!(host.read_images.borrow().len(), 3, "nothing read twice");
+    }
+
+    #[test]
+    fn reading_more_than_one_ask_holds_says_there_is_more() {
+        let host = Memory::default();
+        for n in 1..=5 {
+            readable(&host, &format!("img{n}"));
+            on_event(&host, "clipboard", &image_event(&format!("h{n}"), &format!("img{n}"))).unwrap();
+        }
+        host.now.set(10 * 60_000);
+        assert_eq!(ui(&host, &json!({"kind": "readImages"})).unwrap(), json!({"read": 3, "more": true}));
+        assert_eq!(ui(&host, &json!({"kind": "readImages"})).unwrap(), json!({"read": 2, "more": false}));
+    }
+
+    /// A picture that cannot be read is marked read all the same, so it is
+    /// not asked about on every opening; and with reading off, nothing is.
+    #[test]
+    fn an_unreadable_image_is_not_read_again_and_reading_off_reads_nothing() {
+        let host = Memory::default();
+        host.blobs.borrow_mut().insert("junk".into());
+        on_event(&host, "clipboard", &image_event("h1", "junk")).unwrap();
+        host.now.set(10 * 60_000);
+        *host.settings.borrow_mut() = json!({ "ocr": "false" });
+        assert_eq!(ui(&host, &json!({"kind": "readImages"})).unwrap(), json!({"read": 0, "more": false}));
+        assert!(host.read_images.borrow().is_empty());
+        *host.settings.borrow_mut() = json!({});
+        assert_eq!(ui(&host, &json!({"kind": "readImages"})).unwrap()["read"], 1);
+        assert_eq!(list(&host)[0]["ocr"], Value::Null, "nothing found in it");
+        ui(&host, &json!({"kind": "readImages"})).unwrap();
+        assert_eq!(host.read_images.borrow().len(), 1);
+    }
+
+    /// A row whose text came from Lumi's event has no layout until the
+    /// preview asks; asked, the image is read once and kept.
+    #[test]
+    fn a_layout_is_read_once_and_kept() {
+        let host = Memory::default();
+        readable(&host, "img");
+        on_event(&host, "clipboard", &image_event("h1", "img")).unwrap();
+        on_event(&host, "clipboard-ocr", &json!({"v": 1, "hash": "h1", "text": "Invoice TOTAL 42"}).to_string()).unwrap();
+        assert_eq!(ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap()["layout"], Value::Null);
+        let asked = ui(&host, &json!({"kind": "layout", "id": "id1"})).unwrap();
+        assert_eq!(asked["layout"]["width"], 100);
+        ui(&host, &json!({"kind": "layout", "id": "id1"})).unwrap();
+        assert_eq!(host.read_images.borrow().len(), 1, "kept, not read again");
+        assert_eq!(ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap()["layout"]["height"], 50);
+    }
+
+    /// Words selected on the picture are copied as read — joined by a
+    /// space within a line and a newline across lines, either way round —
+    /// and a range that is not in the reading is refused rather than
+    /// guessed at.
+    #[test]
+    fn selected_words_are_copied_from_the_reading() {
+        let host = Memory::default();
+        readable(&host, "img");
+        on_event(&host, "clipboard", &image_event("h1", "img")).unwrap();
+        ui(&host, &json!({"kind": "layout", "id": "id1"})).unwrap();
+        on_event(&host, "clipboard-ocr", &json!({"v": 1, "hash": "h1", "text": "Invoice TOTAL\n42"}).to_string()).unwrap();
+        ui(&host, &json!({"kind": "copyText", "id": "id1", "from": [1, 0], "to": [0, 1]})).unwrap();
+        ui(&host, &json!({"kind": "copyText", "id": "id1", "from": [0, 0], "to": [0, 0]})).unwrap();
+        let pasted: Vec<Option<String>> = host.pasted.borrow().iter().map(|items| items[0][0].text.clone()).collect();
+        assert_eq!(pasted, [Some("TOTAL\n42".to_string()), Some("Invoice".to_string())]);
+        assert!(ui(&host, &json!({"kind": "copyText", "id": "id1", "from": [0, 0], "to": [5, 0]})).is_err());
     }
 }

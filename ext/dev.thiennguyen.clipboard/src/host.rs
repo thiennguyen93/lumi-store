@@ -5,7 +5,7 @@
 //! board, is checked without a Lumi. [`Lumi`] is the only code that speaks
 //! to the SDK.
 
-use crate::history::Rep;
+use crate::history::{Layout, LayoutLine, LayoutWord, Rep};
 pub use lumi_extension_api::Presence;
 use lumi_extension_api::{self as lumi, storage};
 
@@ -113,6 +113,9 @@ pub trait Host {
     fn find_snippets(&self, text: &str, within: &Within) -> Result<Vec<SnippetHit>, String>;
     /// One snippet expanded as typing `text` would.
     fn expand_snippet(&self, profile: &str, snippet: &str, text: &str) -> Result<Expansion, String>;
+    /// The text in a stored image and where each line and word of it is —
+    /// Lumi's `ocr.read` of the blob. Half a second to two seconds.
+    fn read_image(&self, blob: &str) -> Result<Layout, String>;
 
     /// A fresh id for a new row, from a counter kept in storage.
     ///
@@ -173,6 +176,13 @@ fn board(items: &[Vec<Rep>]) -> Vec<Vec<lumi::Rep>> {
         })
         .filter(|reps| !reps.is_empty())
         .collect()
+}
+
+/// A box as the record keeps it: `[x, y, width, height]` to a tenth of a
+/// pixel, which is finer than any screen draws it and a third of the digits.
+fn frame(rect: &lumi::screen::Rect) -> [f32; 4] {
+    let tenth = |v: f64| ((v * 10.0).round() / 10.0) as f32;
+    [tenth(rect.x), tenth(rect.y), tenth(rect.width), tenth(rect.height)]
 }
 
 impl Host for Lumi {
@@ -299,6 +309,26 @@ impl Host for Lumi {
         let out = lumi::snippets::expand(profile, snippet, text)?;
         Ok(Expansion { text: out.text, revision: out.revision, fixed: out.fixed })
     }
+
+    fn read_image(&self, blob: &str) -> Result<Layout, String> {
+        use lumi::ocr::{read, Options, Source};
+        // Words too: the preview draws a box per word, and reading them
+        // later would be reading the whole picture again.
+        let reading = read(&Source::Blob(blob.to_string()), &Options { words: true, ..Options::default() })?;
+        Ok(Layout {
+            width: reading.width,
+            height: reading.height,
+            lines: reading
+                .lines
+                .into_iter()
+                .map(|line| LayoutLine {
+                    text: line.text,
+                    frame: frame(&line.frame),
+                    words: line.words.into_iter().map(|word| LayoutWord { text: word.text, frame: frame(&word.frame) }).collect(),
+                })
+                .collect(),
+        })
+    }
 }
 
 #[cfg(test)]
@@ -386,6 +416,11 @@ pub mod memory {
         pub expanded: RefCell<Vec<String>>,
         /// The menu bar tree last set.
         pub menu: RefCell<Vec<lumi_extension_api::menu::Entry>>,
+        /// What reading each image blob finds; a blob not here is not a
+        /// picture.
+        pub images: RefCell<BTreeMap<String, Layout>>,
+        /// Every `read_image`, by blob.
+        pub read_images: RefCell<Vec<String>>,
     }
 
     /// One of the mock's snippets, as (profile, snippet id, trigger, text,
@@ -574,6 +609,11 @@ pub mod memory {
                         .map(|row| SnippetHit { profile: row.0.clone(), snippet: row.1.clone(), revision: row.5.clone(), fixed: row.4 })
                 })
                 .collect())
+        }
+
+        fn read_image(&self, blob: &str) -> Result<Layout, String> {
+            self.read_images.borrow_mut().push(blob.to_string());
+            self.images.borrow().get(blob).cloned().ok_or_else(|| "not a picture Lumi can read".to_string())
         }
 
         fn expand_snippet(&self, profile: &str, snippet: &str, text: &str) -> Result<Expansion, String> {

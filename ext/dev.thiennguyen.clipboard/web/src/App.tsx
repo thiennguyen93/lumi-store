@@ -133,7 +133,10 @@ export function App() {
   useEffect(() => {
     reload(null, true)
       .catch((err) => setNotice(message(err)))
-      .finally(() => input.current?.focus());
+      .finally(() => {
+        input.current?.focus();
+        readUnread();
+      });
   }, [reload]);
 
   // The row a reread of the list keeps chosen: the one the person is on,
@@ -170,7 +173,12 @@ export function App() {
     const told = (event: Event) => {
       if (isNews((event as CustomEvent<unknown>).detail, "history")) void reread();
     };
-    const settled = () => void reread();
+    // Reading images may have just been turned on: the ones never read
+    // are read now, not at the next opening.
+    const settled = () => {
+      void reread();
+      readUnread();
+    };
     window.addEventListener("lumi:message", told);
     window.addEventListener("lumi:settings", settled);
     return () => {
@@ -766,6 +774,7 @@ export function App() {
             onOpen={(id, url, snippet) => void act(() => call({ kind: "open", id, url, snippet, pinned }))}
             onCopyColor={(text) => void act(() => call({ kind: "copyColor", text, pinned }))}
             onCopySnippet={(id, text) => void act(() => call({ kind: "copySnippet", id, text, pinned }))}
+            onCopyWords={(id, { from, to }) => void act(() => call({ kind: "copyText", id, from, to, pinned }))}
             zoomed={zoomed}
             onZoom={() => setZoom(!zoomed)}
             split={split.grip}
@@ -809,6 +818,34 @@ export function App() {
  *  bar's Delete All Unpinned… pressed while the panel is up. A post is the
  *  extension's own JSON; checked anyway, so news of another shape — a later
  *  version's — is ignored. */
+/** Whether the images Lumi's reader never reached are being read. */
+let readingImages = false;
+
+/** Have the extension read the images Lumi's own reader never reached, a
+ *  few per ask, behind whatever the person is doing: each ask is one of the
+ *  extension's runs, so the panel's other requests go on beside it. The
+ *  extension tells the panel when rows changed (`history` news), and the
+ *  list is read again from that. Stops when nothing is left, on a refusal,
+ *  and with the page — the panel is thrown away when it closes. */
+function readUnread() {
+  if (readingImages) return;
+  readingImages = true;
+  void (async () => {
+    try {
+      // A bound, not a schedule: three images an ask, a full history of
+      // images is a few hundred asks at most.
+      for (let ask = 0; ask < 400; ask++) {
+        const { more } = await call({ kind: "readImages" });
+        if (!more) break;
+      }
+    } catch {
+      // Nobody asked for this; a failure is no notice either.
+    } finally {
+      readingImages = false;
+    }
+  })();
+}
+
 function isNews(detail: unknown, kind: "history" | "summoned" | "clear"): boolean {
   return typeof detail === "object" && detail !== null && (detail as { kind?: unknown }).kind === kind;
 }

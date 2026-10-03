@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.69.0] - 2026-10-03
+
+### Added
+
+- Select text right on a copied image in the preview: press on a word and drag across the words you want, or double-click a line. **⌘C** or **Copy** copies just those words; **⎋** lets them go. A press between words still drags the image out.
+
+### Fixed
+
+- Images whose text was never read are read now, when the panel opens or when **Search text in images** is turned on, so every image can be found by its words. This covers images copied while that setting was off, while Lumi was quitting, or in a quick run of copies.
+
 ## [0.68.0] - 2026-10-03
 
 ### Added

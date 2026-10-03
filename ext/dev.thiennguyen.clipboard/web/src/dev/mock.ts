@@ -337,8 +337,14 @@ function answer(request: Request): unknown {
       say("would close the panel and open the Welcome tour");
       return {};
     case "copyText":
-      say(`would copy the text read in ${request.id} and ${request.pinned ? "stay up" : "close"}`);
+      say(
+        `would copy ${request.from ? `words ${request.from.join(".")}–${request.to?.join(".")} of` : ""} the text read in ${request.id} and ${request.pinned ? "stay up" : "close"}`,
+      );
       return {};
+    case "readImages":
+      return { read: 0, more: false };
+    case "layout":
+      return { layout: rows.find((r) => r.id === request.id)?.ocr ? MOCK_LAYOUT : null };
     case "copyColor":
       say(`would copy ${request.text} and ${request.pinned ? "stay up" : "close"}`);
       return {};
@@ -539,13 +545,38 @@ window.fetch = async (input, init) => {
   }
 };
 
+/** Where the words of the drawn screenshot below are, roughly — as the
+ *  extension's reading would say (`history::Layout`). */
+const MOCK_LAYOUT = {
+  width: 320,
+  height: 200,
+  lines: [
+    {
+      text: "Clipboard Manager",
+      frame: [24, 54, 186, 26] as [number, number, number, number],
+      words: [
+        { text: "Clipboard", frame: [24, 54, 96, 26] as [number, number, number, number] },
+        { text: "Manager", frame: [126, 54, 84, 26] as [number, number, number, number] },
+      ],
+    },
+    {
+      text: "Search history",
+      frame: [24, 104, 146, 26] as [number, number, number, number],
+      words: [
+        { text: "Search", frame: [24, 104, 70, 26] as [number, number, number, number] },
+        { text: "history", frame: [100, 104, 70, 26] as [number, number, number, number] },
+      ],
+    },
+  ],
+};
+
 // A drawn stand-in for a screenshot, as a data: URL (which Lumi's CSP
 // allows for images too).
 setBlobUrl(
   () =>
     "data:image/svg+xml;utf8," +
     encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="320" height="200" fill="#378add" opacity=".25"/><text x="24" y="104" font-family="-apple-system" font-size="22" fill="#185fa5">Search history</text></svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="320" height="200" fill="#378add" opacity=".25"/><text x="24" y="74" font-family="-apple-system" font-size="22" fill="#185fa5">Clipboard Manager</text><text x="24" y="124" font-family="-apple-system" font-size="22" fill="#185fa5">Search history</text></svg>',
     ),
 );
 

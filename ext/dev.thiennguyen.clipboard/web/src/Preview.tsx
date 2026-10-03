@@ -6,6 +6,7 @@ import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileTyp
 import { useItemDrag } from "./itemDrag";
 import { LinkList } from "./LinkList";
 import { SnippetPane } from "./SnippetPane";
+import { ImageText, pickedCount, type Picked } from "./ImageText";
 import { PdfViewer } from "./PdfViewer";
 import { TextFile } from "./TextFile";
 import { linked } from "./LinkedText";
@@ -15,7 +16,7 @@ import { BLACK, contrast, over, parseColor, type Rgba, toHex, toHsl, toRgb, WHIT
 import { ago, type Used } from "./search";
 import { usePreviewMarks } from "./previewMarks";
 import type { SplitGrip } from "./PreviewSplit";
-import type { Entry } from "./types";
+import type { Entry, Layout } from "./types";
 
 /** How long the selection must rest on a row before its full text is
  *  asked for. Arrow keys held down walk many rows a second, and each ask
@@ -39,6 +40,7 @@ type Full = {
   links?: Link[] | null;
   linkCount?: number;
   snippets?: Expansion[] | null;
+  layout?: Layout | null;
 };
 
 /** Previews already asked for, by row — and by whether the row has read
@@ -47,6 +49,9 @@ type Full = {
 const seen = new Map<string, Full>();
 const SEEN_MAX = 64;
 const seenKey = (row: Entry) => `${row.id}:${row.ocr ? 1 : 0}`;
+
+/** Layouts asked for by row, for the life of one browse, as `seen` is. */
+const layouts = new Map<string, Layout>();
 
 /** Whether a row can have the whole panel: every one can — text read at
  *  full width, a picture, a film, a PDF, a file's tile or a list of files,
@@ -61,6 +66,7 @@ export function Preview({
   onOpen,
   onCopyColor,
   onCopySnippet,
+  onCopyWords,
   query = "",
   used = "exact",
   zoomed = false,
@@ -75,6 +81,8 @@ export function Preview({
   onCopyColor?: (text: string) => void;
   /** Copy what a row expands to as a snippet trigger. */
   onCopySnippet?: (id: string, text: string) => void;
+  /** Copy the words selected on a row's picture, by their two ends. */
+  onCopyWords?: (id: string, picked: Picked) => void;
   /** What the list is searched by, marked in the card and scrolled to. */
   query?: string;
   used?: Used;
@@ -139,7 +147,7 @@ export function Preview({
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
-        const { text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets } = await call({
+        const { text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets, layout } = await call({
           kind: "preview",
           id: row.id,
         });
@@ -147,7 +155,7 @@ export function Preview({
           if (live) setGaveUp(row.id);
           return;
         }
-        const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets };
+        const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets, layout };
         seen.delete(key);
         seen.set(key, answer);
         if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
@@ -163,6 +171,61 @@ export function Preview({
       clearTimeout(hold);
     };
   }, [row, stale]);
+
+  // Where the text in the row's image is, for selecting it on the picture:
+  // with the preview when the extension read the image itself, else asked
+  // for once the preview is in — reading the picture takes a second, and
+  // the text is already on screen meanwhile.
+  const [layout, setLayout] = useState<{ id: string; layout: Layout } | null>(null);
+  const [picked, setPicked] = useState<{ id: string; picked: Picked } | null>(null);
+  const picture = useRef<HTMLImageElement>(null);
+  useEffect(() => setPicked(null), [row?.id]);
+  const held = full?.id === row?.id ? full : null;
+  useEffect(() => {
+    if (!row || row.kind !== "image" || !row.ocr || !held) return;
+    if (held.layout) {
+      setLayout({ id: row.id, layout: held.layout });
+      return;
+    }
+    const known = layouts.get(row.id);
+    if (known) {
+      setLayout({ id: row.id, layout: known });
+      return;
+    }
+    let live = true;
+    call({ kind: "layout", id: row.id })
+      .then(({ layout }) => {
+        if (!layout) return;
+        layouts.set(row.id, layout);
+        if (layouts.size > SEEN_MAX) layouts.delete(layouts.keys().next().value!);
+        if (live) setLayout({ id: row.id, layout });
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [row, held]);
+  const words = layout && layout.id === row?.id ? layout.layout : null;
+  const selection = picked && picked.id === row?.id && words ? picked.picked : null;
+
+  // ⌘C copies the words selected on the picture and ⎋ lets them go — ahead
+  // of the panel's own keys, where ⌘C would paste a row pinned to C and ⎋
+  // would put the panel away.
+  useEffect(() => {
+    if (!selection || !row) return;
+    const key = (event: KeyboardEvent) => {
+      const copy = event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === "c";
+      if (!copy && event.key !== "Escape") return;
+      // A selection of the preview's own text is the field's to copy.
+      if (copy && window.getSelection()?.isCollapsed === false) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (copy) onCopyWords?.(row.id, selection);
+      else setPicked(null);
+    };
+    window.addEventListener("keydown", key, true);
+    return () => window.removeEventListener("keydown", key, true);
+  }, [selection, row, onCopyWords]);
 
   if (!row) return <aside className="preview empty-card" />;
 
@@ -231,6 +294,7 @@ export function Preview({
         {row.kind === "image" && row.thumb && !wide && (
           <Pulled id={row.id} className="picture">
             <img
+              ref={picture}
               alt="Copied image"
               src={blobUrl(row.thumb)}
               draggable={false}
@@ -239,6 +303,15 @@ export function Preview({
                 if (w && h) setSize({ id: row.id, w, h });
               }}
             />
+            {words && (
+              <ImageText
+                key={row.id}
+                layout={words}
+                picture={picture}
+                picked={selection}
+                onPick={(next) => setPicked(next && { id: row.id, picked: next })}
+              />
+            )}
           </Pulled>
         )}
         {reads && (!zoomed || wide) && (
@@ -246,7 +319,22 @@ export function Preview({
             {/* Only under the picture: zoomed onto the read, nothing is above. */}
             {split && !wide && row.thumb && <Grip {...split} />}
             <header className="ocr-head">
-              <span>Text in image</span>
+              {selection && words ? (
+                <span className="ocr-picked">
+                  {pickedCount(words, selection) === 1 ? "1 word" : `${pickedCount(words, selection)} words`} selected
+                  <button
+                    type="button"
+                    className="bare"
+                    title="Copy the selected words (⌘C)"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => onCopyWords?.(row.id, selection)}
+                  >
+                    Copy
+                  </button>
+                </span>
+              ) : (
+                <span>{words ? "Text in image · select it on the picture" : "Text in image"}</span>
+              )}
               <button
                 type="button"
                 className="bare"

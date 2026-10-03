@@ -177,6 +177,13 @@ pub struct Entry {
     /// image's words from one found by its own.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub ocr_search: String,
+    /// Whether this row's image has been read, text found or not — by Lumi
+    /// after the copy (`clipboard-ocr`) or by this extension since
+    /// (`lib`'s `readImages`). An image row without it is one Lumi's reader
+    /// never reached: reading was off, Lumi quit first, or a burst of copies
+    /// pushed it out of Lumi's short queue.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub ocr_read: bool,
     /// What a file row's files are, for the icon its row wears: their
     /// extension, lowercased, when they all share one — `"/"` when they are
     /// all folders. Empty for anything else, and for rows kept before this.
@@ -239,6 +246,98 @@ pub struct Record {
     /// Missing until a preview first finds one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub snippets: Option<Vec<crate::snippets::Kept>>,
+    /// Where the text read in the image is, line by line and word by word,
+    /// so the preview can let the person select it on the picture. Only from
+    /// this extension's own read (`lib`'s `readImages` and `layout`): Lumi's
+    /// `clipboard-ocr` event carries the text and nothing of where it was.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ocr_layout: Option<Layout>,
+}
+
+/// The text in an image and where it is, in the image's pixels, origin at
+/// its top-left. Each frame is `[x, y, width, height]`, rounded to a tenth
+/// of a pixel: kept in the record, and the page draws them as shares of
+/// `width` and `height` whatever size the picture is shown at.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Layout {
+    pub width: u32,
+    pub height: u32,
+    pub lines: Vec<LayoutLine>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LayoutLine {
+    pub text: String,
+    pub frame: [f32; 4],
+    #[serde(default)]
+    pub words: Vec<LayoutWord>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LayoutWord {
+    pub text: String,
+    pub frame: [f32; 4],
+}
+
+impl Layout {
+    /// Every line, one to a line of text — what Lumi's own reading says.
+    pub fn text(&self) -> String {
+        self.lines.iter().map(|line| line.text.as_str()).collect::<Vec<_>>().join("\n")
+    }
+
+    /// The words from `from` to `to`, each a `(line, word)` and either way
+    /// round: words of one line joined by a space, lines by a newline — the
+    /// text a person selecting across the picture means. A line without
+    /// word boxes counts as one word, its whole text. `None` when either end
+    /// is not a word of this layout.
+    pub fn text_between(&self, from: (usize, usize), to: (usize, usize)) -> Option<String> {
+        let words_in = |line: &LayoutLine| line.words.len().max(1);
+        let valid = |(l, w): (usize, usize)| self.lines.get(l).is_some_and(|line| w < words_in(line));
+        if !valid(from) || !valid(to) {
+            return None;
+        }
+        let (first, last) = if from <= to { (from, to) } else { (to, from) };
+        let mut lines = Vec::new();
+        for l in first.0..=last.0 {
+            let line = &self.lines[l];
+            let start = if l == first.0 { first.1 } else { 0 };
+            let end = if l == last.0 { last.1 } else { words_in(line) - 1 };
+            if line.words.is_empty() {
+                lines.push(line.text.clone());
+            } else {
+                lines.push(line.words[start..=end].iter().map(|w| w.text.as_str()).collect::<Vec<_>>().join(" "));
+            }
+        }
+        Some(lines.join("\n"))
+    }
+}
+
+/// The image rows still to be read, newest first, at most `most` — each as
+/// its id and the image's blob. A row copied in the last `fresh_ms` is left
+/// to Lumi, whose own reader is likely on it already.
+pub fn unread_images(index: &Index, now: i64, fresh_ms: i64, most: usize) -> Vec<(String, String)> {
+    let mut rows: Vec<&Entry> = index
+        .items
+        .iter()
+        .filter(|e| e.kind == Kind::Image && !e.ocr && !e.ocr_read && now - e.first >= fresh_ms)
+        .filter(|e| e.thumb.is_some())
+        .collect();
+    rows.sort_by_key(|e| std::cmp::Reverse(e.last));
+    rows.into_iter().take(most).map(|e| (e.id.clone(), e.thumb.clone().unwrap_or_default())).collect()
+}
+
+/// Mark row `id` read, with `text` (empty when the image holds none) — the
+/// row's own counterpart of [`add_ocr`]. `false` when the row is gone.
+pub fn take_reading(index: &mut Index, id: &str, text: &str) -> bool {
+    let Some(entry) = index.items.iter_mut().find(|e| e.id == id) else {
+        return false;
+    };
+    entry.ocr_read = true;
+    if !text.trim().is_empty() {
+        entry.ocr_search = ocr_search_of(text);
+        entry.ocr = true;
+    }
+    true
 }
 
 /// The person's settings, as far as the model cares.
@@ -351,6 +450,7 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
         search: search_of(&copy.items),
         ocr_search: copy.ocr.as_deref().map(ocr_search_of).unwrap_or_default(),
         ocr: copy.ocr.as_deref().is_some_and(|text| !text.trim().is_empty()),
+        ocr_read: copy.ocr.is_some(),
         file_ext: if kind == Kind::File { file_ext_of(&copy.items) } else { String::new() },
         file_count: if kind == Kind::File { file_count_of(&copy.items) } else { 0 },
         thumb: copy
@@ -374,7 +474,13 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
         id: new_id,
         // Its links are `lib`'s to find, once, for the record it writes:
         // this runs again on every retry of the index write.
-        record: Record { items: copy.items, ocr: copy.ocr.filter(|text| !text.trim().is_empty()), links: None, snippets: None },
+        record: Record {
+            items: copy.items,
+            ocr: copy.ocr.filter(|text| !text.trim().is_empty()),
+            links: None,
+            snippets: None,
+            ocr_layout: None,
+        },
         evicted,
     }
 }
@@ -442,6 +548,7 @@ pub fn add_ocr(index: &mut Index, hash: &str, text: &str) -> bool {
     };
     entry.ocr_search = ocr_search_of(text);
     entry.ocr |= !text.trim().is_empty();
+    entry.ocr_read = true;
     true
 }
 

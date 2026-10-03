@@ -7,7 +7,7 @@
 //   GET  /__lumi__/blob/<id>   → an image Lumi stored for this extension
 //   POST /__lumi__/drag        → hand this press to macOS as a window drag
 
-import type { Entry, ExtensionShortcut, ListAnswer, OwnShortcuts, Request, ShortcutRefusal, Stats } from "./types";
+import type { Entry, ExtensionShortcut, Layout, ListAnswer, OwnShortcuts, Request, ShortcutRefusal, Stats } from "./types";
 
 export type FileItem = { name: string; dir?: string; size?: number; folder?: boolean };
 
@@ -38,7 +38,11 @@ type Answers = {
     linkCount?: number;
     /** What the copy expands to, when it is a snippet trigger; Lumi 1.31. */
     snippets?: Expansion[] | null;
+    /** Where the image's text is, when the extension has read it itself. */
+    layout?: Layout | null;
   };
+  readImages: { read: number; more: boolean };
+  layout: { layout: Layout | null };
   paste: Record<string, never>;
   drag: Record<string, never>;
   pin: { pin: string | null };

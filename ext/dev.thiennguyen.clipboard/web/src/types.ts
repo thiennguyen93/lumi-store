@@ -24,6 +24,8 @@ export interface Entry {
   blobs: string[];
   /** Lumi read text in this item's image: Copy text in image is offered. */
   ocr?: boolean;
+  /** The image has been read, text found or not. */
+  ocrRead?: boolean;
   /** A file row's files' shared extension ("pdf"), "/" for folders; absent
    *  when they differ, have none, or the row is older than this field. */
   fileExt?: string;
@@ -126,7 +128,15 @@ export type Request =
   | { kind: "restore"; id: string }
   | { kind: "restore"; ids: string[] }
   | { kind: "copy"; id: string; plain?: boolean; pinned?: boolean }
-  | { kind: "copyText"; id: string; pinned?: boolean }
+  /** All the text in a row's image, or — `from` and `to`, each
+   *  `[line, word]` of its `Layout` — the words selected on the picture,
+   *  which the extension puts together from its own reading. */
+  | { kind: "copyText"; id: string; pinned?: boolean; from?: [number, number]; to?: [number, number] }
+  /** Read a few of the images Lumi's reader never reached; asked again
+   *  while `more`. */
+  | { kind: "readImages" }
+  /** Where the text in a row's image is, read now if it never was. */
+  | { kind: "layout"; id: string }
   | { kind: "copyPath"; id: string; pinned?: boolean }
   /** One of a colour row's formats; the extension takes only a colour. */
   | { kind: "copyColor"; text: string; pinned?: boolean }
@@ -173,3 +183,12 @@ export const KEEP_LABELS: Record<string, string> = {
   "1mo": "1 month",
   "3mo": "3 months",
 };
+
+/** Where the text in an image is (`history::Layout`): frames are
+ *  `[x, y, width, height]` in the image's pixels, origin top-left. */
+export interface Layout {
+  width: number;
+  height: number;
+  lines: { text: string; frame: Frame; words: { text: string; frame: Frame }[] }[];
+}
+export type Frame = [number, number, number, number];
