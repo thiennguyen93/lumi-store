@@ -7,6 +7,7 @@
 //   GET  /__lumi__/blob/<id>   → an image Lumi stored for this extension
 //   POST /__lumi__/drag        → hand this press to macOS as a window drag
 
+import { backoff, Foreground, isBusy, newest, serial } from "./lanes";
 import type { Entry, ExtensionShortcut, Layout, ListAnswer, OwnShortcuts, Request, ShortcutRefusal, Stats } from "./types";
 
 export type FileItem = { name: string; dir?: string; size?: number; folder?: boolean };
@@ -75,16 +76,74 @@ type Answers = {
   tryPatterns: { errors: { line: number; error: string }[]; matched: number | null };
 };
 
+/** The requests a person made that are still waiting for an answer. */
+const foreground = new Foreground();
+
+/** One request, retried while Lumi says the extension is full. Not a
+ *  queue: the extension's other runs are what is in the way, and they end
+ *  within moments or the person's request is not worth waiting for. */
+async function send<R extends Request>(request: R): Promise<Answers[R["kind"]]> {
+  for (let attempt = 0; ; attempt++) {
+    const answer = await fetch("/__lumi__/call", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+    const body = await answer.text();
+    const wait = isBusy(answer.status) ? backoff(attempt) : null;
+    if (wait !== null) {
+      await new Promise((resolve) => setTimeout(resolve, wait));
+      continue;
+    }
+    // A refusal comes back as the extension's (or Lumi's) own sentence,
+    // written for the person — shown as is.
+    if (!answer.ok) throw new Error(body || `Lumi answered ${answer.status}`);
+    return (body ? JSON.parse(body) : {}) as Answers[R["kind"]];
+  }
+}
+
+/** A request the person made — a press, a search, the panel opening. */
 export async function call<R extends Request>(request: R): Promise<Answers[R["kind"]]> {
-  const answer = await fetch("/__lumi__/call", {
-    method: "POST",
-    body: JSON.stringify(request),
+  foreground.enter();
+  try {
+    return await send(request);
+  } finally {
+    foreground.leave();
+  }
+}
+
+/** The longest background work stands aside for a person's request. */
+const STAND_ASIDE_MS = 5000;
+
+const oneAtATime = serial();
+
+/** A request nobody made — reading the images the extension has not got to.
+ *  One at a time, and each waits for the person's own requests to finish
+ *  first, so this is never what fills the extension's four runs. */
+export function callBackground<R extends Request>(request: R): Promise<Answers[R["kind"]]> {
+  return oneAtATime(async () => {
+    await foreground.idle(STAND_ASIDE_MS);
+    return send(request);
   });
-  const body = await answer.text();
-  // A refusal comes back as the extension's (or Lumi's) own sentence,
-  // written for the person — shown as is.
-  if (!answer.ok) throw new Error(body || `Lumi answered ${answer.status}`);
-  return (body ? JSON.parse(body) : {}) as Answers[R["kind"]];
+}
+
+/** One lane per kind of request: asking for the preview of the row being
+ *  looked at must not drop the request for the words on its picture. */
+const latestLanes = new Map<string, ReturnType<typeof newest>>();
+
+/** A request about what is on screen, which the person is waiting for but
+ *  which can be slow — a row's preview, the words on its picture. One at a
+ *  time per kind, and a request still queued when another of its kind
+ *  arrives is dropped (`Superseded`), because the answer would be about a
+ *  row nobody is looking at. Holding the arrow key down used to start a
+ *  preview per row passed, every one of them occupying one of the
+ *  extension's four runs until it finished. */
+export function callLatest<R extends Request>(request: R): Promise<Answers[R["kind"]]> {
+  let lane = latestLanes.get(request.kind);
+  if (!lane) {
+    lane = newest();
+    latestLanes.set(request.kind, lane);
+  }
+  return lane(() => send(request));
 }
 
 /** The shortcuts that run this extension's commands: the person's rows and,

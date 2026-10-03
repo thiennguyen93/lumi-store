@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.69.1] - 2026-10-04
+
+### Fixed
+
+- "Clipboard Manager is already doing 4 things at once" no longer turns up when you move through the list quickly, or while the panel is reading the text in your images. The preview, and the words on a picture, are now asked for one at a time and only for the row you stopped on; reading images steps aside whenever you do something. A request Lumi turns away because the extension is full is asked again for a moment before it is given up on.
+
 ## [0.69.0] - 2026-10-03
 
 ### Added

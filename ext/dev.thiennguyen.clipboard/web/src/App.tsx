@@ -11,7 +11,7 @@
 // rebuilt from a short list of tags and styles (richText.tsx).
 
 import { type CSSProperties, type KeyboardEvent, type MouseEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { call, message } from "./bridge";
+import { call, callBackground, message } from "./bridge";
 import {
   ClipboardGlyph,
   CollapseGlyph,
@@ -835,7 +835,7 @@ function readUnread() {
       // A bound, not a schedule: three images an ask, a full history of
       // images is a few hundred asks at most.
       for (let ask = 0; ask < 400; ask++) {
-        const { more } = await call({ kind: "readImages" });
+        const { more } = await callBackground({ kind: "readImages" });
         if (!more) break;
       }
     } catch {

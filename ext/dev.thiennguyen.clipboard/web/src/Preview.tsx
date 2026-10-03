@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { blobUrl, call, fileUrl, type Expansion, type FileItem, type Link } from "./bridge";
+import { blobUrl, call, callLatest, fileUrl, type Expansion, type FileItem, type Link } from "./bridge";
 import { AppMark } from "./AppMark";
+import { Superseded } from "./lanes";
 import { CollapseGlyph, CopyGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { useItemDrag } from "./itemDrag";
@@ -147,7 +148,7 @@ export function Preview({
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
-        const { text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets, layout } = await call({
+        const { text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets, layout } = await callLatest({
           kind: "preview",
           id: row.id,
         });
@@ -160,9 +161,10 @@ export function Preview({
         seen.set(key, answer);
         if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
         if (live) setFull(answer);
-      } catch {
-        // The title stays in the pane; a preview is not worth an error.
-        if (live) setGaveUp(row.id);
+      } catch (err) {
+        // The title stays in the pane; a preview is not worth an error. A
+        // preview dropped for a newer one is not a failure at all.
+        if (live && !(err instanceof Superseded)) setGaveUp(row.id);
       }
     }, SETTLE_MS);
     return () => {
@@ -192,17 +194,25 @@ export function Preview({
       setLayout({ id: row.id, layout: known });
       return;
     }
+    // Reading a picture takes a second and the row may change before it is
+    // done, so it waits for the selection to settle like the preview does,
+    // goes through the one-at-a-time lane, and is dropped there when the row
+    // has changed again — the extension is asked about the row being looked
+    // at and not about every row passed on the way.
     let live = true;
-    call({ kind: "layout", id: row.id })
-      .then(({ layout }) => {
-        if (!layout) return;
-        layouts.set(row.id, layout);
-        if (layouts.size > SEEN_MAX) layouts.delete(layouts.keys().next().value!);
-        if (live) setLayout({ id: row.id, layout });
-      })
-      .catch(() => {});
+    const timer = setTimeout(() => {
+      callLatest({ kind: "layout", id: row.id })
+        .then(({ layout }) => {
+          if (!layout) return;
+          layouts.set(row.id, layout);
+          if (layouts.size > SEEN_MAX) layouts.delete(layouts.keys().next().value!);
+          if (live) setLayout({ id: row.id, layout });
+        })
+        .catch(() => {});
+    }, SETTLE_MS);
     return () => {
       live = false;
+      clearTimeout(timer);
     };
   }, [row, held]);
   const words = layout && layout.id === row?.id ? layout.layout : null;
