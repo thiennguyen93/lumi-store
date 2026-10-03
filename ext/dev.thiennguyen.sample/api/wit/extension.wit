@@ -657,6 +657,128 @@ interface screen {
     select-window: func() -> result<option<picked-window>, string>;
 }
 
+/// Text in a picture, read by macOS's own recogniser, with where each line
+/// and word of it is. Lumi reads; what the text is for is the extension's.
+///
+/// What a call costs follows what it reaches, not the function: a picture
+/// already in this extension's storage reaches nothing new, so reading it
+/// needs no capability and may be asked from anywhere — `on-event` and the
+/// lifecycle hooks included. Reading the screen is a capture, and costs
+/// exactly what `screen.capture` costs: the `screen` capability, Screen
+/// Recording, and a person behind the call.
+///
+/// Positions are the picture's pixels, origin at its top-left, y down —
+/// the space a page draws the picture in. For the screen, `reading.frame`
+/// and `reading.scale` say where those pixels were: a point on screen is
+/// `frame.x + x / scale`, `frame.y + y / scale`.
+///
+/// Reading takes half a second to two seconds at `accurate`, counted
+/// against the run like any host call. Needs macOS 13; reading the screen
+/// needs macOS 14, as `screen` does. Added to 0.3 in Lumi 1.34 without a
+/// new world version.
+interface ocr {
+    use screen.{rect, target};
+
+    /// The picture to read.
+    variant source {
+        /// One in this extension's storage, by id: PNG, TIFF, JPEG or HEIC,
+        /// at most 64 megapixels. Read as its pixels are stored — an
+        /// orientation a photo's metadata asks for is not applied.
+        blob(string),
+        /// The screen, taken now at the display's own resolution, read, and
+        /// not kept: `screen.capture`'s targets and rules. To keep the
+        /// picture too, `capture` it and read the blob.
+        screen(target),
+    }
+
+    /// Which recogniser reads.
+    enum level {
+        /// Thirty languages, Vietnamese among them; half a second to two
+        /// seconds a screenshot.
+        accurate,
+        /// Several times quicker, and a few Latin languages only — no
+        /// Vietnamese, no Chinese or Japanese.
+        fast,
+    }
+
+    record options {
+        level: level,
+        /// The languages to read, best first, as `languages` names them —
+        /// `en-US`, `vi-VT`. Empty lets the recogniser tell, which is right
+        /// for most pictures.
+        languages: list<string>,
+        /// Lets a word the recogniser half-saw be put right from a
+        /// dictionary. On for prose; off for codes, names and numbers.
+        language-correction: bool,
+        /// The smallest text read, as a share of the picture's height,
+        /// from 0 to 1. `none` is the recogniser's own, about 1/32 for a
+        /// picture and 1/100 for the screen, where text is interface-sized.
+        minimum-text-height: option<f32>,
+        /// How many other readings of each line to hand back, up to 9.
+        alternatives: u8,
+        /// A box for each word too — each run of a line between spaces, so
+        /// a line of Chinese or Japanese is one word. One more ask of the
+        /// recogniser per word: leave it off unless you draw them.
+        words: bool,
+    }
+
+    record point {
+        x: f64,
+        y: f64,
+    }
+
+    record word {
+        text: string,
+        frame: rect,
+    }
+
+    record alternative {
+        text: string,
+        confidence: f32,
+    }
+
+    record line {
+        text: string,
+        /// From 0 to 1. Measured, it is no filter — a wrong line has scored
+        /// 1.00 and a right one 0.30 — so keep a line for its text, not for
+        /// this.
+        confidence: f32,
+        /// The upright box round the line.
+        frame: rect,
+        /// The line's own corners — top-left, top-right, bottom-right,
+        /// bottom-left of the text — which leave `frame` when the text is
+        /// slanted.
+        corners: list<point>,
+        /// Empty unless `options.words`.
+        words: list<word>,
+        /// Other readings of the line, likeliest first; never the line's
+        /// own text again.
+        alternatives: list<alternative>,
+    }
+
+    record reading {
+        /// Every line, joined with a newline: the whole text, for whoever
+        /// wants only that.
+        text: string,
+        /// Top to bottom.
+        lines: list<line>,
+        /// The picture's size in pixels.
+        width: u32,
+        height: u32,
+        /// For the screen: where the picture came from, in points.
+        frame: option<rect>,
+        /// For the screen: pixels per point.
+        scale: option<f64>,
+        /// Lines past the first megabyte of text were left out.
+        truncated: bool,
+    }
+
+    /// Read one picture.
+    read: func(source: source, options: options) -> result<reading, string>;
+    /// The languages `level` reads, as `options.languages` names them.
+    languages: func(level: level) -> result<list<string>, string>;
+}
+
 /// The person's snippets, asked about a whole text: is it a trigger, and
 /// what does it expand to. Costs `snippets`. For a component holding text
 /// from somewhere other than the keyboard — a copy in a history, a line in
@@ -926,6 +1048,7 @@ world extension {
     import ui;
     import storage;
     import screen;
+    import ocr;
     import snippets;
     import permissions;
     import menu;
