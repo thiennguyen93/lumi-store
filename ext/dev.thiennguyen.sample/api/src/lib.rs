@@ -122,7 +122,7 @@ pub use bindings::Lifecycle;
 pub use lumi::ext::app::{Edition, Info as About};
 /// One representation of one pasteboard item, for [`write_clipboard`] and
 /// [`paste`]: a uniform type identifier and its bytes.
-pub use lumi::ext::clipboard::{Data, Rep};
+pub use lumi::ext::clipboard::{Data, Image, Rep};
 pub use lumi::ext::net::{Request, Response};
 pub use lumi::ext::profiles::{Book as Profiles, Profile};
 pub use lumi::ext::selection::Found;
@@ -175,6 +175,26 @@ pub fn reveal(target: &str) -> Result<(), String> {
 /// image, a file, or nothing at all are one answer here.
 pub fn clipboard_text() -> Result<Option<String>, String> {
     lumi::ext::clipboard::read_text()
+}
+
+/// The pasteboard read back as [`write_clipboard`] writes it: one list per
+/// item, of the [`Rep`]s it holds among `types` — uniform type identifiers,
+/// in the order you want them — or every type it holds when `types` is
+/// empty. An item holding none of them is left out. Words come back as
+/// [`Data::Text`] (a type that is text or a URL to macOS, in UTF-8);
+/// everything else as a [`Data::Blob`] in your own [`storage`], yours to
+/// delete. At most 160 MB in all. Needs `clipboard` and Lumi 1.36.0.
+pub fn read_clipboard(types: &[&str]) -> Result<Vec<Vec<Rep>>, String> {
+    let types: Vec<String> = types.iter().map(|t| t.to_string()).collect();
+    lumi::ext::clipboard::read_all(&types)
+}
+
+/// The picture on the pasteboard, as a PNG blob in your own [`storage`] —
+/// whatever the board held it as — with its size in pixels, or `None` when
+/// it holds no picture. The bytes never pass through your component; the
+/// blob is yours to delete. Needs `clipboard` and Lumi 1.36.0.
+pub fn clipboard_image() -> Result<Option<Image>, String> {
+    lumi::ext::clipboard::read_image()
 }
 
 /// Put text on the pasteboard, replacing what was there.
@@ -953,6 +973,38 @@ pub mod folders {
     /// press.
     pub fn reveal(name: &str) -> Result<(), String> {
         wit::reveal(name)
+    }
+}
+
+/// Files the person picks in Lumi's Open panel, read into your [`storage`].
+/// No capability: the person choosing each file is the grant, and you learn
+/// its name and bytes, never its folder. Needs Lumi 1.36.0.
+///
+/// ```ignore
+/// use lumi_extension_api::files;
+///
+/// for file in files::open(&["public.image"], false, "Open a picture to edit")? {
+///     // `file.blob` is in your storage; `file.name` is "Holiday.heic".
+/// }
+/// ```
+pub mod files {
+    use super::lumi::ext::files as wit;
+
+    pub use wit::Opened;
+
+    /// Ask the person for files of `types` — uniform type identifiers such
+    /// as `public.image`; empty for any file — one at a time or `multiple`,
+    /// under a line saying what they are for (`message`, after your
+    /// extension's name). Empty when they cancel. Each comes back as a blob
+    /// in your storage, at most one blob's limit; a file too big refuses the
+    /// whole call and leaves nothing written. Only while answering a press;
+    /// their time choosing is not counted against your run.
+    pub fn open(types: &[&str], multiple: bool, message: &str) -> Result<Vec<Opened>, String> {
+        wit::open(&wit::OpenOptions {
+            types: types.iter().map(|t| t.to_string()).collect(),
+            multiple,
+            message: message.to_string(),
+        })
     }
 }
 
