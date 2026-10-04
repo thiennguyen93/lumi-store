@@ -72,6 +72,7 @@ import hashlib
 import html
 import io
 import json
+import math
 import os
 import re
 import subprocess
@@ -394,6 +395,20 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f'the window {name} asks for titlebar {titlebar!r}; a title bar is "standard" or "unified"')
         if "titlebar-height" in window and titlebar != "unified":
             fail(entry_id, f"the window {name} sets a titlebar-height, which only a unified title bar has")
+        # `manifest.rs`'s min_size rule: a floor clamped as the size is, and
+        # never above the size the window opens at, same sentences.
+        for side, default, least, most in (("width", 480.0, 240.0, 1600.0), ("height", 360.0, 180.0, 1200.0)):
+            key = f"min-{side}"
+            if key not in window:
+                continue
+            asked = window[key]
+            if isinstance(asked, bool) or not isinstance(asked, (int, float)) or not math.isfinite(asked) or asked <= 0:
+                fail(entry_id, f"the window {name}'s {key} is not a size in points")
+            raw = window.get(side, 0)
+            size = default if not isinstance(raw, (int, float)) or isinstance(raw, bool) or not math.isfinite(raw) or raw <= 0 else min(max(raw, least), most)
+            floor = min(max(asked, least), most)
+            if floor > size:
+                fail(entry_id, f"the window {name}'s {key} ({floor:g}) is more than its {side} ({size:g}); it would open smaller than it may be made")
     check_page_tabs(entry_id, manifest)
     check_shortcuts(entry_id, manifest)
     check_tabs(entry_id, manifest)
