@@ -53,6 +53,24 @@ interface clipboard {
 
     write-text: func(text: string) -> result<_, string>;
 
+    /// A picture on the board, written into this extension's `storage`.
+    record image {
+        /// The blob holding it, always as PNG — whatever the board held it
+        /// as: a PNG, a TIFF, a PDF page, a picture copied from a browser.
+        blob: string,
+        /// In pixels.
+        width: u32,
+        height: u32,
+    }
+
+    /// The picture on the board as a PNG blob in this extension's storage,
+    /// or none when it holds no picture — text, files and nothing at all are
+    /// one answer here. The bytes never cross into the component; open the
+    /// blob from a page, or hand it on. Counted against the storage limits
+    /// like any blob, and the extension's to delete. Costs `clipboard`.
+    /// Needs Lumi 1.36.0.
+    read-image: func() -> result<option<image>, string>;
+
     /// The bytes of one representation.
     variant data {
         text(string),
@@ -76,6 +94,18 @@ interface clipboard {
     /// marks the board as written by this extension, so the extension can
     /// tell its own writes apart when it hears a copy. Added in 0.3.
     write-all: func(items: list<list<rep>>) -> result<_, string>;
+
+    /// The board read back as `write-all` writes it: one list per item, of
+    /// the representations it holds among `types`, in the order `types` names
+    /// them — every type it holds, in its own order, when `types` is empty.
+    /// An item holding none of them is left out. Words come back as `text`:
+    /// a type that is text or a URL in macOS's type tree, whose bytes are
+    /// UTF-8. Everything else comes back as a `blob` written into this
+    /// extension's `storage`, so the bytes never cross into the component —
+    /// counted against its limits like any blob, and its to delete. At most
+    /// 160 MB in all; a board holding more is refused whole and nothing is
+    /// written. Costs `clipboard`. Needs Lumi 1.36.0.
+    read-all: func(types: list<string>) -> result<list<list<rep>>, string>;
 
     /// `write-all`, then ⌘V into the app in front: what a clipboard
     /// history does when a row is picked. Closes this extension's panels
@@ -1002,6 +1032,40 @@ interface folders {
     reveal: func(name: string) -> result<_, string>;
 }
 
+/// Files the person picks, read in. Lumi's Open panel, worded with the
+/// extension's name; each file chosen comes back as a blob in the
+/// extension's `storage`, so the bytes never cross into the component. The
+/// person picking is the grant: no capability, and nothing about where the
+/// file was is told. Needs Lumi 1.36.0.
+interface files {
+    record open-options {
+        /// What the panel lets the person pick, as uniform type identifiers
+        /// — `public.image`, `public.png`, `com.adobe.pdf`. Empty: any file.
+        /// One macOS does not know is left out.
+        types: list<string>,
+        /// Several files at once, or one.
+        multiple: bool,
+        /// A line above the list saying what the files are for. Lumi puts
+        /// the extension's name in front of it.
+        message: string,
+    }
+
+    record opened {
+        /// The file's own name, with its extension — never its folder.
+        name: string,
+        /// A blob in this extension's storage holding the file's bytes.
+        blob: string,
+    }
+
+    /// Ask the person for files, in the order they picked them — empty when
+    /// they cancel. Each is at most the storage limit for one blob; one
+    /// larger, or one more than the store has room for, refuses the whole
+    /// call and leaves nothing written. Only for something the person did: a
+    /// command, or a press in one of your windows. Their time choosing is not
+    /// counted against the run.
+    open: func(options: open-options) -> result<list<opened>, string>;
+}
+
 /// Your extension's own rows in Lumi's menu bar menu, built while it runs.
 ///
 /// Lumi draws them in a section of their own after Recent: one submenu
@@ -1093,6 +1157,7 @@ world extension {
     import permissions;
     import menu;
     import folders;
+    import files;
 
     /// Run one of the commands the manifest declares.
     ///
