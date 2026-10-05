@@ -395,6 +395,32 @@ interface ui {
     /// Lumi 1.31.
     window-state: func(name: string) -> result<presence, string>;
 
+    /// Take one of your windows off screen without closing it, by its
+    /// manifest `name`: its page keeps running and keeps everything in it,
+    /// where `close-window` ends a window's page and blanks a panel's.
+    /// `true` when it was on screen and is off it now; one already off
+    /// screen, closed or never opened answers `false` and is left as it is,
+    /// and so does one in full screen: it has a Space of its own, and taking
+    /// it away would leave the person on an empty one. Nothing is behind it
+    /// to see, either — Lumi's captures take a window in full screen as it
+    /// is, whatever else they leave out.
+    ///
+    /// For getting out of the way of something on the screen — an editor
+    /// while Lumi reads the text under it (the `screen-capture` event) —
+    /// until `show-window` puts it back. Allowed wherever `post` is,
+    /// `on-event` included, and costs no capability: it reaches only your
+    /// own window. Added in Lumi 1.36.
+    hide-window: func(name: string) -> result<bool, string>;
+
+    /// Put back one of your windows `hide-window` took off screen: where it
+    /// stood among everybody's windows — under whatever was over it then —
+    /// and with the keyboard if it had it. `true` when it did. Any other
+    /// window answers `false` and is left as it is: this restores, it never
+    /// opens, which is why `on-event` may call it. A window opened or closed
+    /// in between is the person's now and stays as they left it. Added in
+    /// Lumi 1.36.
+    show-window: func(name: string) -> result<bool, string>;
+
     /// Bring up Lumi's Settings on this extension's own Settings tab — a
     /// panel's "Settings…". Only for something the person did. Added in 0.3.
     open-settings: func() -> result<_, string>;
@@ -605,7 +631,9 @@ interface screen {
         /// is. `frame` says where the picture is. Refused if the window
         /// has closed since.
         window(window),
-        /// This area, clipped to the one display it covers most of.
+        /// This area, clipped to the one display it covers most of, its
+        /// edges rounded to whole points — a picture between them would
+        /// be resampled and soft. `frame` says the area taken.
         area(rect),
     }
 

@@ -103,7 +103,13 @@ CAPABILITIES = {
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`. Checked one way only, as Lumi checks it: an event
 # without its capability is refused, the capability alone is not.
-EVENTS = {"clipboard": "clipboard-history", "clipboard-ocr": "clipboard-history"}
+EVENTS = {
+    "clipboard": "clipboard-history",
+    "clipboard-ocr": "clipboard-history",
+    # Lumi 1.36: Lumi taking a picture of the screen for itself (Copy Text
+    # from Screen), at its start and its end.
+    "screen-capture": "screen",
+}
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
     "template", "app", "keys", "multiselect",
@@ -381,6 +387,12 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f"the window {name} sets focus, which only a panel has — a window always takes the keyboard")
             if not isinstance(window["focus"], bool):
                 fail(entry_id, f"the panel {name}'s focus = {window['focus']!r} is not true or false")
+        # `manifest.rs`'s capturable rule: a window's alone, and a boolean.
+        if "capturable" in window:
+            if kind == "panel":
+                fail(entry_id, f"the panel {name} sets capturable, which only a window has — Lumi's captures leave every panel out already")
+            if not isinstance(window["capturable"], bool):
+                fail(entry_id, f"the window {name}'s capturable = {window['capturable']!r} is not true or false")
         # `manifest.rs`'s material rule, same sentences.
         material = str(window.get("material", "")).strip()
         if material and kind == "window":
