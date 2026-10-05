@@ -11,6 +11,7 @@ import {
   hide,
   isCovered,
   isLocked,
+  isUnlocked,
   keyboardLeft,
   LOCK_OFF,
   LOCK_UNKNOWN,
@@ -19,7 +20,6 @@ import {
   showsLock,
   toggle,
   toggleAll,
-  unlockedByTime,
   VEIL_OFF,
 } from "../src/privacy.ts";
 
@@ -144,9 +144,10 @@ test("the history is locked until this opening is unlocked, or an earlier unlock
   assert.equal(isLocked({ ...lock, here: true }, 0), false, "unlocked in this opening");
   assert.equal(isLocked({ ...lock, until: 5_000 }, 4_999), false, "an earlier unlock that still holds");
   assert.equal(isLocked({ ...lock, until: 5_000 }, 5_000), true, "and ran out");
-  assert.equal(unlockedByTime({ ...lock, until: 5_000 }, 1), true);
-  assert.equal(unlockedByTime({ ...lock, here: true }, 1), false, "unlocked here is not by time");
-  assert.equal(unlockedByTime({ ...LOCK_OFF, until: 5_000 }, 1), false, "off");
+  assert.equal(isUnlocked({ ...lock, until: 5_000 }, 1), true, "by an earlier unlock");
+  assert.equal(isUnlocked({ ...lock, here: true }, 1), true, "in this opening, a pinned panel in the background too");
+  assert.equal(isUnlocked(lock, 1), false);
+  assert.equal(isUnlocked({ ...LOCK_OFF, here: true }, 1), false, "off: nothing was locked");
 });
 
 test("before its first list a panel is locked, but shows neither the lock nor the open history", () => {

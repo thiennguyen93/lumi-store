@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.75.3] - 2026-10-05
+
+### Fixed
+
+- A pinned panel no longer locks your history again when you switch to another app. With **Lock again** set to **When the panel closes**, a pinned panel in the background has not closed, so it stays unlocked until you close it. Lock it by hand with **Lock history now** in **⌘K**, or pick one of the timed **Lock again** choices. Privacy mode still covers previews when you switch away, and with history unlocked, showing one again doesn't ask "Is it you?".
+
 ## [0.75.2] - 2026-10-05
 
 ### Fixed

@@ -105,16 +105,18 @@ export function confirm(veil: Veil): Veil {
 
 /** Whether showing has to ask "Is it you?" first: the person asked for it
  *  ("Confirm it's you before showing"), and nothing has said yes since
- *  everything was last covered — this opening, or an unlock of the history
- *  that still holds (`unlockedByTime`). */
-export function needsConfirm(veil: Veil, asked: boolean, unlockedByTime: boolean): boolean {
-  return asked && veil.on && !veil.confirmed && !unlockedByTime;
+ *  everything was last covered — nor an unlock of the history that still
+ *  holds (`isUnlocked`). */
+export function needsConfirm(veil: Veil, asked: boolean, unlocked: boolean): boolean {
+  return asked && veil.on && !veil.confirmed && !unlocked;
 }
 
 /** History lock, as the panel holds it: on or off, until when an unlock
  *  from an earlier opening holds, whether this opening was unlocked
- *  ("Lock again: when the panel closes", which keeps nothing), and whether
- *  the extension has said yet — the panel's first list. */
+ *  ("Lock again: when the panel closes", which keeps nothing — held while
+ *  the panel is up, a pinned one in the background included: it has not
+ *  closed), and whether the extension has said yet — the panel's first
+ *  list. */
 export interface Lock {
   on: boolean;
   until: number | null;
@@ -142,10 +144,10 @@ export function showsLock(lock: Lock, now: number): boolean {
   return lock.known && isLocked(lock, now);
 }
 
-/** Whether an unlock from an earlier opening, kept for a while, still holds
- *  — which counts as a yes for showing too. */
-export function unlockedByTime(lock: Lock, now: number): boolean {
-  return lock.on && lock.until !== null && lock.until > now;
+/** Whether the history is unlocked — this opening, or by an earlier unlock
+ *  that still holds — which counts as a yes for showing too. */
+export function isUnlocked(lock: Lock, now: number): boolean {
+  return lock.on && !isLocked(lock, now);
 }
 
 /** Whether a `lumi:keyboard` change is the keyboard leaving the panel —
@@ -161,7 +163,7 @@ export function keyboardLeft(wasHeld: boolean, held: boolean): boolean {
  *  you?" dialog answers, it hands the panel the keyboard back, macOS gives
  *  it to the app in front a moment later, and Lumi takes it back — and it
  *  tells the panel each step, `false` then `true` within milliseconds,
- *  which undid the unlock or the show the dialog had just said yes to.
+ *  which covered again the show the dialog had just said yes to.
  *  Lumi 1.36.1 tells the page that asked nothing of the keyboard until it
  *  is back. Goes once `min-lumi-version` reaches 1.36.1. */
 export const AWAY_MS = 250;

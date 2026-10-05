@@ -56,6 +56,7 @@ import {
   coverAll,
   covers,
   isLocked,
+  isUnlocked,
   keyboardLeft,
   type Lock,
   LOCK_UNKNOWN,
@@ -64,7 +65,6 @@ import {
   showsLock,
   toggle,
   toggleAll,
-  unlockedByTime,
   type Veil,
   VEIL_OFF,
 } from "./privacy";
@@ -350,7 +350,7 @@ export function App() {
    *  showing" — once "Is it you?" says yes. Covering never asks. */
   const reveal = useCallback(
     (change: (veil: Veil) => Veil) => {
-      if (!needsConfirm(veil, privacyConfirm, unlockedByTime(lock, Date.now()))) {
+      if (!needsConfirm(veil, privacyConfirm, isUnlocked(lock, Date.now()))) {
         setVeil(change);
         return;
       }
@@ -458,16 +458,14 @@ export function App() {
   // the first after holding it counts (`keyboardLeft`). A panel opens
   // holding the keyboard, and an unpinned one is put away when it loses it.
   // Counted only once the keyboard has stayed away (`AWAY_MS`), and never
-  // while "Is it you?" is up: the person answering it has not left.
+  // while "Is it you?" is up: the person answering it has not left. An
+  // unlocked history stays unlocked: a pinned panel in the background has
+  // not closed, and "Lock again: when the panel closes" means closed.
   useEffect(() => {
     let held = true;
     let away = 0;
-    // A history unlocked for this opening locks again too; one unlocked
-    // for a while stays so for that while.
     const left = () => {
-      if (asking.current) return;
-      setVeil(coverAll);
-      setLock((lock) => (lock.here ? { ...lock, here: false } : lock));
+      if (!asking.current) setVeil(coverAll);
     };
     const told = (event: Event) => {
       const now = (event as CustomEvent<{ held?: unknown } | null>).detail?.held === true;
