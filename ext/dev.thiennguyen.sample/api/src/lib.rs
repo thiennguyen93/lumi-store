@@ -1006,6 +1006,20 @@ pub mod files {
             message: message.to_string(),
         })
     }
+
+    /// Hand blob `blob` to the person as a file, in Lumi's Save panel with
+    /// `name` filled in — `{date}` and `{time}` in it filled in from this
+    /// Mac's clock — and wait for their answer: `true` once the file is
+    /// written, `false` when they cancel. Where it went is theirs and is
+    /// never told back. Only while answering a press; their time choosing
+    /// is not counted against your run. [`storage::blob_save`] answers as
+    /// soon as the panel is up; use this when what you do next depends on
+    /// the file having been saved — closing what it was saved from.
+    ///
+    /// [`storage::blob_save`]: super::storage::blob_save
+    pub fn save(blob: &str, name: &str) -> Result<bool, String> {
+        wit::save(blob, name)
+    }
 }
 
 /// Your extension's own rows in Lumi's menu bar menu, built while it runs.
