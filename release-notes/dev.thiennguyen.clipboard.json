@@ -1,4 +1,330 @@
 {
+  "0.75.0": {
+    "notesSha256": "6dd59b82a958c779b71e7ee9f7edc9deeb3bc4e032bbc320972d6d0999ef8db7",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour now shows how Touch ID protects your history",
+          "items": [
+            "The Welcome tour includes a Touch ID step that demonstrates locking your history",
+            "The panel opens locked and macOS asks for authentication before showing your clips",
+            "Buttons in the step turn on locking your history or asking before showing, straight away",
+            "On older versions of Lumi the step explains what is needed to use this feature"
+          ]
+        },
+        "vi": {
+          "headline": "Hướng dẫn chào mừng giờ có bước về Touch ID bảo vệ lịch sử",
+          "items": [
+            "Hướng dẫn chào mừng có thêm bước Touch ID để trình diễn cách khóa lịch sử",
+            "Bảng điều khiển mở ở trạng thái khóa và macOS yêu cầu xác thực trước khi hiện nội dung",
+            "Các nút trong bước này bật ngay việc khóa lịch sử hoặc hỏi trước khi hiện nội dung",
+            "Trên phiên bản Lumi cũ hơn, bước này giải thích yêu cầu để dùng tính năng"
+          ]
+        }
+      }
+    }
+  },
+  "0.74.0": {
+    "notesSha256": "e87cda2cce89979b3307ad044a3c1d0d49fcf7a1d0726e831439f9b5740010ca",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour now includes privacy mode",
+          "items": [
+            "The Welcome tour shows how privacy mode works and lets you turn it on"
+          ]
+        },
+        "vi": {
+          "headline": "Hướng dẫn chào mừng giờ có chế độ riêng tư",
+          "items": [
+            "Hướng dẫn chào mừng giờ trình bày cách chế độ riêng tư hoạt động và cho phép bật nó"
+          ]
+        }
+      }
+    }
+  },
+  "0.73.0": {
+    "notesSha256": "aabced8830dcf0bd7ff8947c867bcb3d05b9a6be1201eff3495d3c53d54f9233",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Privacy mode and locked history",
+          "items": [
+            "Privacy mode can ask for Touch ID, Apple Watch or password before the first item is shown",
+            "Lock history keeps the panel empty until you confirm it's you",
+            "Choose when to lock again: every time the panel closes or after a delay",
+            "Lock history immediately from the command palette",
+            "Turning either of them off in Settings asks for authentication first",
+            "Both features require Lumi 1.36 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Chế độ riêng tư và khóa lịch sử",
+          "items": [
+            "Chế độ riêng tư có thể yêu cầu Touch ID, Apple Watch hoặc mật khẩu trước khi hiện mục đầu tiên",
+            "Khóa lịch sử giữ bảng trống cho đến khi bạn xác nhận danh tính",
+            "Chọn khi nào khóa lại: mỗi lần đóng bảng hoặc sau một khoảng thời gian",
+            "Khóa lịch sử ngay lập tức từ bảng lệnh",
+            "Tắt một trong hai tính năng này trong Cài đặt sẽ yêu cầu xác thực trước",
+            "Cả hai tính năng yêu cầu Lumi 1.36 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.72.1": {
+    "notesSha256": "224111b08e73600ce8f7ea47b17d86fc62c9893ad3042a684ebca56971bc7f52",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Privacy mode now leaves colour previews visible",
+          "items": [
+            "Privacy mode no longer covers colour previews since they already show the full value"
+          ]
+        },
+        "vi": {
+          "headline": "Chế độ riêng tư không còn che màu sắc",
+          "items": [
+            "Chế độ riêng tư không che phần xem trước màu vì chúng đã hiển thị đầy đủ giá trị"
+          ]
+        }
+      }
+    }
+  },
+  "0.72.0": {
+    "notesSha256": "d457c02acf63490fcd8d6c76f24989fc003f200b4b680b4715f3b5140b975155",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Show all items at once in privacy mode",
+          "items": [
+            "Privacy mode can now reveal all items at once with ⌥⇧⌘H instead of one by one",
+            "Revealed items stay visible until the panel covers them again",
+            "The same shortcut hides all revealed items at once",
+            "Show all content and Hide all content appear in the ⌘K menu",
+            "You can set your own shortcut for this under Privacy in Settings"
+          ]
+        },
+        "vi": {
+          "headline": "Hiện tất cả mục cùng lúc trong chế độ riêng tư",
+          "items": [
+            "Chế độ riêng tư giờ có thể hiện tất cả mục cùng lúc bằng ⌥⇧⌘H thay vì từng mục một",
+            "Các mục đã hiện sẽ giữ nguyên cho đến khi bảng điều khiển che lại",
+            "Phím tắt này cũng ẩn tất cả mục đã hiện cùng lúc",
+            "Hiện tất cả nội dung và Ẩn tất cả nội dung xuất hiện trong menu ⌘K",
+            "Bạn có thể đặt phím tắt riêng cho chức năng này trong phần Riêng tư ở Cài đặt"
+          ]
+        }
+      }
+    }
+  },
+  "0.71.1": {
+    "notesSha256": "a7f379836f097504ac602389c7ca0c124793840f7c6d8e1da74f2182da7831de",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Privacy shortcut moved, reset button fix",
+          "items": [
+            "The shortcut for showing or hiding items moved to Privacy in Settings",
+            "Reset no longer appears next to shortcuts that are already at their default"
+          ]
+        },
+        "vi": {
+          "headline": "Di chuyển phím tắt riêng tư, sửa nút đặt lại",
+          "items": [
+            "Phím tắt để hiện hoặc ẩn mục đã chuyển sang phần Riêng tư trong Cài đặt",
+            "Nút Đặt lại không còn hiện bên cạnh phím tắt đã ở trạng thái mặc định"
+          ]
+        }
+      }
+    }
+  },
+  "0.71.0": {
+    "notesSha256": "69bbf2239f37cc98c15206635614dce7d36454a3b5461676fae953cf884bb8b6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Customize the privacy mode shortcut and fix modifier key handling",
+          "items": [
+            "You can now set your own keyboard shortcut for showing and hiding items in privacy mode",
+            "Showing and hiding an item uses Shift-Command-H until you change it",
+            "Shortcuts that conflict with existing panel actions are rejected with an explanation",
+            "Holding Shift with your Pin shortcut now works correctly instead of triggering other actions"
+          ]
+        },
+        "vi": {
+          "headline": "Tùy chỉnh phím tắt chế độ riêng tư và sửa lỗi phím bổ trợ",
+          "items": [
+            "Giờ bạn có thể đặt phím tắt riêng để hiện và ẩn mục trong chế độ riêng tư",
+            "Phím tắt hiện và ẩn mục là Shift-Command-H cho đến khi bạn thay đổi",
+            "Phím tắt trùng với thao tác đã có sẽ bị từ chối kèm giải thích",
+            "Giữ Shift cùng phím tắt Ghim giờ hoạt động đúng thay vì kích hoạt thao tác khác"
+          ]
+        }
+      }
+    }
+  },
+  "0.70.1": {
+    "notesSha256": "6916acdc616366297f17e20c5e91d8331f03613827d2d8385f08af79c8f8ac89",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed keyboard shortcut conflict with pinned items",
+          "items": [
+            "Pinned items skip the letter K since Command-K always opens the actions menu",
+            "Items already pinned to K move to the next available letter when you open the panel"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa xung đột phím tắt với mục đã ghim",
+          "items": [
+            "Các mục ghim bỏ qua chữ K vì Command-K luôn mở menu thao tác",
+            "Mục đã ghim vào K sẽ chuyển sang chữ cái trống tiếp theo khi bạn mở bảng"
+          ]
+        }
+      }
+    }
+  },
+  "0.70.0": {
+    "notesSha256": "438936f19914474b1087929bb5860130b3b71a05ba7c268008ca6b2852fb168c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Privacy mode covers previews until you choose to show them",
+          "items": [
+            "Privacy mode covers item previews so nothing is visible just by scrolling past it",
+            "Click a cover or press Command-Shift-H to show an item, Command-Shift-H again to hide it",
+            "Turn privacy mode on or off from the eye icon, Command-K, the menu bar, or Settings",
+            "Covered items can still be pasted, dragged, copied, pinned, and deleted",
+            "Covers reset when the panel closes, loses focus, or after a minute of inactivity"
+          ]
+        },
+        "vi": {
+          "headline": "Chế độ riêng tư che nội dung xem trước cho đến khi bạn muốn hiện",
+          "items": [
+            "Chế độ riêng tư che nội dung xem trước để không hiện gì khi cuộn qua",
+            "Nhấp vào lớp che hoặc nhấn Command-Shift-H để hiện một mục, nhấn lại để che",
+            "Bật tắt chế độ riêng tư từ biểu tượng con mắt, Command-K, thanh menu hoặc Cài đặt",
+            "Các mục bị che vẫn có thể dán, kéo ra, sao chép, ghim và xóa",
+            "Lớp che đặt lại khi đóng bảng, mất tiêu điểm hoặc sau một phút không hoạt động"
+          ]
+        }
+      }
+    }
+  },
+  "0.69.1": {
+    "notesSha256": "bfb7fbbdbea4ea0f22abf67f8cdb4632ed534801991fac6cdb1ec356c7c49fd6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Smoother browsing and fewer busy warnings",
+          "items": [
+            "Moving through the list no longer triggers warnings about doing too many things at once",
+            "Image text is now read only for the item you stop on, not every item you pass",
+            "Preview requests happen one at a time instead of all at once",
+            "Image reading pauses automatically when you interact with the panel",
+            "Rejected requests are retried briefly before being abandoned"
+          ]
+        },
+        "vi": {
+          "headline": "Duyệt mượt hơn và ít cảnh báo bận rộn hơn",
+          "items": [
+            "Di chuyển trong danh sách không còn gây ra cảnh báo về việc làm quá nhiều thứ cùng lúc",
+            "Chữ trong ảnh chỉ được đọc cho mục bạn dừng lại, không phải mọi mục bạn đi qua",
+            "Yêu cầu xem trước diễn ra từng cái một thay vì tất cả cùng lúc",
+            "Đọc ảnh tự động tạm dừng khi bạn tương tác với bảng điều khiển",
+            "Yêu cầu bị từ chối được thử lại trong chốc lát trước khi bỏ qua"
+          ]
+        }
+      }
+    }
+  },
+  "0.69.0": {
+    "notesSha256": "034df2f092c02883da0eea61c26e9b5f5199c06d4c77ed5d1cfbc0245c6fad47",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Select text on images and find every image by its words",
+          "items": [
+            "Select text directly on a copied image by dragging across words or double-clicking a line",
+            "Press Command-C or Copy to copy just the selected words, or press Escape to deselect",
+            "Images are now read for text when the panel opens or when Search text in images is turned on",
+            "Every image can be found by its words, even if copied while that setting was off"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn văn bản trên ảnh và tìm mọi ảnh theo nội dung chữ",
+          "items": [
+            "Chọn văn bản trực tiếp trên ảnh bằng cách kéo qua các từ hoặc nhấp đúp vào dòng",
+            "Nhấn Command-C hoặc Copy để chỉ sao chép phần đã chọn, hoặc nhấn Escape để bỏ chọn",
+            "Ảnh giờ được đọc văn bản khi mở bảng điều khiển hoặc khi bật tính năng Tìm chữ trong ảnh",
+            "Mọi ảnh giờ đều tìm được bằng nội dung chữ, kể cả ảnh sao chép khi tắt tính năng"
+          ]
+        }
+      }
+    }
+  },
+  "0.68.0": {
+    "notesSha256": "835a7e3758ff83388d25e4b75e0cc9fa81f436ef12b318a6e95fb5943f32ef26",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Icons in the menu and clearer pause state",
+          "items": [
+            "Every item in the menu bar now shows an icon",
+            "Pause Recording changes to Resume Recording when paused instead of showing a tick"
+          ]
+        },
+        "vi": {
+          "headline": "Biểu tượng trong menu và trạng thái tạm dừng rõ ràng hơn",
+          "items": [
+            "Mỗi mục trong thanh menu giờ đây hiển thị biểu tượng",
+            "Tạm dừng ghi nhận đổi thành Tiếp tục ghi nhận khi đang tạm dừng thay vì hiện dấu tick"
+          ]
+        }
+      }
+    }
+  },
+  "0.67.0": {
+    "notesSha256": "df1a8c9b3a285785458db2cf20bf8f3242de1f9a4c7e4d052c4268199dfa0f73",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Pause recording and manage history from the menu bar",
+          "items": [
+            "The menu bar menu now has Show Clipboard History, Pause Recording, Delete All Unpinned and Settings",
+            "Pause Recording stops saving what you copy until you turn it back on",
+            "Delete All Unpinned opens the panel and clears items there so you can undo",
+            "The preview width, split position and PDF zoom are now remembered when you close the panel",
+            "Requires Lumi 1.33.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Tạm dừng ghi lại và quản lý lịch sử từ thanh menu",
+          "items": [
+            "Menu trên thanh menu giờ có Hiện Lịch Sử Clipboard, Tạm Dừng Ghi Lại, Xóa Tất Cả Mục Chưa Ghim và Cài Đặt",
+            "Tạm Dừng Ghi Lại ngừng lưu những gì bạn sao chép cho đến khi bạn bật lại",
+            "Xóa Tất Cả Mục Chưa Ghim mở bảng điều khiển và xóa ở đó để bạn có thể hoàn tác",
+            "Độ rộng xem trước, vị trí chia và mức phóng to PDF giờ được ghi nhớ khi bạn đóng bảng",
+            "Yêu cầu Lumi 1.33.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
   "0.66.1": {
     "notesSha256": "a718405e79938019231d429acf57385558f9c4380ace361a438808a23bb07a3c",
     "summary": {
@@ -160,280 +486,6 @@
           "headline": "Sửa lỗi ô tìm kiếm tràn ra ngoài menu hành động",
           "items": [
             "Ô tìm kiếm trong menu hành động không còn vượt ra ngoài viền menu"
-          ]
-        }
-      }
-    }
-  },
-  "0.62.0": {
-    "notesSha256": "3a869a438a74dc4078a72e51f16670ae7189ae2c7fb947a387c67caa42c1050d",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Highlights in the actions menu",
-          "items": [
-            "The actions menu highlights the letters you typed in each matching action"
-          ]
-        },
-        "vi": {
-          "headline": "Làm nổi bật trong menu hành động",
-          "items": [
-            "Menu hành động làm nổi bật các chữ cái bạn đã gõ trong mỗi hành động khớp"
-          ]
-        }
-      }
-    }
-  },
-  "0.61.0": {
-    "notesSha256": "bda4325ea323d3b43166fbec248bdf19c54a66a0c06c8456498a1d04de77eb81",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Faster actions menu with shorthand search",
-          "items": [
-            "The actions menu recognizes shorthand: type first letters of each word like delall or sif to find commands"
-          ]
-        },
-        "vi": {
-          "headline": "Menu hành động nhanh hơn với tìm kiếm viết tắt",
-          "items": [
-            "Menu hành động nhận dạng viết tắt: gõ chữ cái đầu mỗi từ như delall hay sif để tìm lệnh nhanh"
-          ]
-        }
-      }
-    }
-  },
-  "0.60.8": {
-    "notesSha256": "e54ab2b3ec26bbecc5ab2fb89641b801dba4c5943d786f094d68a13fe0606e85",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Smarter search in the actions menu",
-          "items": [
-            "Searching the actions menu now matches the start of words instead of any substring"
-          ]
-        },
-        "vi": {
-          "headline": "Tìm kiếm thông minh hơn trong menu hành động",
-          "items": [
-            "Tìm kiếm trong menu hành động giờ khớp với đầu từ thay vì bất kỳ chuỗi ký tự nào"
-          ]
-        }
-      }
-    }
-  },
-  "0.60.7": {
-    "notesSha256": "7d1465cb0ac019522fb700fcfad32f48b40f20baa03b6820d97b983e7adc26a8",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Actions menu reordered for easier access",
-          "items": [
-            "The actions menu now reads from bottom to top with Paste closest to the search field",
-            "Arrow keys now move in the direction they point in the actions menu"
-          ]
-        },
-        "vi": {
-          "headline": "Sắp xếp lại menu thao tác để dễ truy cập hơn",
-          "items": [
-            "Menu thao tác giờ đọc từ dưới lên trên với Dán ở gần ô tìm kiếm nhất",
-            "Phím mũi tên giờ di chuyển theo hướng chúng chỉ trong menu thao tác"
-          ]
-        }
-      }
-    }
-  },
-  "0.60.6": {
-    "notesSha256": "201f9a1b769fdf7a219ae5c3f89c5c43bab923908cdec7f8b4a71f2d98e04e00",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Search field moved in actions menu",
-          "items": [
-            "The search field in the actions menu now sits at the bottom and stays in place while you type"
-          ]
-        },
-        "vi": {
-          "headline": "Di chuyển ô tìm kiếm trong menu hành động",
-          "items": [
-            "Ô tìm kiếm trong menu hành động giờ nằm ở dưới cùng và giữ nguyên vị trí khi bạn gõ"
-          ]
-        }
-      }
-    }
-  },
-  "0.60.5": {
-    "notesSha256": "b86368ad1c5f2feef7fefa6e3ff0804084f517924a5f545b7fd72ba98f7d430b",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Actions menu improvements",
-          "items": [
-            "The actions menu now shows all actions completely instead of cutting off the last one",
-            "When the panel is too short, the actions list scrolls and fades at the edges",
-            "Arrow keys keep the selected action visible when scrolling"
-          ]
-        },
-        "vi": {
-          "headline": "Cải thiện menu thao tác",
-          "items": [
-            "Menu thao tác giờ hiển thị đầy đủ các mục thay vì cắt mất mục cuối",
-            "Khi bảng điều khiển quá ngắn, danh sách sẽ cuộn và mờ dần ở các cạnh",
-            "Phím mũi tên giữ thao tác đang chọn luôn hiển thị khi cuộn"
-          ]
-        }
-      }
-    }
-  },
-  "0.60.4": {
-    "notesSha256": "e5520b3bab05115bde820771cfb7e42e4604b4c1d3bc77e53f80c1f029ecac82",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Faster panel opening with long history",
-          "items": [
-            "The panel opens faster when you have a long history"
-          ]
-        },
-        "vi": {
-          "headline": "Mở bảng nhanh hơn với lịch sử dài",
-          "items": [
-            "Bảng mở nhanh hơn khi bạn có lịch sử dài"
-          ]
-        }
-      }
-    }
-  },
-  "0.60.3": {
-    "notesSha256": "f449cc2da26db4f6d568279a169ee94788446cb2c952ad3a4b36b6d7f009a0d0",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Instant clipboard updates",
-          "items": [
-            "What you copy while the panel is open now shows up in it straight away"
-          ]
-        },
-        "vi": {
-          "headline": "Cập nhật clipboard tức thì",
-          "items": [
-            "Nội dung bạn sao chép khi bảng điều khiển đang mở giờ hiện lên ngay lập tức"
-          ]
-        }
-      }
-    }
-  },
-  "0.60.2": {
-    "notesSha256": "c82ce013c490451ccd71ec434200e0d6d1c64580ee5f5c9e82a000a315d099c6",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Faster previews",
-          "items": [
-            "Previews load faster because links are now detected when you copy, not when you view"
-          ]
-        },
-        "vi": {
-          "headline": "Xem trước nhanh hơn",
-          "items": [
-            "Xem trước hiển thị nhanh hơn vì liên kết được phát hiện khi sao chép, không phải khi xem"
-          ]
-        }
-      }
-    }
-  },
-  "0.60.1": {
-    "notesSha256": "197f7d392777500308c5d6f5cc2d47ffaf129fa88681e6976604961e3e19bf7e",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Links in rich text previews are now clickable",
-          "items": [
-            "Links in rich text can be clicked in the preview",
-            "Plain text stays plain so you can select and copy it",
-            "Links from plain text are listed below the preview"
-          ]
-        },
-        "vi": {
-          "headline": "Liên kết trong bản xem trước rich text giờ có thể nhấp được",
-          "items": [
-            "Liên kết trong rich text có thể nhấp trực tiếp trong bản xem trước",
-            "Văn bản thuần vẫn giữ nguyên để bạn chọn và sao chép",
-            "Liên kết từ văn bản thuần được liệt kê bên dưới bản xem trước"
-          ]
-        }
-      }
-    }
-  },
-  "0.59.0": {
-    "notesSha256": "83c76cad5bc86c279bd815b787e165d625957ac840bc94928a0c2ab5aece67bc",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Links in copied text now appear and open with a click",
-          "items": [
-            "Text and rich text show the links they contain under their preview",
-            "Click any link to open it in your browser",
-            "Links in rich text from TextEdit or Pages no longer disappear from the preview"
-          ]
-        },
-        "vi": {
-          "headline": "Liên kết trong văn bản đã sao chép hiện hiển thị và mở được",
-          "items": [
-            "Văn bản thuần và văn bản định dạng hiển thị các liên kết chứa bên trong dưới phần xem trước",
-            "Nhấp vào bất kỳ liên kết nào để mở trong trình duyệt",
-            "Liên kết trong văn bản định dạng từ TextEdit hoặc Pages không còn biến mất khỏi phần xem trước"
-          ]
-        }
-      }
-    }
-  },
-  "0.58.3": {
-    "notesSha256": "3cefdecadaff9a9ef53feee9ef9bc539f5ca7ea250e40f913d93f766e6832323",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Updated extension homepage",
-          "items": [
-            "The extension's homepage now points to its page on lumikeys.app"
-          ]
-        },
-        "vi": {
-          "headline": "Cập nhật trang chủ tiện ích",
-          "items": [
-            "Trang chủ của tiện ích giờ trỏ đến trang của nó trên lumikeys.app"
-          ]
-        }
-      }
-    }
-  },
-  "0.58.2": {
-    "notesSha256": "40cd65a6c966894de104612c4b19cf0bf0616aadc0ceb6e793a7d772859c3629",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Updated documentation and store links",
-          "items": [
-            "About panel now links to the extension page and store on lumikeys.app"
-          ]
-        },
-        "vi": {
-          "headline": "Cập nhật liên kết tài liệu và cửa hàng",
-          "items": [
-            "Bảng Giới thiệu giờ liên kết đến trang tiện ích và cửa hàng trên lumikeys.app"
           ]
         }
       }
