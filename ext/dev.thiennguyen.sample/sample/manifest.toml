@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.14.0"
+version = "0.14.1"
 # 1.33.0: the floor is the newest host function the code calls, not the
 # world it was built for. WIT 0.3 grew `screen` in 1.30, `snippets` in
 # 1.31 and `permissions` and `menu` in 1.33 without a new world version, and the component imports what it
