@@ -58,9 +58,10 @@ import {
   isLocked,
   keyboardLeft,
   type Lock,
-  LOCK_OFF,
+  LOCK_UNKNOWN,
   needsConfirm,
   show,
+  showsLock,
   toggle,
   toggleAll,
   unlockedByTime,
@@ -102,10 +103,12 @@ export function App() {
   const [privacyConfirm, setPrivacyConfirm] = useState(false);
   // History lock (privacy.ts `Lock`): the list, the preview and every
   // action wait for "Is it you?". `now` moves when an earlier unlock runs
-  // out, so the panel locks while it is up.
-  const [lock, setLock] = useState<Lock>(LOCK_OFF);
+  // out, so the panel locks while it is up. Until the first list says how
+  // it stands, locked but drawn as neither (`LOCK_UNKNOWN`).
+  const [lock, setLock] = useState<Lock>(LOCK_UNKNOWN);
   const [now, setNow] = useState(() => Date.now());
   const locked = isLocked(lock, now);
+  const lockShown = showsLock(lock, now);
   // Whether "Is it you?" can be asked here at all; asked once.
   const [canAsk, setCanAsk] = useState<boolean | null>(null);
   // A dialog is up: another press waits for it rather than asking again.
@@ -177,7 +180,7 @@ export function App() {
     setVeil((veil) => adopt(veil, answer.privacy ?? false));
     setPrivacyIdle(answer.privacyIdle ?? null);
     setPrivacyConfirm(answer.privacyConfirm ?? false);
-    setLock((lock) => ({ on: answer.lock?.on ?? false, until: answer.lock?.until ?? null, here: lock.here }));
+    setLock((lock) => ({ on: answer.lock?.on ?? false, until: answer.lock?.until ?? null, here: lock.here, known: true }));
     setNow(Date.now());
     if (keepId) {
       const at = search(
@@ -410,10 +413,10 @@ export function App() {
   // list. Once per opening — Cancel leaves the lock card and its Unlock.
   const askedOnOpen = useRef(false);
   useEffect(() => {
-    if (!locked || rows === null || canAsk !== true || askedOnOpen.current) return;
+    if (!lockShown || rows === null || canAsk !== true || askedOnOpen.current) return;
     askedOnOpen.current = true;
     void unlock();
-  }, [locked, rows, canAsk, unlock]);
+  }, [lockShown, rows, canAsk, unlock]);
 
   // The keys go where they are answered: the panel itself while locked —
   // the search field is disabled, and a key on nothing reaches no handler —
@@ -665,7 +668,7 @@ export function App() {
     // the two that show none of it.
     if (locked) {
       return [
-        ...(canAsk ? [{ id: "unlock", label: "Unlock history", glyph: <LockGlyph open />, keys: "↩", run: () => void unlock() }] : []),
+        ...(canAsk && lockShown ? [{ id: "unlock", label: "Unlock history", glyph: <LockGlyph open />, keys: "↩", run: () => void unlock() }] : []),
         { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
         {
           id: "about",
@@ -777,7 +780,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [about, act, canAsk, current, lock.on, lockNow, locked, openSettings, paste, pinKey, pinned, remove, removeAll, revealAllCap, revealCap, rows, togglePin, togglePrivacy, toggleAllShown, toggleShown, unlock, veil, zoomed]);
+  }, [about, act, canAsk, current, lock.on, lockNow, lockShown, locked, openSettings, paste, pinKey, pinned, remove, removeAll, revealAllCap, revealCap, rows, togglePin, togglePrivacy, toggleAllShown, toggleShown, unlock, veil, zoomed]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -849,13 +852,15 @@ export function App() {
     const cmd = event.metaKey && !event.ctrlKey;
     const key = event.key;
     // Locked: ↩ unlocks, ⎋ closes, ⌘K and ⌘, work; no row key, paste, pin
-    // or show reaches a history nobody has unlocked.
+    // or show reaches a history nobody has unlocked. Before the first list
+    // says whether it is locked, the same — but ↩ asks nothing yet.
     if (locked && !about) {
       if (key === "Escape") {
         if (menuOpen) closeMenu();
         else void call({ kind: "close" }).catch(() => {});
-      } else if (key === "Enter") void unlock();
-      else if (cmd && key.toLowerCase() === "k") setMenuOpen(true);
+      } else if (key === "Enter") {
+        if (lockShown) void unlock();
+      } else if (cmd && key.toLowerCase() === "k") setMenuOpen(true);
       else if (cmd && key === ",") openSettings();
       else if (!event.metaKey && !event.ctrlKey && !event.altKey) return;
       event.preventDefault();
@@ -1008,7 +1013,7 @@ export function App() {
             setZoom(false);
             setAbout(false);
           }}
-          placeholder={locked ? "History locked" : "Search history"}
+          placeholder={!locked ? "Search history" : lockShown ? "History locked" : ""}
           // Nothing to search while locked; the keys go to the panel.
           disabled={locked}
           autoComplete="off"
@@ -1019,7 +1024,9 @@ export function App() {
         />
       </div>
       {about && <About onLink={followLink} />}
-      {locked && !about && <LockCard canAsk={canAsk} onUnlock={() => void unlock()} onSettings={openSettings} />}
+      {lockShown && !about && <LockCard canAsk={canAsk} onUnlock={() => void unlock()} onSettings={openSettings} />}
+      {/* Not yet known whether locked: the body kept, with nothing in it. */}
+      {locked && !lockShown && !about && <div className="waiting" aria-hidden="true" />}
       {!locked && <section
         className="body-grid"
         // Nothing to preview: the list takes the width, so the empty note
@@ -1108,7 +1115,7 @@ export function App() {
           <span><kbd className="cap quiet">⎋</kbd> back to the history</span>
         ) : locked ? (
           <>
-            {canAsk && <span><kbd className="cap quiet">↩</kbd> unlock</span>}
+            {canAsk && lockShown && <span><kbd className="cap quiet">↩</kbd> unlock</span>}
             <span><kbd className="cap quiet">⎋</kbd> close</span>
           </>
         ) : (

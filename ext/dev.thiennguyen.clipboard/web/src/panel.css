@@ -1779,6 +1779,9 @@ html.glass-preview[data-material="sidebar"] #root {
    filters put aside — there is nothing behind them to filter. */
 .panel.locked .filters { visibility: hidden; }
 .panel.locked .search { opacity: 0.55; }
+/* Before the first list says whether the history is locked: neither the
+   lock card nor the list, the footer kept where it stands. */
+.waiting { flex: 1 1 auto; min-height: 0; }
 .lock-card {
   flex: 1 1 auto;
   display: flex;

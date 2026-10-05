@@ -602,9 +602,10 @@ window.fetch = async (input, init) => {
     const { reason } = JSON.parse(String(init.body)) as { reason: string };
     if (authAnswer === "unavailable") return new Response("macOS could not ask (LAError -5)", { status: 503 });
     say(`Is it you? Lumi is trying to ${reason} (Clipboard Manager)`);
-    // The keyboard as Lumi 1.36 tells it around the dialog: taken by it;
-    // handed back as it answers; taken by the app in front a moment later,
-    // as macOS does; and taken back by Lumi (`owner_auth`).
+    // The keyboard as Lumi 1.36.0 tells it around the dialog — the worst a
+    // panel meets: taken by it; handed back as it answers; taken by the app
+    // in front a moment later, as macOS does; and taken back by Lumi
+    // (`owner_auth`). Lumi 1.36.1 tells none of that, and `true` after.
     const tell = (held: boolean) => window.dispatchEvent(new CustomEvent("lumi:keyboard", { detail: { held } }));
     tell(false);
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -626,8 +627,16 @@ window.fetch = async (input, init) => {
     return new Response(JSON.stringify(settings), { status: 200 });
   }
   if (!url.endsWith("/__lumi__/call")) return real(input, init);
+  const request = JSON.parse(String(init?.body)) as Request;
+  // `?slow` (or `?slow=5000`, in ms): the opening list answers a second
+  // late, as on a busy Mac — the panel as it is before it knows whether the
+  // history is locked.
+  const slow = new URLSearchParams(location.search).get("slow");
+  if (request.kind === "list" && request.opening && slow !== null) {
+    await new Promise((resolve) => setTimeout(resolve, Number(slow) || 1000));
+  }
   try {
-    const body = JSON.stringify(answer(JSON.parse(String(init?.body)) as Request));
+    const body = JSON.stringify(answer(request));
     return new Response(body, { status: 200 });
   } catch (err) {
     return new Response(err instanceof Error ? err.message : String(err), { status: 502 });

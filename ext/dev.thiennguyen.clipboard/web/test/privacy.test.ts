@@ -13,8 +13,10 @@ import {
   isLocked,
   keyboardLeft,
   LOCK_OFF,
+  LOCK_UNKNOWN,
   needsConfirm,
   show,
+  showsLock,
   toggle,
   toggleAll,
   unlockedByTime,
@@ -136,7 +138,7 @@ test("showing asks once, until everything is covered again", () => {
 });
 
 test("the history is locked until this opening is unlocked, or an earlier unlock still holds", () => {
-  const lock = { on: true, until: null, here: false };
+  const lock = { on: true, until: null, here: false, known: true };
   assert.equal(isLocked(LOCK_OFF, 0), false);
   assert.equal(isLocked(lock, 0), true);
   assert.equal(isLocked({ ...lock, here: true }, 0), false, "unlocked in this opening");
@@ -145,4 +147,13 @@ test("the history is locked until this opening is unlocked, or an earlier unlock
   assert.equal(unlockedByTime({ ...lock, until: 5_000 }, 1), true);
   assert.equal(unlockedByTime({ ...lock, here: true }, 1), false, "unlocked here is not by time");
   assert.equal(unlockedByTime({ ...LOCK_OFF, until: 5_000 }, 1), false, "off");
+});
+
+test("before its first list a panel is locked, but shows neither the lock nor the open history", () => {
+  assert.equal(isLocked(LOCK_UNKNOWN, 0), true, "nothing read, shown or done meanwhile");
+  assert.equal(showsLock(LOCK_UNKNOWN, 0), false, "no lock card for a history that may not be locked");
+  const lock = { on: true, until: null, here: false, known: true };
+  assert.equal(showsLock(lock, 0), true, "known locked: the lock card");
+  assert.equal(showsLock({ ...lock, here: true }, 0), false, "unlocked");
+  assert.equal(showsLock(LOCK_OFF, 0), false, "off");
 });

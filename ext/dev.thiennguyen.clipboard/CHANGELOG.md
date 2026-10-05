@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.75.2] - 2026-10-05
+
+### Fixed
+
+- With **Lock history** on, the panel no longer flashes the open history's search box, filters and paste keys before it shows it is locked. Until the panel knows whether your history is locked, it shows an empty frame where nothing can be typed or pasted, then the lock card or the history.
+
 ## [0.75.1] - 2026-10-05
 
 ### Fixed
