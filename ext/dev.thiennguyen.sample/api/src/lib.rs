@@ -289,6 +289,13 @@ pub fn open_window(name: &str) -> Result<(), String> {
 
 /// Close one of your own windows by its manifest `name` — a panel's Esc.
 /// One that is not open is not an error.
+///
+/// However a window of yours leaves the screen for good — this, a panel's
+/// Esc or click-away, a [`paste`] taking it down, the person's red button —
+/// `events = ["window-closed"]` tells [`Guest::on_event`], once per close,
+/// with `{"v":1, "window":<its manifest name>, "at":<ms since the Unix
+/// epoch>}`. Never for [`hide_window`]. It needs no capability, and Lumi
+/// 1.37.0 or later — say so with `min-lumi-version`.
 pub fn close_window(name: &str) -> Result<(), String> {
     lumi::ext::ui::close_window(name)
 }

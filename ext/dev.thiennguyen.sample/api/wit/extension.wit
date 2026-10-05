@@ -374,6 +374,13 @@ interface ui {
 
     /// Close one declared window by its manifest `name`. One that is not
     /// open is not an error. Added in 0.3.
+    ///
+    /// However a window of yours leaves the screen for good — this, a
+    /// panel's Esc or click-away, a paste taking it down, the person's red
+    /// button — the `window-closed` event says so, if the manifest asks for
+    /// it: `{"v":1, "window":<its manifest name>, "at":<ms since the Unix
+    /// epoch>}`, once per close and never for `hide-window`. It needs no
+    /// capability. Added in Lumi 1.37.
     close-window: func(name: string) -> result<_, string>;
 
     /// Where one of your windows stands.
