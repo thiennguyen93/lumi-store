@@ -1064,6 +1064,18 @@ interface files {
     /// command, or a press in one of your windows. Their time choosing is not
     /// counted against the run.
     open: func(options: open-options) -> result<list<opened>, string>;
+
+    /// Hand one blob to the person as a file and wait for their answer:
+    /// Lumi's Save panel, `name` filled in and the extension's name in its
+    /// message, with every `{date}` and `{time}` in `name` filled in from this
+    /// Mac's clock as `storage.blob-save-dated` does. True once the file is
+    /// written, false when they cancel — where it went is theirs and is never
+    /// told back. A write that fails is this call's error. Only for something
+    /// the person did; their time choosing is not counted against the run.
+    /// `storage.blob-save` answers as soon as the panel is up and says
+    /// nothing after; this is the one to use when what happens next depends
+    /// on the file having been saved. Added in Lumi 1.36.
+    save: func(blob: string, name: string) -> result<bool, string>;
 }
 
 /// Your extension's own rows in Lumi's menu bar menu, built while it runs.
