@@ -62,6 +62,8 @@ export interface ListAnswer {
   revealKey?: string;
   /** And of every item at once: "alt+shift+cmd+h". */
   revealAllKey?: string;
+  /** Lock history now, spelt the same: "cmd+shift+l". */
+  lockKey?: string;
   /** Privacy mode: every preview is covered until shown. */
   privacy?: boolean;
   /** On the opening list only: what the panel showed in privacy mode before

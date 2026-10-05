@@ -618,6 +618,9 @@ struct Prefs {
     reveal_key: String,
     /// Its show or hide of every item at once ("alt+shift+cmd+h").
     reveal_all_key: String,
+    /// "Lock history now", while the panel is up and Lock history is on
+    /// ("cmd+shift+l"), spelt and checked the same way.
+    lock_key: String,
     /// "Match snippets": whose snippet triggers a copy is looked up as.
     match_snippets: snippets::Matching,
     /// The profiles ticked for `Matching::Selected`.
@@ -704,6 +707,7 @@ fn prefs(host: &impl Host) -> Prefs {
         pin_key: s["pinKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("cmd+p").to_string(),
         reveal_key: s["revealKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("cmd+shift+h").to_string(),
         reveal_all_key: s["revealAllKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("alt+shift+cmd+h").to_string(),
+        lock_key: s["lockKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("cmd+shift+l").to_string(),
         search: match s["search"].as_str() {
             Some("exact") => "exact",
             Some("fuzzy") => "fuzzy",
@@ -1129,6 +1133,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "pinKey": prefs.pin_key,
                 "revealKey": prefs.reveal_key,
                 "revealAllKey": prefs.reveal_all_key,
+                "lockKey": prefs.lock_key,
                 "previewWidth": preview_width(host),
                 "previewSplit": preview_split(host),
                 "pdfFit": pdf_fit(host),
@@ -2287,21 +2292,27 @@ mod tests {
         assert!(host.get(SHOWN).unwrap().is_none(), "nothing kept with privacy mode off");
     }
 
-    /// The show or hide keys reach the panel as the settings spell them —
-    /// the page checks them, as it does Pin's — and their defaults when
-    /// none is set.
+    /// The show or hide keys and the lock key reach the panel as the
+    /// settings spell them — the page checks them, as it does Pin's — and
+    /// their defaults when none is set.
     #[test]
-    fn the_panel_is_told_its_show_or_hide_keys() {
+    fn the_panel_is_told_its_show_or_hide_and_lock_keys() {
         let host = Memory::default();
         let keys = |host: &Memory| {
             let list = ui(host, &json!({"kind": "list"})).unwrap();
-            (list["revealKey"].clone(), list["revealAllKey"].clone())
+            (list["revealKey"].clone(), list["revealAllKey"].clone(), list["lockKey"].clone())
         };
-        assert_eq!(keys(&host), (json!("cmd+shift+h"), json!("alt+shift+cmd+h")));
-        *host.settings.borrow_mut() = json!({"revealKey": "ctrl+alt+r", "revealAllKey": "ctrl+alt+a"});
-        assert_eq!(keys(&host), (json!("ctrl+alt+r"), json!("ctrl+alt+a")));
-        *host.settings.borrow_mut() = json!({"revealKey": "x".repeat(33), "revealAllKey": "y".repeat(33)});
-        assert_eq!(keys(&host), (json!("cmd+shift+h"), json!("alt+shift+cmd+h")), "not keys anybody typed");
+        assert_eq!(keys(&host), (json!("cmd+shift+h"), json!("alt+shift+cmd+h"), json!("cmd+shift+l")));
+        *host.settings.borrow_mut() =
+            json!({"revealKey": "ctrl+alt+r", "revealAllKey": "ctrl+alt+a", "lockKey": "ctrl+alt+l"});
+        assert_eq!(keys(&host), (json!("ctrl+alt+r"), json!("ctrl+alt+a"), json!("ctrl+alt+l")));
+        *host.settings.borrow_mut() =
+            json!({"revealKey": "x".repeat(33), "revealAllKey": "y".repeat(33), "lockKey": "z".repeat(33)});
+        assert_eq!(
+            keys(&host),
+            (json!("cmd+shift+h"), json!("alt+shift+cmd+h"), json!("cmd+shift+l")),
+            "not keys anybody typed"
+        );
     }
 
     fn lock_of(host: &Memory, opening: bool) -> Value {

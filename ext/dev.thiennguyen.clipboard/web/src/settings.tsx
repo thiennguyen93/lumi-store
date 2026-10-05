@@ -10,10 +10,12 @@ import {
   acceleratorGlyphs,
   comboOf,
   comboText,
+  DEFAULT_LOCK_KEY,
   DEFAULT_PIN_KEY,
   DEFAULT_REVEAL_ALL_KEY,
   DEFAULT_REVEAL_KEY,
   glyphs,
+  LOCK_DOES,
   panelKeys,
   parseCombo,
   PIN_DOES,
@@ -50,6 +52,8 @@ interface Values {
   revealKey: string;
   /** "" while the keys before it hold even its default. */
   revealAllKey: string;
+  /** Lock history now; "" while the keys before it hold even its default. */
+  lockKey: string;
   pasteOnSelect: boolean;
   closeAfterDrag: boolean;
   ocr: boolean;
@@ -175,6 +179,7 @@ function read(raw: Record<string, unknown>): Values {
     text(raw.pinKey, DEFAULT_PIN_KEY),
     text(raw.revealKey, DEFAULT_REVEAL_KEY),
     text(raw.revealAllKey, DEFAULT_REVEAL_ALL_KEY),
+    text(raw.lockKey, DEFAULT_LOCK_KEY),
   );
   return {
     keep: (KEEPS.some((k) => k.value === keep) ? keep : "3mo") as Keep,
@@ -183,6 +188,7 @@ function read(raw: Record<string, unknown>): Values {
     pinKey: comboText(own.pin),
     revealKey: own.reveal ? comboText(own.reveal) : "",
     revealAllKey: own.revealAll ? comboText(own.revealAll) : "",
+    lockKey: own.lock ? comboText(own.lock) : "",
     pasteOnSelect: text(raw.pasteOnSelect, "true") !== "false",
     closeAfterDrag: text(raw.closeAfterDrag, "false") === "true",
     ocr: text(raw.ocr, "true") !== "false",
@@ -218,6 +224,7 @@ function written(v: Values): Record<string, string> {
     pinKey: v.pinKey,
     revealKey: v.revealKey,
     revealAllKey: v.revealAllKey,
+    lockKey: v.lockKey,
     pasteOnSelect: String(v.pasteOnSelect),
     closeAfterDrag: String(v.closeAfterDrag),
     ocr: String(v.ocr),
@@ -447,7 +454,11 @@ function Settings() {
             <Recorder
               value={values.pinKey}
               fallback={DEFAULT_PIN_KEY}
-              others={[...taken(values.revealKey, REVEAL_DOES), ...taken(values.revealAllKey, REVEAL_ALL_DOES)]}
+              others={[
+                ...taken(values.revealKey, REVEAL_DOES),
+                ...taken(values.revealAllKey, REVEAL_ALL_DOES),
+                ...taken(values.lockKey, LOCK_DOES),
+              ]}
               onChange={(pinKey) => change({ pinKey }, true)}
             />
           </Row>
@@ -540,7 +551,11 @@ function Settings() {
               disabled={!privacy}
               value={values.revealKey}
               fallback={DEFAULT_REVEAL_KEY}
-              others={[...taken(values.pinKey, PIN_DOES), ...taken(values.revealAllKey, REVEAL_ALL_DOES)]}
+              others={[
+                ...taken(values.pinKey, PIN_DOES),
+                ...taken(values.revealAllKey, REVEAL_ALL_DOES),
+                ...taken(values.lockKey, LOCK_DOES),
+              ]}
               onChange={(revealKey) => change({ revealKey }, true)}
             />
           </Row>
@@ -558,7 +573,11 @@ function Settings() {
               disabled={!privacy}
               value={values.revealAllKey}
               fallback={DEFAULT_REVEAL_ALL_KEY}
-              others={[...taken(values.pinKey, PIN_DOES), ...taken(values.revealKey, REVEAL_DOES)]}
+              others={[
+                ...taken(values.pinKey, PIN_DOES),
+                ...taken(values.revealKey, REVEAL_DOES),
+                ...taken(values.lockKey, LOCK_DOES),
+              ]}
               onChange={(revealAllKey) => change({ revealAllKey }, true)}
             />
           </Row>
@@ -605,6 +624,31 @@ function Settings() {
               onChange={(lockAfter) => change({ lockAfter }, true)}
               label="Lock again after panel closes"
               disabled={!values.lockHistory}
+            />
+          </Row>
+          {/* Lock history now in a key, the ⌘K action's, beside the lock it
+              serves rather than under Shortcuts, as privacy mode's keys are
+              beside it. */}
+          <Row
+            label="Lock history now"
+            hint={
+              values.lockKey
+                ? "Shortcut while the panel is up; locks it at once and covers every preview"
+                : "Another shortcut has this key's default; press another to lock with a key"
+            }
+            bad={values.lockHistory && !values.lockKey}
+            off={!values.lockHistory}
+          >
+            <Recorder
+              disabled={!values.lockHistory}
+              value={values.lockKey}
+              fallback={DEFAULT_LOCK_KEY}
+              others={[
+                ...taken(values.pinKey, PIN_DOES),
+                ...taken(values.revealKey, REVEAL_DOES),
+                ...taken(values.revealAllKey, REVEAL_ALL_DOES),
+              ]}
+              onChange={(lockKey) => change({ lockKey }, true)}
             />
           </Row>
           {/* Under the lock, since it waits on it as well as on privacy

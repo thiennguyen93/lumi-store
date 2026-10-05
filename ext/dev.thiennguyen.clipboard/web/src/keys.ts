@@ -1,6 +1,7 @@
-// The panel's own shortcuts that the person can change — Pin, and privacy
-// mode's show or hide of one item or of all — as the `pinKey`, `revealKey`
-// and `revealAllKey` settings spell them: "cmd+p", "ctrl+shift+1". Matched on the key's position (`event.code`), not
+// The panel's own shortcuts that the person can change — Pin, privacy
+// mode's show or hide of one item or of all, and Lock history now — as the
+// `pinKey`, `revealKey`, `revealAllKey` and `lockKey` settings spell them:
+// "cmd+p", "ctrl+shift+1". Matched on the key's position (`event.code`), not
 // on what it types: ⌥P types "π".
 
 export interface Combo {
@@ -23,10 +24,14 @@ export const DEFAULT_REVEAL_KEY = "cmd+shift+h";
  *  Not ⌥⌘H, which is macOS's Hide Others. */
 export const DEFAULT_REVEAL_ALL_KEY = "alt+shift+cmd+h";
 
+/** ⌘⇧L: Lock history now. Not ⌘L, which a pinned row may be given. */
+export const DEFAULT_LOCK_KEY = "cmd+shift+l";
+
 /** What each of the panel's own keys does, as a refusal says it. */
 export const PIN_DOES = "pins the selected item";
 export const REVEAL_DOES = "shows or hides the preview";
 export const REVEAL_ALL_DOES = "shows or hides every preview";
+export const LOCK_DOES = "locks the history";
 
 /** One of the panel's keys the person set, held by what it does: the other
  *  key cannot be it too. */
@@ -138,16 +143,17 @@ export function refusal(combo: Combo, others: readonly TakenKey[] = []): string 
 
 /** The panel's keys as the settings spell them, each as the panel can use
  *  it: one it refuses goes back to its default. Settled in the order the
- *  keys came — Pin, then show or hide, then show or hide all — each giving
- *  way to the ones before it: to its default, or to none when even that is
- *  taken (⌘⇧H was a Pin key a person could choose before privacy mode),
- *  until the person picks another. Pin always has one: nothing comes
- *  before it, and its default is never refused. */
+ *  keys came — Pin, then show or hide, then show or hide all, then Lock
+ *  history now — each giving way to the ones before it: to its default, or
+ *  to none when even that is taken (⌘⇧H was a Pin key a person could choose
+ *  before privacy mode), until the person picks another. Pin always has
+ *  one: nothing comes before it, and its default is never refused. */
 export function panelKeys(
   pinText: string | undefined,
   revealText: string | undefined,
   revealAllText?: string,
-): { pin: Combo; reveal: Combo | null; revealAll: Combo | null } {
+  lockText?: string,
+): { pin: Combo; reveal: Combo | null; revealAll: Combo | null; lock: Combo | null } {
   const taken: TakenKey[] = [];
   const settle = (text: string | undefined, fallback: string, does: string) => {
     const usable = (combo: Combo | null) => (combo && !refusal(combo, taken) ? combo : null);
@@ -158,7 +164,8 @@ export function panelKeys(
   const pin = settle(pinText, DEFAULT_PIN_KEY, PIN_DOES)!;
   const reveal = settle(revealText, DEFAULT_REVEAL_KEY, REVEAL_DOES);
   const revealAll = settle(revealAllText, DEFAULT_REVEAL_ALL_KEY, REVEAL_ALL_DOES);
-  return { pin, reveal, revealAll };
+  const lock = settle(lockText, DEFAULT_LOCK_KEY, LOCK_DOES);
+  return { pin, reveal, revealAll, lock };
 }
 
 /** ⌘-letters no row is given because something else answers them

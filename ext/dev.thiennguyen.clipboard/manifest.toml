@@ -15,7 +15,7 @@
 [extension]
 id = "dev.thiennguyen.clipboard"
 name = "Clipboard Manager"
-version = "0.80.5"
+version = "0.81.0"
 description = "Keep what you copy — text, links, images and files — and paste it back from a panel."
 author = "Thien Nguyen"
 summary = "Remembers what you copy on this Mac and brings it back with one shortcut: search, pick, and it is pasted into the app you were typing in. Text, rich text, links, colours, files and images, with pins for what you keep reaching for. Anything a password manager marks as secret is never recorded — Lumi drops it before this extension hears of it — and the history is stored encrypted with a key Lumi keeps in your Keychain. Nothing leaves your Mac: the extension has no network access."
@@ -267,6 +267,16 @@ name = "revealAllKey"
 label = "Show or hide all shortcut"
 kind = "text"
 default = "alt+shift+cmd+h"
+
+# "Lock history now" in a key, while the panel is up and Lock history is on —
+# the panel's own key, as Pin's is, not a shortcut of Lumi's: locked at once,
+# every preview covered, and the next opening asks "Is it you?". ⌘⇧L, since
+# ⌘L may be a pinned row's letter (`history::PIN_LETTERS`).
+[[settings]]
+name = "lockKey"
+label = "Lock history now shortcut"
+kind = "text"
+default = "cmd+shift+l"
 
 # How the panel's search reads a query — Maccy's four modes.
 [[settings]]

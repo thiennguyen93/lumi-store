@@ -63,3 +63,17 @@ test("the show-or-hide-all key gives way to both keys before it", () => {
   assert.equal(all(undefined, "alt+shift+cmd+h", undefined), null, "the default taken too: none");
   assert.equal(all(undefined, undefined, "cmd+k"), "alt+shift+cmd+h", "a key the panel answers is refused");
 });
+
+test("the lock key gives way to every key before it", () => {
+  const lock = (pin?: string, reveal?: string, revealAll?: string, lockText?: string) => {
+    const keys = panelKeys(pin, reveal, revealAll, lockText);
+    return keys.lock && comboText(keys.lock);
+  };
+  assert.equal(lock(), "shift+cmd+l", "⌘⇧L by default");
+  assert.equal(lock(undefined, undefined, undefined, "ctrl+alt+l"), "ctrl+alt+l");
+  assert.equal(lock("alt+l", undefined, undefined, "alt+l"), "shift+cmd+l", "Pin's is Pin's");
+  assert.equal(lock(undefined, "ctrl+alt+l", undefined, "ctrl+alt+l"), "shift+cmd+l", "the show or hide key's");
+  assert.equal(lock(undefined, undefined, "ctrl+alt+l", "ctrl+alt+l"), "shift+cmd+l", "and the show-or-hide-all key's");
+  assert.equal(lock(undefined, undefined, "shift+cmd+l", undefined), null, "the default taken too: none");
+  assert.equal(lock(undefined, undefined, undefined, "cmd+l"), "shift+cmd+l", "⌘L may be a pinned row's key");
+});

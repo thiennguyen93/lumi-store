@@ -45,7 +45,17 @@ import { usePreviewSplit } from "./PreviewSplit";
 import { useScrollFade } from "./scrollFade";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
-import { type Combo, DEFAULT_PIN_KEY, DEFAULT_REVEAL_ALL_KEY, DEFAULT_REVEAL_KEY, glyphs, panelKeys, parseCombo, pressed } from "./keys";
+import {
+  type Combo,
+  DEFAULT_LOCK_KEY,
+  DEFAULT_PIN_KEY,
+  DEFAULT_REVEAL_ALL_KEY,
+  DEFAULT_REVEAL_KEY,
+  glyphs,
+  panelKeys,
+  parseCombo,
+  pressed,
+} from "./keys";
 import {
   adopt,
   allShown,
@@ -83,6 +93,8 @@ export function App() {
   const [revealKey, setRevealKey] = useState<Combo | null>(() => parseCombo(DEFAULT_REVEAL_KEY));
   // And its show or hide of every item at once; ⌥⇧⌘H until the list says.
   const [revealAllKey, setRevealAllKey] = useState<Combo | null>(() => parseCombo(DEFAULT_REVEAL_ALL_KEY));
+  // Lock history now — its setting; ⌘⇧L until the list says.
+  const [lockKey, setLockKey] = useState<Combo | null>(() => parseCombo(DEFAULT_LOCK_KEY));
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState(0);
   const [notice, setNotice] = useState("");
@@ -172,10 +184,11 @@ export function App() {
     wear(answer.appearance, answer.theme);
     // Checked as the Settings tab checks them, so a key the panel answers
     // otherwise — or the other one's — is never taken from it.
-    const own = panelKeys(answer.pinKey, answer.revealKey, answer.revealAllKey);
+    const own = panelKeys(answer.pinKey, answer.revealKey, answer.revealAllKey, answer.lockKey);
     setPinKey(own.pin);
     setRevealKey(own.reveal);
     setRevealAllKey(own.revealAll);
+    setLockKey(own.lock);
     modeRef.current = answer.searchMode ?? "mixed";
     setMode(modeRef.current);
     // On opening, what was shown before the panel last closed, while
@@ -581,6 +594,7 @@ export function App() {
   /** The show or hide key as its key-cap says it, when there is one. */
   const revealCap = revealKey ? glyphs(revealKey) : undefined;
   const revealAllCap = revealAllKey ? glyphs(revealAllKey) : undefined;
+  const lockCap = lockKey ? glyphs(lockKey) : undefined;
 
   /** What ⌘K offers for the selected row, then for the whole history. */
   const actions = useMemo((): Action[] => {
@@ -665,7 +679,7 @@ export function App() {
               : { id: "showAll", label: "Show all content", glyph: <EyeGlyph />, keys: revealAllCap, run: toggleAllShown },
           ]
         : []),
-      ...(lock.on ? [{ id: "lockNow", label: "Lock history now", glyph: <LockGlyph />, run: lockNow }] : []),
+      ...(lock.on ? [{ id: "lockNow", label: "Lock history now", glyph: <LockGlyph />, keys: lockCap, run: lockNow }] : []),
       { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
       {
         id: "about",
@@ -701,7 +715,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [about, act, canAsk, current, lock.on, lockNow, lockShown, locked, openSettings, paste, pinKey, pinned, remove, removeAll, revealAllCap, revealCap, rows, togglePin, toggleAllShown, toggleShown, unlock, veil, zoomed]);
+  }, [about, act, canAsk, current, lock.on, lockCap, lockNow, lockShown, locked, openSettings, paste, pinKey, pinned, remove, removeAll, revealAllCap, revealCap, rows, togglePin, toggleAllShown, toggleShown, unlock, veil, zoomed]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -809,6 +823,11 @@ export function App() {
     // does not name.
     else if (revealKey && pressed(event, revealKey)) toggleShown();
     else if (revealAllKey && pressed(event, revealAllKey)) toggleAllShown();
+    // Lock history now. Taken with the lock off as well, as the show or hide
+    // keys are, so it never reaches the search or a row's key.
+    else if (lockKey && pressed(event, lockKey)) {
+      if (lock.on) lockNow();
+    }
     else if (key === "ArrowDown") move(1, true);
     else if (key === "ArrowUp") move(-1, true);
     else if (key === "PageDown") move(8);

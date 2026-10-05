@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.81.0] - 2026-10-05
+
+### Added
+
+- Lock your history at once from the panel with **⇧⌘L**, the same as **Lock history now** in **⌘K**: every preview is covered, and the panel asks "Is it you?" before it shows your history again. The key works while **Lock history** is on, and **⌘K** shows it beside the action.
+- Choose your own key for it in Settings, under **Lock again after panel closes**, the way you choose Pin's. A key another of the panel's shortcuts already uses is refused, with what that shortcut does.
+
 ## [0.80.5] - 2026-10-05
 
 ### Fixed
