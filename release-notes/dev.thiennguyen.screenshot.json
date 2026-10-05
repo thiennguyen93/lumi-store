@@ -1,0 +1,352 @@
+{
+  "0.6.9": {
+    "notesSha256": "950263eac6441fe0de8a1f674dbe3c45835c8ee6ed371fe8ff11a6accbab2aa7",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Select text in screenshots and hide the editor while capturing",
+          "items": [
+            "The editor hides while you capture and returns with your marks afterward",
+            "Select and copy text from screenshots, pixelate emails and phone numbers",
+            "Copy Text from Screen now reads past the editor window",
+            "Capturing on the editor's empty page keeps the window open",
+            "Preview settings now apply to Recognize Text and Recent Captures cards"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn văn bản trong ảnh chụp và ẩn trình chỉnh sửa khi chụp",
+          "items": [
+            "Trình chỉnh sửa tự ẩn khi bạn chụp và hiện lại cùng các đánh dấu sau đó",
+            "Chọn và sao chép văn bản từ ảnh chụp, làm mờ email và số điện thoại",
+            "Sao chép văn bản từ màn hình bỏ qua cửa sổ trình chỉnh sửa",
+            "Chụp trên trang trống của trình chỉnh sửa giữ nguyên cửa sổ",
+            "Cài đặt xem trước áp dụng cho thẻ Nhận dạng văn bản và Ảnh chụp gần đây"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.8": {
+    "notesSha256": "b87a6ee862526260f72cb37d00428ce9238025685bc5aa0814aff627ce49cda9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Marker, open files, tabs, rotate and flip, filled shapes, callouts",
+          "items": [
+            "Marker draws wide see-through highlighter strokes in any color",
+            "Open files or paste images from clipboard to edit them",
+            "Multiple pictures open as tabs, each keeping its own marks and undo",
+            "Rotate and flip pictures with marks and crop turning along",
+            "Filled rectangles and ellipses to cover parts of the picture",
+            "Callout adds speech bubbles with draggable tails to point at things"
+          ]
+        },
+        "vi": {
+          "headline": "Bút dạ quang, mở tệp, tab, xoay và lật, hình đầy, chú thích",
+          "items": [
+            "Bút dạ quang vẽ nét trong suốt rộng bằng bất kỳ màu nào",
+            "Mở tệp hoặc dán ảnh từ clipboard để chỉnh sửa",
+            "Nhiều ảnh mở thành tab, mỗi tab giữ nét vẽ và hoàn tác riêng",
+            "Xoay và lật ảnh cùng với các nét vẽ và vùng cắt",
+            "Hình chữ nhật và hình elip đầy để che phần ảnh",
+            "Chú thích thêm bong bóng hội thoại có đuôi kéo được để chỉ vào vật"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.7": {
+    "notesSha256": "c032b5c0f1ed7b39fe34c33c40e8b34289d6f94d8e4d4a70e291321c8cb06f09",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "New drawing tools, backgrounds, improved cropping and zoom",
+          "items": [
+            "Open the editor from the menu bar or with ⌘⇧8 to see your last capture",
+            "New tools: draw lines, ellipses and freehand shapes, or spotlight areas by dimming everything else",
+            "Stroke width is now a slider, and dragging it with a mark selected changes that mark in one undo step",
+            "Add gradient or solid backgrounds with padding and rounded corners to your screenshots",
+            "Crop tool now shows handles while active, with preset ratios and live size display",
+            "Pinch or ⌘-scroll to zoom around the pointer, and Space-drag to pan around the canvas"
+          ]
+        },
+        "vi": {
+          "headline": "Công cụ vẽ mới, nền ảnh, cắt và phóng to cải tiến",
+          "items": [
+            "Mở trình chỉnh sửa từ thanh menu hoặc bằng ⌘⇧8 để xem ảnh chụp gần nhất",
+            "Công cụ mới: vẽ đường thẳng, hình elip, vẽ tự do và làm nổi bật vùng bằng cách làm tối phần còn lại",
+            "Độ dày nét vẽ giờ là thanh trượt, kéo khi đã chọn nét để thay đổi trong một bước hoàn tác",
+            "Thêm nền gradient hoặc màu đơn với đệm và góc bo tròn cho ảnh chụp màn hình",
+            "Công cụ cắt giờ hiển thị điểm kéo khi đang dùng, với tỉ lệ sẵn có và hiển thị kích thước trực tiếp",
+            "Chụm hoặc ⌘-cuộn để phóng to quanh con trỏ, và Space-kéo để di chuyển khung vẽ"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.5": {
+    "notesSha256": "2b8f95a68e1c389c075e5c63e736d99c508cc306a0ceecdf9dd06525c656dee1",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour and easier setup",
+          "items": [
+            "A welcome tour guides you through setup and key features when first installed",
+            "The tour waits for Screen Recording permission before continuing",
+            "Each capture shortcut is checked and reclaimed if another app took it",
+            "You can choose what happens after each capture during setup",
+            "The tour introduces the Recognize Text feature"
+          ]
+        },
+        "vi": {
+          "headline": "Hướng dẫn chào mừng và thiết lập dễ hơn",
+          "items": [
+            "Hướng dẫn chào mừng giúp bạn thiết lập và làm quen với tính năng khi cài đặt",
+            "Hướng dẫn chờ bạn cấp quyền Ghi màn hình trước khi tiếp tục",
+            "Mỗi phím tắt chụp được kiểm tra và lấy lại nếu ứng dụng khác đã chiếm",
+            "Bạn có thể chọn hành động sau mỗi lần chụp trong quá trình thiết lập",
+            "Hướng dẫn giới thiệu tính năng Nhận diện văn bản"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.3": {
+    "notesSha256": "ec1cfe2210ae1d68c2d55e45b68c8fe8420f55dfb627129ae8ca42bf5dec1dab",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Navigate previews with arrow keys and recognize text in captures",
+          "items": [
+            "Arrow keys up and down move between preview cards and switch between enlarged captures",
+            "Each preview card now shows its capture on a random backdrop with rounded corners",
+            "Enlarged captures can recognize and copy text with a new Recognize Text switch",
+            "Window captures are now labeled as Window first, then the app name",
+            "Dragged images work in web-based apps like Slack and Claude, not just Finder",
+            "Times on cards always show two-digit hours to avoid looking like aspect ratios"
+          ]
+        },
+        "vi": {
+          "headline": "Điều hướng xem trước bằng phím mũi tên và nhận dạng văn bản",
+          "items": [
+            "Phím mũi tên lên xuống di chuyển giữa các thẻ xem trước và chuyển ảnh đã phóng to",
+            "Mỗi thẻ xem trước hiển thị ảnh chụp trên nền ngẫu nhiên với góc bo tròn",
+            "Ảnh phóng to có thể nhận dạng và sao chép văn bản bằng công tắc Nhận dạng văn bản",
+            "Ảnh chụp cửa sổ giờ ghi nhãn Cửa sổ trước, sau đó mới đến tên ứng dụng",
+            "Kéo thả ảnh hoạt động trong ứng dụng web như Slack và Claude, không chỉ Finder",
+            "Giờ trên thẻ luôn hiển thị hai chữ số để tránh nhầm với tỷ lệ khung hình"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.2": {
+    "notesSha256": "f9ea9675ba7fd349282085c943c1806571c61871eb0d06f2379901848b70d89c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Swipe cards away, drag pictures out, and enlarge them to look closer",
+          "items": [
+            "Swipe a preview card away with two fingers on the trackpad, towards the edge it stands against",
+            "Use {app} and {title} in file names to include the app and window title, like Safari - Start Page",
+            "Drag a picture into another app by the icon at the left of its card's title",
+            "Enlarge a capture's card to see it at the size it had on screen by pressing Space or the magnifier",
+            "Window cards now show the app name instead of just saying Window"
+          ]
+        },
+        "vi": {
+          "headline": "Vuốt thẻ, kéo ảnh ra ngoài và phóng to để xem rõ hơn",
+          "items": [
+            "Vuốt thẻ xem trước bằng hai ngón trên trackpad về phía cạnh mà thẻ đứng",
+            "Dùng {app} và {title} trong tên tập tin để thêm tên ứng dụng và tiêu đề cửa sổ",
+            "Kéo ảnh vào ứng dụng khác bằng biểu tượng bên trái tiêu đề thẻ",
+            "Phóng to thẻ chụp để xem ở kích thước gốc bằng cách nhấn Space hoặc kính lúp",
+            "Thẻ cửa sổ giờ hiển thị tên ứng dụng thay vì chỉ ghi Cửa sổ"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.1": {
+    "notesSha256": "3842b2903fd56a4f38dfcf90fe66d0fadd1256f7339dcd6497cdb20e1c23670e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clearer preview cards and a way to save recognized text",
+          "items": [
+            "Preview cards now show a title with what was captured and when, keeping buttons off the picture",
+            "You can save the image text was recognized from with a Save button or ⌘S",
+            "Double-click a line of recognized text to copy it; single-click shows a hint",
+            "Copy and Save buttons keep their icon and add a green check when done",
+            "The ring around the active card only appears when the preview has keyboard focus"
+          ]
+        },
+        "vi": {
+          "headline": "Thẻ xem trước rõ ràng hơn và lưu được ảnh đã nhận dạng chữ",
+          "items": [
+            "Thẻ xem trước hiện tiêu đề cho biết đã chụp gì và lúc mấy giờ, các nút không che ảnh nữa",
+            "Có thể lưu ảnh đã dùng để nhận dạng chữ bằng nút Save hoặc ⌘S",
+            "Nhấp đúp vào dòng chữ đã nhận dạng để sao chép; nhấp đơn hiện gợi ý",
+            "Nút Copy và Save giữ biểu tượng và thêm dấu tích xanh khi hoàn tất",
+            "Vòng tròn quanh thẻ đang dùng chỉ hiện khi cửa sổ xem trước đang nhận phím"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.0": {
+    "notesSha256": "b11ce516b3a5ba3563686184d56d147973cde783dcfcc5fa0b47b9e4a544e5d4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Capture, preview, copy or save — all without opening the editor",
+          "items": [
+            "Settings page to choose what happens after a capture: open the editor, copy, save, or any combination",
+            "Preview cards appear in a corner after each capture, letting you copy, save, edit, or dismiss them",
+            "Save images as PNG or JPEG, at full or screen resolution, directly to a folder you choose",
+            "Name saved files with custom patterns that include date and time",
+            "Recognize Text extracts text from any part of the screen to your clipboard, Vietnamese included",
+            "Copy now shows only the image size and file size, without timing details"
+          ]
+        },
+        "vi": {
+          "headline": "Chụp, xem trước, sao chép hoặc lưu — không cần mở trình chỉnh sửa",
+          "items": [
+            "Trang Cài đặt để chọn hành động sau khi chụp: mở trình chỉnh sửa, sao chép, lưu hoặc kết hợp",
+            "Thẻ xem trước xuất hiện ở góc màn hình sau mỗi lần chụp, cho phép sao chép, lưu, chỉnh sửa hoặc đóng",
+            "Lưu ảnh dưới dạng PNG hoặc JPEG, độ phân giải đầy đủ hoặc theo màn hình, thẳng vào thư mục bạn chọn",
+            "Đặt tên tệp đã lưu theo mẫu tùy chỉnh có ngày và giờ",
+            "Nhận dạng văn bản trích xuất chữ từ bất kỳ vùng nào trên màn hình vào clipboard, bao gồm tiếng Việt",
+            "Sao chép giờ chỉ hiện kích thước ảnh và dung lượng tệp, không còn thông tin thời gian"
+          ]
+        }
+      }
+    }
+  },
+  "0.5.0": {
+    "notesSha256": "ddef922767d9a7e6614f0b65d8d32d37bf4518a05ddbbf1e906290c24e1cb36d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Window shadows can be toggled on and off after capture",
+          "items": [
+            "Captured windows include their shadow, which you can show or hide without losing annotations",
+            "Window corners are now properly transparent in the editor instead of appearing white",
+            "The editor's drop shadow follows the actual shape of the captured window"
+          ]
+        },
+        "vi": {
+          "headline": "Có thể bật tắt bóng cửa sổ sau khi chụp",
+          "items": [
+            "Cửa sổ được chụp bao gồm cả bóng đổ, bạn có thể hiện hoặc ẩn mà không mất chú thích",
+            "Góc cửa sổ giờ đây trong suốt đúng cách trong trình chỉnh sửa thay vì hiện màu trắng",
+            "Bóng đổ của trình chỉnh sửa bám theo hình dạng thực của cửa sổ đã chụp"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.0": {
+    "notesSha256": "c900aaea680fd661cbdb5b6d9ad204fc3683295553a3083df1fd3522ae1e1ef4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Point and click to capture any window",
+          "items": [
+            "Point at a window to highlight it, then click to capture it",
+            "The command for capturing the frontmost window is now called Capture the front window"
+          ]
+        },
+        "vi": {
+          "headline": "Chỉ và nhấp để chụp bất kỳ cửa sổ nào",
+          "items": [
+            "Chỉ chuột vào cửa sổ để làm nổi bật, sau đó nhấp để chụp",
+            "Lệnh chụp cửa sổ phía trước giờ có tên là Capture the front window"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.0": {
+    "notesSha256": "e91b093cc58b2b8cd04a0d3ea36806a357448826b2bb213e02c9ef10a0c0ef3b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Capture, mark up, and save or copy screenshots",
+          "items": [
+            "Capture an area you drag, the window in front, or the whole screen",
+            "Press ⌘⇧2 to capture an area",
+            "Edit your screenshot before copying or saving it",
+            "Copy puts the edited picture on the clipboard",
+            "Save offers the edited picture as a file"
+          ]
+        },
+        "vi": {
+          "headline": "Chụp, đánh dấu và lưu hoặc sao chép ảnh màn hình",
+          "items": [
+            "Chụp vùng bạn kéo, cửa sổ phía trước hoặc toàn bộ màn hình",
+            "Nhấn ⌘⇧2 để chụp một vùng",
+            "Chỉnh sửa ảnh chụp màn hình trước khi sao chép hoặc lưu",
+            "Copy đưa ảnh đã chỉnh sửa vào clipboard",
+            "Save lưu ảnh đã chỉnh sửa thành tệp"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.0": {
+    "notesSha256": "0ff6a8daedc6e664e6cb10a2cac172764a9a519096d7052f860d1f3160c7413b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Introducing the editor",
+          "items": [
+            "Crop, draw arrows, add boxes, highlight areas, pixelate sensitive parts, add text and numbered steps",
+            "Undo changes, zoom in and out, then copy or save your edited screenshot",
+            "The toolbar sits in the title bar to save space"
+          ]
+        },
+        "vi": {
+          "headline": "Ra mắt trình chỉnh sửa",
+          "items": [
+            "Cắt ảnh, vẽ mũi tên, thêm hộp, làm nổi bật vùng, làm mờ phần nhạy cảm, thêm chữ và đánh số bước",
+            "Hoàn tác thay đổi, phóng to thu nhỏ, rồi sao chép hoặc lưu ảnh chụp đã chỉnh sửa",
+            "Thanh công cụ nằm trên thanh tiêu đề để tiết kiệm không gian"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "52b7f8b7ed4bc061409782b0f065323ebbe341c8d42c3afbc9a1d896057ac4c9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "New editor window",
+          "items": [
+            "Added a command to open the editor window"
+          ]
+        },
+        "vi": {
+          "headline": "Cửa sổ chỉnh sửa mới",
+          "items": [
+            "Thêm lệnh để mở cửa sổ chỉnh sửa"
+          ]
+        }
+      }
+    }
+  }
+}
