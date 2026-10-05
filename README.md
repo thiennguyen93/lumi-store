@@ -192,7 +192,13 @@ the extension's colour, the page in a Lumi window, a callout. They are
 taken the same way every time, without a Lumi build:
 
 - `scripts/preview/promo/<id>.json` — each shot's headline, callout, page,
-  window size and `theme`;
+  window size and `theme`. Beside those, a shot may say how it is framed:
+  `frame` is `"panel"` (no title bar) or `"unified"` (no title bar, the
+  traffic lights drawn where Lumi puts them over a page that is its own
+  title bar, centred in `band`, 52 by default); `top` and `left` move the
+  window from where it would stand; `zoom` draws a small page larger, its
+  `width` and `height` still the page's own; `transparent` drops the
+  window's background and shadow, for a see-through panel;
 - `scripts/preview/shots/<id>-<n>.js` — an optional scene run in the page
   before the picture (a row clicked, a field filled);
 - `scripts/preview/<id>.json` — what the stand-in bridge answers `call`
@@ -217,6 +223,12 @@ taken the same way every time, without a Lumi build:
    It reads Lumi's stylesheet from `../lumi/src-tauri/src/ext/lumi.css`;
    point `--lumi-css` elsewhere if Lumi is not checked out beside this
    repo. Restart it after editing a promo JSON — it is read once.
+
+   A private entry keeps its promo spec and scenes in its own repo, beside
+   its pictures, so nothing of it lands in this public one: pass the spec
+   with `--promo` (the screenshot extension's is
+   `ext/dev.thiennguyen.screenshot/shots/promo.json`, its scenes
+   `shots/scenes/<n>.js`).
 
 3. Take each shot at 1280×800, scale 1, into the path the manifest's
    `screenshots` lists (needs Google Chrome in `/Applications`):

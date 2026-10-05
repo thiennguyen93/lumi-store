@@ -17,9 +17,10 @@ photographed for the store's `screenshots` without a Lumi build:
                             a [[page]] tab), framed with the pane's inset and
                             window colour — those pages leave both to Lumi
   GET  /__promo__/?shot=1   a store picture: shot 1 of scripts/preview/promo/
-                            <id>.json — a headline over the extension's
-                            colour, the page in a Lumi window, a callout —
-                            for scripts/screenshot.mjs to take at 1280×800
+                            <id>.json (or --promo) — a headline over the
+                            extension's colour, the page in a Lumi window, a
+                            callout — for scripts/screenshot.mjs to take at
+                            1280×800
 
 Everything else is a file under the crate's ui/ — or, with --proxy, whatever
 a dev server answers for it: an extension with a built front end (a `web`
@@ -33,6 +34,9 @@ machine.
 
 A page Lumi draws in a pane is told its theme as `?theme=light|dark`; add
 that to the URL to see either.
+
+A private entry keeps its promo spec in its own repo, beside the pictures,
+so this public one holds nothing of it: `--promo <its file>`.
 """
 
 import argparse
@@ -92,10 +96,10 @@ PROMO = """<!doctype html>
     font-size: 26px; line-height: 1.45; color: rgba(255, 255, 255, 0.88);
   }}
   .window {{
-    position: absolute; left: {left}px; top: 300px; width: {width}px; height: {height}px;
+    position: absolute; left: {left}px; top: {top}px; width: {width}px; height: {height}px;
     border-radius: {radius}px; overflow: hidden;
     background: {canvas};
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    box-shadow: {shadow};
   }}
   .bar {{
     height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 14px;
@@ -103,9 +107,10 @@ PROMO = """<!doctype html>
     color: {ink}; font-size: 13px; font-weight: 600;
   }}
   .dot {{ width: 12px; height: 12px; border-radius: 50%; }}
+  .lights {{ position: absolute; left: 20px; display: flex; gap: 8px; }}
   .bar .title {{ margin-left: 10px; }}
   .bar .tab {{ margin-left: auto; font-weight: 400; opacity: 0.6; }}
-  iframe {{ border: 0; width: 100%; height: calc(100% - {bar_height}px); display: block; padding: {inset}; }}
+  iframe {{ border: 0; width: 100%; height: calc(100% - {bar_height}px); display: block; padding: {inset}; zoom: {zoom}; }}
   .callout {{
     position: absolute; right: 60px; bottom: 44px; width: 440px;
     border-radius: 16px; padding: 18px 20px;
@@ -130,6 +135,7 @@ PROMO = """<!doctype html>
       <span class="title">{name}</span>
       <span class="tab">{window_title}</span>
     </div>
+    {lights}
     <iframe src="/{page}"></iframe>
   </div>
   {callout}
@@ -154,25 +160,48 @@ def promo_page(spec: dict, n: int, name: str) -> str:
     # A panel (`kind = "panel"` in a manifest) has no title bar and floats:
     # narrower, rounder, and the page draws its own header.
     panel = shot.get("frame") == "panel"
-    width = int(shot.get("width", 820 if panel else 1000))
+    # A window whose page is its title bar (`titlebar = "unified"`): no bar
+    # drawn over it, and macOS's traffic lights drawn where Lumi puts them —
+    # 20 points in, centred in the page's band (`band`, 52 by default).
+    unified = shot.get("frame") == "unified"
+    band = int(shot.get("band", 52))
+    # A page drawn larger than Lumi draws it — a small panel, enlarged so it
+    # reads at the store's size: `width` and `height` stay the page's own,
+    # the frame grows round it.
+    zoom = float(shot.get("zoom", 1))
+    # A panel whose window is see-through (`material = "clear"`): only what
+    # the page draws, on the picture's background.
+    clear = bool(shot.get("transparent"))
+    width = round(int(shot.get("width", 820 if panel else 1000)) * zoom)
     page = shot["page"]
     page += ("&" if "?" in page else "?") + f"theme={'dark' if dark else 'light'}"
     return PROMO.format(
         # The window leans away from the callout, so the card covers less
         # of what the picture is showing.
-        left=(1280 - width) // 2
+        left=int(shot["left"])
+        if "left" in shot
+        else (1280 - width) // 2
         + (0 if not callout else 60 if callout.get("side") == "left" else -60 if panel else 0),
         width=width,
+        zoom=zoom,
+        shadow="none" if clear else "0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08)",
         theme="dark" if dark else "light",
-        height=int(shot.get("height", 560)),
+        height=round(int(shot.get("height", 560)) * zoom),
+        top=int(shot.get("top", 300)),
         radius=16 if panel else 12,
-        bar_hidden='style="display: none"' if panel else "",
-        bar_height=0 if panel else 38,
+        bar_hidden='style="display: none"' if panel or unified else "",
+        bar_height=0 if panel or unified else 38,
+        lights=f'<div class="lights" style="top: {band // 2 - 6}px">'
+        '<span class="dot" style="background:#ff5f57"></span>'
+        '<span class="dot" style="background:#febc2e"></span>'
+        '<span class="dot" style="background:#28c840"></span></div>'
+        if unified
+        else "",
         headline=shot["headline"],
         sub=shot.get("sub", ""),
         color=spec.get("color", "#378add"),
         # A dark page's own Canvas, so its inset and the window are one colour.
-        canvas="#121212" if dark else "#ffffff",
+        canvas="transparent" if clear else "#121212" if dark else "#ffffff",
         mark_side="left: auto; right: 28px" if callout and callout.get("side") == "left" else "",
         bar="#1c1c1e" if dark else "#f4f4f5",
         ink="#e8e8e8" if dark else "#1d1d1f",
@@ -335,6 +364,12 @@ def main():
     parser.add_argument("--port", type=int, default=5190)
     parser.add_argument("--lumi-css", type=Path, default=DEFAULT_LUMI_CSS)
     parser.add_argument(
+        "--promo",
+        type=Path,
+        default=None,
+        help="the promo spec to draw /__promo__/ from, instead of scripts/preview/promo/<id>.json",
+    )
+    parser.add_argument(
         "--proxy",
         default="",
         help="a local dev server (http://127.0.0.1:PORT) to answer every page and asset from",
@@ -355,7 +390,7 @@ def main():
     extension_id = manifest.get("extension", {}).get("id", "")
     calls_path = ROOT / "scripts" / "preview" / f"{extension_id}.json"
     calls = json.loads(calls_path.read_text()) if calls_path.is_file() else {}
-    promo_path = ROOT / "scripts" / "preview" / "promo" / f"{extension_id}.json"
+    promo_path = args.promo or ROOT / "scripts" / "preview" / "promo" / f"{extension_id}.json"
     promo = json.loads(promo_path.read_text()) if promo_path.is_file() else {}
     icon_path = crate / "icon.svg"
     icon = icon_path.read_bytes() if icon_path.is_file() else b""
