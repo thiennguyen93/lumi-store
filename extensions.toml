@@ -47,13 +47,10 @@ featured = true
 # First-party and closed source: a private repo, `update = none` in
 # .gitmodules and fetched with a read-only deploy key by
 # scripts/fetch-private.sh. Its React editor under web/ is built by the store.
-#
-# Not listed yet: it is not ready to release, and listing is publishing.
-# The submodule and its .gitmodules entry stay; uncomment to publish it.
-# [[extension]]
-# id = "dev.thiennguyen.screenshot"
-# path = "ext/dev.thiennguyen.screenshot"
-# subdir = "."
-# web = "web"
-# category = "Utilities"
-# private = true
+[[extension]]
+id = "dev.thiennguyen.screenshot"
+path = "ext/dev.thiennguyen.screenshot"
+subdir = "."
+web = "web"
+category = "Utilities"
+private = true
