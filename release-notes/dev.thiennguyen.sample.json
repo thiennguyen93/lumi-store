@@ -1,4 +1,48 @@
 {
+  "0.14.0": {
+    "notesSha256": "475da3c90016ecbe5e5cc8ce12d0c5c9280f903b30a7fdc14c55e2b9d0d0e159",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Menu bar integration and translation controls",
+          "items": [
+            "Adds its own rows to Lumi's menu: Translate Selection, a Translate To submenu, and Sample Settings",
+            "The Translate To submenu shows which language is currently selected"
+          ]
+        },
+        "vi": {
+          "headline": "Tích hợp thanh menu và điều khiển dịch thuật",
+          "items": [
+            "Thêm các mục riêng vào menu Lumi: Dịch Vùng Chọn, menu con Dịch Sang và Cài Đặt Sample",
+            "Menu con Dịch Sang hiển thị ngôn ngữ đang được chọn"
+          ]
+        }
+      }
+    }
+  },
+  "0.13.0": {
+    "notesSha256": "37577ff45ab541f32ee923f6311ed3cf62c203e5555716206807c95c161ad7df",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Screen Recording permission controls in settings",
+          "items": [
+            "Added a Permissions section in settings to manage Screen Recording access",
+            "You can now check permission status, request it, or open System Settings directly"
+          ]
+        },
+        "vi": {
+          "headline": "Điều khiển quyền Ghi màn hình trong cài đặt",
+          "items": [
+            "Thêm phần Quyền trong cài đặt để quản lý quyền Ghi màn hình",
+            "Bạn có thể kiểm tra trạng thái quyền, yêu cầu cấp quyền hoặc mở Cài đặt Hệ thống"
+          ]
+        }
+      }
+    }
+  },
   "0.12.0": {
     "notesSha256": "bcac4053e282bf1ee94a39d0088c3973bed1dd8ed1201e6581201778a7a42a17",
     "summary": {
