@@ -53,6 +53,15 @@ export interface ListAnswer {
   searchMode?: "exact" | "fuzzy" | "regexp" | "mixed";
   /** The panel's Pin key, as the setting spells it: "cmd+p". */
   pinKey?: string;
+  /** Privacy mode's show or hide key, spelt the same: "cmd+shift+h". */
+  revealKey?: string;
+  /** And of every item at once: "alt+shift+cmd+h". */
+  revealAllKey?: string;
+  /** Privacy mode: every preview is covered until shown. */
+  privacy?: boolean;
+  /** How long a preview shown in privacy mode stays shown with nothing done
+   *  in the panel, in ms; null for until the panel closes. */
+  privacyIdle?: number | null;
   /** On the opening list only: the menu bar's Delete All Unpinned… opened
    *  the panel to delete here, where ⌘Z can bring the rows back. */
   clear?: boolean;
@@ -161,6 +170,11 @@ export type Request =
   | { kind: "close" }
   /** The title bar's pin: keep the panel up while working elsewhere. */
   | { kind: "pinPanel"; pinned: boolean }
+  /** Privacy mode on or off, from the panel's eye or its ⌘K action; the
+   *  Settings tab asks it without `on`, to read how it stands. */
+  | { kind: "privacy"; on?: boolean }
+  /** The Settings tab's view of the same switch. */
+  | { kind: "setPrivacy"; on: boolean }
   | { kind: "stats" }
   | { kind: "previewWidth"; width: number }
   /** Null puts the line back where the page draws it. */

@@ -14,6 +14,7 @@ Clipboard Manager remembers what you copy on this Mac and brings it back with on
 - Anything a password manager marks as secret is **never recorded**. Lumi drops it before the extension hears of it.
 - The history is stored encrypted, with a key Lumi keeps in your Keychain.
 - No network access: nothing you copy leaves your Mac.
+- **Privacy mode** covers every preview until you show it: handy when sharing your screen, or with someone beside you. Turn it on from the panel, the menu bar or a key.
 - Leave out the apps you never want kept, and choose how long history is kept.
 
 ## Getting started

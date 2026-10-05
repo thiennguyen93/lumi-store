@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { blobUrl, call, callLatest, fileUrl, type Expansion, type FileItem, type Link } from "./bridge";
 import { AppMark } from "./AppMark";
 import { Superseded } from "./lanes";
-import { CollapseGlyph, CopyGlyph, ExpandGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
+import { CollapseGlyph, CopyGlyph, ExpandGlyph, EyeOffGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { useItemDrag } from "./itemDrag";
 import { LinkList } from "./LinkList";
@@ -64,6 +64,10 @@ export function canZoom(row: Entry | undefined): boolean {
 
 export function Preview({
   row,
+  covered = false,
+  revealCap,
+  revealAllCap,
+  onShow,
   onOpen,
   onCopyColor,
   onCopySnippet,
@@ -75,6 +79,15 @@ export function Preview({
   split,
 }: {
   row: Entry | undefined;
+  /** Privacy mode, and this row not shown yet: nothing of the copy is
+   *  asked for or drawn — the card holds its kind, its app and when it was
+   *  copied, and a cover that shows it (`onShow`). */
+  covered?: boolean;
+  /** The show or hide key as its key-cap says it ("⇧⌘H"), if it has one. */
+  revealCap?: string;
+  /** And the show-or-hide-all key's ("⌥⇧⌘H"), if it has one. */
+  revealAllCap?: string;
+  onShow?: (id: string) => void;
   /** Open a link row's address, or — `url` — one of a row's listed links,
    *  or, with `snippet`, one in what the row expands to. */
   onOpen?: (id: string, url?: string, snippet?: boolean) => void;
@@ -133,8 +146,9 @@ export function Preview({
   const [size, setSize] = useState<{ id: string; w: number; h: number } | null>(null);
 
   useEffect(() => {
-    // An image has no text to ask for, unless Lumi read some in it.
-    if (!row || (row.kind === "image" && !row.ocr)) return;
+    // An image has no text to ask for, unless Lumi read some in it. A
+    // covered row is not asked about at all until it is shown.
+    if (!row || covered || (row.kind === "image" && !row.ocr)) return;
     const key = seenKey(row);
     const known = seen.get(key);
     if (known) {
@@ -172,7 +186,7 @@ export function Preview({
       clearTimeout(timer);
       clearTimeout(hold);
     };
-  }, [row, stale]);
+  }, [row, covered, stale]);
 
   // Where the text in the row's image is, for selecting it on the picture:
   // with the preview when the extension read the image itself, else asked
@@ -184,7 +198,7 @@ export function Preview({
   useEffect(() => setPicked(null), [row?.id]);
   const held = full?.id === row?.id ? full : null;
   useEffect(() => {
-    if (!row || row.kind !== "image" || !row.ocr || !held) return;
+    if (!row || covered || row.kind !== "image" || !row.ocr || !held) return;
     if (held.layout) {
       setLayout({ id: row.id, layout: held.layout });
       return;
@@ -214,7 +228,7 @@ export function Preview({
       live = false;
       clearTimeout(timer);
     };
-  }, [row, held]);
+  }, [row, covered, held]);
   const words = layout && layout.id === row?.id ? layout.layout : null;
   const selection = picked && picked.id === row?.id && words ? picked.picked : null;
 
@@ -270,37 +284,59 @@ export function Preview({
   const from = row.appName || row.app;
   const times = row.count > 1 ? `${row.count}×` : "once";
 
+  const head = (
+    <header className="card-head">
+      {row.kind === "file" ? (
+        <FileGlyph family={fileFamily(row.fileExt)} many={(row.fileCount ?? 0) > 1} />
+      ) : (
+        <KindGlyph kind={row.kind} />
+      )}
+      <span>
+        {KIND_WORDS[row.kind]}
+        {from ? " · " : ""}
+        <AppMark key={row.app ?? ""} app={row.app} name={row.appName} withName />
+      </span>
+      {/* Covered, not even a size: it says what kind of thing it is. */}
+      {(pixels || weight) && !covered && <span className="dims">{[pixels, weight].filter(Boolean).join(" · ")}</span>}
+      {/* Zoomed onto the read, the read's own ⤡ is the way back. */}
+      {onZoom && canZoom(row) && !wide && (
+        <button
+          type="button"
+          className="bare zoom"
+          aria-pressed={zoomed}
+          title={zoomed ? "Back to the list (⌘Y)" : "Give it the whole panel (⌘Y)"}
+          aria-label={zoomed ? "Back to the list" : "Expand preview"}
+          // The caret stays in the search field, as it does for a row.
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={onZoom}
+        >
+          {zoomed ? <CollapseGlyph /> : <ExpandGlyph />}
+        </button>
+      )}
+    </header>
+  );
+  const foot = (
+    <footer className="card-foot">
+      Copied {ago(row.last)} · {times}
+    </footer>
+  );
+
+  if (covered) {
+    return (
+      <aside className="preview" aria-live="polite">
+        <div className="card" ref={card}>
+          {head}
+          <Cover keys={revealCap} allKeys={revealAllCap} onShow={() => onShow?.(row.id)} />
+          {foot}
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside className="preview" aria-live="polite">
       <div className="card" ref={card}>
-        <header className="card-head">
-          {row.kind === "file" ? (
-            <FileGlyph family={fileFamily(row.fileExt)} many={(row.fileCount ?? 0) > 1} />
-          ) : (
-            <KindGlyph kind={row.kind} />
-          )}
-          <span>
-            {KIND_WORDS[row.kind]}
-            {from ? " · " : ""}
-            <AppMark key={row.app ?? ""} app={row.app} name={row.appName} withName />
-          </span>
-          {(pixels || weight) && <span className="dims">{[pixels, weight].filter(Boolean).join(" · ")}</span>}
-          {/* Zoomed onto the read, the read's own ⤡ is the way back. */}
-          {onZoom && canZoom(row) && !wide && (
-            <button
-              type="button"
-              className="bare zoom"
-              aria-pressed={zoomed}
-              title={zoomed ? "Back to the list (⌘Y)" : "Give it the whole panel (⌘Y)"}
-              aria-label={zoomed ? "Back to the list" : "Expand preview"}
-              // The caret stays in the search field, as it does for a row.
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={onZoom}
-            >
-              {zoomed ? <CollapseGlyph /> : <ExpandGlyph />}
-            </button>
-          )}
-        </header>
+        {head}
         {row.kind === "image" && row.thumb && !wide && (
           <Pulled id={row.id} className="picture">
             <img
@@ -438,11 +474,46 @@ export function Preview({
             />
           )}
         </Stack>
-        <footer className="card-foot">
-          Copied {ago(row.last)} · {times}
-        </footer>
+        {foot}
       </div>
     </aside>
+  );
+}
+
+/** A covered preview's body in privacy mode: nothing of the copy — not its
+ *  text, its picture or its size — only that there is something, and how
+ *  to see it. The bars behind are the same few lines for every row, never
+ *  drawn from the copy. One button, so a press anywhere on it shows the
+ *  row; the search's marks skip buttons, so they never land on its words. */
+function Cover({ keys, allKeys, onShow }: { keys?: string; allKeys?: string; onShow: () => void }) {
+  return (
+    <button
+      type="button"
+      className="cover"
+      // The caret stays in the search field, as it does for a row.
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={onShow}
+    >
+      <span className="cover-lines" aria-hidden="true" />
+      <span className="cover-note">
+        <EyeOffGlyph />
+        <span className="cover-title">Content hidden</span>
+        <span className="cover-hint">
+          {keys ? (
+            <>
+              Click or press <kbd className="cap quiet">{keys}</kbd> to show
+            </>
+          ) : (
+            "Click to show"
+          )}
+        </span>
+        {allKeys && (
+          <span className="cover-hint">
+            <kbd className="cap quiet">{allKeys}</kbd> shows every item
+          </span>
+        )}
+      </span>
+    </button>
   );
 }
 

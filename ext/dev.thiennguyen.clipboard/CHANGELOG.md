@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.72.0] - 2026-10-05
+
+### Added
+
+- Show every item at once in privacy mode with **⌥⇧⌘H**, instead of showing them one by one: they stay shown until the panel covers them again, and the same key covers them all. **⇧⌘H** still covers or shows the selected item on its own. Also in the **⌘K** menu, as **Show all content** and **Hide all content**.
+- Choose your own key for it under **Privacy** in Settings, next to the key for one item. A key another of the panel's shortcuts holds is refused with what it does.
+
+## [0.71.1] - 2026-10-05
+
+### Changed
+
+- The key that shows or hides an item is set under **Privacy** in Settings, next to **Privacy mode**, instead of under **Shortcuts**.
+
+### Fixed
+
+- **Reset** no longer shows beside a shortcut that is already its default.
+
+## [0.71.0] - 2026-10-05
+
+### Added
+
+- Choose your own key for showing and hiding an item in privacy mode in Settings, the way you choose Pin's. It is ⇧⌘H until you change it, and a key the panel already uses — Pin's among them — is refused with what it does.
+
+### Fixed
+
+- A Pin key held with ⇧, such as ⇧⌘K, no longer opens the actions menu or does what the key without ⇧ does: the keys you set are answered first.
+
+## [0.70.1] - 2026-10-05
+
+### Fixed
+
+- The ninth pinned item could be given the letter K, but **⌘K** always opens the actions menu, so that item could never be pasted with its key. Pins skip K now, and an item already pinned to K moves to the first free letter when the panel opens.
+
+## [0.70.0] - 2026-10-05
+
+### Added
+
+- Privacy mode. While it is on, the preview of every item is covered until you show it, so whatever you copied is not on screen just because the selection landed on it. Click the cover or press **⌘⇧H** to show an item; it stays shown while you move around the list, and **⌘⇧H** covers it again. Everything is covered again when the panel closes, when a pinned panel loses the keyboard to another app, and after a minute with nothing done in the panel (**Cover again after** in Settings).
+- Turn privacy mode on or off with the eye in the panel's title bar, from **⌘K**, from **Turn On Privacy Mode** in Lumi's menu bar menu, in Settings, or with a key of your own for the new **Toggle privacy mode** command — so it can be turned on before the panel is ever opened.
+- A covered item can still be pasted, dragged out, copied, pinned and deleted. The list itself is unchanged: titles, thumbnails and search matches still show.
+
 ## [0.69.1] - 2026-10-04
 
 ### Fixed

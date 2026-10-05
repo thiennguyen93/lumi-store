@@ -342,6 +342,69 @@ body {
   background: var(--cb-key);
   color: var(--cb-key-ink);
 }
+/* Privacy mode's eye, first of the two: both are about the window. */
+.keep.veil + .keep { margin-left: 2px; }
+
+/* A covered preview (privacy mode): frosted bars that are the same for
+   every row, under a note of what to press. Takes the card's room between
+   its head and foot, as the copy would. The bars are drawn, never text, so
+   nothing of them can be selected, read aloud or searched. */
+.card .cover {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px dashed var(--cb-line);
+  border-radius: 8px;
+  background: var(--cb-card);
+  color: var(--cb-muted);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.card .cover:hover { border-style: solid; color: CanvasText; }
+.card .cover:focus-visible { outline: 2px solid var(--cb-accent); outline-offset: 1px; }
+/* Lines of "text" down the whole cover, however tall — zoomed, it is the
+   panel — fading out to the right as lines of different lengths would. */
+.cover-lines {
+  position: absolute;
+  inset: 14px 16px;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, CanvasText 16%, transparent) 0 8px,
+    transparent 8px 20px
+  );
+  -webkit-mask-image: linear-gradient(to right, #000 45%, transparent 95%);
+  mask-image: linear-gradient(to right, #000 45%, transparent 95%);
+  filter: blur(3px);
+  opacity: 0.6;
+}
+.cover-note {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cb-raised) 72%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.cover-note .glyph { width: 18px; height: 18px; }
+.cover-title { font-size: 12px; font-weight: 600; color: CanvasText; }
+.cover-hint { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; }
+@media (prefers-reduced-motion: no-preference) {
+  .cover-note { animation: cover-in 140ms ease-out; }
+}
+@keyframes cover-in {
+  from { opacity: 0; transform: scale(0.98); }
+}
 
 .search {
   display: flex;
@@ -1631,7 +1694,7 @@ html.glass-preview[data-material="sidebar"] #root {
    and brings the history back. */
 .panel.about-up .body-grid,
 .panel.about-up .filters { display: none; }
-.panel.about-up .keep { margin-left: auto; }
+.panel.about-up .keep.veil { margin-left: auto; }
 .panel.about-up .search {
   height: 0;
   overflow: hidden;

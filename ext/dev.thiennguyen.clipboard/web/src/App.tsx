@@ -19,6 +19,8 @@ import {
   ExpandGlyph,
   ExternalGlyph,
   DownloadGlyph,
+  EyeGlyph,
+  EyeOffGlyph,
   FolderGlyph,
   GearGlyph,
   InfoGlyph,
@@ -42,7 +44,8 @@ import { usePreviewSplit } from "./PreviewSplit";
 import { useScrollFade } from "./scrollFade";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
-import { type Combo, DEFAULT_PIN_KEY, glyphs, parseCombo, pressed } from "./keys";
+import { type Combo, DEFAULT_PIN_KEY, DEFAULT_REVEAL_ALL_KEY, DEFAULT_REVEAL_KEY, glyphs, panelKeys, parseCombo, pressed } from "./keys";
+import { adopt, allShown, anyShown as showsAny, coverAll, isCovered, keyboardLeft, show, toggle, toggleAll, type Veil, VEIL_OFF } from "./privacy";
 import { badPattern, FILTER_LABELS, FILTERS, type Filter, found, inFilter, search, searchWith, type SearchMode, shortcuts } from "./search";
 import type { Entry, ListAnswer } from "./types";
 
@@ -54,6 +57,11 @@ export function App() {
   const modeRef = useRef<SearchMode>("mixed");
   // Pin's key — the Pin shortcut setting; ⌘P until the list says.
   const [pinKey, setPinKey] = useState<Combo>(() => parseCombo(DEFAULT_PIN_KEY)!);
+  // Privacy mode's show or hide key — its setting; ⌘⇧H until the list says.
+  // None when Pin's key is ⌘⇧H and the person has not picked another.
+  const [revealKey, setRevealKey] = useState<Combo | null>(() => parseCombo(DEFAULT_REVEAL_KEY));
+  // And its show or hide of every item at once; ⌥⇧⌘H until the list says.
+  const [revealAllKey, setRevealAllKey] = useState<Combo | null>(() => parseCombo(DEFAULT_REVEAL_ALL_KEY));
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState(0);
   const [notice, setNotice] = useState("");
@@ -61,6 +69,13 @@ export function App() {
   // paste, a copy or a link opened leaves it up. Every open starts
   // unpinned — Lumi takes the pin off when the panel goes.
   const [pinned, setPinned] = useState(false);
+  // Privacy mode (privacy.ts): whether previews are covered until shown,
+  // and which rows were shown since the panel opened. `reload` adopts the
+  // switch, wherever it was flipped.
+  const [veil, setVeil] = useState<Veil>(VEIL_OFF);
+  // How long shown previews stay shown with nothing done in the panel; null
+  // for until it closes. The list says.
+  const [privacyIdle, setPrivacyIdle] = useState<number | null>(null);
   // The menu bar's Delete All Unpinned…, waiting for the rows it deletes to
   // be on screen — they fold away as the panel's own delete folds them.
   const [clearAsked, setClearAsked] = useState(false);
@@ -117,9 +132,16 @@ export function App() {
     adoptSplit(answer.previewSplit);
     adoptFits(answer.pdfFit);
     wear(answer.appearance, answer.theme);
-    setPinKey(parseCombo(answer.pinKey ?? "") ?? parseCombo(DEFAULT_PIN_KEY)!);
+    // Checked as the Settings tab checks them, so a key the panel answers
+    // otherwise — or the other one's — is never taken from it.
+    const own = panelKeys(answer.pinKey, answer.revealKey, answer.revealAllKey);
+    setPinKey(own.pin);
+    setRevealKey(own.reveal);
+    setRevealAllKey(own.revealAll);
     modeRef.current = answer.searchMode ?? "mixed";
     setMode(modeRef.current);
+    setVeil((veil) => adopt(veil, answer.privacy ?? false));
+    setPrivacyIdle(answer.privacyIdle ?? null);
     if (keepId) {
       const at = search(
         answer.items.filter((row) => inFilter(row, filterRef.current)),
@@ -147,9 +169,11 @@ export function App() {
 
   // A copy made while the panel is up — pinned over another app, or not —
   // comes as news from the extension (`ui.post`, src/lib.rs `tell_panel`),
-  // and a change to the settings from Lumi (`lumi:settings`, Lumi 1.31):
-  // either way the list is read again, and with it the order, the search
-  // mode, the Pin key and the glass. One read at a time; news during one
+  // as does privacy mode flipped from the menu bar, a key or the Settings
+  // tab (`PRIVACY_CHANGED`), and a change to the settings from Lumi
+  // (`lumi:settings`, Lumi 1.31): either way the list is read again, and
+  // with it the order, the search mode, the Pin key, the glass and the
+  // privacy switch. One read at a time; news during one
   // asks for one more after it. A failed read leaves the list as it was —
   // nobody asked for it, so it is no notice either.
   useEffect(() => {
@@ -171,7 +195,8 @@ export function App() {
       }
     };
     const told = (event: Event) => {
-      if (isNews((event as CustomEvent<unknown>).detail, "history")) void reread();
+      const detail = (event as CustomEvent<unknown>).detail;
+      if (isNews(detail, "history") || isNews(detail, "privacy")) void reread();
     };
     // Reading images may have just been turned on: the ones never read
     // are read now, not at the next opening.
@@ -246,6 +271,70 @@ export function App() {
       setPinned(next);
     });
   }, [act, pinned]);
+
+  /** The eye in the title bar: privacy mode on or off for every page that
+   *  shows it. Covered here before the extension answers — turning it on is
+   *  for right now — and put back if it refuses. */
+  const togglePrivacy = useCallback(() => {
+    const next = !veil.on;
+    setVeil((veil) => adopt(veil, next));
+    void act(async () => {
+      try {
+        await call({ kind: "privacy", on: next });
+      } catch (err) {
+        setVeil((veil) => adopt(veil, !next));
+        throw err;
+      }
+    });
+  }, [act, veil.on]);
+
+  /** The show or hide key (⇧⌘H): the selected row's preview shown, or
+   *  covered again. */
+  const toggleShown = useCallback(() => {
+    if (current) setVeil((veil) => toggle(veil, current.id));
+  }, [current]);
+
+  const showRow = useCallback((id: string) => setVeil((veil) => show(veil, id)), []);
+
+  /** The show-or-hide-all key (⌥⇧⌘H): every preview shown at once for the
+   *  rest of this opening, so none has to be shown one by one — or, all
+   *  shown already, every one covered again. */
+  const toggleAllShown = useCallback(() => setVeil(toggleAll), []);
+
+  // Shown previews are covered again after a while with nothing done in the
+  // panel: a pinned panel left on screen while the person is away from it.
+  const anyShown = showsAny(veil);
+  useEffect(() => {
+    if (!anyShown || privacyIdle === null) return;
+    let timer = 0;
+    const arm = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setVeil(coverAll), privacyIdle);
+    };
+    arm();
+    const doings = ["keydown", "pointerdown", "pointermove", "wheel"] as const;
+    for (const doing of doings) window.addEventListener(doing, arm, true);
+    return () => {
+      window.clearTimeout(timer);
+      for (const doing of doings) window.removeEventListener(doing, arm, true);
+    };
+  }, [anyShown, privacyIdle]);
+
+  // The keyboard leaving a pinned panel for another app covers what was
+  // shown: the panel stays on screen, and nobody is looking at it. Lumi
+  // tells `held: false` again for every hover without the keyboard; only
+  // the first after holding it counts (`keyboardLeft`). A panel opens
+  // holding the keyboard, and an unpinned one is put away when it loses it.
+  useEffect(() => {
+    let held = true;
+    const told = (event: Event) => {
+      const now = (event as CustomEvent<{ held?: unknown } | null>).detail?.held === true;
+      if (keyboardLeft(held, now)) setVeil(coverAll);
+      held = now;
+    };
+    window.addEventListener("lumi:keyboard", told);
+    return () => window.removeEventListener("lumi:keyboard", told);
+  }, []);
 
   const togglePin = useCallback(() => {
     if (!current) return;
@@ -414,6 +503,10 @@ export function App() {
     input.current?.focus();
   }, []);
 
+  /** The show or hide key as its key-cap says it, when there is one. */
+  const revealCap = revealKey ? glyphs(revealKey) : undefined;
+  const revealAllCap = revealAllKey ? glyphs(revealAllKey) : undefined;
+
   /** What ⌘K offers for the selected row, then for the whole history. */
   const actions = useMemo((): Action[] => {
     const row = current;
@@ -467,8 +560,28 @@ export function App() {
                 ]
               : []),
             { id: "pin", label: row.pin ? "Unpin" : "Pin", glyph: <PinGlyph />, keys: glyphs(pinKey), run: togglePin },
+            ...(veil.on
+              ? [
+                  isCovered(veil, row.id)
+                    ? { id: "showContent", label: "Show content", glyph: <EyeGlyph />, keys: revealCap, run: toggleShown }
+                    : { id: "hideContent", label: "Hide content", glyph: <EyeOffGlyph />, keys: revealCap, run: toggleShown },
+                ]
+              : []),
           ]
         : []),
+      ...(veil.on && !about
+        ? [
+            allShown(veil)
+              ? { id: "hideAll", label: "Hide all content", glyph: <EyeOffGlyph />, keys: revealAllCap, run: toggleAllShown }
+              : { id: "showAll", label: "Show all content", glyph: <EyeGlyph />, keys: revealAllCap, run: toggleAllShown },
+          ]
+        : []),
+      {
+        id: "privacy",
+        label: veil.on ? "Turn off privacy mode" : "Turn on privacy mode",
+        glyph: veil.on ? <EyeGlyph /> : <EyeOffGlyph />,
+        run: togglePrivacy,
+      },
       { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
       {
         id: "about",
@@ -504,7 +617,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [about, act, current, openSettings, paste, pinKey, pinned, remove, removeAll, rows, togglePin, zoomed]);
+  }, [about, act, current, openSettings, paste, pinKey, pinned, remove, removeAll, revealAllCap, revealCap, rows, togglePin, togglePrivacy, toggleAllShown, toggleShown, veil, zoomed]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -588,7 +701,16 @@ export function App() {
       event.preventDefault();
       return;
     }
-    if (key === "ArrowDown") move(1, true);
+    // The person's own keys first: the Settings tab refuses any key the
+    // panel answers below (`keys.refusal`), but several of those answers
+    // match loosely — ⌘K with ⇧ held still opens the menu — and must not
+    // take a key that was the person's choice.
+    if (pressed(event, pinKey)) togglePin();
+    // Taken with privacy mode off as well, so the key never pastes a row it
+    // does not name.
+    else if (revealKey && pressed(event, revealKey)) toggleShown();
+    else if (revealAllKey && pressed(event, revealAllKey)) toggleAllShown();
+    else if (key === "ArrowDown") move(1, true);
     else if (key === "ArrowUp") move(-1, true);
     else if (key === "PageDown") move(8);
     else if (key === "PageUp") move(-8);
@@ -620,9 +742,7 @@ export function App() {
     // do again; with nothing, they stay the search field's own text undo.
     else if (cmd && !event.shiftKey && key.toLowerCase() === "z" && undos.current.length) undo();
     else if (cmd && event.shiftKey && key.toLowerCase() === "z" && redos.current.length) redo();
-    // Before ⌘+letter below, which ⌘P — Pin's default — would otherwise fall to.
-    else if (pressed(event, pinKey)) togglePin();
-    // Before ⌘+letter too, which would take ⌘⇧P as row P's.
+    // Before ⌘+letter below, which would take ⌘⇧P as row P's.
     else if (cmd && event.shiftKey && !event.altKey && key.toLowerCase() === "p") togglePinned();
     // ⌘Y, Quick Look's key in the Finder, Raycast and Alfred: the preview
     // takes the whole panel, and back. No row is ever given `y`
@@ -674,6 +794,17 @@ export function App() {
             </button>
           ))}
         </nav>
+        <button
+          type="button"
+          className={veil.on ? "keep veil on" : "keep veil"}
+          aria-pressed={veil.on}
+          title={veil.on ? `Privacy mode: previews stay covered until shown${revealCap ? ` (${revealCap})` : ""}` : "Cover previews until shown"}
+          aria-label="Privacy mode"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={togglePrivacy}
+        >
+          <EyeOffGlyph />
+        </button>
         <button
           type="button"
           className={pinned ? "keep on" : "keep"}
@@ -769,6 +900,10 @@ export function App() {
           />
           <Preview
             row={current}
+            covered={current ? isCovered(veil, current.id) : false}
+            revealCap={revealCap}
+            revealAllCap={revealAllCap}
+            onShow={showRow}
             query={query}
             used={used}
             onOpen={(id, url, snippet) => void act(() => call({ kind: "open", id, url, snippet, pinned }))}
@@ -815,7 +950,8 @@ export function App() {
 
 /** The extension's `{"kind": …}` news: `history`, the history changed under
  *  the panel; `summoned`, the panel was asked for again; `clear`, the menu
- *  bar's Delete All Unpinned… pressed while the panel is up. A post is the
+ *  bar's Delete All Unpinned… pressed while the panel is up; `privacy`,
+ *  privacy mode flipped somewhere else. A post is the
  *  extension's own JSON; checked anyway, so news of another shape — a later
  *  version's — is ignored. */
 /** Whether the images Lumi's reader never reached are being read. */
@@ -846,7 +982,7 @@ function readUnread() {
   })();
 }
 
-function isNews(detail: unknown, kind: "history" | "summoned" | "clear"): boolean {
+function isNews(detail: unknown, kind: "history" | "summoned" | "clear" | "privacy"): boolean {
   return typeof detail === "object" && detail !== null && (detail as { kind?: unknown }).kind === kind;
 }
 

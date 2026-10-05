@@ -6,7 +6,23 @@
 
 import { StrictMode, type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { acceleratorGlyphs, comboOf, comboText, DEFAULT_PIN_KEY, glyphs, parseCombo, refusal } from "./keys";
+import {
+  acceleratorGlyphs,
+  comboOf,
+  comboText,
+  DEFAULT_PIN_KEY,
+  DEFAULT_REVEAL_ALL_KEY,
+  DEFAULT_REVEAL_KEY,
+  glyphs,
+  panelKeys,
+  parseCombo,
+  PIN_DOES,
+  refusal,
+  REVEAL_ALL_DOES,
+  REVEAL_DOES,
+  same,
+  type TakenKey,
+} from "./keys";
 import { shortcuts } from "./bridge";
 import { KEEP_LABELS, type OwnShortcuts, type Stats } from "./types";
 import { type Book, countedPicks, LookIn, type Scope, SCOPES } from "./LookIn";
@@ -21,12 +37,17 @@ type Theme = "dark" | "light" | "system";
 type Search = "exact" | "fuzzy" | "regexp" | "mixed";
 type Keep = "5m" | "1h" | "1d" | "1w" | "1mo" | "3mo";
 type Order = "last" | "first" | "used";
+type Idle = "30s" | "1m" | "5m" | "never";
 
 interface Values {
   keep: Keep;
   theme: Theme;
   search: Search;
   pinKey: string;
+  /** "" while Pin holds even the default and none was picked. */
+  revealKey: string;
+  /** "" while the keys before it hold even its default. */
+  revealAllKey: string;
   pasteOnSelect: boolean;
   closeAfterDrag: boolean;
   ocr: boolean;
@@ -37,6 +58,7 @@ interface Values {
   matchSnippets: boolean;
   snippetsIn: Scope;
   snippetProfiles: string[];
+  privacyIdle: Idle;
 }
 
 interface App {
@@ -65,6 +87,13 @@ const THEMES: { value: Theme; label: string }[] = [
   { value: "dark", label: "Dark" },
   { value: "light", label: "Light" },
   { value: "system", label: "System" },
+];
+
+const IDLES: { value: Idle; label: string }[] = [
+  { value: "30s", label: "30 s" },
+  { value: "1m", label: "1 min" },
+  { value: "5m", label: "5 min" },
+  { value: "never", label: "On close" },
 ];
 
 const ORDERS: { value: Order; label: string }[] = [
@@ -126,12 +155,20 @@ function read(raw: Record<string, unknown>): Values {
   const keep = text(raw.keep, "3mo");
   const theme = text(raw.theme, "system");
   const search = text(raw.search, "mixed");
-  const pin = parseCombo(text(raw.pinKey, DEFAULT_PIN_KEY));
+  // As the panel reads them: a refused key is its default, and the show or
+  // hide key gives way to Pin's.
+  const own = panelKeys(
+    text(raw.pinKey, DEFAULT_PIN_KEY),
+    text(raw.revealKey, DEFAULT_REVEAL_KEY),
+    text(raw.revealAllKey, DEFAULT_REVEAL_ALL_KEY),
+  );
   return {
     keep: (KEEPS.some((k) => k.value === keep) ? keep : "3mo") as Keep,
     theme: (THEMES.some((t) => t.value === theme) ? theme : "system") as Theme,
     search: (SEARCHES.some((m) => m.value === search) ? search : "mixed") as Search,
-    pinKey: pin && !refusal(pin) ? comboText(pin) : DEFAULT_PIN_KEY,
+    pinKey: comboText(own.pin),
+    revealKey: own.reveal ? comboText(own.reveal) : "",
+    revealAllKey: own.revealAll ? comboText(own.revealAll) : "",
     pasteOnSelect: text(raw.pasteOnSelect, "true") !== "false",
     closeAfterDrag: text(raw.closeAfterDrag, "false") === "true",
     ocr: text(raw.ocr, "true") !== "false",
@@ -151,6 +188,7 @@ function read(raw: Record<string, unknown>): Values {
       .split(",")
       .map((id) => id.trim())
       .filter((id, at, all) => id && all.indexOf(id) === at),
+    privacyIdle: (IDLES.find((i) => i.value === raw.privacyIdle) ?? IDLES[1]!).value,
   };
 }
 
@@ -161,6 +199,8 @@ function written(v: Values): Record<string, string> {
     theme: v.theme,
     search: v.search,
     pinKey: v.pinKey,
+    revealKey: v.revealKey,
+    revealAllKey: v.revealAllKey,
     pasteOnSelect: String(v.pasteOnSelect),
     closeAfterDrag: String(v.closeAfterDrag),
     ocr: String(v.ocr),
@@ -171,6 +211,7 @@ function written(v: Values): Record<string, string> {
     matchSnippets: String(v.matchSnippets),
     snippetsIn: v.snippetsIn,
     snippetProfiles: v.snippetProfiles.join(","),
+    privacyIdle: v.privacyIdle,
   };
 }
 
@@ -186,6 +227,10 @@ function Settings() {
   const [failed, setFailed] = useState("");
   const [stats, setStats] = useState<Stats | null>(null);
   const [book, setBook] = useState<Book | null>(null);
+  // Privacy mode: a switch the extension keeps, not one of the settings —
+  // the menu bar row and a key flip it too — so it is asked for and set
+  // through the extension, and read again when it says it changed.
+  const [privacy, setPrivacy] = useState<boolean | null>(null);
   const latest = useRef<Values | null>(null);
   const saving = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -222,6 +267,13 @@ function Settings() {
       if (book && typeof book.active === "string" && Array.isArray(book.profiles)) setBook(book);
     };
     window.addEventListener("lumi:profiles", switched);
+    const askPrivacy = () => ask<{ privacy: boolean }>({ kind: "privacy" }).then((a) => setPrivacy(a.privacy), () => {});
+    askPrivacy();
+    const told = (event: Event) => {
+      const detail = (event as CustomEvent<unknown>).detail;
+      if (typeof detail === "object" && detail !== null && (detail as { kind?: unknown }).kind === "privacy") askPrivacy();
+    };
+    window.addEventListener("lumi:message", told);
     // Asked again each time the tab comes back into view: Lumi answers a
     // page only while Settings is in front, so a tab opened behind another
     // app reads nothing the first time — measured: the hint said "the
@@ -230,6 +282,7 @@ function Settings() {
       if (document.visibilityState !== "visible") return;
       ask<Book>({ kind: "profiles" }).then(setBook, () => {});
       ask<Stats>({ kind: "stats" }).then(setStats, () => {});
+      askPrivacy();
     };
     document.addEventListener("visibilitychange", shown);
     // Lumi drops the page when its tab is left: what is still waiting to
@@ -239,6 +292,7 @@ function Settings() {
     document.addEventListener("visibilitychange", flush);
     return () => {
       window.removeEventListener("lumi:profiles", switched);
+      window.removeEventListener("lumi:message", told);
       document.removeEventListener("visibilitychange", shown);
       window.removeEventListener("pagehide", flush);
       document.removeEventListener("visibilitychange", flush);
@@ -348,7 +402,12 @@ function Settings() {
         <div className="group">
           <GlobalShortcut command="open" />
           <Row label="Pin" hint="While the panel is up; pins or unpins the selected item">
-            <Recorder value={values.pinKey} fallback={DEFAULT_PIN_KEY} onChange={(pinKey) => change({ pinKey }, true)} />
+            <Recorder
+              value={values.pinKey}
+              fallback={DEFAULT_PIN_KEY}
+              others={[...taken(values.revealKey, REVEAL_DOES), ...taken(values.revealAllKey, REVEAL_ALL_DOES)]}
+              onChange={(pinKey) => change({ pinKey }, true)}
+            />
           </Row>
         </div>
       </section>
@@ -396,6 +455,68 @@ function Settings() {
       <section>
         <h3>Privacy</h3>
         <div className="group">
+          <Row
+            label="Privacy mode"
+            hint={`Previews stay covered until you show them, with a click${values.revealKey ? ` or ${glyphs(parseCombo(values.revealKey)!)}` : ""}`}
+          >
+            <Toggle
+              on={privacy ?? false}
+              label="Privacy mode"
+              onChange={(on) => {
+                setPrivacy(on);
+                ask<{ privacy: boolean }>({ kind: "setPrivacy", on }).then(
+                  (a) => setPrivacy(a.privacy),
+                  (err: unknown) => {
+                    setPrivacy(!on);
+                    setFailed(err instanceof Error ? err.message : "Could not change privacy mode");
+                  },
+                );
+              }}
+            />
+          </Row>
+          {/* Privacy mode's own key, here beside the switch it serves rather
+              than under Shortcuts. */}
+          <Row
+            label="Show or hide content"
+            hint={
+              values.revealKey
+                ? "Shortcut while the panel is up; shows the selected item, or covers it again"
+                : "Pin has this key's default; press another to show items with a key"
+            }
+            bad={!values.revealKey}
+          >
+            <Recorder
+              value={values.revealKey}
+              fallback={DEFAULT_REVEAL_KEY}
+              others={[...taken(values.pinKey, PIN_DOES), ...taken(values.revealAllKey, REVEAL_ALL_DOES)]}
+              onChange={(revealKey) => change({ revealKey }, true)}
+            />
+          </Row>
+          <Row
+            label="Show or hide all"
+            hint={
+              values.revealAllKey
+                ? "Shortcut while the panel is up; shows every item until the panel covers them again, or covers them all"
+                : "Another shortcut has this key's default; press another to show every item with a key"
+            }
+            bad={!values.revealAllKey}
+          >
+            <Recorder
+              value={values.revealAllKey}
+              fallback={DEFAULT_REVEAL_ALL_KEY}
+              others={[...taken(values.pinKey, PIN_DOES), ...taken(values.revealKey, REVEAL_DOES)]}
+              onChange={(revealAllKey) => change({ revealAllKey }, true)}
+            />
+          </Row>
+          <Row label="Cover again after" hint="With nothing done in the panel. It is always covered again when it closes">
+            <Segmented
+              value={values.privacyIdle}
+              options={IDLES}
+              onChange={(privacyIdle) => change({ privacyIdle }, true)}
+              label="Cover again after"
+              disabled={!privacy}
+            />
+          </Row>
           <div className="row col">
             <div className="lbl">
               Never keep copies from
@@ -533,13 +654,35 @@ function GlobalShortcut({ command }: { command: string }) {
   );
 }
 
+/** The panel's other key, for a recorder to refuse. */
+function taken(value: string, does: string): TakenKey[] {
+  const combo = parseCombo(value);
+  return combo ? [{ combo, does }] : [];
+}
+
 /** A key-cap that records the next combo pressed: click, press, done.
- *  Esc puts it back; a combo the panel cannot use says why and is not
- *  kept. Recorded by position, so ⌥P is P and not the π it types. */
-function Recorder({ value, fallback, onChange }: { value: string; fallback: string; onChange: (value: string) => void }) {
+ *  Esc puts it back; a combo the panel cannot use — or that `others`, the
+ *  panel's other keys, hold — says why and is not kept. Recorded by
+ *  position, so ⌥P is P and not the π it types. */
+function Recorder({
+  value,
+  fallback,
+  others,
+  onChange,
+}: {
+  value: string;
+  fallback: string;
+  others: TakenKey[];
+  onChange: (value: string) => void;
+}) {
   const [recording, setRecording] = useState(false);
   const [said, setSaid] = useState("");
-  const combo = parseCombo(value) ?? parseCombo(fallback)!;
+  const combo = parseCombo(value);
+  const home = parseCombo(fallback)!;
+  // Reset only away from the default — the same keys however they are
+  // spelt: "cmd+shift+h" is saved as "shift+cmd+h" — and only to a default
+  // nothing else holds.
+  const resettable = !(combo && same(combo, home)) && !refusal(home, others);
 
   useEffect(() => {
     if (!recording) return;
@@ -553,7 +696,7 @@ function Recorder({ value, fallback, onChange }: { value: string; fallback: stri
       }
       const got = comboOf(event);
       if (!got) return; // a modifier on its own, still being held
-      const why = refusal(got);
+      const why = refusal(got, others);
       if (why) {
         setSaid(`${glyphs(got)}: ${why}`);
         return;
@@ -564,7 +707,7 @@ function Recorder({ value, fallback, onChange }: { value: string; fallback: stri
     };
     window.addEventListener("keydown", take, true);
     return () => window.removeEventListener("keydown", take, true);
-  }, [recording, onChange]);
+  }, [recording, onChange, others]);
 
   return (
     <div className="recorder">
@@ -572,15 +715,15 @@ function Recorder({ value, fallback, onChange }: { value: string; fallback: stri
       <button
         type="button"
         className={recording ? "keycap recording" : "keycap"}
-        aria-label={recording ? "Press the new shortcut, or Esc" : `Shortcut ${glyphs(combo)}, click to change`}
+        aria-label={recording ? "Press the new shortcut, or Esc" : combo ? `Shortcut ${glyphs(combo)}, click to change` : "No shortcut, click to set one"}
         onClick={() => {
           setSaid("");
           setRecording((was) => !was);
         }}
       >
-        {recording ? "Press keys…" : glyphs(combo)}
+        {recording ? "Press keys…" : combo ? glyphs(combo) : "None"}
       </button>
-      {value !== fallback && !recording && (
+      {resettable && !recording && (
         <button type="button" className="add" onClick={() => onChange(fallback)}>
           Reset
         </button>

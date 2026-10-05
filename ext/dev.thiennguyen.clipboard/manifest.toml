@@ -13,7 +13,7 @@
 [extension]
 id = "dev.thiennguyen.clipboard"
 name = "Clipboard Manager"
-version = "0.69.1"
+version = "0.72.0"
 description = "Keep what you copy — text, links, images and files — and paste it back from a panel."
 author = "Thien Nguyen"
 summary = "Remembers what you copy on this Mac and brings it back with one shortcut: search, pick, and it is pasted into the app you were typing in. Text, rich text, links, colours, files and images, with pins for what you keep reaching for. Anything a password manager marks as secret is never recorded — Lumi drops it before this extension hears of it — and the history is stored encrypted with a key Lumi keeps in your Keychain. Nothing leaves your Mac: the extension has no network access."
@@ -57,8 +57,16 @@ name = "toggle"
 label = "Toggle clipboard history"
 icon = "toggle-right"
 
-# Show's key — Hide and Toggle come with none, for the person to give them
-# in Lumi's Settings. Maccy's key, as the extension's own: Lumi arms it at
+# Privacy mode on or off without opening the panel — which would show the
+# newest copy — for a key of the person's own in Lumi's Settings, like Hide
+# and Toggle. The menu bar row does the same.
+[[command]]
+name = "privacy"
+label = "Toggle privacy mode"
+icon = "shield"
+
+# Show's key — Hide, Toggle and Privacy come with none, for the person to
+# give them in Lumi's Settings. Maccy's key, as the extension's own: Lumi arms it at
 # install when nothing holds it, in every profile, and it goes with the
 # extension. When something
 # does hold it Lumi arms nothing and says who — the Welcome window's second
@@ -159,6 +167,32 @@ label = "Search text in images"
 kind = "bool"
 default = "true"
 
+# Privacy mode itself is a switch the extension keeps (menu bar, command,
+# panel, Settings tab), not a setting. This is how long a preview shown
+# while it is on stays shown with nothing done in the panel; the panel
+# covers everything again when it closes whatever this says.
+[[settings]]
+name = "privacyIdle"
+label = "Cover again after"
+kind = "select"
+default = "1m"
+
+[[settings.options]]
+value = "30s"
+label = "30 seconds"
+
+[[settings.options]]
+value = "1m"
+label = "1 minute"
+
+[[settings.options]]
+value = "5m"
+label = "5 minutes"
+
+[[settings.options]]
+value = "never"
+label = "Only when the panel closes"
+
 # The panel's own Pin key, while the panel is up — not a global shortcut.
 # Spelled "cmd+p", "ctrl+shift+1"; the Settings tab records it. ⌘P because
 # no row is ever given ⌘P (`history::PIN_LETTERS`), and ⌘⇧P pins the panel.
@@ -167,6 +201,24 @@ name = "pinKey"
 label = "Pin shortcut"
 kind = "text"
 default = "cmd+p"
+
+# Privacy mode's show or hide of the selected item, while the panel is up —
+# the panel's own key, as Pin's is, recorded on the Settings tab and checked
+# by the page against Pin's and the panel's other keys. ⌘⇧H beside ⌘⇧P.
+[[settings]]
+name = "revealKey"
+label = "Show or hide shortcut"
+kind = "text"
+default = "cmd+shift+h"
+
+# The same for every item at once, until the panel covers them again: so
+# the person need not show items one by one. ⌥ added, macOS's "all" key —
+# not ⌥⌘H, which macOS gives Hide Others.
+[[settings]]
+name = "revealAllKey"
+label = "Show or hide all shortcut"
+kind = "text"
+default = "alt+shift+cmd+h"
 
 # How the panel's search reads a query — Maccy's four modes.
 [[settings]]

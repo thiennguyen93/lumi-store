@@ -184,6 +184,8 @@ function mockExpansions(title: string) {
 let settings: Record<string, string> = {
   keep: "3mo",
   pinKey: "cmd+p",
+  revealKey: "cmd+shift+h",
+  revealAllKey: "alt+shift+cmd+h",
   theme: "system",
   search: new URLSearchParams(location.search).get("search") ?? "mixed",
   pasteOnSelect: "true",
@@ -195,10 +197,18 @@ let settings: Record<string, string> = {
   matchSnippets: "true",
   snippetsIn: "current",
   snippetProfiles: "p_work,p_home,p_3,p_gone",
+  privacyIdle: "1m",
 };
+// Privacy mode, the extension's switch (src/lib.rs `PRIVACY`); `?privacy`
+// opens the panel with it on.
+let privacy = new URLSearchParams(location.search).has("privacy");
+// Every row whose preview was asked for, in order — what a covered row
+// must never be in. `mockPreviews` in the console reads it.
+const previewed: string[] = [];
+const IDLE_MS: Record<string, number | null> = { "30s": 30_000, "1m": 60_000, "5m": 300_000, never: null };
 let trash: Entry[] = [];
 
-const PIN_LETTERS = "bdefghijklmnorstu";
+const PIN_LETTERS = "bdefghijlmnorstu";
 
 // `mockEditSnippet(";addr", "Somewhere else")` in the console: the person
 // edits a snippet in Lumi — `null` removes it — as Lumi tells every page of
@@ -228,6 +238,22 @@ Object.assign(window, {
     rows = [entry({ id: `copy-${Date.now()}`, kind: "text", title, appName: "Notes", last: Date.now() }), ...rows];
     window.dispatchEvent(new CustomEvent("lumi:message", { detail: { kind: "history" } }));
   },
+});
+
+// `mockPrivacy(true)` in the console: privacy mode flipped from the menu
+// bar or a key, as the extension tells the panel and the Settings tab
+// (`{"kind":"privacy"}`). `mockKeyboard(false)`: a pinned panel's keyboard
+// gone to another app, as Lumi tells it (`lumi:keyboard`).
+Object.assign(window, {
+  mockPrivacy(on: boolean) {
+    privacy = on;
+    say(`privacy mode ${on ? "on" : "off"} from the menu bar`);
+    window.dispatchEvent(new CustomEvent("lumi:message", { detail: { kind: "privacy" } }));
+  },
+  mockKeyboard(held: boolean) {
+    window.dispatchEvent(new CustomEvent("lumi:keyboard", { detail: { held } }));
+  },
+  mockPreviews: previewed,
 });
 
 // `mockSummon()` in the console: the shortcut pressed again, as the extension
@@ -267,10 +293,22 @@ function answer(request: Request): unknown {
         previewSplit,
         pdfFit,
         pinKey: settings.pinKey ?? "cmd+p",
+        revealKey: settings.revealKey ?? "cmd+shift+h",
+        revealAllKey: settings.revealAllKey ?? "alt+shift+cmd+h",
         searchMode: (settings.search ?? "mixed") as "exact" | "fuzzy" | "regexp" | "mixed",
         appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
+        privacy,
+        privacyIdle: (settings.privacyIdle ?? "") in IDLE_MS ? (IDLE_MS[settings.privacyIdle!] ?? null) : 60_000,
       };
+    case "privacy":
+    case "setPrivacy":
+      if (request.on !== undefined) {
+        privacy = request.on;
+        say(`would turn privacy mode ${privacy ? "on" : "off"}`);
+      }
+      return { privacy };
     case "preview": {
+      previewed.push(request.id);
       const row = rows.find((r) => r.id === request.id);
       const text = !row
         ? ""

@@ -66,6 +66,9 @@ type Answers = {
   clear: { ids: string[] };
   close: Record<string, never>;
   pinPanel: { pinned: boolean };
+  /** `privacy` asks or sets it; the answer is how it stands now. */
+  privacy: { privacy: boolean };
+  setPrivacy: { privacy: boolean };
   stats: Stats;
   previewWidth: Record<string, never>;
   previewSplit: Record<string, never>;

@@ -49,6 +49,21 @@ const WELCOME_FROM: &str = "welcome.from";
 /// flipped back — the menu's tick — rather than a preference.
 const PAUSED: &str = "paused";
 
+/// Set while privacy mode is on: the panel's preview covers every item
+/// until the person shows it. A key like `PAUSED`, not a setting, because
+/// it is flipped from places that cannot write settings — the menu bar
+/// row and the `privacy` command — as well as from the panel and the
+/// Settings tab, and all of them must flip the one switch.
+const PRIVACY: &str = "privacy";
+
+/// How long revealed previews stay shown with nothing done in the panel,
+/// as the `privacyIdle` setting spells it; `None` for until it closes.
+const PRIVACY_IDLES: &[(&str, Option<i64>)] =
+    &[("30s", Some(30_000)), ("1m", Some(60_000)), ("5m", Some(5 * 60_000)), ("never", None)];
+
+/// The idle when none is set, as the manifest's default says.
+const DEFAULT_PRIVACY_IDLE: Option<i64> = Some(60_000);
+
 /// Set when the menu bar menu's Delete All Unpinned… opened the panel to
 /// do it: the panel's first list answers `clear` and takes the key, and
 /// the panel deletes as its own action does, so ⌘Z brings the rows back.
@@ -68,7 +83,8 @@ pub const CLEAR: &str = r#"{"kind":"clear"}"#;
 pub const DASHBOARD: &str = ":page:dashboard";
 
 /// What Lumi calls the Settings tab (`settings-page`). It saves through
-/// Lumi's own `PUT /__lumi__/settings`; what it asks here only reads.
+/// Lumi's own `PUT /__lumi__/settings`; what it asks here only reads —
+/// but for privacy mode, which is a switch (`PRIVACY`), not a setting.
 pub const SETTINGS: &str = ":settings";
 
 /// Where the panel's About sends the person: this extension's page on
@@ -272,6 +288,12 @@ fn draw_menu(host: &impl Host) -> Result<(), String> {
         } else {
             Entry::item("pause", "Pause Recording").icon("pause")
         },
+        // Says what a press does next, as Pause does.
+        if private(host) {
+            Entry::item("privacy", "Turn Off Privacy Mode").icon("eye")
+        } else {
+            Entry::item("privacy", "Turn On Privacy Mode").icon("eye-off")
+        },
         Entry::separator("s1"),
         Entry::item("clear", "Delete All Unpinned…").icon("trash-2"),
         Entry::separator("s2"),
@@ -281,6 +303,31 @@ fn draw_menu(host: &impl Host) -> Result<(), String> {
 
 fn paused(host: &impl Host) -> bool {
     matches!(host.get(PAUSED), Ok(Some(_)))
+}
+
+fn private(host: &impl Host) -> bool {
+    matches!(host.get(PRIVACY), Ok(Some(_)))
+}
+
+/// What the panel and the Settings tab are told when privacy mode is
+/// turned on or off from somewhere else: read it again.
+pub const PRIVACY_CHANGED: &str = r#"{"kind":"privacy"}"#;
+
+/// Turn privacy mode on or off — from the menu bar, the command, the panel
+/// or the Settings tab alike — and tell everything that shows it. A
+/// `Conflict` on the `put` is the key already there: on already, which is
+/// what was asked. The posts are best effort: a page that is not up reads
+/// the switch when it opens.
+fn set_private(host: &impl Host, on: bool) -> Result<(), String> {
+    if !on {
+        host.delete(PRIVACY)?;
+    } else if let Err(PutError::Failed(err)) = host.put(PRIVACY, "1", None) {
+        return Err(err);
+    }
+    let _ = draw_menu(host);
+    let _ = host.post(PANEL, PRIVACY_CHANGED);
+    let _ = host.post(SETTINGS, PRIVACY_CHANGED);
+    Ok(())
 }
 
 /// Whether the menu bar asked for a delete on this opening, and the ask
@@ -308,6 +355,7 @@ fn menu_pressed(host: &impl Host, id: &str) -> Result<(), String> {
             }
             draw_menu(host)
         }
+        "privacy" => set_private(host, !private(host)),
         // Up already: it is told, and lists nothing as an opening. Shut:
         // the key is left for its opening list, which a post could not
         // reach before the page is listening.
@@ -347,8 +395,9 @@ fn tell_panel(host: &impl Host) {
 pub const SUMMONED: &str = r#"{"kind":"summoned"}"#;
 
 /// One of the manifest's `[[command]]`s: the panel shown, hidden or
-/// toggled. Lumi's `open-window` never puts a window away, so which of them
-/// closes the panel is decided here, from where it stands.
+/// toggled, or privacy mode switched. Lumi's `open-window` never puts a
+/// window away, so which of them closes the panel is decided here, from
+/// where it stands.
 fn command(host: &impl Host, name: &str) -> Result<(), String> {
     match name {
         "open" => show_panel(host),
@@ -359,6 +408,9 @@ fn command(host: &impl Host, name: &str) -> Result<(), String> {
             Presence::Hidden => open_panel(host),
             Presence::Up | Presence::Focused => host.close_window(PANEL),
         },
+        // Before a screen is shared, from anywhere: the panel need not be
+        // opened — showing the newest copy — to turn it on.
+        "privacy" => set_private(host, !private(host)),
         _ => Err(format!("Clipboard Manager has no {name} command")),
     }
 }
@@ -419,10 +471,18 @@ struct Prefs {
     /// The panel's Pin key, as the page spells it ("cmd+p"); the page
     /// checks it and falls back to its default on anything it cannot read.
     pin_key: String,
+    /// Privacy mode's show or hide key, while the panel is up, spelt and
+    /// checked the same way ("cmd+shift+h").
+    reveal_key: String,
+    /// Its show or hide of every item at once ("alt+shift+cmd+h").
+    reveal_all_key: String,
     /// "Match snippets": whose snippet triggers a copy is looked up as.
     match_snippets: snippets::Matching,
     /// The profiles ticked for `Matching::Selected`.
     snippet_profiles: Vec<String>,
+    /// "Cover again after": how long a preview shown in privacy mode stays
+    /// shown with nothing done in the panel; `None` for until it closes.
+    privacy_idle_ms: Option<i64>,
 }
 
 impl Prefs {
@@ -485,6 +545,8 @@ fn prefs(host: &impl Host) -> Prefs {
             _ => "popover",
         },
         pin_key: s["pinKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("cmd+p").to_string(),
+        reveal_key: s["revealKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("cmd+shift+h").to_string(),
+        reveal_all_key: s["revealAllKey"].as_str().filter(|k| k.len() <= 32).unwrap_or("alt+shift+cmd+h").to_string(),
         search: match s["search"].as_str() {
             Some("exact") => "exact",
             Some("fuzzy") => "fuzzy",
@@ -498,6 +560,10 @@ fn prefs(host: &impl Host) -> Prefs {
         },
         match_snippets: snippets::Matching::from_settings(&s["matchSnippets"], s["snippetsIn"].as_str()),
         snippet_profiles: snippets::picked(s["snippetProfiles"].as_str().unwrap_or_default()),
+        privacy_idle_ms: PRIVACY_IDLES
+            .iter()
+            .find(|(word, _)| s["privacyIdle"].as_str() == Some(word))
+            .map_or(DEFAULT_PRIVACY_IDLE, |(_, ms)| *ms),
     }
 }
 
@@ -873,9 +939,16 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "theme": prefs.shown_theme(),
                 "searchMode": prefs.search,
                 "pinKey": prefs.pin_key,
+                "revealKey": prefs.reveal_key,
+                "revealAllKey": prefs.reveal_all_key,
                 "previewWidth": preview_width(host),
                 "previewSplit": preview_split(host),
                 "pdfFit": pdf_fit(host),
+                // Privacy mode: the page covers every preview until shown,
+                // and covers them again after `privacyIdle` ms of nothing
+                // done (null: only when it closes).
+                "privacy": private(host),
+                "privacyIdle": prefs.privacy_idle_ms,
                 // The menu bar asked for Delete All Unpinned… and opened
                 // the panel to do it; taken on the opening list only.
                 "clear": request["opening"].as_bool() == Some(true) && take_clear(host),
@@ -1291,6 +1364,14 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             host.close_window(PANEL)?;
             Ok(json!({}))
         }
+        // The eye in the panel's title bar and its ⌘K action. The panel
+        // covers itself as it asks; the post this sends is for the
+        // Settings tab and the menu bar row.
+        "privacy" => {
+            let on = request["on"].as_bool().ok_or("privacy mode is not on or off")?;
+            set_private(host, on)?;
+            Ok(json!({ "privacy": on }))
+        }
         // The pin in the panel's title bar: stay up while the person works
         // in another app. Lumi takes the pin off when the panel goes.
         "pinPanel" => {
@@ -1369,6 +1450,12 @@ fn settings(host: &impl Host, request: &Value) -> Result<Value, String> {
         "dress" => {
             dress(host);
             Ok(json!({}))
+        }
+        "privacy" => Ok(json!({ "privacy": private(host) })),
+        "setPrivacy" => {
+            let on = request["on"].as_bool().ok_or("privacy mode is not on or off")?;
+            set_private(host, on)?;
+            Ok(json!({ "privacy": on }))
         }
         "tryPatterns" => {
             let patterns = request["patterns"].as_str().unwrap_or_default();
@@ -1766,12 +1853,12 @@ mod tests {
         on_event(&host, "clipboard", &event("h1", 1, "a secret")).unwrap();
         on_lifecycle(&host, &lumi::Lifecycle::Installed).unwrap();
         let ids: Vec<String> = menu_ids(&host).into_iter().map(|(id, _)| id).collect();
-        assert_eq!(ids, ["show", "pause", "s1", "clear", "s2", "settings"]);
+        assert_eq!(ids, ["show", "pause", "privacy", "s1", "clear", "s2", "settings"]);
         let menu = host.menu.borrow();
         let icons: Vec<Option<&str>> = menu.iter().map(|e| e.icon.as_deref()).collect();
         assert_eq!(
             icons,
-            [Some("clipboard-list"), Some("pause"), None, Some("trash-2"), None, Some("settings")],
+            [Some("clipboard-list"), Some("pause"), Some("eye-off"), None, Some("trash-2"), None, Some("settings")],
             "an icon on every row but a separator"
         );
         drop(menu);
@@ -1779,7 +1866,91 @@ mod tests {
 
         host.menu.borrow_mut().clear();
         on_lifecycle(&host, &lumi::Lifecycle::Updated("0.66.1".into())).unwrap();
-        assert_eq!(host.menu.borrow().len(), 6, "set again on an update");
+        assert_eq!(host.menu.borrow().len(), 7, "set again on an update");
+    }
+
+    fn privacy_of(host: &Memory) -> (bool, Value) {
+        let list = ui(host, &json!({"kind": "list"})).unwrap();
+        (list["privacy"].as_bool().unwrap(), list["privacyIdle"].clone())
+    }
+
+    /// The menu bar row, the command, the panel and the Settings tab all
+    /// flip the one switch, and each flip tells the panel, the Settings tab
+    /// and the menu bar row.
+    #[test]
+    fn privacy_mode_is_one_switch_however_it_is_flipped() {
+        let host = Memory::default();
+        let told = |host: &Memory| {
+            let posts = host.posts.borrow();
+            let to = |window: &str| posts.iter().filter(|(w, m)| w == window && m == PRIVACY_CHANGED).count();
+            (to(PANEL), to(SETTINGS))
+        };
+        assert!(!privacy_of(&host).0, "off until turned on");
+
+        menu_pressed(&host, "privacy").unwrap();
+        assert!(privacy_of(&host).0);
+        assert!(menu_ids(&host).contains(&("privacy".to_string(), "Turn Off Privacy Mode".to_string())));
+        assert!(host.menu.borrow().iter().any(|e| e.id == "privacy" && e.icon.as_deref() == Some("eye")));
+        assert_eq!(told(&host), (1, 1));
+
+        command(&host, "privacy").unwrap();
+        assert!(!privacy_of(&host).0, "the command flips it back");
+        assert!(menu_ids(&host).contains(&("privacy".to_string(), "Turn On Privacy Mode".to_string())));
+
+        assert_eq!(ui(&host, &json!({"kind": "privacy", "on": true})).unwrap(), json!({"privacy": true}));
+        assert_eq!(settings(&host, &json!({"kind": "privacy"})).unwrap(), json!({"privacy": true}));
+        // Asked on twice — the panel and the tab racing — is still on.
+        ui(&host, &json!({"kind": "privacy", "on": true})).unwrap();
+        assert!(privacy_of(&host).0);
+
+        settings(&host, &json!({"kind": "setPrivacy", "on": false})).unwrap();
+        assert!(!privacy_of(&host).0);
+        assert_eq!(told(&host), (5, 5));
+        assert!(ui(&host, &json!({"kind": "privacy"})).is_err(), "neither on nor off");
+    }
+
+    /// "Cover again after" reaches the panel in milliseconds, null for
+    /// until it closes, and the manifest's default for anything else.
+    #[test]
+    fn the_panel_is_told_how_long_a_shown_preview_stays_shown() {
+        let host = Memory::default();
+        assert_eq!(privacy_of(&host).1, json!(60_000), "the default");
+        *host.settings.borrow_mut() = json!({"privacyIdle": "30s"});
+        assert_eq!(privacy_of(&host).1, json!(30_000));
+        *host.settings.borrow_mut() = json!({"privacyIdle": "never"});
+        assert_eq!(privacy_of(&host).1, Value::Null);
+        *host.settings.borrow_mut() = json!({"privacyIdle": "1y"});
+        assert_eq!(privacy_of(&host).1, json!(60_000));
+    }
+
+    /// The show or hide keys reach the panel as the settings spell them —
+    /// the page checks them, as it does Pin's — and their defaults when
+    /// none is set.
+    #[test]
+    fn the_panel_is_told_its_show_or_hide_keys() {
+        let host = Memory::default();
+        let keys = |host: &Memory| {
+            let list = ui(host, &json!({"kind": "list"})).unwrap();
+            (list["revealKey"].clone(), list["revealAllKey"].clone())
+        };
+        assert_eq!(keys(&host), (json!("cmd+shift+h"), json!("alt+shift+cmd+h")));
+        *host.settings.borrow_mut() = json!({"revealKey": "ctrl+alt+r", "revealAllKey": "ctrl+alt+a"});
+        assert_eq!(keys(&host), (json!("ctrl+alt+r"), json!("ctrl+alt+a")));
+        *host.settings.borrow_mut() = json!({"revealKey": "x".repeat(33), "revealAllKey": "y".repeat(33)});
+        assert_eq!(keys(&host), (json!("cmd+shift+h"), json!("alt+shift+cmd+h")), "not keys anybody typed");
+    }
+
+    /// Privacy mode covers what is shown, never what is done: a covered
+    /// item is still pasted whole.
+    #[test]
+    fn a_covered_item_still_pastes() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "sk-live-123")).unwrap();
+        set_private(&host, true).unwrap();
+        let id = list(&host)[0]["id"].as_str().unwrap().to_string();
+        ui(&host, &json!({"kind": "paste", "id": id})).unwrap();
+        let pasted = host.pasted.borrow();
+        assert_eq!(pasted[0][0][0].text.as_deref(), Some("sk-live-123"));
     }
 
     /// Pause keeps nothing — the copy's blobs go too — and the row says

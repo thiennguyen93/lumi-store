@@ -1,6 +1,7 @@
-// The panel's own shortcuts that the person can change — Pin, today — as
-// the `pinKey` setting spells them: "cmd+p", "ctrl+shift+1". Matched on the
-// key's position (`event.code`), not on what it types: ⌥P types "π".
+// The panel's own shortcuts that the person can change — Pin, and privacy
+// mode's show or hide of one item or of all — as the `pinKey`, `revealKey`
+// and `revealAllKey` settings spell them: "cmd+p", "ctrl+shift+1". Matched on the key's position (`event.code`), not
+// on what it types: ⌥P types "π".
 
 export interface Combo {
   ctrl: boolean;
@@ -14,6 +15,22 @@ export interface Combo {
 /** ⌘P: the one ⌘-letter no row is ever given (`history::PIN_LETTERS`
  *  leaves `p` out for it), and ⌘⇧P beside it pins the panel. */
 export const DEFAULT_PIN_KEY = "cmd+p";
+
+/** ⌘⇧H, beside ⌘⇧P: privacy mode's show or hide of the selected item. */
+export const DEFAULT_REVEAL_KEY = "cmd+shift+h";
+
+/** ⌥⇧⌘H, the same with ⌥ — macOS's "all" key — for every item at once.
+ *  Not ⌥⌘H, which is macOS's Hide Others. */
+export const DEFAULT_REVEAL_ALL_KEY = "alt+shift+cmd+h";
+
+/** What each of the panel's own keys does, as a refusal says it. */
+export const PIN_DOES = "pins the selected item";
+export const REVEAL_DOES = "shows or hides the preview";
+export const REVEAL_ALL_DOES = "shows or hides every preview";
+
+/** One of the panel's keys the person set, held by what it does: the other
+ *  key cannot be it too. */
+export type TakenKey = { combo: Combo; does: string };
 
 export function parseCombo(text: string): Combo | null {
   const parts = text.toLowerCase().split("+").map((p) => p.trim()).filter(Boolean);
@@ -54,6 +71,10 @@ export function comboOf(event: Pressed): Combo | null {
   return { ctrl: event.ctrlKey, alt: event.altKey, shift: event.shiftKey, cmd: event.metaKey, key };
 }
 
+export function same(a: Combo, b: Combo): boolean {
+  return a.key === b.key && a.ctrl === b.ctrl && a.alt === b.alt && a.shift === b.shift && a.cmd === b.cmd;
+}
+
 export function pressed(event: Pressed, combo: Combo): boolean {
   const got = comboOf(event);
   return (
@@ -91,8 +112,10 @@ export function acceleratorRefusal(accelerator: string): string | null {
   return null;
 }
 
-/** Why a combo cannot be the panel's Pin, or null when it can. */
-export function refusal(combo: Combo): string | null {
+/** Why a combo cannot be one of the panel's own keys, or null when it can:
+ *  what types into the search, what the panel or the field already answers,
+ *  a row's key — and `others`, the panel's other keys as they are set. */
+export function refusal(combo: Combo, others: readonly TakenKey[] = []): string | null {
   if (!combo.ctrl && !combo.alt && !combo.cmd) {
     return "Add ⌘, ⌥ or ⌃ — without one, the key types into the search";
   }
@@ -108,7 +131,34 @@ export function refusal(combo: Combo): string | null {
   if (combo.cmd && combo.shift && !combo.ctrl && !combo.alt && combo.key === "p") {
     return "⌘⇧P pins the panel";
   }
+  const other = others.find((taken) => same(taken.combo, combo));
+  if (other) return `${glyphs(combo)} ${other.does}`;
   return null;
+}
+
+/** The panel's keys as the settings spell them, each as the panel can use
+ *  it: one it refuses goes back to its default. Settled in the order the
+ *  keys came — Pin, then show or hide, then show or hide all — each giving
+ *  way to the ones before it: to its default, or to none when even that is
+ *  taken (⌘⇧H was a Pin key a person could choose before privacy mode),
+ *  until the person picks another. Pin always has one: nothing comes
+ *  before it, and its default is never refused. */
+export function panelKeys(
+  pinText: string | undefined,
+  revealText: string | undefined,
+  revealAllText?: string,
+): { pin: Combo; reveal: Combo | null; revealAll: Combo | null } {
+  const taken: TakenKey[] = [];
+  const settle = (text: string | undefined, fallback: string, does: string) => {
+    const usable = (combo: Combo | null) => (combo && !refusal(combo, taken) ? combo : null);
+    const combo = usable(parseCombo(text ?? "")) ?? usable(parseCombo(fallback));
+    if (combo) taken.push({ combo, does });
+    return combo;
+  };
+  const pin = settle(pinText, DEFAULT_PIN_KEY, PIN_DOES)!;
+  const reveal = settle(revealText, DEFAULT_REVEAL_KEY, REVEAL_DOES);
+  const revealAll = settle(revealAllText, DEFAULT_REVEAL_ALL_KEY, REVEAL_ALL_DOES);
+  return { pin, reveal, revealAll };
 }
 
 /** ⌘-letters no row is given because something else answers them
@@ -117,6 +167,7 @@ export function refusal(combo: Combo): string | null {
 const CMD_LETTERS: Record<string, string> = {
   a: "⌘A is Select All",
   c: "⌘C is Copy",
+  k: "⌘K opens the actions menu",
   q: "⌘Q is Quit",
   v: "⌘V is Paste",
   w: "⌘W is Close",
