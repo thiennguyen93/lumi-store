@@ -312,6 +312,46 @@ pub fn window_state(name: &str) -> Result<Presence, String> {
     lumi::ext::ui::window_state(name)
 }
 
+/// Take one of your own windows off screen without closing it, by its
+/// manifest `name`: its page keeps running and keeps everything in it, where
+/// [`close_window`] ends a window's page and blanks a panel's. `true` when it
+/// was on screen and is off it now; one already off screen, closed or never
+/// opened answers `false` and is left as it is — and so does one in full
+/// screen, which has a Space of its own: taken away, it would leave the person
+/// on an empty one. [`show_window`] puts it back.
+///
+/// For getting out of the way of something on the screen — an editor while
+/// Lumi reads the text under it, heard as the `screen-capture` event:
+///
+/// ```ignore
+/// fn on_event(name: String, payload: String) -> Result<(), String> {
+///     if name == "screen-capture" {
+///         if payload.contains(r#""phase":"start""#) {
+///             lumi_extension_api::hide_window("editor")?;
+///         } else {
+///             lumi_extension_api::show_window("editor")?;
+///         }
+///     }
+///     Ok(())
+/// }
+/// ```
+///
+/// Works from [`Guest::on_event`]. Needs Lumi 1.36.0 or later — say so with
+/// `min-lumi-version`.
+pub fn hide_window(name: &str) -> Result<bool, String> {
+    lumi::ext::ui::hide_window(name)
+}
+
+/// Put back one of your own windows [`hide_window`] took off screen: where it
+/// stood among everybody's windows, and with the keyboard if it had it.
+/// `true` when it did. Any other window answers `false` and is left as it is
+/// — this restores, it never opens — and one the person opened or closed in
+/// between stays as they left it. Works from [`Guest::on_event`]. Needs Lumi
+/// 1.36.0 or later.
+pub fn show_window(name: &str) -> Result<bool, String> {
+    lumi::ext::ui::show_window(name)
+}
+
 /// Bring up Lumi's Settings on your extension's Settings tab — for a
 /// "Settings…" in one of your windows. Only for a press.
 pub fn open_settings() -> Result<(), String> {
