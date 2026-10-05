@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.80.1] - 2026-10-05
+
+### Changed
+
+- In Settings, **Confirm it's you before showing** is greyed out while **Lock history** is on, and says "Lock history already asks before anything is shown". A locked history already asks "Is it you?" before you see anything, and that answer covers showing items too, so the setting did nothing alongside it. Its value is kept, and it works again once Lock history is off. It now sits under **Lock again after panel closes**.
+- With **Lock history** on, turning privacy mode off no longer asks "Is it you?": the panel itself still asks before it shows anything.
+- The Welcome tour's Touch ID step no longer offers **Ask before showing** once your history is locked.
+
+## [0.80.0] - 2026-10-05
+
+### Changed
+
+- With **Confirm it's you before showing** on, turning privacy mode off asks "Is it you?" first, from Settings, from Lumi's menu bar or with the **Toggle privacy mode** key. Someone at your Mac can no longer switch it off to see your previews. If you cancel, privacy mode stays on. Turning it on never asks.
+
 ## [0.79.0] - 2026-10-05
 
 ### Changed

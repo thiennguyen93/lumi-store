@@ -102,6 +102,11 @@ pub trait Host {
     fn save_blob(&self, blob: &str, name: &str) -> Result<(), String>;
     /// Lumi's Settings, on this extension's Settings tab.
     fn open_settings(&self) -> Result<(), String>;
+    /// macOS's "Is it you?" dialog, worded "Lumi is trying to `reason`
+    /// (Clipboard Manager)": true once the person confirms, false for
+    /// Cancel, an error when it cannot be asked — never a yes. Only for a
+    /// press: a command, a menu bar row, or one of this extension's pages.
+    fn confirm_owner(&self, reason: &str) -> Result<bool, String>;
     /// This extension's rows in Lumi's menu bar menu, the whole tree.
     fn set_menu(&self, entries: &[lumi_extension_api::menu::Entry]) -> Result<(), String>;
     fn settings(&self) -> serde_json::Value;
@@ -271,6 +276,11 @@ impl Host for Lumi {
         lumi_extension_api::open_settings()
     }
 
+    fn confirm_owner(&self, reason: &str) -> Result<bool, String> {
+        // `owner`, Lumi 1.37.
+        lumi_extension_api::owner::authenticate(reason)
+    }
+
     fn set_menu(&self, entries: &[lumi_extension_api::menu::Entry]) -> Result<(), String> {
         // `set_rows`, for the rows' icons — Lumi 1.34.
         lumi_extension_api::menu::set_rows(entries)
@@ -421,6 +431,10 @@ pub mod memory {
         pub images: RefCell<BTreeMap<String, Layout>>,
         /// Every `read_image`, by blob.
         pub read_images: RefCell<Vec<String>>,
+        /// Every `confirm_owner`, by its reason.
+        pub owner_asked: RefCell<Vec<String>>,
+        /// What the "Is it you?" dialog answers; `None`: it cannot be asked.
+        pub owner_says: Cell<Option<bool>>,
     }
 
     /// One of the mock's snippets, as (profile, snippet id, trigger, text,
@@ -572,6 +586,11 @@ pub mod memory {
         fn open_settings(&self) -> Result<(), String> {
             self.opened.borrow_mut().push("settings".to_string());
             Ok(())
+        }
+
+        fn confirm_owner(&self, reason: &str) -> Result<bool, String> {
+            self.owner_asked.borrow_mut().push(reason.to_string());
+            self.owner_says.get().ok_or_else(|| "the dialog cannot be shown here".to_string())
         }
 
         fn set_menu(&self, entries: &[lumi_extension_api::menu::Entry]) -> Result<(), String> {

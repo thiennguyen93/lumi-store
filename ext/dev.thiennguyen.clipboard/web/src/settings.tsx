@@ -505,9 +505,15 @@ function Settings() {
               on={privacy ?? false}
               label="Privacy mode"
               onChange={(on) => {
-                setPrivacy(on);
+                // Off with "Confirm it's you before showing" waits for the
+                // extension's "Is it you?": the switch moves once it says.
+                if (on || !values.privacyConfirm || values.lockHistory) setPrivacy(on);
+                setFailed("");
                 ask<{ privacy: boolean }>({ kind: "setPrivacy", on }).then(
-                  (a) => setPrivacy(a.privacy),
+                  (a) => {
+                    setPrivacy(a.privacy);
+                    if (a.privacy !== on) setFailed("Not confirmed, so nothing was changed");
+                  },
                   (err: unknown) => {
                     setPrivacy(!on);
                     setFailed(err instanceof Error ? err.message : "Could not change privacy mode");
@@ -571,28 +577,6 @@ function Settings() {
             />
           </Row>
           <Row
-            label="Confirm it's you before showing"
-            hint={
-              canAsk === false
-                ? "Needs Lumi 1.36 and a password on this Mac"
-                : !privacy
-                  ? OFF_HINT
-                  : "Touch ID or your password, once each time previews are covered again"
-            }
-            bad={canAsk === false && values.privacyConfirm}
-          >
-            <Toggle
-              disabled={!privacy}
-              on={values.privacyConfirm}
-              label="Confirm it's you before showing"
-              onChange={(privacyConfirm) =>
-                privacyConfirm
-                  ? canAsk && change({ privacyConfirm }, true)
-                  : void loosen({ privacyConfirm }, "stop asking before showing clipboard content")
-              }
-            />
-          </Row>
-          <Row
             label="Lock history"
             hint={
               canAsk === false
@@ -625,6 +609,33 @@ function Settings() {
               onChange={(lockAfter) => change({ lockAfter }, true)}
               label="Lock again after panel closes"
               disabled={!values.lockHistory}
+            />
+          </Row>
+          {/* Under the lock, since it waits on it: a locked history asks
+              before anything is shown, and that yes counts for showing too,
+              so beside the lock this would never ask. Greyed, value kept. */}
+          <Row
+            label="Confirm it's you before showing"
+            hint={
+              canAsk === false
+                ? "Needs Lumi 1.36 and a password on this Mac"
+                : values.lockHistory
+                  ? "Lock history already asks before anything is shown"
+                  : !privacy
+                    ? OFF_HINT
+                    : "Touch ID or your password, once each time previews are covered again, and to turn privacy mode off"
+            }
+            bad={canAsk === false && values.privacyConfirm}
+          >
+            <Toggle
+              disabled={!privacy || values.lockHistory}
+              on={values.privacyConfirm}
+              label="Confirm it's you before showing"
+              onChange={(privacyConfirm) =>
+                privacyConfirm
+                  ? canAsk && change({ privacyConfirm }, true)
+                  : void loosen({ privacyConfirm }, "stop asking before showing clipboard content")
+              }
             />
           </Row>
           <div className="row col">

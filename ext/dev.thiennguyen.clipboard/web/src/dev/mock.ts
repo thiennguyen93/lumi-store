@@ -357,7 +357,7 @@ function answer(request: Request): unknown {
         searchMode: (settings.search ?? "mixed") as "exact" | "fuzzy" | "regexp" | "mixed",
         appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
         privacy,
-        privacyConfirm: settings.privacyConfirm === "true",
+        privacyConfirm: settings.privacyConfirm === "true" && settings.lockHistory !== "true",
         lock: { on: settings.lockHistory === "true", unlocked: settings.lockHistory === "true" && unlockedNow(request.opening === true) },
         shown: request.opening === true ? shownOnOpening() : null,
       };
@@ -381,6 +381,13 @@ function answer(request: Request): unknown {
     case "privacy":
     case "setPrivacy":
       if (request.on !== undefined) {
+        // Off with "Confirm it's you before showing" asks first, and a no
+        // leaves it on (src/lib.rs `set_private`).
+        if (!request.on && privacy && settings.privacyConfirm === "true" && settings.lockHistory !== "true") {
+          if (authAnswer === "unavailable") throw new Error("owner.authenticate: the dialog cannot be shown here (macOS could not ask (LAError -5))");
+          say("Is it you? Lumi is trying to turn off privacy mode (Clipboard Manager)");
+          if (!authAnswer) return { privacy };
+        }
         privacy = request.on;
         say(`would turn privacy mode ${privacy ? "on" : "off"}`);
       }

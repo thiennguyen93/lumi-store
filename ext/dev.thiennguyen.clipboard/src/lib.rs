@@ -53,8 +53,8 @@ const PAUSED: &str = "paused";
 /// Set while privacy mode is on: the panel's preview covers every item
 /// until the person shows it. A key like `PAUSED`, not a setting, because
 /// it is flipped from places that cannot write settings — the menu bar
-/// row and the `privacy` command — as well as from the panel and the
-/// Settings tab, and all of them must flip the one switch.
+/// row and the `privacy` command — as well as from the Settings tab and
+/// the Welcome tour, and all of them must flip the one switch.
 const PRIVACY: &str = "privacy";
 
 /// How long previews shown in privacy mode stay shown after the panel
@@ -279,11 +279,13 @@ fn welcome(host: &impl Host, request: &Value) -> Result<Value, String> {
             Ok(json!({ "from": from, "version": env!("CARGO_PKG_VERSION"), "privacy": private(host) }))
         }
         // The privacy step's "Turn on privacy mode", the switch every other
-        // place flips.
+        // place flips. On only: the tour offers nothing that turns it off,
+        // so it is no way to turn it off either.
         "privacy" => {
-            let on = request["on"].as_bool().ok_or("privacy mode is not on or off")?;
-            set_private(host, on)?;
-            Ok(json!({ "privacy": on }))
+            if request["on"].as_bool() != Some(true) {
+                return Err("the Welcome window only turns privacy mode on".to_string());
+            }
+            Ok(json!({ "privacy": set_private(host, true)? }))
         }
         // The tour's "Try it": the panel comes up over the window, dressed
         // as Settings says, the way the command opens it.
@@ -377,11 +379,6 @@ fn private(host: &impl Host) -> bool {
 /// turned on or off from somewhere else: read it again.
 pub const PRIVACY_CHANGED: &str = r#"{"kind":"privacy"}"#;
 
-/// Turn privacy mode on or off — from the menu bar, the command, the panel
-/// or the Settings tab alike — and tell everything that shows it. A
-/// `Conflict` on the `put` is the key already there: on already, which is
-/// what was asked. The posts are best effort: a page that is not up reads
-/// the switch when it opens.
 /// The panel closed (Lumi 1.37): what it showed in privacy mode lasts
 /// "Cover again after panel closes" from now, and an unlocked history
 /// "Lock again after panel closes" — or both end now, for "Immediately".
@@ -444,7 +441,24 @@ fn shown_on_opening(host: &impl Host) -> Option<Shown> {
     None
 }
 
-fn set_private(host: &impl Host, on: bool) -> Result<(), String> {
+/// Why the "Is it you?" dialog is up when privacy mode is turned off:
+/// "Lumi is trying to turn off privacy mode (Clipboard Manager)".
+const PRIVACY_OFF_REASON: &str = "turn off privacy mode";
+
+/// Turn privacy mode on or off — from the menu bar, the command or the
+/// Settings tab alike, and on from the Welcome tour — and tell everything
+/// that shows it; answers whether it is on now. Off shows every preview at
+/// once, so with "Confirm it's you before showing" it asks "Is it you?"
+/// first, wherever it was turned off, and a no leaves it on — here rather
+/// than in each place that offers the switch, so none of them can be a way
+/// round it. On never asks, nor does off without that setting: a preview is
+/// then shown with a click anyway. A `Conflict` on the `put` is the key
+/// already there: on already, which is what was asked. The posts are best
+/// effort: a page that is not up reads the switch when it opens.
+fn set_private(host: &impl Host, on: bool) -> Result<bool, String> {
+    if !on && private(host) && prefs(host).privacy_confirm && !host.confirm_owner(PRIVACY_OFF_REASON)? {
+        return Ok(true);
+    }
     // Turned on or off, nothing shown before is shown again.
     let _ = host.delete(SHOWN);
     if !on {
@@ -455,7 +469,7 @@ fn set_private(host: &impl Host, on: bool) -> Result<(), String> {
     let _ = draw_menu(host);
     let _ = host.post(PANEL, PRIVACY_CHANGED);
     let _ = host.post(SETTINGS, PRIVACY_CHANGED);
-    Ok(())
+    Ok(on)
 }
 
 /// Whether the menu bar asked for a delete on this opening, and the ask
@@ -483,7 +497,7 @@ fn menu_pressed(host: &impl Host, id: &str) -> Result<(), String> {
             }
             draw_menu(host)
         }
-        "privacy" => set_private(host, !private(host)),
+        "privacy" => set_private(host, !private(host)).map(|_| ()),
         // Up already: it is told, and lists nothing as an opening. Shut:
         // the key is left for its opening list, which a post could not
         // reach before the page is listening.
@@ -538,7 +552,7 @@ fn command(host: &impl Host, name: &str) -> Result<(), String> {
         },
         // Before a screen is shared, from anywhere: the panel need not be
         // opened — showing the newest copy — to turn it on.
-        "privacy" => set_private(host, !private(host)),
+        "privacy" => set_private(host, !private(host)).map(|_| ()),
         _ => Err(format!("Clipboard Manager has no {name} command")),
     }
 }
@@ -612,7 +626,11 @@ struct Prefs {
     /// mode stay shown after the panel closes; `None` for at once.
     cover_after_ms: Option<i64>,
     /// "Confirm it's you before showing": the first preview shown in an
-    /// opening asks macOS's "Is it you?" dialog first.
+    /// opening asks macOS's "Is it you?" dialog first — and turning privacy
+    /// mode off does. As it acts, not as it is set: off while "Lock history"
+    /// is on, which asks before anything is shown at all, so that a yes to
+    /// it is a yes to showing too and this would never ask (the Settings tab
+    /// greys it out, its value kept).
     privacy_confirm: bool,
     /// "Lock history": the panel opens locked — no list, no preview, no
     /// action — until that dialog says it is the owner.
@@ -657,6 +675,8 @@ fn prefs(host: &impl Host) -> Prefs {
         .collect();
     let (mut rules, _refused) = Rules::new(MAX_ITEMS, apps, s["ignorePatterns"].as_str().unwrap_or(""));
     rules.keep_ms = Some(keep_ms);
+    let on = |name: &str| matches!(&s[name], Value::Bool(true)) || s[name].as_str() == Some("true");
+    let lock_history = on("lockHistory");
     Prefs {
         rules,
         keep,
@@ -701,9 +721,8 @@ fn prefs(host: &impl Host) -> Prefs {
             .iter()
             .find(|(word, _)| s["privacyIdle"].as_str() == Some(word))
             .and_then(|(_, ms)| *ms),
-        privacy_confirm: matches!(&s["privacyConfirm"], Value::Bool(true))
-            || s["privacyConfirm"].as_str() == Some("true"),
-        lock_history: matches!(&s["lockHistory"], Value::Bool(true)) || s["lockHistory"].as_str() == Some("true"),
+        privacy_confirm: on("privacyConfirm") && !lock_history,
+        lock_history,
         lock_after_ms: LOCK_AFTERS
             .iter()
             .find(|(word, _)| s["lockAfter"].as_str() == Some(word))
@@ -1682,10 +1701,10 @@ fn settings(host: &impl Host, request: &Value) -> Result<Value, String> {
             Ok(json!({}))
         }
         "privacy" => Ok(json!({ "privacy": private(host) })),
+        // How it stands after, which a no to "Is it you?" leaves on.
         "setPrivacy" => {
             let on = request["on"].as_bool().ok_or("privacy mode is not on or off")?;
-            set_private(host, on)?;
-            Ok(json!({ "privacy": on }))
+            Ok(json!({ "privacy": set_private(host, on)? }))
         }
         "tryPatterns" => {
             let patterns = request["patterns"].as_str().unwrap_or_default();
@@ -2104,9 +2123,9 @@ mod tests {
         (list["privacy"].as_bool().unwrap(), list["shown"].clone())
     }
 
-    /// The menu bar row, the command, the panel and the Settings tab all
-    /// flip the one switch, and each flip tells the panel, the Settings tab
-    /// and the menu bar row.
+    /// The menu bar row, the command and the Settings tab all flip the one
+    /// switch — the panel none — and each flip tells the panel, the
+    /// Settings tab and the menu bar row.
     #[test]
     fn privacy_mode_is_one_switch_however_it_is_flipped() {
         let host = Memory::default();
@@ -2142,6 +2161,73 @@ mod tests {
         assert!(!privacy_of(&host).0);
         assert_eq!(told(&host), (5, 5));
         assert!(settings(&host, &json!({"kind": "setPrivacy"})).is_err(), "neither on nor off");
+    }
+
+    /// With "Confirm it's you before showing", turning privacy mode off asks
+    /// "Is it you?" first — from the menu bar, the command and the Settings
+    /// tab alike — and a no, or a dialog that cannot be had, leaves it on
+    /// with nobody told and what was shown as it was. On never asks, and off
+    /// without the setting does not either: a show is a click then anyway.
+    #[test]
+    fn turning_privacy_mode_off_asks_is_it_you_when_showing_does() {
+        let host = Memory::default();
+        *host.settings.borrow_mut() = json!({"privacyConfirm": "true"});
+        settings(&host, &json!({"kind": "setPrivacy", "on": true})).unwrap();
+        assert!(host.owner_asked.borrow().is_empty(), "turning it on never asks");
+        ui(&host, &json!({"kind": "shown", "all": true, "except": [], "confirmed": true})).unwrap();
+        let posts = host.posts.borrow().len();
+
+        host.owner_says.set(Some(false));
+        menu_pressed(&host, "privacy").unwrap();
+        command(&host, "privacy").unwrap();
+        assert_eq!(settings(&host, &json!({"kind": "setPrivacy", "on": false})).unwrap(), json!({"privacy": true}));
+        assert_eq!(*host.owner_asked.borrow(), vec![PRIVACY_OFF_REASON; 3], "asked each time");
+        assert!(private(&host), "a no leaves it on");
+        assert!(read_shown(&host).is_some(), "and what was shown as it was");
+        assert_eq!(host.posts.borrow().len(), posts, "nobody told of a change that did not happen");
+        assert!(menu_ids(&host).contains(&("privacy".to_string(), "Turn Off Privacy Mode".to_string())));
+
+        host.owner_says.set(None);
+        assert!(command(&host, "privacy").is_err(), "a dialog that cannot be shown is never a yes");
+        assert!(private(&host));
+
+        host.owner_says.set(Some(true));
+        assert_eq!(settings(&host, &json!({"kind": "setPrivacy", "on": false})).unwrap(), json!({"privacy": false}));
+        assert!(!private(&host), "a yes turns it off");
+        assert!(read_shown(&host).is_none());
+
+        *host.settings.borrow_mut() = json!({});
+        host.owner_asked.borrow_mut().clear();
+        host.owner_says.set(None);
+        command(&host, "privacy").unwrap();
+        command(&host, "privacy").unwrap();
+        assert!(!private(&host));
+        assert!(host.owner_asked.borrow().is_empty(), "without the setting, nothing to ask");
+    }
+
+    /// "Lock history" asks before anything is shown, and its yes counts for
+    /// showing too, so "Confirm it's you before showing" never acts beside
+    /// it: the panel is told it does not ask, and turning privacy mode off
+    /// does not ask either. Its value is kept: the lock off, it acts again.
+    #[test]
+    fn confirm_before_showing_waits_while_the_history_is_locked() {
+        let host = Memory::default();
+        *host.settings.borrow_mut() = json!({"privacyConfirm": "true", "lockHistory": "true"});
+        command(&host, "privacy").unwrap();
+        let list = ui(&host, &json!({"kind": "list"})).unwrap();
+        assert_eq!(list["privacyConfirm"], false);
+        assert_eq!(list["lock"]["on"], true);
+        command(&host, "privacy").unwrap();
+        assert!(!private(&host), "off without asking");
+        assert!(host.owner_asked.borrow().is_empty());
+
+        *host.settings.borrow_mut() = json!({"privacyConfirm": "true", "lockHistory": "false"});
+        command(&host, "privacy").unwrap();
+        assert_eq!(ui(&host, &json!({"kind": "list"})).unwrap()["privacyConfirm"], true, "the lock off, it acts again");
+        host.owner_says.set(Some(false));
+        command(&host, "privacy").unwrap();
+        assert!(private(&host));
+        assert_eq!(*host.owner_asked.borrow(), vec![PRIVACY_OFF_REASON]);
     }
 
     fn closed(host: &Memory, window: &str, at: i64) {
@@ -3178,6 +3264,10 @@ mod tests {
         welcome(&host, &json!({"kind": "privacy", "on": true})).unwrap();
         assert!(private(&host));
         assert_eq!(welcome(&host, &json!({"kind": "welcome"})).unwrap()["privacy"], true);
+        // On only: the tour is no way to turn it off.
+        assert!(welcome(&host, &json!({"kind": "privacy", "on": false})).is_err());
+        assert!(welcome(&host, &json!({"kind": "privacy"})).is_err());
+        assert!(private(&host));
         assert!(host.posts.borrow().iter().any(|(w, m)| w == PANEL && m == PRIVACY_CHANGED), "an open panel follows");
     }
 

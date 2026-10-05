@@ -9,11 +9,13 @@
 # the same reason: `ui.set-pinned`. 1.31.0 since snippets — and Show and
 # Toggle ask `ui.window-state`, which arrives there too. 1.33.0 for the
 # menu bar rows (`menu`), and 1.34.0 since they wear icons:
-# `menu.set-rows`.
+# `menu.set-rows`. 1.37.0 for the `window-closed` event and, the same way as
+# Save image as…, for `owner.authenticate`: turning privacy mode off asks
+# "Is it you?" from the menu bar row and the command, which have no page.
 [extension]
 id = "dev.thiennguyen.clipboard"
 name = "Clipboard Manager"
-version = "0.79.0"
+version = "0.80.1"
 description = "Keep what you copy — text, links, images and files — and paste it back from a panel."
 author = "Thien Nguyen"
 summary = "Remembers what you copy on this Mac and brings it back with one shortcut: search, pick, and it is pasted into the app you were typing in. Text, rich text, links, colours, files and images, with pins for what you keep reaching for. Anything a password manager marks as secret is never recorded — Lumi drops it before this extension hears of it — and the history is stored encrypted with a key Lumi keeps in your Keychain. Nothing leaves your Mac: the extension has no network access."

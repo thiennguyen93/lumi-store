@@ -261,7 +261,9 @@ function Welcome() {
                       <LockGlyph /> Lock my history
                     </button>
                   )}
-                  {tour.privacyConfirm ? (
+                  {/* The lock asks before anything is shown, so asking
+                      before showing is nothing more beside it. */}
+                  {tour.lockHistory ? null : tour.privacyConfirm ? (
                     <span className="ok-note">
                       <FingerprintGlyph /> Asks before showing
                     </span>
