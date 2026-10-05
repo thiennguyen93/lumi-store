@@ -30,7 +30,7 @@ use std::collections::{HashMap, HashSet};
 /// The panel's `[[window]]` name.
 pub const PANEL: &str = "history";
 
-/// The Welcome window's `[[window]]` name: a six-step tour opened by
+/// The Welcome window's `[[window]]` name: an eight-step tour opened by
 /// `on_lifecycle` when the extension is installed or updated. Its own
 /// choice, not Lumi's — Lumi opens nothing on an install — and what it is
 /// for is the one thing an install can leave undone: the `[[shortcut]]`.
@@ -249,7 +249,14 @@ fn welcome(host: &impl Host, request: &Value) -> Result<Value, String> {
             if from.is_some() {
                 let _ = host.delete(WELCOME_FROM);
             }
-            Ok(json!({ "from": from, "version": env!("CARGO_PKG_VERSION") }))
+            Ok(json!({ "from": from, "version": env!("CARGO_PKG_VERSION"), "privacy": private(host) }))
+        }
+        // The privacy step's "Turn on privacy mode", the switch every other
+        // place flips.
+        "privacy" => {
+            let on = request["on"].as_bool().ok_or("privacy mode is not on or off")?;
+            set_private(host, on)?;
+            Ok(json!({ "privacy": on }))
         }
         // The tour's "Try it": the panel comes up over the window, dressed
         // as Settings says, the way the command opens it.
@@ -2852,6 +2859,16 @@ mod tests {
 
         on_lifecycle(&host, &lumi::Lifecycle::Uninstalling).unwrap();
         assert_eq!(host.opened.borrow().len(), 2, "an uninstall opens nothing");
+    }
+
+    #[test]
+    fn the_welcome_window_turns_privacy_mode_on_and_says_whether_it_is() {
+        let host = Memory::default();
+        assert_eq!(welcome(&host, &json!({"kind": "welcome"})).unwrap()["privacy"], false);
+        welcome(&host, &json!({"kind": "privacy", "on": true})).unwrap();
+        assert!(private(&host));
+        assert_eq!(welcome(&host, &json!({"kind": "welcome"})).unwrap()["privacy"], true);
+        assert!(host.posts.borrow().iter().any(|(w, m)| w == PANEL && m == PRIVACY_CHANGED), "an open panel follows");
     }
 
     #[test]

@@ -1,4 +1,4 @@
-/* The Welcome window: a small live panel on top acting out each of six
+/* The Welcome window: a small live panel on top acting out each of eight
    steps, the words below. Lumi's lumi.css comes first and has no
    specificity, so these rules win without trying; its tokens are used with a
    fallback each, so `pnpm dev` reads too. */
@@ -190,6 +190,140 @@ p { margin: 0; }
    a song, a PDF and some JSON. */
 .step-4 .panel { width: 470px; }
 .split { display: flex; gap: 8px; height: 100%; }
+
+/* Step six, privacy mode: the same list and pane, the pane covered until a
+   key shows it. Widened like step five. */
+.step-5 .panel { width: 470px; }
+.veil-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--wc-dim);
+}
+.veil-head svg { width: 12px; height: 12px; color: var(--wc-mark-ink); }
+.veil-head span:nth-child(2) { flex: 1; }
+.badge-on {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--wc-mark-wash);
+  color: var(--wc-mark-ink);
+  font-size: 10px;
+  font-weight: 600;
+}
+.badge-on.blink { animation: hail 0.5s ease-in-out 2; }
+.shroud-pane { position: relative; overflow: hidden; }
+.shroud, .shown-body { position: relative; flex: 1; display: flex; flex-direction: column; animation: arrive 0.3s ease-out both; }
+.shroud {
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--wc-line);
+  border-radius: 6px;
+}
+/* Lines of "text" behind the note, fading right, never drawn from a copy. */
+.shroud .bars {
+  position: absolute;
+  inset: 8px 10px;
+  background: repeating-linear-gradient(to bottom, color-mix(in srgb, CanvasText 16%, transparent) 0 6px, transparent 6px 15px);
+  -webkit-mask-image: linear-gradient(to right, #000 45%, transparent 95%);
+  mask-image: linear-gradient(to right, #000 45%, transparent 95%);
+  filter: blur(2px);
+  opacity: 0.6;
+}
+.shroud-note {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--wc-raised) 78%, transparent);
+  font-size: 11px;
+}
+.shroud-note svg { width: 13px; height: 13px; color: var(--wc-dim); }
+.budget { display: flex; flex-direction: column; gap: 4px; padding: 4px 2px; font: 11px/1.4 ui-monospace, "SF Mono", Menlo, monospace; }
+.budget b { display: inline-block; width: 64px; font-weight: 600; }
+.budget .dimline { color: var(--wc-faint); }
+.big-swatch { height: 70px; border-radius: 6px; background: #534ab7; }
+.never-note { display: flex; align-items: center; gap: 5px; margin-top: 6px; font-size: 10px; color: var(--wc-dim); }
+.never-note svg { width: 11px; height: 11px; }
+/* The key pressed, over the pane's corner, pressed in and gone. */
+.chord {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 3px 5px;
+  border-radius: 7px;
+  background: var(--wc-raised);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+  animation: chord 1.1s ease-out both;
+}
+@keyframes chord {
+  0% { opacity: 0; transform: translateY(6px); }
+  20% { opacity: 1; transform: none; }
+  35% { transform: scale(0.92); }
+  50%, 80% { transform: none; opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes hail {
+  50% { transform: scale(1.15); }
+}
+/* Step seven, Touch ID: the panel opens locked, macOS's dialog asks over
+   it for a finger, and the history opens behind it. */
+.locked-scene { position: relative; min-height: 138px; }
+.locked-scene .sp { flex: 1; }
+.locked-scene .item { animation: arrive 0.4s ease-out both; }
+.lock-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 138px;
+  font-size: 11px;
+  color: var(--wc-dim);
+  animation: arrive 0.35s ease-out both;
+}
+.lock-face svg { width: 20px; height: 20px; color: CanvasText; }
+.lock-face b { font-size: 12px; color: CanvasText; }
+.is-it-you {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  width: 214px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--wc-line);
+  border-radius: 11px;
+  background: var(--wc-raised);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  color: var(--wc-dim);
+  font-size: 10px;
+  line-height: 1.35;
+  text-align: center;
+  transform: translateX(-50%);
+  animation: sheet 0.3s ease-out both;
+}
+.is-it-you b { font-size: 11px; color: CanvasText; }
+.is-it-you .hint { margin-top: 3px; color: var(--wc-faint); }
+.is-it-you .print { display: grid; place-items: center; width: 32px; height: 32px; color: #e5484d; animation: print 1.1s ease-in-out infinite; }
+.is-it-you .print svg { width: 28px; height: 28px; stroke-width: 1.6; }
+.is-it-you .print.yes { color: var(--wc-ok); animation: none; }
+.locked-scene.yes .hint { color: var(--wc-ok); font-size: 12px; font-weight: 600; }
+@keyframes sheet { from { opacity: 0; transform: translate(-50%, -8px); } }
+@keyframes print { 50% { transform: scale(1.08); opacity: 0.65; } }
+
+.row-actions { display: flex; gap: 8px; margin-top: 10px; }
+.row-actions button { display: inline-flex; align-items: center; gap: 6px; }
+.row-actions svg { width: 13px; height: 13px; }
+.ok-note { display: inline-flex; align-items: center; gap: 6px; color: var(--wc-ok); font-size: 12px; font-weight: 500; }
+.ok-note svg { width: 13px; height: 13px; }
 .split .list { flex: none; width: 176px; }
 .split .list .item:first-child { margin-top: 0; }
 .split .item { transition: background-color 0.25s ease; }
@@ -357,7 +491,7 @@ p { margin: 0; }
   100% { width: 0; }
 }
 
-/* Step six: the found row is picked up, carried out of the panel and
+/* Step eight: the found row is picked up, carried out of the panel and
    dropped into a mail beside it. The mail sits beside the panel the way
    the key does on step three: always there, grown in on this step only. */
 .drop {
@@ -461,8 +595,8 @@ p { margin: 0; }
   stroke: #fff;
   stroke-width: 1.2;
 }
-.step-5 .ghost { animation: carry 3.8s ease-in-out 0.6s infinite; }
-.step-5 .item.first { animation: lift 3.8s ease-in-out 0.6s infinite; }
+.step-7 .ghost { animation: carry 3.8s ease-in-out 0.6s infinite; }
+.step-7 .item.first { animation: lift 3.8s ease-in-out 0.6s infinite; }
 .drop.shown .well { animation: take 3.8s ease-in-out 0.6s infinite; }
 .drop.shown .landed { animation: land 3.8s ease-out 0.6s infinite; }
 
@@ -512,7 +646,7 @@ p { margin: 0; }
 /* ---- The finish ------------------------------------------------------- */
 
 /* The whole window, on the preview's stage, so the end looks like the end
-   and not a sixth step. */
+   and not a ninth step. */
 .finish {
   height: 100%;
   box-sizing: border-box;

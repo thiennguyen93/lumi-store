@@ -24,7 +24,7 @@ export type Expansion = { text: string; profiles: string[]; dynamic: boolean; li
 
 type Answers = {
   list: ListAnswer;
-  welcome: { from: string | null; version: string };
+  welcome: { from: string | null; version: string; privacy?: boolean };
   openPanel: Record<string, never>;
   /** `html`: a rich copy's markup, to draw in a sandbox. */
   /** `fileSize`: a file row's files together, in bytes, when Lumi measured them. */

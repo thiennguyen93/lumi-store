@@ -198,7 +198,23 @@ let settings: Record<string, string> = {
   snippetsIn: "current",
   snippetProfiles: "p_work,p_home,p_3,p_gone",
   privacyIdle: "1m",
+  // `?confirm` and `?lock` open with "Confirm it's you before showing" and
+  // the history lock on.
+  privacyConfirm: String(new URLSearchParams(location.search).has("confirm")),
+  lockHistory: String(new URLSearchParams(location.search).has("lock")),
+  lockAfter: new URLSearchParams(location.search).get("lockAfter") ?? "close",
 };
+// The extension's `lock.until`, and what the "Is it you?" dialog answers:
+// `mockAuth(false)` for a cancel, `mockAuth("unavailable")` for a Mac — or a
+// Lumi — that cannot ask (`GET` answers `available: false`, `POST` a 503).
+let lockUntil: number | null = null;
+let authAnswer: boolean | "unavailable" = true;
+const LOCK_MS: Record<string, number | null> = { close: null, "1m": 60_000, "5m": 300_000, "15m": 900_000 };
+Object.assign(window, {
+  mockAuth(answer: boolean | "unavailable") {
+    authAnswer = answer;
+  },
+});
 // Privacy mode, the extension's switch (src/lib.rs `PRIVACY`); `?privacy`
 // opens the panel with it on.
 let privacy = new URLSearchParams(location.search).has("privacy");
@@ -298,8 +314,23 @@ function answer(request: Request): unknown {
         searchMode: (settings.search ?? "mixed") as "exact" | "fuzzy" | "regexp" | "mixed",
         appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
         privacy,
+        privacyConfirm: settings.privacyConfirm === "true",
+        lock: {
+          on: settings.lockHistory === "true",
+          until: settings.lockHistory === "true" && lockUntil !== null && lockUntil > Date.now() ? lockUntil : null,
+        },
         privacyIdle: (settings.privacyIdle ?? "") in IDLE_MS ? (IDLE_MS[settings.privacyIdle!] ?? null) : 60_000,
       };
+    case "unlocked": {
+      const ms = settings.lockHistory === "true" ? (LOCK_MS[settings.lockAfter ?? "close"] ?? null) : null;
+      lockUntil = ms === null ? null : Date.now() + ms;
+      say(lockUntil === null ? "unlocked until the panel closes" : `unlocked for ${ms! / 1000}s`);
+      return { until: lockUntil };
+    }
+    case "lock":
+      lockUntil = null;
+      say("locked now");
+      return {};
     case "privacy":
     case "setPrivacy":
       if (request.on !== undefined) {
@@ -563,6 +594,16 @@ window.fetch = async (input, init) => {
   if (url.endsWith("/__lumi__/show-shortcuts")) {
     say("would open Lumi's Shortcuts, searched for Show clipboard history");
     return new Response(null, { status: 204 });
+  }
+  if (url.endsWith("/__lumi__/authenticate")) {
+    if (init?.method !== "POST") {
+      return new Response(JSON.stringify({ available: authAnswer !== "unavailable" }), { status: 200 });
+    }
+    const { reason } = JSON.parse(String(init.body)) as { reason: string };
+    say(`Is it you? Lumi is trying to ${reason} (Clipboard Manager)`);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    if (authAnswer === "unavailable") return new Response("macOS could not ask (LAError -5)", { status: 503 });
+    return new Response(JSON.stringify({ authenticated: authAnswer }), { status: 200 });
   }
   if (url.endsWith("/__lumi__/settings")) {
     if (init?.method === "PUT") {

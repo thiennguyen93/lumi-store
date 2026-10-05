@@ -1,7 +1,7 @@
-// Clipboard Manager's Welcome window — the six-step tour `on_lifecycle`
+// Clipboard Manager's Welcome window — the eight-step tour `on_lifecycle`
 // opens on an install and on an update. The top half is a small, live
 // picture of the panel acting out each step; the bottom half says it. After
-// the last step comes the finish: not a seventh step but the whole window,
+// the last step comes the finish: not a ninth step but the whole window,
 // so nobody pressing Continue expects another one after it.
 //
 // Its own choice: Lumi opens nothing on an install, and the one thing an
@@ -13,12 +13,14 @@
 
 import { StrictMode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { call, Held, message, setShortcut, shortcuts } from "./bridge";
+import { call, canAuthenticate, Held, message, setShortcut, shortcuts } from "./bridge";
 import {
   ClipboardGlyph,
   CloudOffGlyph,
   EyeOffGlyph,
+  EyeGlyph,
   FileGlyph,
+  FingerprintGlyph,
   KeyGlyph,
   KindGlyph,
   LockGlyph,
@@ -26,7 +28,7 @@ import {
   SearchGlyph,
   ShieldGlyph,
 } from "./icons";
-import { acceleratorGlyphs, acceleratorOf, acceleratorRefusal } from "./keys";
+import { acceleratorGlyphs, acceleratorOf, acceleratorRefusal, glyphs, panelKeys } from "./keys";
 import { fuzzyScore } from "./search";
 import type { FileFamily } from "./fileType";
 import type { ExtensionShortcut, Kind, ShortcutHolder } from "./types";
@@ -49,7 +51,48 @@ const TIPS: [string, string][] = [
   ["⌘⌥⌫", "Delete"],
 ];
 
-const STEPS = 6;
+const STEPS = 8;
+
+/** The privacy step's keys as the panel will answer them — the person's own
+ *  if they set some, read the way the panel reads them. */
+type CoverKeys = { one: string | null; all: string | null };
+
+/** The settings the privacy and Touch ID steps show and set. */
+type TourSettings = { keys: CoverKeys; lockHistory: boolean; privacyConfirm: boolean };
+type Locks = Partial<Pick<TourSettings, "lockHistory" | "privacyConfirm">>;
+
+/** Read once; `set` saves only what it is given — Lumi keeps the rest. */
+function useTourSettings(): [TourSettings, (patch: Locks) => Promise<void>] {
+  const [settings, setSettings] = useState<TourSettings>(() => ({
+    keys: fromKeys(panelKeys(undefined, undefined, undefined)),
+    lockHistory: false,
+    privacyConfirm: false,
+  }));
+  useEffect(() => {
+    fetch("/__lumi__/settings")
+      .then((answer) => answer.json())
+      .then((raw: Record<string, unknown>) => {
+        const text = (v: unknown) => (v == null ? undefined : String(v));
+        setSettings({
+          keys: fromKeys(panelKeys(text(raw.pinKey), text(raw.revealKey), text(raw.revealAllKey))),
+          lockHistory: text(raw.lockHistory) === "true",
+          privacyConfirm: text(raw.privacyConfirm) === "true",
+        });
+      })
+      .catch(() => {});
+  }, []);
+  const set = useCallback(async (patch: Locks) => {
+    const written = Object.fromEntries(Object.entries(patch).map(([name, on]) => [name, String(on)]));
+    const answer = await fetch("/__lumi__/settings", { method: "PUT", body: JSON.stringify(written) });
+    if (!answer.ok) throw new Error((await answer.text()) || "Could not save");
+    setSettings((was) => ({ ...was, ...patch }));
+  }, []);
+  return [settings, set];
+}
+
+function fromKeys(keys: ReturnType<typeof panelKeys>): CoverKeys {
+  return { one: keys.reveal && glyphs(keys.reveal), all: keys.revealAll && glyphs(keys.revealAll) };
+}
 
 function Welcome() {
   const [step, setStep] = useState(0);
@@ -58,11 +101,21 @@ function Welcome() {
   // The key the preview wears on the shortcut step: whatever is armed.
   const [armed, setArmed] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
+  // Privacy mode, for the privacy step's button: on already, or turned on here.
+  const [privacy, setPrivacy] = useState(false);
+  const [tour, setTour] = useTourSettings();
+  const coverKeys = tour.keys;
+  // Whether "Is it you?" can be asked here — Lumi 1.36 and a Mac password.
+  const [canAsk, setCanAsk] = useState<boolean | null>(null);
 
   useEffect(() => {
     call({ kind: "welcome" })
-      .then((told) => setFrom(told.from))
+      .then((told) => {
+        setFrom(told.from);
+        setPrivacy(told.privacy === true);
+      })
       .catch((err) => setFailed(message(err)));
+    void canAuthenticate().then(setCanAsk);
   }, []);
 
   const act = (work: () => Promise<unknown>) => {
@@ -90,15 +143,15 @@ function Welcome() {
 
   return (
     <main className="tour">
-      <Preview step={step} armed={armed} />
+      <Preview step={step} armed={armed} keys={coverKeys} />
       <div className="body">
         {step === 0 &&
           (from ? (
             <>
               <h1>Clipboard Manager was updated</h1>
               <p className="dim">
-                From {from}. Your history and pins are where they were. New: drag any item out
-                of the panel into another app — a file lands as the file itself.
+                From {from}. Your history and pins are where they were. New: privacy mode keeps
+                each preview covered until you show it — and Touch ID can lock the whole history.
               </p>
             </>
           ) : (
@@ -147,6 +200,82 @@ function Welcome() {
           </>
         )}
         {step === 5 && (
+          <>
+            <h1>Keep it covered</h1>
+            <p className="dim">
+              Sharing your screen, or someone beside you? Privacy mode covers each preview until
+              you show it
+              {coverKeys.one && (
+                <>
+                  {" "}— <Caps glyphs={coverKeys.one} small /> for one
+                  {coverKeys.all && (
+                    <>
+                      , <Caps glyphs={coverKeys.all} small /> for all
+                    </>
+                  )}
+                </>
+              )}
+              . Turn it on from the eye in the panel, Lumi’s menu bar or a key. Settings can ask
+              for Touch ID first, or lock the whole history.
+            </p>
+            <div className="row-actions">
+              {privacy ? (
+                <span className="ok-note">
+                  <EyeOffGlyph /> Privacy mode is on
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() =>
+                    act(async () => {
+                      await call({ kind: "privacy", on: true });
+                      setPrivacy(true);
+                    })
+                  }
+                >
+                  <EyeOffGlyph /> Turn on privacy mode
+                </button>
+              )}
+            </div>
+          </>
+        )}
+        {step === 6 && (
+          <>
+            <h1>Lock it with Touch ID</h1>
+            <p className="dim">
+              Put your history behind Touch ID, your Apple Watch or your password: the panel opens
+              locked — no list, no preview, nothing to paste — until you confirm it’s you. Or keep
+              the list, and confirm only before a preview is shown.
+            </p>
+            {canAsk === false ? (
+              <p className="dim small row-actions">Needs Lumi 1.36 and a password on this Mac.</p>
+            ) : (
+              canAsk && (
+                <div className="row-actions">
+                  {tour.lockHistory ? (
+                    <span className="ok-note">
+                      <LockGlyph /> History lock is on
+                    </span>
+                  ) : (
+                    <button type="button" onClick={() => act(() => setTour({ lockHistory: true }))}>
+                      <LockGlyph /> Lock my history
+                    </button>
+                  )}
+                  {tour.privacyConfirm ? (
+                    <span className="ok-note">
+                      <FingerprintGlyph /> Asks before showing
+                    </span>
+                  ) : (
+                    <button type="button" onClick={() => act(() => setTour({ privacyConfirm: true }))}>
+                      <FingerprintGlyph /> Ask before showing
+                    </button>
+                  )}
+                </div>
+              )
+            )}
+          </>
+        )}
+        {step === 7 && (
           <>
             <h1>Drag it where it goes</h1>
             <p className="dim">
@@ -316,9 +445,10 @@ function Marked({ text, marks }: { text: string; marks: number[] }) {
  * A small, pretend panel acting out the step on screen: things arriving as
  * they are copied; the history sealed where it is kept; the panel popping
  * up at the key; a few letters typed narrowing the list down to one row;
- * files opening beside the list; a row dragged out into a mail.
+ * files opening beside the list; previews covered until shown; the history
+ * opened with Touch ID; a row dragged out into a mail.
  */
-function Preview({ step, armed }: { step: number; armed: string | null }) {
+function Preview({ step, armed, keys }: { step: number; armed: string | null; keys: CoverKeys }) {
   const [typed, setTyped] = useState(0);
   const panel = useRef<HTMLDivElement>(null);
   const shown = useRef(step);
@@ -352,7 +482,7 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
   }, [step]);
 
   // The drag step picks up where the search left off: the invoice found.
-  const query = step === 3 ? QUERY.slice(0, typed) : step === 5 ? QUERY : "";
+  const query = step === 3 ? QUERY.slice(0, typed) : step === 7 ? QUERY : "";
   const rows = found(query);
   const done = step === 3 && query === QUERY;
 
@@ -364,7 +494,15 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
         {armed ? <Caps glyphs={acceleratorGlyphs(armed)} small /> : "No key yet"}
       </span>
       <div className="panel" ref={panel}>
-        {step === 4 ? <Looking /> : step === 1 ? <Vault /> : <>
+        {step === 4 ? (
+          <Looking />
+        ) : step === 5 ? (
+          <Covered keys={keys} />
+        ) : step === 6 ? (
+          <Locked />
+        ) : step === 1 ? (
+          <Vault />
+        ) : <>
         <div className="search">
           <SearchGlyph />
           {query ? <span>{query}</span> : <span className="placeholder">Search</span>}
@@ -375,7 +513,7 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
             {row.kind === "color" ? <span className="swatch" /> : <KindGlyph kind={row.kind} />}
             <span className="text"><Marked text={row.text} marks={marks} /></span>
             <span className="meta">{at === 0 && done ? "↩ paste" : row.from}</span>
-            {step === 5 && at === 0 && (
+            {step === 7 && at === 0 && (
               <span className="ghost">
                 <KindGlyph kind={row.kind} />
                 <span className="text">{row.text}</span>
@@ -388,7 +526,7 @@ function Preview({ step, armed }: { step: number; armed: string | null }) {
       </div>
       {/* Always mounted, grown in on the drag step only, like the key: the
           panel glides aside for it and back. */}
-      <div className={step === 5 ? "drop shown" : "drop"}>
+      <div className={step === 7 ? "drop shown" : "drop"}>
         <div className="bar">
           <span className="lights"><i /><i /><i /></span>
           New Message
@@ -447,6 +585,168 @@ function Looking() {
         {file.family === "pdf" && <Pages />}
         {file.family === "code" && <Json />}
       </div>
+    </div>
+  );
+}
+
+/** The privacy step's rows: a copy whose preview says more than its row, a
+ *  file, and a colour — which privacy mode never covers. */
+const COVERED_ROWS: { kind: Kind; family?: FileFamily; name: string }[] = [
+  { kind: "text", name: "Q4 budget — draft" },
+  { kind: "file", family: "pdf", name: "Contract-Acme.pdf" },
+  { kind: "color", name: "#534AB7" },
+];
+
+/** The privacy step, beat by beat: which row is on, what is shown, which
+ *  key is pressed, and for how long (ms). */
+const COVER_BEATS: { on: number; shown: "none" | "one" | "all"; press: "one" | "all" | "eye" | null; ms: number }[] = [
+  { on: 0, shown: "none", press: null, ms: 1500 },
+  { on: 0, shown: "one", press: "one", ms: 1900 },
+  { on: 1, shown: "one", press: null, ms: 1400 },
+  { on: 2, shown: "one", press: null, ms: 1600 },
+  { on: 1, shown: "all", press: "all", ms: 2000 },
+  { on: 1, shown: "none", press: "eye", ms: 1500 },
+];
+
+/**
+ * The privacy step: the list stays as it is, the preview beside it is
+ * covered. The show key opens the budget; the next row is covered again; a
+ * colour never is; the show-all key opens everything; then it is all
+ * covered again — what a pinned panel left for another app does.
+ */
+function Covered({ keys }: { keys: CoverKeys }) {
+  const [beat, setBeat] = useState(0);
+
+  useEffect(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setTimeout(() => setBeat((was) => (was + 1) % COVER_BEATS.length), COVER_BEATS[beat]!.ms);
+    return () => window.clearTimeout(timer);
+  }, [beat]);
+
+  const now = COVER_BEATS[beat]!;
+  const row = COVERED_ROWS[now.on]!;
+  const shown = row.kind === "color" || now.shown === "all" || (now.shown === "one" && now.on === 0);
+  const press = now.press === "one" ? keys.one : now.press === "all" ? keys.all : null;
+  return (
+    <div className="split covered-scene">
+      <div className="list">
+        <div className="veil-head">
+          <EyeOffGlyph />
+          <span>Privacy mode</span>
+          <span className={now.press === "eye" ? "badge-on blink" : "badge-on"}>On</span>
+        </div>
+        {COVERED_ROWS.map((one, at) => (
+          <div key={one.name} className={at === now.on ? "item first" : "item"}>
+            {one.kind === "color" ? (
+              <span className="swatch" />
+            ) : one.family ? (
+              <FileGlyph family={one.family} />
+            ) : (
+              <KindGlyph kind={one.kind} />
+            )}
+            <span className="text">{one.name}</span>
+          </div>
+        ))}
+      </div>
+      <div className="pane shroud-pane">
+        {shown ? (
+          <div key={`${row.name}-shown`} className="shown-body">
+            {row.kind === "color" && (
+              <>
+                <span className="big-swatch" />
+                <span className="never-note"><EyeGlyph /> Colours are never covered</span>
+              </>
+            )}
+            {row.kind === "text" && (
+              <div className="budget">
+                <span><b>Revenue</b> $4.2M</span>
+                <span><b>Hiring</b> +12</span>
+                <span><b>Runway</b> 26 months</span>
+                <span className="dimline">Draft — do not share</span>
+              </div>
+            )}
+            {row.kind === "file" && <Pages />}
+          </div>
+        ) : (
+          <div key={`${row.name}-covered`} className="shroud">
+            <span className="bars" />
+            <span className="shroud-note">
+              <EyeOffGlyph />
+              <b>Content hidden</b>
+            </span>
+          </div>
+        )}
+        {press && (
+          <span key={`${beat}-press`} className="chord">
+            <Caps glyphs={press} small />
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The Touch ID step, beat by beat (ms): locked; macOS's "Is it you?"
+ *  over the panel, the fingerprint waiting; the fingerprint taken; the
+ *  history open. Then locked again — the panel closing, or Lock now. */
+const LOCK_BEATS: { phase: "locked" | "asking" | "yes" | "open"; ms: number }[] = [
+  { phase: "locked", ms: 1400 },
+  { phase: "asking", ms: 2100 },
+  { phase: "yes", ms: 700 },
+  { phase: "open", ms: 2600 },
+];
+
+/**
+ * The Touch ID step: the panel opens locked, the dialog macOS shows for
+ * Lumi asks for a finger, and the history opens behind it. With reduced
+ * motion it holds on the dialog, the beat that says the most.
+ */
+function Locked() {
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [beat, setBeat] = useState(still ? 1 : 0);
+
+  useEffect(() => {
+    if (still) return;
+    const timer = window.setTimeout(() => setBeat((was) => (was + 1) % LOCK_BEATS.length), LOCK_BEATS[beat]!.ms);
+    return () => window.clearTimeout(timer);
+  }, [beat, still]);
+
+  const phase = LOCK_BEATS[beat]!.phase;
+  return (
+    <div className={`locked-scene ${phase}`}>
+      {phase === "open" ? (
+        <>
+          <div className="search">
+            <SearchGlyph />
+            <span className="placeholder">Search</span>
+            <span className="sp" />
+            <span className="badge-ok">Unlocked</span>
+          </div>
+          {ROWS.slice(0, 3).map((row, at) => (
+            <div key={row.text} className={at === 0 ? "item first" : "item"} style={{ animationDelay: `${at * 0.12}s` }}>
+              {row.kind === "color" ? <span className="swatch" /> : <KindGlyph kind={row.kind} />}
+              <span className="text">{row.text}</span>
+              <span className="meta">{row.from}</span>
+            </div>
+          ))}
+        </>
+      ) : (
+        <div className="lock-face">
+          <LockGlyph />
+          <b>Clipboard history is locked</b>
+          <span>Confirm it’s you to see and paste</span>
+        </div>
+      )}
+      {(phase === "asking" || phase === "yes") && (
+        <div className="is-it-you">
+          <span className={phase === "yes" ? "print yes" : "print"}>
+            <FingerprintGlyph />
+          </span>
+          <b>Lumi</b>
+          <span>Lumi is trying to open your clipboard history (Clipboard Manager).</span>
+          <span className="hint">{phase === "yes" ? "✓" : "Touch ID or enter your password"}</span>
+        </div>
+      )}
     </div>
   );
 }

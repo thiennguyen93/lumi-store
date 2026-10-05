@@ -23,6 +23,7 @@ import {
   same,
   type TakenKey,
 } from "./keys";
+import { authenticate, canAuthenticate } from "./bridge";
 import { shortcuts } from "./bridge";
 import { KEEP_LABELS, type OwnShortcuts, type Stats } from "./types";
 import { type Book, countedPicks, LookIn, type Scope, SCOPES } from "./LookIn";
@@ -38,6 +39,7 @@ type Search = "exact" | "fuzzy" | "regexp" | "mixed";
 type Keep = "5m" | "1h" | "1d" | "1w" | "1mo" | "3mo";
 type Order = "last" | "first" | "used";
 type Idle = "30s" | "1m" | "5m" | "never";
+type LockAfter = "close" | "1m" | "5m" | "15m";
 
 interface Values {
   keep: Keep;
@@ -59,6 +61,9 @@ interface Values {
   snippetsIn: Scope;
   snippetProfiles: string[];
   privacyIdle: Idle;
+  privacyConfirm: boolean;
+  lockHistory: boolean;
+  lockAfter: LockAfter;
 }
 
 interface App {
@@ -94,6 +99,13 @@ const IDLES: { value: Idle; label: string }[] = [
   { value: "1m", label: "1 min" },
   { value: "5m", label: "5 min" },
   { value: "never", label: "On close" },
+];
+
+const LOCK_AFTERS: { value: LockAfter; label: string }[] = [
+  { value: "close", label: "On close" },
+  { value: "1m", label: "1 min" },
+  { value: "5m", label: "5 min" },
+  { value: "15m", label: "15 min" },
 ];
 
 const ORDERS: { value: Order; label: string }[] = [
@@ -189,6 +201,9 @@ function read(raw: Record<string, unknown>): Values {
       .map((id) => id.trim())
       .filter((id, at, all) => id && all.indexOf(id) === at),
     privacyIdle: (IDLES.find((i) => i.value === raw.privacyIdle) ?? IDLES[1]!).value,
+    privacyConfirm: text(raw.privacyConfirm, "false") === "true",
+    lockHistory: text(raw.lockHistory, "false") === "true",
+    lockAfter: (LOCK_AFTERS.find((l) => l.value === raw.lockAfter) ?? LOCK_AFTERS[0]!).value,
   };
 }
 
@@ -212,6 +227,9 @@ function written(v: Values): Record<string, string> {
     snippetsIn: v.snippetsIn,
     snippetProfiles: v.snippetProfiles.join(","),
     privacyIdle: v.privacyIdle,
+    privacyConfirm: String(v.privacyConfirm),
+    lockHistory: String(v.lockHistory),
+    lockAfter: v.lockAfter,
   };
 }
 
@@ -231,6 +249,11 @@ function Settings() {
   // the menu bar row and a key flip it too — so it is asked for and set
   // through the extension, and read again when it says it changed.
   const [privacy, setPrivacy] = useState<boolean | null>(null);
+  // Whether "Is it you?" can be asked on this Mac and this Lumi (1.36).
+  const [canAsk, setCanAsk] = useState<boolean | null>(null);
+  useEffect(() => {
+    void canAuthenticate().then(setCanAsk);
+  }, []);
   const latest = useRef<Values | null>(null);
   const saving = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -308,6 +331,23 @@ function Settings() {
     clearTimeout(saving.current);
     if (now) save();
     else saving.current = setTimeout(save, 350);
+  };
+
+  /** A protection turned off — the lock, or confirming before showing —
+   *  asks "Is it you?" first: otherwise anybody at a locked panel could
+   *  press ⌘, and switch it off here. Turning one on never asks. */
+  const loosen = async (patch: Partial<Values>, reason: string) => {
+    try {
+      if (!(await authenticate(reason))) {
+        setFailed("Not confirmed, so nothing was changed");
+        return;
+      }
+    } catch (err) {
+      setFailed(err instanceof Error ? err.message : "Could not ask");
+      return;
+    }
+    setFailed("");
+    change(patch, true);
   };
 
   if (!values) return null;
@@ -515,6 +555,53 @@ function Settings() {
               onChange={(privacyIdle) => change({ privacyIdle }, true)}
               label="Cover again after"
               disabled={!privacy}
+            />
+          </Row>
+          <Row
+            label="Confirm it's you before showing"
+            hint={
+              canAsk === false
+                ? "Needs Lumi 1.36 and a password on this Mac"
+                : "Touch ID or your password, once each time previews are covered again"
+            }
+            bad={canAsk === false && values.privacyConfirm}
+          >
+            <Toggle
+              on={values.privacyConfirm}
+              label="Confirm it's you before showing"
+              onChange={(privacyConfirm) =>
+                privacyConfirm
+                  ? canAsk && change({ privacyConfirm }, true)
+                  : void loosen({ privacyConfirm }, "stop asking before showing clipboard content")
+              }
+            />
+          </Row>
+          <Row
+            label="Lock history"
+            hint={
+              canAsk === false
+                ? "Needs Lumi 1.36 and a password on this Mac"
+                : "The panel opens locked until you confirm it's you: no list, no preview, no paste"
+            }
+            bad={canAsk === false && values.lockHistory}
+          >
+            <Toggle
+              on={values.lockHistory}
+              label="Lock history"
+              onChange={(lockHistory) =>
+                lockHistory
+                  ? canAsk && change({ lockHistory }, true)
+                  : void loosen({ lockHistory }, "turn off the lock on your clipboard history")
+              }
+            />
+          </Row>
+          <Row label="Lock again" hint="On close: every time the panel opens. Otherwise, a while after you unlock">
+            <Segmented
+              value={values.lockAfter}
+              options={LOCK_AFTERS}
+              onChange={(lockAfter) => change({ lockAfter }, true)}
+              label="Lock again"
+              disabled={!values.lockHistory}
             />
           </Row>
           <div className="row col">

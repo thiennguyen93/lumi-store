@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.75.0] - 2026-10-05
+
+### Added
+
+- The Welcome tour has a Touch ID step: the panel opens locked, macOS asks "Is it you?", and the history opens behind it. Buttons there lock your history or ask before showing, straight away; on a Lumi older than 1.36 the step says what it needs instead.
+
+## [0.74.0] - 2026-10-05
+
+### Added
+
+- The Welcome tour has a step on privacy mode: the panel covers a budget, shows it with your key, shows a colour that is never covered, shows everything at once and covers it all again. A button there turns privacy mode on, and the keys it names are the ones you set.
+
+## [0.73.0] - 2026-10-05
+
+### Added
+
+- **Confirm it's you before showing.** In privacy mode, the first item you show asks macOS's "Is it you?" — Touch ID, your Apple Watch or your password. After that, showing more items, or all of them, does not ask again until they are covered again.
+- **Lock history.** The panel opens locked: no list, no preview and nothing to paste until you confirm it's you. It asks as soon as the panel opens; **Cancel** leaves an **Unlock** button. Choose under **Lock again** whether it locks every time the panel closes or a while after you unlock, and lock it at once with **Lock history now** in **⌘K**.
+- Turning either of them off in Settings asks "Is it you?" first, so someone at your Mac cannot switch them off.
+- Both need Lumi 1.36. On an older Lumi the switches say so, and nothing else changes.
+
 ## [0.72.1] - 2026-10-05
 
 ### Changed
