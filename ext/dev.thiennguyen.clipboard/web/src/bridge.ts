@@ -6,6 +6,7 @@
 //   POST /__lumi__/call        → the extension's run-ui export
 //   GET  /__lumi__/blob/<id>   → an image Lumi stored for this extension
 //   POST /__lumi__/drag        → hand this press to macOS as a window drag
+//   GET|POST /__lumi__/authenticate → macOS's "Is it you?" dialog (Lumi 1.36)
 
 import { backoff, Foreground, isBusy, newest, serial } from "./lanes";
 import type { Entry, ExtensionShortcut, Layout, ListAnswer, OwnShortcuts, Request, ShortcutRefusal, Stats } from "./types";
@@ -66,6 +67,10 @@ type Answers = {
   clear: { ids: string[] };
   close: Record<string, never>;
   pinPanel: { pinned: boolean };
+  /** History lock: an unlock said yes to — kept until `until` for "Lock
+   *  again" after a while, null for until the panel closes — and Lock now. */
+  unlocked: { until: number | null };
+  lock: Record<string, never>;
   /** `privacy` asks or sets it; the answer is how it stands now. */
   privacy: { privacy: boolean };
   setPrivacy: { privacy: boolean };
@@ -147,6 +152,29 @@ export function callLatest<R extends Request>(request: R): Promise<Answers[R["ki
     latestLanes.set(request.kind, lane);
   }
   return lane(() => send(request));
+}
+
+/** Whether macOS's "Is it you?" dialog can be shown here — false on a Lumi
+ *  older than 1.36, which has no such route, and on a Mac that cannot ask. */
+export async function canAuthenticate(): Promise<boolean> {
+  try {
+    const answer = await fetch("/__lumi__/authenticate");
+    if (!answer.ok) return false;
+    return ((await answer.json()) as { available?: unknown }).available === true;
+  } catch {
+    return false;
+  }
+}
+
+/** macOS's "Is it you?" dialog — Touch ID, a Watch or the login password —
+ *  for `reason` ("show hidden clipboard content"). True only for a yes; a
+ *  cancel is false; a dialog that cannot be shown, or another one already
+ *  up, throws Lumi's sentence. Either way it is not a yes. */
+export async function authenticate(reason: string): Promise<boolean> {
+  const answer = await fetch("/__lumi__/authenticate", { method: "POST", body: JSON.stringify({ reason }) });
+  const body = await answer.text();
+  if (!answer.ok) throw new Error(body || `Lumi answered ${answer.status}`);
+  return (JSON.parse(body) as { authenticated?: unknown }).authenticated === true;
 }
 
 /** The shortcuts that run this extension's commands: the person's rows and,

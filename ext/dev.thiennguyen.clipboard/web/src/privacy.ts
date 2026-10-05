@@ -15,22 +15,39 @@ export interface Veil {
   /** Rows the person showed one by one — or, with `all`, covered again one
    *  by one — by id. */
   except: ReadonlySet<string>;
+  /** "Is it you?" answered yes since everything was last covered: with
+   *  "Confirm it's you before showing", later shows do not ask again. */
+  confirmed: boolean;
 }
 
 const NONE: ReadonlySet<string> = new Set();
 
-export const VEIL_OFF: Veil = { on: false, all: false, except: NONE };
+export const VEIL_OFF: Veil = { on: false, all: false, except: NONE, confirmed: false };
 
 /** The switch as the extension says it stands. Turned on — from the menu
  *  bar, the command, the Settings tab or here — covers everything, even a
  *  row shown before it was last turned off; unchanged keeps what is shown. */
 export function adopt(veil: Veil, on: boolean): Veil {
   if (on === veil.on) return veil;
-  return { on, all: false, except: NONE };
+  return { on, all: false, except: NONE, confirmed: false };
 }
 
 export function isCovered(veil: Veil, id: string): boolean {
   return veil.on && veil.all === veil.except.has(id);
+}
+
+/** Whether privacy mode covers a row of this kind at all. Not a colour: its
+ *  row already shows the whole value and its swatch — the history keeps a
+ *  colour only when the copy is one colour value and nothing else — so its
+ *  preview, the same value drawn larger, has nothing a cover would keep. */
+export function conceals(kind: string): boolean {
+  return kind !== "color";
+}
+
+/** Whether a row's preview is covered: privacy mode covers its kind, and it
+ *  was not shown. The one question the panel asks. */
+export function covers(veil: Veil, row: { id: string; kind: string }): boolean {
+  return conceals(row.kind) && isCovered(veil, row.id);
 }
 
 /** Whether anything is shown: what a while with nothing done covers. */
@@ -67,7 +84,7 @@ export function toggle(veil: Veil, id: string): Veil {
 export function toggleAll(veil: Veil): Veil {
   if (!veil.on) return veil;
   if (veil.all && !veil.except.size) return coverAll(veil);
-  return { on: true, all: true, except: NONE };
+  return { ...veil, all: true, except: NONE };
 }
 
 /** Whether every row is shown — what the show-or-hide-all key would undo. */
@@ -75,8 +92,44 @@ export function allShown(veil: Veil): boolean {
   return veil.on && veil.all && !veil.except.size;
 }
 
+/** Everything covered again, and the confirmation forgotten with it: the
+ *  next show asks again. */
 export function coverAll(veil: Veil): Veil {
-  return veil.all || veil.except.size ? { ...veil, all: false, except: NONE } : veil;
+  return veil.all || veil.except.size || veil.confirmed ? { ...veil, all: false, except: NONE, confirmed: false } : veil;
+}
+
+/** "Is it you?" said yes. */
+export function confirm(veil: Veil): Veil {
+  return veil.confirmed ? veil : { ...veil, confirmed: true };
+}
+
+/** Whether showing has to ask "Is it you?" first: the person asked for it
+ *  ("Confirm it's you before showing"), and nothing has said yes since
+ *  everything was last covered — this opening, or an unlock of the history
+ *  that still holds (`unlockedByTime`). */
+export function needsConfirm(veil: Veil, asked: boolean, unlockedByTime: boolean): boolean {
+  return asked && veil.on && !veil.confirmed && !unlockedByTime;
+}
+
+/** History lock, as the panel holds it: on or off, until when an unlock
+ *  from an earlier opening holds, and whether this opening was unlocked
+ *  ("Lock again: when the panel closes", which keeps nothing). */
+export interface Lock {
+  on: boolean;
+  until: number | null;
+  here: boolean;
+}
+
+export const LOCK_OFF: Lock = { on: false, until: null, here: false };
+
+export function isLocked(lock: Lock, now: number): boolean {
+  return lock.on && !lock.here && !(lock.until !== null && lock.until > now);
+}
+
+/** Whether an unlock from an earlier opening, kept for a while, still holds
+ *  — which counts as a yes for showing too. */
+export function unlockedByTime(lock: Lock, now: number): boolean {
+  return lock.on && lock.until !== null && lock.until > now;
 }
 
 /** Whether a `lumi:keyboard` change is the keyboard leaving the panel —

@@ -1,6 +1,25 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { adopt, allShown, anyShown, coverAll, hide, isCovered, keyboardLeft, show, toggle, toggleAll, VEIL_OFF } from "../src/privacy.ts";
+import {
+  adopt,
+  allShown,
+  anyShown,
+  conceals,
+  confirm,
+  coverAll,
+  covers,
+  hide,
+  isCovered,
+  isLocked,
+  keyboardLeft,
+  LOCK_OFF,
+  needsConfirm,
+  show,
+  toggle,
+  toggleAll,
+  unlockedByTime,
+  VEIL_OFF,
+} from "../src/privacy.ts";
 
 test("off, nothing is covered and nothing can be shown", () => {
   assert.equal(isCovered(VEIL_OFF, "a"), false);
@@ -89,4 +108,41 @@ test("off, show all does nothing; turned on again, all is covered", () => {
   let veil = toggleAll(adopt(VEIL_OFF, true));
   veil = adopt(adopt(veil, false), true);
   assert.equal(isCovered(veil, "a"), true);
+});
+
+test("a colour is never covered: its row already shows all of it", () => {
+  const veil = adopt(VEIL_OFF, true);
+  assert.equal(conceals("color"), false);
+  assert.equal(covers(veil, { id: "c", kind: "color" }), false);
+  for (const kind of ["text", "rich", "link", "image", "file"]) {
+    assert.equal(covers(veil, { id: "x", kind }), true, kind);
+  }
+  assert.equal(covers(show(veil, "x"), { id: "x", kind: "text" }), false, "shown");
+});
+
+test("showing asks once, until everything is covered again", () => {
+  let veil = adopt(VEIL_OFF, true);
+  assert.equal(needsConfirm(veil, true, false), true);
+  assert.equal(needsConfirm(veil, false, false), false, "not asked for");
+  veil = show(confirm(veil), "a");
+  assert.equal(needsConfirm(veil, true, false), false, "said yes this time");
+  veil = toggleAll(veil);
+  assert.equal(veil.confirmed, true, "show all keeps the yes");
+  veil = coverAll(veil);
+  assert.equal(needsConfirm(veil, true, false), true, "covered again: asks again");
+  assert.equal(coverAll(confirm(adopt(VEIL_OFF, true))).confirmed, false, "a yes with nothing shown is forgotten too");
+  assert.equal(needsConfirm(adopt(VEIL_OFF, true), true, true), false, "an unlocked history counts as a yes");
+  assert.equal(needsConfirm(VEIL_OFF, true, false), false, "privacy mode off: nothing to show");
+});
+
+test("the history is locked until this opening is unlocked, or an earlier unlock still holds", () => {
+  const lock = { on: true, until: null, here: false };
+  assert.equal(isLocked(LOCK_OFF, 0), false);
+  assert.equal(isLocked(lock, 0), true);
+  assert.equal(isLocked({ ...lock, here: true }, 0), false, "unlocked in this opening");
+  assert.equal(isLocked({ ...lock, until: 5_000 }, 4_999), false, "an earlier unlock that still holds");
+  assert.equal(isLocked({ ...lock, until: 5_000 }, 5_000), true, "and ran out");
+  assert.equal(unlockedByTime({ ...lock, until: 5_000 }, 1), true);
+  assert.equal(unlockedByTime({ ...lock, here: true }, 1), false, "unlocked here is not by time");
+  assert.equal(unlockedByTime({ ...LOCK_OFF, until: 5_000 }, 1), false, "off");
 });

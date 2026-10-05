@@ -11,7 +11,7 @@
 // rebuilt from a short list of tags and styles (richText.tsx).
 
 import { type CSSProperties, type KeyboardEvent, type MouseEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { call, callBackground, message } from "./bridge";
+import { authenticate, call, callBackground, canAuthenticate, message } from "./bridge";
 import {
   ClipboardGlyph,
   CollapseGlyph,
@@ -26,6 +26,7 @@ import {
   InfoGlyph,
   KeepOpenGlyph,
   KindGlyph,
+  LockGlyph,
   LumiMark,
   PasteGlyph,
   PinGlyph,
@@ -45,7 +46,26 @@ import { useScrollFade } from "./scrollFade";
 import { useWindowDrag } from "./windowDrag";
 import { Row } from "./Row";
 import { type Combo, DEFAULT_PIN_KEY, DEFAULT_REVEAL_ALL_KEY, DEFAULT_REVEAL_KEY, glyphs, panelKeys, parseCombo, pressed } from "./keys";
-import { adopt, allShown, anyShown as showsAny, coverAll, isCovered, keyboardLeft, show, toggle, toggleAll, type Veil, VEIL_OFF } from "./privacy";
+import {
+  adopt,
+  allShown,
+  anyShown as showsAny,
+  conceals,
+  confirm,
+  coverAll,
+  covers,
+  isLocked,
+  keyboardLeft,
+  type Lock,
+  LOCK_OFF,
+  needsConfirm,
+  show,
+  toggle,
+  toggleAll,
+  unlockedByTime,
+  type Veil,
+  VEIL_OFF,
+} from "./privacy";
 import { badPattern, FILTER_LABELS, FILTERS, type Filter, found, inFilter, search, searchWith, type SearchMode, shortcuts } from "./search";
 import type { Entry, ListAnswer } from "./types";
 
@@ -76,6 +96,19 @@ export function App() {
   // How long shown previews stay shown with nothing done in the panel; null
   // for until it closes. The list says.
   const [privacyIdle, setPrivacyIdle] = useState<number | null>(null);
+  // "Confirm it's you before showing": the first show after everything was
+  // covered asks macOS's "Is it you?" dialog (Lumi 1.36).
+  const [privacyConfirm, setPrivacyConfirm] = useState(false);
+  // History lock (privacy.ts `Lock`): the list, the preview and every
+  // action wait for "Is it you?". `now` moves when an earlier unlock runs
+  // out, so the panel locks while it is up.
+  const [lock, setLock] = useState<Lock>(LOCK_OFF);
+  const [now, setNow] = useState(() => Date.now());
+  const locked = isLocked(lock, now);
+  // Whether "Is it you?" can be asked here at all; asked once.
+  const [canAsk, setCanAsk] = useState<boolean | null>(null);
+  // A dialog is up: another press waits for it rather than asking again.
+  const asking = useRef(false);
   // The menu bar's Delete All Unpinned…, waiting for the rows it deletes to
   // be on screen — they fold away as the panel's own delete folds them.
   const [clearAsked, setClearAsked] = useState(false);
@@ -142,6 +175,9 @@ export function App() {
     setMode(modeRef.current);
     setVeil((veil) => adopt(veil, answer.privacy ?? false));
     setPrivacyIdle(answer.privacyIdle ?? null);
+    setPrivacyConfirm(answer.privacyConfirm ?? false);
+    setLock((lock) => ({ on: answer.lock?.on ?? false, until: answer.lock?.until ?? null, here: lock.here }));
+    setNow(Date.now());
     if (keepId) {
       const at = search(
         answer.items.filter((row) => inFilter(row, filterRef.current)),
@@ -288,22 +324,114 @@ export function App() {
     });
   }, [act, veil.on]);
 
+  /** macOS's "Is it you?" dialog, once at a time: true for a yes. A no, or
+   *  a dialog that could not be shown, says so and is not a yes. */
+  const isItYou = useCallback(async (reason: string): Promise<boolean> => {
+    if (asking.current) return false;
+    asking.current = true;
+    setNotice("");
+    try {
+      const yes = await authenticate(reason);
+      if (!yes) setNotice("Not confirmed");
+      return yes;
+    } catch (err) {
+      setNotice(message(err));
+      return false;
+    } finally {
+      asking.current = false;
+    }
+  }, []);
+
+  /** Show something covered: straight away, or — "Confirm it's you before
+   *  showing" — once "Is it you?" says yes. Covering never asks. */
+  const reveal = useCallback(
+    (change: (veil: Veil) => Veil) => {
+      if (!needsConfirm(veil, privacyConfirm, unlockedByTime(lock, Date.now()))) {
+        setVeil(change);
+        return;
+      }
+      void (async () => {
+        if (await isItYou("show hidden clipboard content")) setVeil((veil) => change(confirm(veil)));
+      })();
+    },
+    [isItYou, lock, privacyConfirm, veil],
+  );
+
   /** The show or hide key (⇧⌘H): the selected row's preview shown, or
    *  covered again. */
   const toggleShown = useCallback(() => {
-    if (current) setVeil((veil) => toggle(veil, current.id));
-  }, [current]);
+    // A kind privacy mode never covers — a colour — has nothing to show.
+    if (!current || !conceals(current.kind)) return;
+    if (covers(veil, current)) reveal((veil) => show(veil, current.id));
+    else setVeil((veil) => toggle(veil, current.id));
+  }, [current, reveal, veil]);
 
-  const showRow = useCallback((id: string) => setVeil((veil) => show(veil, id)), []);
+  const showRow = useCallback((id: string) => reveal((veil) => show(veil, id)), [reveal]);
 
   /** The show-or-hide-all key (⌥⇧⌘H): every preview shown at once for the
    *  rest of this opening, so none has to be shown one by one — or, all
    *  shown already, every one covered again. */
-  const toggleAllShown = useCallback(() => setVeil(toggleAll), []);
+  const toggleAllShown = useCallback(() => {
+    if (allShown(veil)) setVeil(toggleAll);
+    else reveal(toggleAll);
+  }, [reveal, veil]);
+
+  /** Unlock the history: "Is it you?", then — for "Lock again" after a
+   *  while — the extension keeps until when, so openings within it open
+   *  unlocked. The yes counts for showing too. */
+  const unlock = useCallback(async () => {
+    if (!(await isItYou("open your clipboard history"))) return;
+    setVeil(confirm);
+    try {
+      const { until } = await call({ kind: "unlocked" });
+      setNow(Date.now());
+      setLock((lock) => (until === null ? { ...lock, here: true } : { ...lock, until, here: false }));
+    } catch {
+      // Not kept: unlocked for this opening all the same.
+      setLock((lock) => ({ ...lock, here: true }));
+    }
+  }, [isItYou]);
+
+  /** ⌘K's Lock history now: locked, previews covered, the next unlock asks. */
+  const lockNow = useCallback(() => {
+    setLock((lock) => ({ ...lock, until: null, here: false }));
+    setVeil(coverAll);
+    void call({ kind: "lock" }).catch(() => {});
+  }, []);
+
+  // Whether "Is it you?" can be asked at all — the lock card says so when
+  // it cannot, rather than asking for nothing.
+  useEffect(() => {
+    void canAuthenticate().then(setCanAsk);
+  }, []);
+
+  // A locked history asks as soon as the panel is up: ⇧⌘C, Touch ID, the
+  // list. Once per opening — Cancel leaves the lock card and its Unlock.
+  const askedOnOpen = useRef(false);
+  useEffect(() => {
+    if (!locked || rows === null || canAsk !== true || askedOnOpen.current) return;
+    askedOnOpen.current = true;
+    void unlock();
+  }, [locked, rows, canAsk, unlock]);
+
+  // The keys go where they are answered: the panel itself while locked —
+  // the search field is disabled, and a key on nothing reaches no handler —
+  // and the search again once unlocked.
+  useEffect(() => {
+    if (locked) document.querySelector<HTMLElement>("main.panel")?.focus();
+    else input.current?.focus();
+  }, [locked]);
+
+  // An earlier unlock running out while the panel is up locks it then.
+  useEffect(() => {
+    if (!lock.on || lock.until === null || lock.here || lock.until <= now) return;
+    const timer = window.setTimeout(() => setNow(Date.now()), lock.until - now + 50);
+    return () => window.clearTimeout(timer);
+  }, [lock, now]);
 
   // Shown previews are covered again after a while with nothing done in the
   // panel: a pinned panel left on screen while the person is away from it.
-  const anyShown = showsAny(veil);
+  const anyShown = showsAny(veil) || veil.confirmed;
   useEffect(() => {
     if (!anyShown || privacyIdle === null) return;
     let timer = 0;
@@ -327,9 +455,14 @@ export function App() {
   // holding the keyboard, and an unpinned one is put away when it loses it.
   useEffect(() => {
     let held = true;
+    // A history unlocked for this opening locks again too; one unlocked
+    // for a while stays so for that while.
     const told = (event: Event) => {
       const now = (event as CustomEvent<{ held?: unknown } | null>).detail?.held === true;
-      if (keyboardLeft(held, now)) setVeil(coverAll);
+      if (keyboardLeft(held, now)) {
+        setVeil(coverAll);
+        setLock((lock) => (lock.here ? { ...lock, here: false } : lock));
+      }
       held = now;
     };
     window.addEventListener("lumi:keyboard", told);
@@ -410,10 +543,12 @@ export function App() {
   // Asked from the menu bar: the opening list said so, or the extension told
   // a panel already up. Done once the rows are drawn, so they fold away.
   useEffect(() => {
-    if (!clearAsked || rows === null) return;
+    // A locked history deletes nothing until it is unlocked: the person
+    // asking from the menu bar may not be its owner.
+    if (!clearAsked || rows === null || locked) return;
     setClearAsked(false);
     removeAll(true);
-  }, [clearAsked, rows, removeAll]);
+  }, [clearAsked, rows, removeAll, locked]);
 
   useEffect(() => {
     const told = (event: Event) => {
@@ -516,6 +651,20 @@ export function App() {
     const unpinned = (rows ?? []).filter((r) => !r.pin).length;
     const all = rows?.length ?? 0;
     const textual = row && (row.kind === "text" || row.kind === "rich" || row.kind === "link");
+    // Locked: nothing that reads, changes or shows the history — Unlock, and
+    // the two that show none of it.
+    if (locked) {
+      return [
+        ...(canAsk ? [{ id: "unlock", label: "Unlock history", glyph: <LockGlyph open />, keys: "↩", run: () => void unlock() }] : []),
+        { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
+        {
+          id: "about",
+          label: about ? "Back to the history" : "About Clipboard Manager",
+          glyph: <InfoGlyph />,
+          run: () => setAbout(!about),
+        },
+      ];
+    }
     return [
       // With About up the row is out of sight, and so are its actions.
       ...(row && !about
@@ -560,9 +709,9 @@ export function App() {
                 ]
               : []),
             { id: "pin", label: row.pin ? "Unpin" : "Pin", glyph: <PinGlyph />, keys: glyphs(pinKey), run: togglePin },
-            ...(veil.on
+            ...(veil.on && conceals(row.kind)
               ? [
-                  isCovered(veil, row.id)
+                  covers(veil, row)
                     ? { id: "showContent", label: "Show content", glyph: <EyeGlyph />, keys: revealCap, run: toggleShown }
                     : { id: "hideContent", label: "Hide content", glyph: <EyeOffGlyph />, keys: revealCap, run: toggleShown },
                 ]
@@ -582,6 +731,7 @@ export function App() {
         glyph: veil.on ? <EyeGlyph /> : <EyeOffGlyph />,
         run: togglePrivacy,
       },
+      ...(lock.on ? [{ id: "lockNow", label: "Lock history now", glyph: <LockGlyph />, run: lockNow }] : []),
       { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
       {
         id: "about",
@@ -617,7 +767,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [about, act, current, openSettings, paste, pinKey, pinned, remove, removeAll, revealAllCap, revealCap, rows, togglePin, togglePrivacy, toggleAllShown, toggleShown, veil, zoomed]);
+  }, [about, act, canAsk, current, lock.on, lockNow, locked, openSettings, paste, pinKey, pinned, remove, removeAll, revealAllCap, revealCap, rows, togglePin, togglePrivacy, toggleAllShown, toggleShown, unlock, veil, zoomed]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -688,6 +838,19 @@ export function App() {
 
     const cmd = event.metaKey && !event.ctrlKey;
     const key = event.key;
+    // Locked: ↩ unlocks, ⎋ closes, ⌘K and ⌘, work; no row key, paste, pin
+    // or show reaches a history nobody has unlocked.
+    if (locked && !about) {
+      if (key === "Escape") {
+        if (menuOpen) closeMenu();
+        else void call({ kind: "close" }).catch(() => {});
+      } else if (key === "Enter") void unlock();
+      else if (cmd && key.toLowerCase() === "k") setMenuOpen(true);
+      else if (cmd && key === ",") openSettings();
+      else if (!event.metaKey && !event.ctrlKey && !event.altKey) return;
+      event.preventDefault();
+      return;
+    }
     // About up: ⎋ puts it away, ⌘K and ⌘, work, and nothing else here
     // acts on the rows it hides. A letter goes on to the search, which
     // puts the card away itself.
@@ -766,7 +929,12 @@ export function App() {
     // Focusable itself, so a click on what is not — the preview's text,
     // which stays selectable — leaves the focus in here rather than on the
     // body, where no key reaches `onKeyDown`.
-    <main className={["panel", zoomed && !about ? "zoomed" : "", about ? "about-up" : ""].filter(Boolean).join(" ")} tabIndex={-1} onKeyDown={onKeyDown} onClick={onClick}>
+    <main
+      className={["panel", zoomed && !about ? "zoomed" : "", about ? "about-up" : "", locked ? "locked" : ""].filter(Boolean).join(" ")}
+      tabIndex={-1}
+      onKeyDown={onKeyDown}
+      onClick={onClick}
+    >
       {/* The breadcrumb is the panel's title bar: drag it to move the panel. */}
       <header className="crumbs" {...windowDrag}>
         <LumiMark />
@@ -830,7 +998,9 @@ export function App() {
             setZoom(false);
             setAbout(false);
           }}
-          placeholder="Search history"
+          placeholder={locked ? "History locked" : "Search history"}
+          // Nothing to search while locked; the keys go to the panel.
+          disabled={locked}
           autoComplete="off"
           spellCheck={false}
           aria-label="Search history"
@@ -839,7 +1009,8 @@ export function App() {
         />
       </div>
       {about && <About onLink={followLink} />}
-      <section
+      {locked && !about && <LockCard canAsk={canAsk} onUnlock={() => void unlock()} onSettings={openSettings} />}
+      {!locked && <section
         className="body-grid"
         // Nothing to preview: the list takes the width, so the empty note
         // sits in the middle of the panel rather than of the list.
@@ -900,7 +1071,7 @@ export function App() {
           />
           <Preview
             row={current}
-            covered={current ? isCovered(veil, current.id) : false}
+            covered={current ? covers(veil, current) : false}
             revealCap={revealCap}
             revealAllCap={revealAllCap}
             onShow={showRow}
@@ -915,7 +1086,7 @@ export function App() {
             split={split.grip}
           />
         </div>
-      </section>
+      </section>}
       {notice && (
         <p className="notice" role="status">
           {notice}
@@ -925,6 +1096,11 @@ export function App() {
       <footer className="hints">
         {about ? (
           <span><kbd className="cap quiet">⎋</kbd> back to the history</span>
+        ) : locked ? (
+          <>
+            {canAsk && <span><kbd className="cap quiet">↩</kbd> unlock</span>}
+            <span><kbd className="cap quiet">⎋</kbd> close</span>
+          </>
         ) : (
           <>
             <span><kbd className="cap quiet">↩</kbd> paste</span>
@@ -945,6 +1121,35 @@ export function App() {
         </button>
       </footer>
     </main>
+  );
+}
+
+/** What a locked panel shows in place of the list and the preview: that it
+ *  is locked, and the way in. Where "Is it you?" cannot be asked — a Lumi
+ *  before 1.36 — it says so and points at Settings, where the lock is
+ *  turned off, rather than offering a button that cannot work. */
+function LockCard({ canAsk, onUnlock, onSettings }: { canAsk: boolean | null; onUnlock: () => void; onSettings: () => void }) {
+  return (
+    <section className="lock-card" aria-live="polite">
+      <LockGlyph />
+      <h2>Clipboard history is locked</h2>
+      {canAsk === false ? (
+        <p>
+          Unlocking asks “Is it you?”, which needs Lumi 1.36 and a password on this Mac. Turn the lock off in{" "}
+          <button type="button" className="link" onMouseDown={(event) => event.preventDefault()} onClick={onSettings}>
+            Settings
+          </button>
+          .
+        </p>
+      ) : (
+        <>
+          <p>Confirm it’s you to see and paste what you copied.</p>
+          <button type="button" className="unlock" onMouseDown={(event) => event.preventDefault()} onClick={onUnlock}>
+            Unlock <kbd className="cap quiet">↩</kbd>
+          </button>
+        </>
+      )}
+    </section>
   );
 }
 

@@ -64,6 +64,17 @@ const PRIVACY_IDLES: &[(&str, Option<i64>)] =
 /// The idle when none is set, as the manifest's default says.
 const DEFAULT_PRIVACY_IDLE: Option<i64> = Some(60_000);
 
+/// Storage key of when an unlocked history locks again, in ms of Lumi's
+/// clock — kept only for "Lock again" after a while, so that openings within
+/// it open unlocked. "When the panel closes" keeps nothing: every opening
+/// starts locked, and what was unlocked goes with the page.
+const LOCK_UNTIL: &str = "lock.until";
+
+/// How long a history unlocked with "Is it you?" stays unlocked, as the
+/// `lockAfter` setting spells it; `None` for until the panel closes.
+const LOCK_AFTERS: &[(&str, Option<i64>)] =
+    &[("close", None), ("1m", Some(60_000)), ("5m", Some(5 * 60_000)), ("15m", Some(15 * 60_000))];
+
 /// Set when the menu bar menu's Delete All Unpinned… opened the panel to
 /// do it: the panel's first list answers `clear` and takes the key, and
 /// the panel deletes as its own action does, so ⌘Z brings the rows back.
@@ -305,6 +316,12 @@ fn paused(host: &impl Host) -> bool {
     matches!(host.get(PAUSED), Ok(Some(_)))
 }
 
+/// Until when an unlock made earlier holds, when it still does.
+fn unlocked_until(host: &impl Host) -> Option<i64> {
+    let until: i64 = host.get(LOCK_UNTIL).ok()??.value.parse().ok()?;
+    (until > host.now()).then_some(until)
+}
+
 fn private(host: &impl Host) -> bool {
     matches!(host.get(PRIVACY), Ok(Some(_)))
 }
@@ -483,6 +500,15 @@ struct Prefs {
     /// "Cover again after": how long a preview shown in privacy mode stays
     /// shown with nothing done in the panel; `None` for until it closes.
     privacy_idle_ms: Option<i64>,
+    /// "Confirm it's you before showing": the first preview shown in an
+    /// opening asks macOS's "Is it you?" dialog first.
+    privacy_confirm: bool,
+    /// "Lock history": the panel opens locked — no list, no preview, no
+    /// action — until that dialog says it is the owner.
+    lock_history: bool,
+    /// "Lock again": how long an unlock lasts; `None` for until the panel
+    /// closes.
+    lock_after_ms: Option<i64>,
 }
 
 impl Prefs {
@@ -564,6 +590,13 @@ fn prefs(host: &impl Host) -> Prefs {
             .iter()
             .find(|(word, _)| s["privacyIdle"].as_str() == Some(word))
             .map_or(DEFAULT_PRIVACY_IDLE, |(_, ms)| *ms),
+        privacy_confirm: matches!(&s["privacyConfirm"], Value::Bool(true))
+            || s["privacyConfirm"].as_str() == Some("true"),
+        lock_history: matches!(&s["lockHistory"], Value::Bool(true)) || s["lockHistory"].as_str() == Some("true"),
+        lock_after_ms: LOCK_AFTERS
+            .iter()
+            .find(|(word, _)| s["lockAfter"].as_str() == Some(word))
+            .and_then(|(_, ms)| *ms),
     }
 }
 
@@ -949,6 +982,14 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 // done (null: only when it closes).
                 "privacy": private(host),
                 "privacyIdle": prefs.privacy_idle_ms,
+                "privacyConfirm": prefs.privacy_confirm,
+                // History lock: whether it is on, and until when an unlock
+                // made in an earlier opening still holds (null: none does).
+                // The page shows nothing of the history while locked.
+                "lock": {
+                    "on": prefs.lock_history,
+                    "until": if prefs.lock_history { unlocked_until(host) } else { None },
+                },
                 // The menu bar asked for Delete All Unpinned… and opened
                 // the panel to do it; taken on the opening list only.
                 "clear": request["opening"].as_bool() == Some(true) && take_clear(host),
@@ -1362,6 +1403,32 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
         }
         "close" => {
             host.close_window(PANEL)?;
+            Ok(json!({}))
+        }
+        // The page's "Is it you?" dialog said yes to unlocking the history:
+        // kept for "Lock again" after a while, so openings within it open
+        // unlocked. The answer is when it locks again (null: on closing).
+        "unlocked" => {
+            let prefs = prefs(host);
+            let until = match prefs.lock_after_ms {
+                Some(ms) if prefs.lock_history => Some(host.now() + ms),
+                _ => None,
+            };
+            match until {
+                Some(until) => {
+                    let rev = host.get(LOCK_UNTIL)?.map(|stored| stored.rev);
+                    if let Err(PutError::Failed(err)) = host.put(LOCK_UNTIL, &until.to_string(), rev) {
+                        return Err(err);
+                    }
+                }
+                None => host.delete(LOCK_UNTIL)?,
+            }
+            Ok(json!({ "until": until }))
+        }
+        // ⌘K's Lock history now, and an unlock that ran out: the next
+        // opening asks again.
+        "lock" => {
+            host.delete(LOCK_UNTIL)?;
             Ok(json!({}))
         }
         // The eye in the panel's title bar and its ⌘K action. The panel
@@ -1938,6 +2005,51 @@ mod tests {
         assert_eq!(keys(&host), (json!("ctrl+alt+r"), json!("ctrl+alt+a")));
         *host.settings.borrow_mut() = json!({"revealKey": "x".repeat(33), "revealAllKey": "y".repeat(33)});
         assert_eq!(keys(&host), (json!("cmd+shift+h"), json!("alt+shift+cmd+h")), "not keys anybody typed");
+    }
+
+    fn lock_of(host: &Memory) -> Value {
+        ui(host, &json!({"kind": "list"})).unwrap()["lock"].clone()
+    }
+
+    /// History lock: off, nothing locks; on, every opening is locked unless
+    /// an unlock "after a while" still holds — and only that kind is kept.
+    #[test]
+    fn an_unlock_is_kept_only_for_lock_again_after_a_while() {
+        let host = Memory::default();
+        assert_eq!(lock_of(&host), json!({"on": false, "until": null}));
+
+        *host.settings.borrow_mut() = json!({"lockHistory": "true"});
+        assert_eq!(lock_of(&host), json!({"on": true, "until": null}), "locked, every opening");
+        assert_eq!(ui(&host, &json!({"kind": "unlocked"})).unwrap(), json!({"until": null}));
+        assert_eq!(lock_of(&host)["until"], Value::Null, "until the panel closes: nothing kept");
+
+        *host.settings.borrow_mut() = json!({"lockHistory": true, "lockAfter": "5m"});
+        host.now.set(1_000);
+        assert_eq!(ui(&host, &json!({"kind": "unlocked"})).unwrap(), json!({"until": 301_000}));
+        host.now.set(200_000);
+        assert_eq!(lock_of(&host)["until"], 301_000, "an opening within it opens unlocked");
+        ui(&host, &json!({"kind": "unlocked"})).unwrap();
+        assert_eq!(lock_of(&host)["until"], 500_000, "unlocked again: from now");
+        host.now.set(500_001);
+        assert_eq!(lock_of(&host)["until"], Value::Null, "ran out");
+
+        host.now.set(0);
+        ui(&host, &json!({"kind": "unlocked"})).unwrap();
+        ui(&host, &json!({"kind": "lock"})).unwrap();
+        assert_eq!(lock_of(&host)["until"], Value::Null, "Lock history now");
+
+        ui(&host, &json!({"kind": "unlocked"})).unwrap();
+        *host.settings.borrow_mut() = json!({"lockHistory": false, "lockAfter": "5m"});
+        assert_eq!(lock_of(&host), json!({"on": false, "until": null}), "off: no lock, whatever was kept");
+    }
+
+    #[test]
+    fn the_panel_is_told_to_confirm_before_showing_only_when_asked_to() {
+        let host = Memory::default();
+        let confirm = |host: &Memory| ui(host, &json!({"kind": "list"})).unwrap()["privacyConfirm"].clone();
+        assert_eq!(confirm(&host), false);
+        *host.settings.borrow_mut() = json!({"privacyConfirm": "true"});
+        assert_eq!(confirm(&host), true);
     }
 
     /// Privacy mode covers what is shown, never what is done: a covered

@@ -13,7 +13,7 @@
 [extension]
 id = "dev.thiennguyen.clipboard"
 name = "Clipboard Manager"
-version = "0.72.0"
+version = "0.72.1"
 description = "Keep what you copy — text, links, images and files — and paste it back from a panel."
 author = "Thien Nguyen"
 summary = "Remembers what you copy on this Mac and brings it back with one shortcut: search, pick, and it is pasted into the app you were typing in. Text, rich text, links, colours, files and images, with pins for what you keep reaching for. Anything a password manager marks as secret is never recorded — Lumi drops it before this extension hears of it — and the history is stored encrypted with a key Lumi keeps in your Keychain. Nothing leaves your Mac: the extension has no network access."
@@ -201,6 +201,48 @@ name = "pinKey"
 label = "Pin shortcut"
 kind = "text"
 default = "cmd+p"
+
+# macOS's "Is it you?" dialog — Touch ID, a Watch or the login password —
+# before the first preview shown in an opening (`POST /__lumi__/authenticate`,
+# Lumi 1.36). A page route, not an import: an older Lumi still loads this, and
+# the Settings tab offers the switch only where the dialog can be shown.
+[[settings]]
+name = "privacyConfirm"
+label = "Confirm it's you before showing"
+kind = "bool"
+default = "false"
+
+# The whole history behind that dialog: the panel opens locked — no list, no
+# preview, no paste — until the owner confirms.
+[[settings]]
+name = "lockHistory"
+label = "Lock history"
+kind = "bool"
+default = "false"
+
+# How long an unlock lasts: until the panel closes, or a while across
+# openings (kept as `lock.until` in storage).
+[[settings]]
+name = "lockAfter"
+label = "Lock again"
+kind = "select"
+default = "close"
+
+[[settings.options]]
+value = "close"
+label = "When the panel closes"
+
+[[settings.options]]
+value = "1m"
+label = "After 1 minute"
+
+[[settings.options]]
+value = "5m"
+label = "After 5 minutes"
+
+[[settings.options]]
+value = "15m"
+label = "After 15 minutes"
 
 # Privacy mode's show or hide of the selected item, while the panel is up —
 # the panel's own key, as Pin's is, recorded on the Settings tab and checked

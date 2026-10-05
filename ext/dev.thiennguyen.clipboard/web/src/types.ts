@@ -62,6 +62,10 @@ export interface ListAnswer {
   /** How long a preview shown in privacy mode stays shown with nothing done
    *  in the panel, in ms; null for until the panel closes. */
   privacyIdle?: number | null;
+  /** "Confirm it's you before showing". */
+  privacyConfirm?: boolean;
+  /** History lock: on, and until when an earlier unlock holds (ms). */
+  lock?: { on: boolean; until: number | null };
   /** On the opening list only: the menu bar's Delete All Unpinned… opened
    *  the panel to delete here, where ⌘Z can bring the rows back. */
   clear?: boolean;
@@ -175,6 +179,9 @@ export type Request =
   | { kind: "privacy"; on?: boolean }
   /** The Settings tab's view of the same switch. */
   | { kind: "setPrivacy"; on: boolean }
+  /** History lock: "Is it you?" said yes; and Lock history now. */
+  | { kind: "unlocked" }
+  | { kind: "lock" }
   | { kind: "stats" }
   | { kind: "previewWidth"; width: number }
   /** Null puts the line back where the page draws it. */

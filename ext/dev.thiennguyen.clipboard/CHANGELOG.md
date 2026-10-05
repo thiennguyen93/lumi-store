@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.72.1] - 2026-10-05
+
+### Changed
+
+- Privacy mode leaves colours uncovered. A colour's row already shows its whole value and its swatch, so covering its preview kept nothing private and only cost a press. Everything else is covered as before.
+
 ## [0.72.0] - 2026-10-05
 
 ### Added

@@ -1774,3 +1774,50 @@ html.glass-preview[data-material="sidebar"] #root {
 }
 .about-links button:hover { background: var(--cb-hover); }
 .about-links .glyph { width: 14px; height: 14px; color: var(--cb-muted); }
+
+/* History lock: the lock card in place of the list and the preview, the
+   filters put aside — there is nothing behind them to filter. */
+.panel.locked .filters { visibility: hidden; }
+.panel.locked .search { opacity: 0.55; }
+.lock-card {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 0;
+  padding: 24px;
+  text-align: center;
+  color: var(--cb-muted);
+}
+.lock-card > .glyph { width: 28px; height: 28px; color: CanvasText; opacity: 0.8; }
+.lock-card h2 { margin: 4px 0 0; font-size: 14px; font-weight: 600; color: CanvasText; }
+.lock-card p { margin: 0; max-width: 340px; font-size: 12px; line-height: 1.5; }
+.lock-card .unlock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--cb-key-edge);
+  border-radius: 7px;
+  background: var(--cb-key);
+  color: var(--cb-key-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lock-card .unlock:focus-visible { outline: 2px solid var(--cb-accent); outline-offset: 2px; }
+.lock-card .link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cb-accent);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lock-card { animation: cover-in 140ms ease-out; }
+}
