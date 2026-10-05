@@ -342,10 +342,6 @@ body {
   background: var(--cb-key);
   color: var(--cb-key-ink);
 }
-/* Privacy mode's eye, first of the two while it is on: it only says so —
-   it is turned on and off in Settings. */
-.keep.veil + .keep { margin-left: 2px; }
-.keep.veil:hover { color: var(--cb-key-ink); }
 
 /* A covered preview (privacy mode): frosted bars that are the same for
    every row, under a note of what to press. Takes the card's room between

@@ -11,7 +11,7 @@
 // person what to do — take it off the row that holds it, another key, or
 // later. Lumi never decides that on its own.
 
-import { StrictMode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { type ReactNode, StrictMode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { call, canAuthenticate, Held, message, setShortcut, shortcuts } from "./bridge";
 import {
@@ -105,7 +105,7 @@ function Welcome() {
   const [privacy, setPrivacy] = useState(false);
   const [tour, setTour] = useTourSettings();
   const coverKeys = tour.keys;
-  // Whether "Is it you?" can be asked here — Lumi 1.36 and a Mac password.
+  // Whether "Is it you?" can be asked here: this Mac has a password.
   const [canAsk, setCanAsk] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -219,23 +219,18 @@ function Welcome() {
               for Touch ID first, or lock the whole history.
             </p>
             <div className="row-actions">
-              {privacy ? (
-                <span className="ok-note">
-                  <EyeOffGlyph /> Privacy mode is on
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() =>
-                    act(async () => {
-                      await call({ kind: "privacy", on: true });
-                      setPrivacy(true);
-                    })
-                  }
-                >
-                  <EyeOffGlyph /> Turn on privacy mode
-                </button>
-              )}
+              <Once
+                glyph={<EyeOffGlyph />}
+                label="Turn on privacy mode"
+                doneLabel="Privacy mode is on"
+                done={privacy}
+                onClick={() =>
+                  act(async () => {
+                    await call({ kind: "privacy", on: true });
+                    setPrivacy(true);
+                  })
+                }
+              />
             </div>
           </>
         )}
@@ -248,30 +243,28 @@ function Welcome() {
               the list, and confirm only before a preview is shown.
             </p>
             {canAsk === false ? (
-              <p className="dim small row-actions">Needs Lumi 1.36 and a password on this Mac.</p>
+              <p className="dim small row-actions">Needs a password on this Mac.</p>
             ) : (
               canAsk && (
                 <div className="row-actions">
-                  {tour.lockHistory ? (
-                    <span className="ok-note">
-                      <LockGlyph /> History lock is on
-                    </span>
-                  ) : (
-                    <button type="button" onClick={() => act(() => setTour({ lockHistory: true }))}>
-                      <LockGlyph /> Lock my history
-                    </button>
-                  )}
+                  <Once
+                    glyph={<LockGlyph />}
+                    label="Lock my history"
+                    doneLabel="History lock is on"
+                    done={tour.lockHistory}
+                    onClick={() => act(() => setTour({ lockHistory: true }))}
+                  />
                   {/* The lock asks before anything is shown, so asking
-                      before showing is nothing more beside it. */}
-                  {tour.lockHistory ? null : tour.privacyConfirm ? (
-                    <span className="ok-note">
-                      <FingerprintGlyph /> Asks before showing
-                    </span>
-                  ) : (
-                    <button type="button" onClick={() => act(() => setTour({ privacyConfirm: true }))}>
-                      <FingerprintGlyph /> Ask before showing
-                    </button>
-                  )}
+                      before showing is nothing more beside it: dimmed, as
+                      Settings dims it, not taken away. */}
+                  <Once
+                    glyph={<FingerprintGlyph />}
+                    label="Ask before showing"
+                    doneLabel="Asks before showing"
+                    done={tour.privacyConfirm}
+                    off={tour.lockHistory}
+                    onClick={() => act(() => setTour({ privacyConfirm: true }))}
+                  />
                 </div>
               )
             )}
@@ -335,6 +328,45 @@ const CONFETTI_COLOURS = ["#7c6ff0", "#378add", "#d4537e", "#e0a300", "#2f8a3e"]
  * reads as the end rather than one more step. Says what is now true — it is
  * recording, and which key opens it — and offers the panel and the door.
  */
+/**
+ * A button that, once done, says so in its own place: the same box — its
+ * padding, its border, its height — and as wide as the wider of its two
+ * labels from the start, so neither it nor anything beside or under it
+ * moves when it turns into "done". Measured before: "Turn on privacy mode"
+ * was 176×32 and the note that replaced it 128×18. `off`: it waits on
+ * another choice, dimmed and not pressed, whichever label it shows.
+ */
+function Once({
+  glyph,
+  label,
+  doneLabel,
+  done,
+  off = false,
+  onClick,
+}: {
+  glyph: ReactNode;
+  label: string;
+  doneLabel: string;
+  done: boolean;
+  off?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={["once", done && "done", off && "off"].filter(Boolean).join(" ")}
+      disabled={done || off}
+      onClick={onClick}
+    >
+      {glyph}
+      <span className="once-labels" aria-live="polite">
+        <span className={done ? "gone" : undefined}>{label}</span>
+        <span className={done ? undefined : "gone"}>{doneLabel}</span>
+      </span>
+    </button>
+  );
+}
+
 function Finish({
   armed,
   failed,

@@ -54,11 +54,14 @@ export function LookIn({
   scope,
   picked,
   book,
+  disabled = false,
   onChange,
 }: {
   scope: Scope;
   picked: string[];
   book: Book | null;
+  /** Match snippets is off: the choice is shown as set, and not opened. */
+  disabled?: boolean;
   onChange: (patch: { snippetsIn?: Scope; snippetProfiles?: string[] }) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -258,6 +261,7 @@ export function LookIn({
         aria-expanded={open}
         aria-label={`Look in: ${label}`}
         title={label}
+        disabled={disabled}
         onClick={() => (open ? close(false) : openMenu())}
         onKeyDown={(e) => {
           if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {

@@ -95,7 +95,7 @@ export function App() {
   // switch, wherever it was flipped.
   const [veil, setVeil] = useState<Veil>(VEIL_OFF);
   // "Confirm it's you before showing": the first show after everything was
-  // covered asks macOS's "Is it you?" dialog (Lumi 1.36).
+  // covered asks macOS's "Is it you?" dialog.
   const [privacyConfirm, setPrivacyConfirm] = useState(false);
   // History lock (privacy.ts `Lock`): the list, the preview and every
   // action wait for "Is it you?". Once unlocked, unlocked until the panel
@@ -898,19 +898,6 @@ export function App() {
             </button>
           ))}
         </nav>
-        {/* Privacy mode is turned on and off in Settings only — the
-            extension's tab — never here: the panel says it is on, and
-            nothing more. */}
-        {veil.on && (
-          <span
-            className="keep veil on"
-            role="img"
-            title={`Privacy mode is on: previews stay covered until shown${revealCap ? ` (${revealCap})` : ""}. Turn it off in Settings.`}
-            aria-label="Privacy mode is on"
-          >
-            <EyeOffGlyph />
-          </span>
-        )}
         <button
           type="button"
           className={pinned ? "keep on" : "keep"}
@@ -1066,8 +1053,8 @@ export function App() {
 }
 
 /** What a locked panel shows in place of the list and the preview: that it
- *  is locked, and the way in. Where "Is it you?" cannot be asked — a Lumi
- *  before 1.36 — it says so and points at Settings, where the lock is
+ *  is locked, and the way in. Where "Is it you?" cannot be asked — a Mac
+ *  with no password — it says so and points at Settings, where the lock is
  *  turned off, rather than offering a button that cannot work. */
 function LockCard({ canAsk, onUnlock, onSettings }: { canAsk: boolean | null; onUnlock: () => void; onSettings: () => void }) {
   return (
@@ -1076,7 +1063,7 @@ function LockCard({ canAsk, onUnlock, onSettings }: { canAsk: boolean | null; on
       <h2>Clipboard history is locked</h2>
       {canAsk === false ? (
         <p>
-          Unlocking asks “Is it you?”, which needs Lumi 1.36 and a password on this Mac. Turn the lock off in{" "}
+          Unlocking asks “Is it you?”, which needs a password on this Mac. Turn the lock off in{" "}
           <button type="button" className="link" onMouseDown={(event) => event.preventDefault()} onClick={onSettings}>
             Settings
           </button>

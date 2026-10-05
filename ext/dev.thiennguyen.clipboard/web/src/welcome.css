@@ -319,11 +319,24 @@ p { margin: 0; }
 @keyframes sheet { from { opacity: 0; transform: translate(-50%, -8px); } }
 @keyframes print { 50% { transform: scale(1.08); opacity: 0.65; } }
 
-.row-actions { display: flex; gap: 8px; margin-top: 10px; }
+/* A step's own buttons sit at one height on every step that has them —
+   pushed down to just above the tour's own buttons rather than hung under a
+   description whose length differs step to step (measured at 560×460: 21px
+   apart, privacy's four lines against Touch ID's three) — so going from one
+   such step to the next moves nothing. */
+.row-actions { display: flex; gap: 8px; margin-top: auto; }
+.row-actions ~ .actions { margin-top: 8px; }
 .row-actions button { display: inline-flex; align-items: center; gap: 6px; }
 .row-actions svg { width: 13px; height: 13px; }
-.ok-note { display: inline-flex; align-items: center; gap: 6px; color: var(--wc-ok); font-size: 12px; font-weight: 500; }
-.ok-note svg { width: 13px; height: 13px; }
+/* `Once`: both labels in one grid cell, the one not said hidden but still
+   holding its width, so the button never changes size. Done, it keeps its
+   box and says so in green, its border and fill gone; lumi.css's dimming of
+   a disabled button is for a button that waits, which is `off`'s. */
+.once-labels { display: inline-grid; }
+.once-labels > span { grid-area: 1 / 1; }
+.once-labels > .gone { visibility: hidden; }
+.once.done { opacity: 1; color: var(--wc-ok); background: transparent; border-color: transparent; }
+.once.off { opacity: 0.4; }
 .split .list { flex: none; width: 176px; }
 .split .list .item:first-child { margin-top: 0; }
 .split .item { transition: background-color 0.25s ease; }

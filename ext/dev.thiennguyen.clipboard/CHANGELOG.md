@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.80.5] - 2026-10-05
+
+### Fixed
+
+- In the Welcome tour, the buttons on the privacy mode step and the Touch ID step sit at the same height, just above Back and Continue, so they no longer jump when you go from one step to the other.
+
+## [0.80.4] - 2026-10-05
+
+### Fixed
+
+- In the Welcome tour, **Turn on privacy mode**, **Lock my history** and **Ask before showing** no longer jump when pressed. Each now says it is done in its own place, at the same size, instead of turning into a smaller line that moved the button next to it.
+- **Ask before showing** stays in the Touch ID step once your history is locked, dimmed as it is in Settings, instead of disappearing.
+
+## [0.80.3] - 2026-10-05
+
+### Changed
+
+- The eye in the panel's title bar is gone. It only showed that privacy mode was on, but looked like a button beside the pin. The covered previews already show it.
+
+## [0.80.2] - 2026-10-05
+
+### Changed
+
+- In Settings, a setting that only works while another is on is now dimmed as a whole row: its name, its description and its control. The "Works while…" and "Lock history already asks…" lines are gone, since the setting it waits on is right above it. Its value is kept as before.
+- **Look in**, under **Match snippets**, stays in view and is dimmed while Match snippets is off, instead of disappearing.
+- **Theme** is dimmed the same way while **Dark glass** is chosen.
+- Where "Is it you?" cannot be asked, the Settings tab, the Welcome tour and the locked panel now say it needs a password on this Mac, without naming an old Lumi version.
+
 ## [0.80.1] - 2026-10-05
 
 ### Changed

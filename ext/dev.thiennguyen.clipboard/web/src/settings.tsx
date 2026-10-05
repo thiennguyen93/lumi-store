@@ -251,7 +251,7 @@ function Settings() {
   // the menu bar row and a key flip it too — so it is asked for and set
   // through the extension, and read again when it says it changed.
   const [privacy, setPrivacy] = useState<boolean | null>(null);
-  // Whether "Is it you?" can be asked on this Mac and this Lumi (1.36).
+  // Whether "Is it you?" can be asked on this Mac: it has a password.
   const [canAsk, setCanAsk] = useState<boolean | null>(null);
   useEffect(() => {
     void canAuthenticate().then(setCanAsk);
@@ -399,20 +399,20 @@ function Settings() {
               onChange={(matchSnippets) => change({ matchSnippets }, true)}
             />
           </Row>
-          {values.matchSnippets && (
-            <Row
-              label="Look in"
-              hint={lookHint(values.snippetsIn, values.snippetProfiles, book)}
-              bad={values.snippetsIn === "selected" && !countedPicks(values.snippetProfiles, book).length}
-            >
-              <LookIn
-                scope={values.snippetsIn}
-                picked={values.snippetProfiles}
-                book={book}
-                onChange={(patch) => change(patch, true)}
-              />
-            </Row>
-          )}
+          <Row
+            label="Look in"
+            hint={lookHint(values.snippetsIn, values.snippetProfiles, book)}
+            bad={values.matchSnippets && values.snippetsIn === "selected" && !countedPicks(values.snippetProfiles, book).length}
+            off={!values.matchSnippets}
+          >
+            <LookIn
+              scope={values.snippetsIn}
+              picked={values.snippetProfiles}
+              book={book}
+              disabled={!values.matchSnippets}
+              onChange={(patch) => change(patch, true)}
+            />
+          </Row>
         </div>
       </section>
 
@@ -457,7 +457,7 @@ function Settings() {
       <section>
         <h3>Appearance</h3>
         <div className="group">
-          <Row label="Theme" hint={values.appearance === "hud" ? "Dark glass is always dark" : undefined}>
+          <Row label="Theme" off={values.appearance === "hud"}>
             <Segmented
               value={values.appearance === "hud" ? "dark" : values.theme}
               options={THEMES}
@@ -525,17 +525,16 @@ function Settings() {
           {/* Privacy mode's own key, here beside the switch it serves rather
               than under Shortcuts. */}
           {/* It and the rows under it act only on covered previews: with
-              privacy mode off there are none, so they wait, greyed. */}
+              privacy mode off there are none, so they wait, dimmed. */}
           <Row
             label="Show or hide content"
             hint={
-              !privacy
-                ? OFF_HINT
-                : values.revealKey
-                  ? "Shortcut while the panel is up; shows the selected item, or covers it again"
-                  : "Pin has this key's default; press another to show items with a key"
+              values.revealKey
+                ? "Shortcut while the panel is up; shows the selected item, or covers it again"
+                : "Pin has this key's default; press another to show items with a key"
             }
             bad={!!privacy && !values.revealKey}
+            off={!privacy}
           >
             <Recorder
               disabled={!privacy}
@@ -548,13 +547,12 @@ function Settings() {
           <Row
             label="Show or hide all"
             hint={
-              !privacy
-                ? OFF_HINT
-                : values.revealAllKey
-                  ? "Shortcut while the panel is up; shows every item until the panel covers them again, or covers them all"
-                  : "Another shortcut has this key's default; press another to show every item with a key"
+              values.revealAllKey
+                ? "Shortcut while the panel is up; shows every item until the panel covers them again, or covers them all"
+                : "Another shortcut has this key's default; press another to show every item with a key"
             }
             bad={!!privacy && !values.revealAllKey}
+            off={!privacy}
           >
             <Recorder
               disabled={!privacy}
@@ -566,7 +564,8 @@ function Settings() {
           </Row>
           <Row
             label="Cover again after panel closes"
-            hint={privacy ? "Reopened within this, the panel still shows what you showed" : OFF_HINT}
+            hint="Reopened within this, the panel still shows what you showed"
+            off={!privacy}
           >
             <Segmented
               value={values.privacyIdle}
@@ -580,7 +579,7 @@ function Settings() {
             label="Lock history"
             hint={
               canAsk === false
-                ? "Needs Lumi 1.36 and a password on this Mac"
+                ? "Needs a password on this Mac"
                 : "The panel opens locked until you confirm it's you: no list, no preview, no paste"
             }
             bad={canAsk === false && values.lockHistory}
@@ -597,11 +596,8 @@ function Settings() {
           </Row>
           <Row
             label="Lock again after panel closes"
-            hint={
-              values.lockHistory
-                ? "Reopened within this, the panel opens unlocked. While it is open, it stays unlocked"
-                : "Works while Lock history is on"
-            }
+            hint="Reopened within this, the panel opens unlocked. While it is open, it stays unlocked"
+            off={!values.lockHistory}
           >
             <Segmented
               value={values.lockAfter}
@@ -611,21 +607,19 @@ function Settings() {
               disabled={!values.lockHistory}
             />
           </Row>
-          {/* Under the lock, since it waits on it: a locked history asks
-              before anything is shown, and that yes counts for showing too,
-              so beside the lock this would never ask. Greyed, value kept. */}
+          {/* Under the lock, since it waits on it as well as on privacy
+              mode: a locked history asks before anything is shown, and that
+              yes counts for showing too, so beside the lock this would never
+              ask. Dimmed, value kept. */}
           <Row
             label="Confirm it's you before showing"
             hint={
               canAsk === false
-                ? "Needs Lumi 1.36 and a password on this Mac"
-                : values.lockHistory
-                  ? "Lock history already asks before anything is shown"
-                  : !privacy
-                    ? OFF_HINT
-                    : "Touch ID or your password, once each time previews are covered again, and to turn privacy mode off"
+                ? "Needs a password on this Mac"
+                : "Touch ID or your password, once each time previews are covered again, and to turn privacy mode off"
             }
             bad={canAsk === false && values.privacyConfirm}
+            off={!privacy || values.lockHistory}
           >
             <Toggle
               disabled={!privacy || values.lockHistory}
@@ -661,12 +655,26 @@ function Settings() {
   );
 }
 
-/** What a privacy-mode setting says while privacy mode is off. */
-const OFF_HINT = "Works while privacy mode is on";
-
-function Row({ label, hint, bad = false, children }: { label: string; hint?: ReactNode; bad?: boolean; children: ReactNode }) {
+/** One setting. `off`: it waits on another — Privacy mode, Lock history,
+ *  Match snippets, the glass — and the whole row is dimmed, its value shown
+ *  as set and its control not to be changed. Its hint stays what it always
+ *  says: which setting it waits on is the row above it, so no "works
+ *  while" line repeats it. */
+function Row({
+  label,
+  hint,
+  bad = false,
+  off = false,
+  children,
+}: {
+  label: string;
+  hint?: ReactNode;
+  bad?: boolean;
+  off?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div className="row">
+    <div className={off ? "row off" : "row"} aria-disabled={off || undefined}>
       <div className="lbl">
         {label}
         {hint && <small className={bad ? "bad" : undefined}>{hint}</small>}
