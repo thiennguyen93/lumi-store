@@ -1113,6 +1113,34 @@ interface files {
     save: func(blob: string, name: string) -> result<bool, string>;
 }
 
+/// macOS's own "is it you?" dialog — Touch ID, an Apple Watch or the login
+/// password — before your extension does something only the Mac's owner
+/// should: shows something kept hidden, switches a protection off, deletes
+/// for good. The same dialog a page asks for with `POST /__lumi__/authenticate`,
+/// for the runs that have no page: a command, a menu bar row, or a request
+/// from one of your windows that the component answers.
+///
+/// Lumi puts up the dialog with your extension's name in it and answers yes
+/// or no, nothing more: what a yes unlocks is yours to decide and to forget
+/// again, and nothing of it is kept. One dialog at a time across Lumi. Free
+/// of capability; every call costs budget. Added to 0.3 in Lumi 1.37
+/// without a new world version, the way `files` was.
+interface owner {
+    /// Whether the dialog can be shown on this Mac at all — a password is
+    /// set, and macOS can ask — without showing it, so an extension offers
+    /// what needs it only where it works.
+    available: func() -> result<bool, string>;
+    /// Ask, and wait for the person: true once they confirm, false when
+    /// they cancel, fail, or leave it two minutes. `reason` finishes macOS's
+    /// sentence "Lumi is trying to …", and Lumi adds your extension's name
+    /// after it: one line of at most 120 characters, such as "show hidden
+    /// items". An error, never a yes, when the reason is not one line, when
+    /// another dialog is up, or when the dialog cannot be shown here. Only
+    /// for something the person did: a command, a menu bar row, or one of
+    /// your windows. Their time answering is not counted against the run.
+    authenticate: func(reason: string) -> result<bool, string>;
+}
+
 /// Your extension's own rows in Lumi's menu bar menu, built while it runs.
 ///
 /// Lumi draws them in a section of their own after Recent: one submenu
@@ -1205,6 +1233,7 @@ world extension {
     import menu;
     import folders;
     import files;
+    import owner;
 
     /// Run one of the commands the manifest declares.
     ///

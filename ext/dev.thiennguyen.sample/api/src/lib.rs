@@ -54,8 +54,8 @@
 //! a web address), `fetch` needs `network`, everything in [`config`]
 //! needs `config`, [`screen`] needs `screen`, [`snippets`] needs
 //! `snippets`, and [`permissions`] needs the capability of the permission
-//! asked about — `screen` for Screen Recording, and [`menu`] needs `menu`. `alert`, `settings`, `profiles`, [`storage`] and
-//! [`hyper_key_enabled`] cost nothing but budget — every host call spends
+//! asked about — `screen` for Screen Recording, and [`menu`] needs `menu`. `alert`, `settings`, `profiles`, [`storage`],
+//! [`owner`] and [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
 //!
@@ -1066,6 +1066,43 @@ pub mod files {
     /// [`storage::blob_save`]: super::storage::blob_save
     pub fn save(blob: &str, name: &str) -> Result<bool, String> {
         wit::save(blob, name)
+    }
+}
+
+/// macOS's own "is it you?" dialog — Touch ID, an Apple Watch or the login
+/// password — before you show or do something only the Mac's owner should,
+/// from a run with no page to ask from: a command, a menu bar row. A page
+/// asks for the same dialog itself with `POST /__lumi__/authenticate`. Lumi
+/// puts it up with your extension's name in it and answers yes or no; what a
+/// yes unlocks is yours to decide and to forget again. No capability; every
+/// call costs budget. Needs Lumi 1.37.0.
+///
+/// ```ignore
+/// use lumi_extension_api::owner;
+///
+/// if owner::authenticate("delete every saved item")? {
+///     // The person at the Mac is its owner: do it.
+/// }
+/// ```
+pub mod owner {
+    use super::lumi::ext::owner as wit;
+
+    /// Whether the dialog can be shown on this Mac at all — a password is
+    /// set — without showing it, so you offer what needs it only where it
+    /// works.
+    pub fn available() -> Result<bool, String> {
+        wit::available()
+    }
+
+    /// Ask, and wait for the person: `true` once they confirm, `false` when
+    /// they cancel, fail, or leave it two minutes. `reason` finishes macOS's
+    /// "Lumi is trying to …", one line of at most 120 characters; Lumi adds
+    /// your extension's name. An error, never a yes, when another dialog is
+    /// up or this one cannot be shown — treat it as a no. Only while
+    /// answering a press; their time answering is not counted against your
+    /// run.
+    pub fn authenticate(reason: &str) -> Result<bool, String> {
+        wit::authenticate(reason)
     }
 }
 
