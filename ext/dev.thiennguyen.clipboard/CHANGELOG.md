@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.75.1] - 2026-10-05
+
+### Fixed
+
+- **Lock history** no longer locks again right after you confirm it's you, and an item shown after "Is it you?" no longer covers itself again a moment later. After the dialog answers, Lumi briefly loses the keyboard and takes it straight back, and the panel was treating that as you leaving. Now only the keyboard staying away counts as leaving (a pinned panel still locks and covers itself when you switch apps), and answering the dialog never counts.
+
 ## [0.75.0] - 2026-10-05
 
 ### Added

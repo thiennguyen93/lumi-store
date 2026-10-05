@@ -139,3 +139,12 @@ export function unlockedByTime(lock: Lock, now: number): boolean {
 export function keyboardLeft(wasHeld: boolean, held: boolean): boolean {
   return wasHeld && !held;
 }
+
+/** How long the keyboard stays away from the panel before that counts as
+ *  the person leaving it — a leaving is where the keyboard stays, not a
+ *  `held: false` on its way somewhere. Lumi 1.36 tells one just after
+ *  macOS's "Is it you?" dialog answers: it hands the panel the keyboard
+ *  back, macOS gives it to the app in front a moment later, and Lumi takes
+ *  it back (`owner_auth`) — `false` then `true` within milliseconds, and an
+ *  unlock or a show the dialog just said yes to undone by nobody leaving. */
+export const AWAY_MS = 250;

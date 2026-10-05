@@ -50,6 +50,7 @@ import {
   adopt,
   allShown,
   anyShown as showsAny,
+  AWAY_MS,
   conceals,
   confirm,
   coverAll,
@@ -453,20 +454,29 @@ export function App() {
   // tells `held: false` again for every hover without the keyboard; only
   // the first after holding it counts (`keyboardLeft`). A panel opens
   // holding the keyboard, and an unpinned one is put away when it loses it.
+  // Counted only once the keyboard has stayed away (`AWAY_MS`), and never
+  // while "Is it you?" is up: the person answering it has not left.
   useEffect(() => {
     let held = true;
+    let away = 0;
     // A history unlocked for this opening locks again too; one unlocked
     // for a while stays so for that while.
+    const left = () => {
+      if (asking.current) return;
+      setVeil(coverAll);
+      setLock((lock) => (lock.here ? { ...lock, here: false } : lock));
+    };
     const told = (event: Event) => {
       const now = (event as CustomEvent<{ held?: unknown } | null>).detail?.held === true;
-      if (keyboardLeft(held, now)) {
-        setVeil(coverAll);
-        setLock((lock) => (lock.here ? { ...lock, here: false } : lock));
-      }
+      if (keyboardLeft(held, now)) away = window.setTimeout(left, AWAY_MS);
+      else if (now) window.clearTimeout(away);
       held = now;
     };
     window.addEventListener("lumi:keyboard", told);
-    return () => window.removeEventListener("lumi:keyboard", told);
+    return () => {
+      window.clearTimeout(away);
+      window.removeEventListener("lumi:keyboard", told);
+    };
   }, []);
 
   const togglePin = useCallback(() => {

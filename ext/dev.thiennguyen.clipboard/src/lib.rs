@@ -2029,6 +2029,8 @@ mod tests {
         assert_eq!(lock_of(&host), json!({"on": true, "until": null}), "locked, every opening");
         assert_eq!(ui(&host, &json!({"kind": "unlocked"})).unwrap(), json!({"until": null}));
         assert_eq!(lock_of(&host)["until"], Value::Null, "until the panel closes: nothing kept");
+        *host.settings.borrow_mut() = json!({"lockHistory": "true", "lockAfter": "0s"});
+        assert_eq!(ui(&host, &json!({"kind": "unlocked"})).unwrap(), json!({"until": null}), "unknown: on closing, never at once");
 
         *host.settings.borrow_mut() = json!({"lockHistory": true, "lockAfter": "5m"});
         host.now.set(1_000);

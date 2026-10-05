@@ -600,9 +600,19 @@ window.fetch = async (input, init) => {
       return new Response(JSON.stringify({ available: authAnswer !== "unavailable" }), { status: 200 });
     }
     const { reason } = JSON.parse(String(init.body)) as { reason: string };
-    say(`Is it you? Lumi is trying to ${reason} (Clipboard Manager)`);
-    await new Promise((resolve) => setTimeout(resolve, 500));
     if (authAnswer === "unavailable") return new Response("macOS could not ask (LAError -5)", { status: 503 });
+    say(`Is it you? Lumi is trying to ${reason} (Clipboard Manager)`);
+    // The keyboard as Lumi 1.36 tells it around the dialog: taken by it;
+    // handed back as it answers; taken by the app in front a moment later,
+    // as macOS does; and taken back by Lumi (`owner_auth`).
+    const tell = (held: boolean) => window.dispatchEvent(new CustomEvent("lumi:keyboard", { detail: { held } }));
+    tell(false);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setTimeout(() => tell(true));
+    setTimeout(() => {
+      tell(false);
+      tell(true);
+    }, 25);
     return new Response(JSON.stringify({ authenticated: authAnswer }), { status: 200 });
   }
   if (url.endsWith("/__lumi__/settings")) {
