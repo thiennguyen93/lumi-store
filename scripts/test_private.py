@@ -79,3 +79,81 @@ class PrivateEntries(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ManifestWithoutComments(unittest.TestCase):
+    """A private entry's manifest is packed without its comments, and reads
+    exactly as the source does."""
+
+    def bare(self, text):
+        return publish.without_comments("dev.you.closed", text).decode("utf-8")
+
+    def test_comments_go_and_the_document_stays(self):
+        source = (
+            "# Closed source: notes on how it is built.\n"
+            "[extension]\n"
+            'id = "dev.you.closed" # trailing note\n'
+            "\n"
+            "\n"
+            "# A comment between two tables.\n"
+            "\n"
+            "[[command]]\n"
+            'name = "go"\n'
+        )
+        self.assertEqual(self.bare(source), '[extension]\nid = "dev.you.closed"\n\n[[command]]\nname = "go"\n')
+
+    def test_a_hash_inside_a_string_is_kept(self):
+        source = (
+            'color = "#378add" # not this\n'
+            "path = 'C:#literal' # nor this\n"
+            'quote = "say \\"#hi\\"" # nor this\n'
+            'key = "a#b"\n'
+        )
+        bare = self.bare(source)
+        self.assertNotIn("not this", bare)
+        self.assertNotIn("nor this", bare)
+        self.assertEqual(publish.tomllib.loads(bare), publish.tomllib.loads(source))
+
+    def test_a_multi_line_string_is_left_alone(self):
+        source = 'body = """\nline one # stays\n\n\nline two\n""" # goes\nother = \'\'\'\n# stays too\n\'\'\'\n'
+        bare = self.bare(source)
+        self.assertIn("# stays\n\n\nline two", bare)
+        self.assertIn("# stays too", bare)
+        self.assertNotIn("goes", bare)
+        self.assertEqual(publish.tomllib.loads(bare), publish.tomllib.loads(source))
+
+    def test_the_screenshot_manifest_shape_round_trips(self):
+        source = (
+            "[[settings]]\n"
+            'name = "open" # what opens\n'
+            'kind = "select"\n'
+            "\n"
+            "# One choice.\n"
+            "[[settings.options]]\n"
+            'value = "editor"\n'
+            'label = "The editor"\n'
+            'capabilities = ["screen", "clipboard"] # costs\n'
+        )
+        bare = self.bare(source)
+        self.assertNotIn("#", bare)
+        self.assertEqual(publish.tomllib.loads(bare), publish.tomllib.loads(source))
+
+    def test_pack_strips_only_when_asked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest = root / "manifest.toml"
+            manifest.write_text('# private notes\n[extension]\nid = "dev.you.closed"\n')
+            wasm = root / "extension.wasm"
+            wasm.write_bytes(b"\0asm")
+            (root / "ui").mkdir()
+
+            def packed_manifest(strip):
+                data = publish.pack("dev.you.closed", manifest, wasm, None, root / "ui", strip_comments=strip)
+                import gzip
+                import tarfile
+
+                with tarfile.open(fileobj=io.BytesIO(gzip.decompress(data))) as tar:
+                    return tar.extractfile("manifest.toml").read().decode()
+
+            self.assertIn("private notes", packed_manifest(False))
+            self.assertEqual(packed_manifest(True), '[extension]\nid = "dev.you.closed"\n')

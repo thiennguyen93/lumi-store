@@ -176,6 +176,12 @@ binary — and is published like every other, so its wasm and ui/ are
 public; only the source is not. A fork's pull request has no key, and
 `publish.py --check` skips the entry and says so.
 
+What it publishes is held to that. The manifest is packed without its
+comments — they are the author's notes on the source — and must read
+exactly as the source's does, or the pack fails. Its Rust builds with
+`--message-format=short`, so a warning in the public Actions log names a
+line rather than quoting it.
+
 To check it out locally, with access to the repo:
 
 ```bash

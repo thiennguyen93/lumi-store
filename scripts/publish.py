@@ -675,7 +675,12 @@ def declared_pages(entry_id: str, manifest: dict) -> list:
     return pages
 
 
-def build_wasm(entry_id: str, crate: Path) -> Path:
+def build_wasm(entry_id: str, crate: Path, private: bool = False) -> Path:
+    """The entry's wasm, built from its source. A private entry's
+    diagnostics are one line each (`--message-format=short`): the build
+    runs in a public repository's Actions, whose logs anyone can read, and
+    rustc's own format quotes the source lines a warning or an error is
+    about — the closed source, a few lines at a time."""
     cargo_toml = crate / "Cargo.toml"
     if not cargo_toml.exists():
         fail(entry_id, f"no Cargo.toml at {cargo_toml}")
@@ -690,6 +695,7 @@ def build_wasm(entry_id: str, crate: Path) -> Path:
             "--target", "wasm32-wasip2",
             "--manifest-path", str(cargo_toml),
             "--target-dir", str(target_dir),
+            *(["--message-format=short"] if private else []),
         ],
         check=True,
     )
@@ -809,7 +815,82 @@ def ui_members(entry_id: str, ui_dir: Path) -> list:
     return members
 
 
-def pack(entry_id: str, manifest_path: Path, wasm_path: Path, icon_path, ui_dir: Path) -> bytes:
+def without_comments(entry_id: str, text: str) -> bytes:
+    """A manifest with its comments taken out, for a private entry's
+    package. The package is public — anybody can unpack it — and a
+    manifest's comments are its author's notes on the source, which for a
+    closed-source entry stays closed.
+
+    Every `#` outside a string starts a comment that runs to the end of its
+    line: basic, literal and multi-line strings are read past, so `"#378add"`
+    keeps its `#`. A line that was only a comment goes, and runs of blank
+    lines close up to one; inside a multi-line string nothing is touched.
+    Held to the source afterwards: the result must parse to the same
+    document, or the pack fails rather than ship a manifest that says
+    something else."""
+    lines = []  # (text, inside a multi-line string at its start, a comment came off it)
+    line: list = []
+    protected = cut = False
+    state = None  # the open string's delimiter, or None
+    at, end = 0, len(text)
+    while at < end:
+        c = text[at]
+        if c == "\n":
+            lines.append(("".join(line), protected, cut))
+            line, cut = [], False
+            protected = state in ('"""', "'''")
+            at += 1
+        elif state is None:
+            if c == "#":
+                while at < end and text[at] != "\n":
+                    at += 1
+                while line and line[-1] in " \t":
+                    line.pop()
+                cut = True
+                continue
+            state = next((q for q in ('"""', "'''", '"', "'") if text.startswith(q, at)), None)
+            taken = len(state) if state else 1
+            line.append(text[at : at + taken])
+            at += taken
+        elif c == "\\" and state in ('"', '"""'):
+            line.append(text[at : at + 2])
+            at += 2
+        elif text.startswith(state, at):
+            # A multi-line string may end with up to two quotes of its own
+            # before its closing three.
+            taken = len(state)
+            while len(state) == 3 and taken < 5 and text.startswith(state[0], at + taken):
+                taken += 1
+            line.append(text[at : at + taken])
+            at += taken
+            state = None
+        else:
+            line.append(c)
+            at += 1
+    lines.append(("".join(line), protected, cut))
+
+    kept: list = []
+    for content, inside, was_cut in lines:
+        blank = not inside and content.strip() == ""
+        if blank and (was_cut or not kept or kept[-1] == ""):
+            continue
+        kept.append("" if blank else content)
+    while kept and kept[-1] == "":
+        kept.pop()
+    bare = "\n".join(kept) + "\n"
+    if tomllib.loads(bare) != tomllib.loads(text):
+        fail(entry_id, "manifest.toml reads differently with its comments taken out; the package is not packed")
+    return bare.encode("utf-8")
+
+
+def pack(
+    entry_id: str,
+    manifest_path: Path,
+    wasm_path: Path,
+    icon_path,
+    ui_dir: Path,
+    strip_comments: bool = False,
+) -> bytes:
     """A reproducible tarball: fixed metadata, fixed order, no gzip
     timestamp — an unchanged extension republished is identical bytes,
     so mirrors and caches can compare instead of guessing.
@@ -818,7 +899,10 @@ def pack(entry_id: str, manifest_path: Path, wasm_path: Path, icon_path, ui_dir:
     it: Lumi's Changelog tab reads the installed copy's, so it says what
     that Mac has and needs neither the store nor the network. It is the
     reviewed source's file, already held to `changelog_of` before this
-    runs; a Lumi older than the tab ignores the member."""
+    runs; a Lumi older than the tab ignores the member.
+
+    `strip_comments`: a private entry's manifest goes in without its
+    comments (`without_comments`)."""
     buffer = io.BytesIO()
     members = [("manifest.toml", manifest_path)]
     if icon_path is not None:
@@ -835,6 +919,11 @@ def pack(entry_id: str, manifest_path: Path, wasm_path: Path, icon_path, ui_dir:
             info.uname = info.gname = ""
             info.mtime = 0
             info.mode = 0o644
+            if arcname == "manifest.toml" and strip_comments:
+                data = without_comments(entry_id, path.read_text(encoding="utf-8"))
+                info.size = len(data)
+                tar.addfile(info, io.BytesIO(data))
+                continue
             with open(path, "rb") as f:
                 tar.addfile(info, f)
     import gzip
@@ -1229,7 +1318,7 @@ def build_one(entry_id: str, out: Path):
         sys.exit(f"error: {entry_id} is not in extensions.toml")
     require_fetched(entry)
     crate, _, manifest, _, _ = sources(entry)
-    wasm = build_wasm(entry_id, crate)
+    wasm = build_wasm(entry_id, crate, bool(entry.get("private")))
     out.mkdir(parents=True, exist_ok=True)
     (out / "extension.wasm").write_bytes(wasm.read_bytes())
     if entry.get("web"):
@@ -1256,12 +1345,12 @@ def main(check: bool = False, built: "Path | None" = None):
         # are not — and in both cases the manifest and icon are packed from
         # the reviewed source by this process.
         if built is None:
-            wasm = build_wasm(entry_id, crate)
+            wasm = build_wasm(entry_id, crate, bool(entry.get("private")))
             ui_dir = ui_of(entry_id, entry, crate, manifest)
         else:
             wasm = built_wasm(entry_id, built)
             ui_dir = built_ui(entry_id, entry, crate, manifest, built)
-        package = pack(entry_id, manifest_path, wasm, icon, ui_dir)
+        package = pack(entry_id, manifest_path, wasm, icon, ui_dir, strip_comments=bool(entry.get("private")))
         package_name = f"{entry_id}-{ext['version']}.tar.gz"
         package_path = DIST / package_name
         package_path.write_bytes(package)
