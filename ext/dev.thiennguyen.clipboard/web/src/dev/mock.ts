@@ -4,6 +4,7 @@
 
 import { setAppIconUrl, setBlobUrl, setFileUrl } from "../bridge";
 import type { Entry, ExtensionShortcut, Request, ShortcutHolder } from "../types";
+import { MOCK_MATH } from "./mockMath";
 
 const now = Date.now();
 const min = 60_000;
@@ -65,6 +66,10 @@ let rows: Entry[] = [
   entry({ id: "sn2", kind: "text", title: ";d", appName: "Slack", last: now - 40_000 }),
   entry({ id: "sn3", kind: "text", title: ";tk123", appName: "Claude", last: now - 45_000 }),
   entry({ id: "sn4", kind: "text", title: ";mix", appName: "Notes", last: now - 50_000 }),
+  // Plain text with math in it: worked out under the text.
+  ...Object.entries(MOCK_MATH).map(([id, one], i) =>
+    entry({ id, kind: one.html ? "rich" : "text", title: one.text, math: one.short || undefined, appName: "Notes", last: now - 15_000 - i * 1000 }),
+  ),
   // Text with several addresses in it: its preview lists them under it.
   entry({ id: "t", kind: "text", title: RELEASE_NOTE.replace(/\n/g, "⏎").slice(0, 200), search: RELEASE_NOTE, appName: "Slack", last: now - 250 * min }),
   entry({ id: "m", kind: "file", title: "/Users/me/Desktop/invoice-2041.pdf", fileExt: "pdf", appName: "Finder", last: now - 26 * 60 * min }),
@@ -197,24 +202,62 @@ let settings: Record<string, string> = {
   matchSnippets: "true",
   snippetsIn: "current",
   snippetProfiles: "p_work,p_home,p_3,p_gone",
-  privacyIdle: "1m",
+  privacyIdle: "never",
   // `?confirm` and `?lock` open with "Confirm it's you before showing" and
   // the history lock on.
   privacyConfirm: String(new URLSearchParams(location.search).has("confirm")),
   lockHistory: String(new URLSearchParams(location.search).has("lock")),
   lockAfter: new URLSearchParams(location.search).get("lockAfter") ?? "close",
 };
-// The extension's `lock.until`, and what the "Is it you?" dialog answers:
-// `mockAuth(false)` for a cancel, `mockAuth("unavailable")` for a Mac — or a
-// Lumi — that cannot ask (`GET` answers `available: false`, `POST` a 503).
-let lockUntil: number | null = null;
+// The extension's `lock.until` and `lock.open`, and what the "Is it you?"
+// dialog answers: `mockAuth(false)` for a cancel, `mockAuth("unavailable")`
+// for a Mac — or a Lumi — that cannot ask (`GET` answers `available:
+// false`, `POST` a 503).
+// What the panel shows in privacy mode (`privacy.shown`), and until when
+// once the panel closed. A browser tab never closes the panel: `mockClosed()`
+// in the console stands for Lumi's `window-closed`, then reload to reopen —
+// kept in the tab's session storage, as the extension keeps them.
+type Kept = {
+  lockUntil: number | null;
+  lockOpen: boolean;
+  shown: { all: boolean; except: string[]; confirmed: boolean } | null;
+  shownUntil: number | null;
+};
+const kept: Kept = { lockUntil: null, lockOpen: false, shown: null, shownUntil: null, ...JSON.parse(sessionStorage.getItem("mock.kept") ?? "{}") };
+let { lockUntil, lockOpen, shown, shownUntil } = kept;
+const keep = () => sessionStorage.setItem("mock.kept", JSON.stringify({ lockUntil, lockOpen, shown, shownUntil }));
 let authAnswer: boolean | "unavailable" = true;
 const LOCK_MS: Record<string, number | null> = { close: null, "1m": 60_000, "5m": 300_000, "15m": 900_000 };
 Object.assign(window, {
   mockAuth(answer: boolean | "unavailable") {
     authAnswer = answer;
   },
+  mockClosed() {
+    const cover = IDLE_MS[settings.privacyIdle ?? "never"] ?? null;
+    shownUntil = shown && cover !== null ? Date.now() + cover : null;
+    if (lockOpen) {
+      const ms = settings.lockHistory === "true" ? (LOCK_MS[settings.lockAfter ?? "close"] ?? null) : null;
+      lockUntil = ms === null ? null : Date.now() + ms;
+      lockOpen = false;
+    }
+    keep();
+    say(`panel closed: shown until ${shownUntil ?? "now"}, unlocked until ${lockUntil ?? "now"}`);
+  },
 });
+function unlockedNow(opening: boolean): boolean {
+  if (!opening) return lockOpen;
+  lockOpen = lockUntil !== null && lockUntil > Date.now();
+  keep();
+  return lockOpen;
+}
+
+function shownOnOpening() {
+  const back = privacy && shownUntil !== null && shownUntil > Date.now() ? shown : null;
+  if (!back) shown = null;
+  keep();
+  return back;
+}
+
 // Privacy mode, the extension's switch (src/lib.rs `PRIVACY`); `?privacy`
 // opens the panel with it on.
 let privacy = new URLSearchParams(location.search).has("privacy");
@@ -315,21 +358,25 @@ function answer(request: Request): unknown {
         appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
         privacy,
         privacyConfirm: settings.privacyConfirm === "true",
-        lock: {
-          on: settings.lockHistory === "true",
-          until: settings.lockHistory === "true" && lockUntil !== null && lockUntil > Date.now() ? lockUntil : null,
-        },
-        privacyIdle: (settings.privacyIdle ?? "") in IDLE_MS ? (IDLE_MS[settings.privacyIdle!] ?? null) : 60_000,
+        lock: { on: settings.lockHistory === "true", unlocked: settings.lockHistory === "true" && unlockedNow(request.opening === true) },
+        shown: request.opening === true ? shownOnOpening() : null,
       };
-    case "unlocked": {
-      const ms = settings.lockHistory === "true" ? (LOCK_MS[settings.lockAfter ?? "close"] ?? null) : null;
-      lockUntil = ms === null ? null : Date.now() + ms;
-      say(lockUntil === null ? "unlocked until the panel closes" : `unlocked for ${ms! / 1000}s`);
-      return { until: lockUntil };
-    }
+    case "unlocked":
+      lockOpen = true;
+      keep();
+      say("unlocked until the panel closes");
+      return {};
     case "lock":
       lockUntil = null;
+      lockOpen = false;
+      shown = null;
+      keep();
       say("locked now");
+      return {};
+    case "shown":
+      if (privacy) shown = request.all || request.except.length || request.confirmed ? { all: request.all, except: request.except, confirmed: request.confirmed } : null;
+      shownUntil = null;
+      keep();
       return {};
     case "privacy":
     case "setPrivacy":
@@ -348,8 +395,9 @@ function answer(request: Request): unknown {
           : row.search.length > row.title.length
             ? row.search
             : `${row.title}\n\n(the full text of the copy would be here)`;
-      const html =
-        row?.kind === "rich"
+      const html = row && MOCK_MATH[row.id]?.html
+        ? MOCK_MATH[row.id]!.html!
+        : row?.kind === "rich"
           ? `<meta charset="utf-8"><div style="color: rgb(0, 0, 0); font-family: Georgia;">${row.title.replace(/</g, "&lt;")} 🎉</div><p style="color: rgb(34, 34, 34)">Some <b>bold</b>, <i>italic</i>, <s>struck</s>, <u>under</u> and <span style="color: rgb(220, 38, 38)">red</span> <span style="font-family: Menlo">mono</span> <a href="https://lumikeys.app/docs">the docs</a>, <a href="https://github.com/thiennguyen93">GitHub</a>, <a href="mailto:hi@example.com">mail me</a>.</p><p>Draft: https://example.com/reports/q3-final-draft-with-a-much-longer-address-than-fits.pdf</p><ul><li>one ✅</li><li>two</li></ul><img src="https://x.test/a.png"><script>parent.document.body.remove()</script>`
           : null;
       const ocr = row?.ocr && settings.ocr !== "false" ? ["Lumi", "Clipboard Manager", "Search history", ...Array.from({ length: 60 }, (_, i) => `Line ${i + 1} of a long read`)].join("\n") : null;
@@ -358,7 +406,8 @@ function answer(request: Request): unknown {
       const files = row ? MOCK_FILES[row.id] : undefined;
       const links = row ? MOCK_LINKS[row.id] : undefined;
       const snippets = row && (row.kind === "text" || row.kind === "rich") ? mockExpansions(row.title) : null;
-      return { text, html, ocr, fileSize, fileToken, files: files ?? null, fileCount: files?.length ?? 0, links: links ?? null, linkCount: links?.length ?? 0, snippets };
+      const math = row ? (MOCK_MATH[row.id]?.math ?? null) : null;
+      return { text: math ? row!.title : text, html, ocr, fileSize, fileToken, files: files ?? null, fileCount: files?.length ?? 0, links: links ?? null, linkCount: links?.length ?? 0, snippets, math };
     }
     case "drag":
       say(`would drag ${request.id}${request.file != null ? ` (file ${request.file})` : ""} out of the panel`);
@@ -416,6 +465,9 @@ function answer(request: Request): unknown {
       return { layout: rows.find((r) => r.id === request.id)?.ocr ? MOCK_LAYOUT : null };
     case "copyColor":
       say(`would copy ${request.text} and ${request.pinned ? "stay up" : "close"}`);
+      return {};
+    case "copyMath":
+      say(`would copy ${JSON.stringify(request.text)} and ${request.pinned ? "stay up" : "close"}`);
       return {};
     case "copySnippet":
       say(`would copy what ${request.id} expands to and ${request.pinned ? "stay up" : "close"}`);

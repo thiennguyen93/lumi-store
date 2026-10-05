@@ -195,6 +195,12 @@ pub struct Entry {
     /// this (`lib`'s upkeep fills those in).
     #[serde(default, skip_serializing_if = "is_zero")]
     pub file_count: u32,
+    /// The math in a text or rich copy, answered in a few characters — "= 18",
+    /// "x = 2, 3", "∑ 2" — for the row (`math::row_answer`). Empty for
+    /// everything else, and for a row kept before rows said it until its
+    /// preview is first shown.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub math: String,
 }
 
 fn is_false(b: &bool) -> bool {
@@ -241,6 +247,10 @@ pub struct Record {
     /// on a record kept before this; found again when `v` is out of date.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub links: Option<crate::links::KeptLinks>,
+    /// The math in a text or rich copy, found once when it is kept
+    /// (`math::kept`), as the links are.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub math: Option<crate::math::KeptMath>,
     /// What the copy expands to as a snippet trigger, for the snippets that
     /// expand the same way every time — each under the revision Lumi
     /// answered, so an edited snippet is expanded again (`snippets::look`).
@@ -454,6 +464,7 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
         ocr_read: copy.ocr.is_some(),
         file_ext: if kind == Kind::File { file_ext_of(&copy.items) } else { String::new() },
         file_count: if kind == Kind::File { file_count_of(&copy.items) } else { 0 },
+        math: if matches!(kind, Kind::Text | Kind::Rich) { crate::math::row_answer(&crate::math::kept(&copy.items).list) } else { String::new() },
         thumb: copy
             .items
             .iter()
@@ -473,12 +484,13 @@ pub fn apply(index: &mut Index, copy: Copy, rules: &Rules, new_id: String) -> Ou
 
     Outcome::Inserted {
         id: new_id,
-        // Its links are `lib`'s to find, once, for the record it writes:
-        // this runs again on every retry of the index write.
+        // Its links and math are `lib`'s to find, once, for the record it
+        // writes: this runs again on every retry of the index write.
         record: Record {
             items: copy.items,
             ocr: copy.ocr.filter(|text| !text.trim().is_empty()),
             links: None,
+            math: None,
             snippets: None,
             ocr_layout: None,
         },

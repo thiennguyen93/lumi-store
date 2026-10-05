@@ -14,7 +14,7 @@
 // written out in the text — opens on a click (LinkedText.tsx). The href
 // itself is never put on the page.
 
-import { type CSSProperties, type ReactNode, createElement } from "react";
+import { type CSSProperties, type ReactNode, type Ref, createElement } from "react";
 import type { Link } from "./bridge";
 import { linked, liveLink } from "./LinkedText";
 import { linkOfHref } from "./links";
@@ -79,6 +79,7 @@ export function RichText({
   maxNodes = MAX_NODES,
   links = [],
   onOpen,
+  bodyRef,
 }: {
   html: string;
   fallback: ReactNode;
@@ -86,6 +87,8 @@ export function RichText({
   /** The copy's links, as the extension listed them, and how to open one. */
   links?: readonly Link[];
   onOpen?: (url: string) => void;
+  /** The element the formatting is drawn in, for marks laid over it. */
+  bodyRef?: Ref<HTMLDivElement>;
 }) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   let nodes = 0;
@@ -122,5 +125,11 @@ export function RichText({
   };
 
   const drawn = walk(doc.body, 0, 0);
-  return shown ? <div className="body rich-html">{drawn}</div> : fallback;
+  return shown ? (
+    <div ref={bodyRef} className="body rich-html">
+      {drawn}
+    </div>
+  ) : (
+    fallback
+  );
 }

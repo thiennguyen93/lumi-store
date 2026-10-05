@@ -12,7 +12,8 @@ import {
   isCovered,
   isLocked,
   isUnlocked,
-  keyboardLeft,
+  restore,
+  shownOf,
   LOCK_OFF,
   LOCK_UNKNOWN,
   needsConfirm,
@@ -64,13 +65,6 @@ test("turning it on covers rows shown before it was last turned off", () => {
   assert.equal(isCovered(veil, "a"), true, "on again: covered again");
   const shown = show(veil, "a");
   assert.equal(adopt(shown, true), shown, "the list read again with it still on keeps what is shown");
-});
-
-test("only the keyboard going from held to not is a leaving", () => {
-  assert.equal(keyboardLeft(true, false), true);
-  assert.equal(keyboardLeft(false, false), false, "a hover of a pinned panel without the keyboard");
-  assert.equal(keyboardLeft(false, true), false);
-  assert.equal(keyboardLeft(true, true), false);
 });
 
 test("show all shows every row at once, and again covers them all", () => {
@@ -137,24 +131,32 @@ test("showing asks once, until everything is covered again", () => {
   assert.equal(needsConfirm(VEIL_OFF, true, false), false, "privacy mode off: nothing to show");
 });
 
-test("the history is locked until this opening is unlocked, or an earlier unlock still holds", () => {
-  const lock = { on: true, until: null, here: false, known: true };
-  assert.equal(isLocked(LOCK_OFF, 0), false);
-  assert.equal(isLocked(lock, 0), true);
-  assert.equal(isLocked({ ...lock, here: true }, 0), false, "unlocked in this opening");
-  assert.equal(isLocked({ ...lock, until: 5_000 }, 4_999), false, "an earlier unlock that still holds");
-  assert.equal(isLocked({ ...lock, until: 5_000 }, 5_000), true, "and ran out");
-  assert.equal(isUnlocked({ ...lock, until: 5_000 }, 1), true, "by an earlier unlock");
-  assert.equal(isUnlocked({ ...lock, here: true }, 1), true, "in this opening, a pinned panel in the background too");
-  assert.equal(isUnlocked(lock, 1), false);
-  assert.equal(isUnlocked({ ...LOCK_OFF, here: true }, 1), false, "off: nothing was locked");
+test("the history is locked until unlocked, and stays unlocked until the panel closes", () => {
+  const lock = { on: true, here: false, known: true };
+  assert.equal(isLocked(LOCK_OFF), false);
+  assert.equal(isLocked(lock), true);
+  assert.equal(isLocked({ ...lock, here: true }), false, "unlocked in this opening, or still within Lock again");
+  assert.equal(isUnlocked({ ...lock, here: true }), true, "a pinned panel in the background too");
+  assert.equal(isUnlocked(lock), false);
+  assert.equal(isUnlocked({ ...LOCK_OFF, here: true }), false, "off: nothing was locked");
+});
+
+test("an opening shows again what was shown before the panel last closed", () => {
+  const on = adopt(VEIL_OFF, true);
+  const back = restore(on, { all: false, except: ["a"], confirmed: true });
+  assert.equal(isCovered(back, "a"), false);
+  assert.equal(isCovered(back, "b"), true);
+  assert.equal(back.confirmed, true);
+  assert.deepEqual(shownOf(back), { all: false, except: ["a"], confirmed: true });
+  assert.equal(restore(on, null), on, "nothing kept: all covered");
+  assert.equal(restore(VEIL_OFF, { all: true, except: [], confirmed: false }), VEIL_OFF, "privacy mode off");
 });
 
 test("before its first list a panel is locked, but shows neither the lock nor the open history", () => {
-  assert.equal(isLocked(LOCK_UNKNOWN, 0), true, "nothing read, shown or done meanwhile");
-  assert.equal(showsLock(LOCK_UNKNOWN, 0), false, "no lock card for a history that may not be locked");
-  const lock = { on: true, until: null, here: false, known: true };
-  assert.equal(showsLock(lock, 0), true, "known locked: the lock card");
-  assert.equal(showsLock({ ...lock, here: true }, 0), false, "unlocked");
-  assert.equal(showsLock(LOCK_OFF, 0), false, "off");
+  assert.equal(isLocked(LOCK_UNKNOWN), true, "nothing read, shown or done meanwhile");
+  assert.equal(showsLock(LOCK_UNKNOWN), false, "no lock card for a history that may not be locked");
+  const lock = { on: true, here: false, known: true };
+  assert.equal(showsLock(lock), true, "known locked: the lock card");
+  assert.equal(showsLock({ ...lock, here: true }), false, "unlocked");
+  assert.equal(showsLock(LOCK_OFF), false, "off");
 });

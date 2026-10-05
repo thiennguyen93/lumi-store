@@ -17,6 +17,21 @@ export type FileItem = { name: string; dir?: string; size?: number; folder?: boo
  *  the words a rich copy links it under, when they are not the address. */
 export type Link = { url: string; text?: string };
 
+/** A piece of math in a text or rich copy (src/math.rs): where it is in
+ *  the preview's plain text (UTF-16), what kind, the math and its answers as TeX, and
+ *  each answer as it is copied. */
+export type MathSort = "expression" | "percentage" | "linear" | "quadratic" | "equation" | "check";
+export type MathFound = {
+  from: number;
+  to: number;
+  sort: MathSort;
+  tex: string;
+  answers?: { tex: string; copy: string }[];
+  note?: string;
+  holds?: boolean;
+  short: string;
+};
+
 /** What a copy expands to as a snippet trigger (src/snippets.rs): the text,
  *  the profiles whose snippet gives it, whether it was expanded fresh for
  *  this preview (a date, a random value), and the web addresses in it. */
@@ -38,6 +53,8 @@ type Answers = {
     /** A text or rich copy's web addresses (at most 50), and how many in all. */
     links?: Link[] | null;
     linkCount?: number;
+    /** The math in a text or rich copy, worked out. */
+    math?: MathFound[] | null;
     /** What the copy expands to, when it is a snippet trigger; Lumi 1.31. */
     snippets?: Expansion[] | null;
     /** Where the image's text is, when the extension has read it itself. */
@@ -55,6 +72,7 @@ type Answers = {
   copyPath: Record<string, never>;
   copyColor: Record<string, never>;
   copySnippet: Record<string, never>;
+  copyMath: Record<string, never>;
   open: Record<string, never>;
   reveal: Record<string, never>;
   saveImage: Record<string, never>;
@@ -67,9 +85,10 @@ type Answers = {
   clear: { ids: string[] };
   close: Record<string, never>;
   pinPanel: { pinned: boolean };
-  /** History lock: an unlock said yes to — kept until `until` for "Lock
-   *  again" after a while, null for until the panel closes — and Lock now. */
-  unlocked: { until: number | null };
+  /** History lock: an unlock said yes to, for "Lock again after panel
+   *  closes" — and Lock now. */
+  unlocked: Record<string, never>;
+  shown: Record<string, never>;
   lock: Record<string, never>;
   /** `privacy` asks or sets it; the answer is how it stands now. */
   privacy: { privacy: boolean };

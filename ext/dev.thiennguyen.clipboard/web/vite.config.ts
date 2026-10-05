@@ -42,6 +42,22 @@ function lumiSheet(): Plugin {
   };
 }
 
+/**
+ * KaTeX's stylesheet names each font three ways — woff2, woff, ttf — and
+ * the build would ship all three. Every WebKit Lumi runs on takes woff2,
+ * so the other two are cut from the sheet and never emitted.
+ */
+function katexWoff2Only(): Plugin {
+  return {
+    name: "katex-woff2-only",
+    enforce: "pre",
+    transform: (code, id) =>
+      id.includes("/katex/dist/") && id.endsWith(".css")
+        ? code.replace(/,\s*url\([^)]*\.(?:woff|ttf)\)\s*format\("(?:woff|truetype)"\)/g, "")
+        : undefined,
+  };
+}
+
 // The store runs `pnpm run build` and ships `dist/` as the package's ui/.
 //
 // Three settings exist for Lumi rather than for Vite:
@@ -58,7 +74,7 @@ function lumiSheet(): Plugin {
 //   the manifest.
 export default defineConfig({
   base: "./",
-  plugins: [react(), lumiSheet()],
+  plugins: [react(), lumiSheet(), katexWoff2Only()],
   build: {
     outDir: "dist",
     emptyOutDir: true,
@@ -67,7 +83,9 @@ export default defineConfig({
     modulePreload: { polyfill: false },
     // pdf.js' standard fonts are fetched, and a `data:` URL is not 'self':
     // they are always files. Their licences keep a `.txt` name beside them.
-    assetsInlineLimit: (file) => (file.includes("/pdfjs-dist/standard_fonts/") ? false : undefined),
+    // KaTeX's fonts too: a small one inlined as `data:` would be refused.
+    assetsInlineLimit: (file) =>
+      file.includes("/pdfjs-dist/standard_fonts/") || file.includes("/katex/dist/fonts/") ? false : undefined,
     rollupOptions: {
       input: { panel: "panel.html", welcome: "welcome.html", dashboard: "dashboard.html", settings: "settings.html" },
       output: {

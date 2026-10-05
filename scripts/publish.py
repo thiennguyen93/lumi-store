@@ -101,14 +101,18 @@ CAPABILITIES = {
     "menu",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
-# `manifest::Event::needs`. Checked one way only, as Lumi checks it: an event
-# without its capability is refused, the capability alone is not.
+# `manifest::Event::needs`, `None` for one that costs none. Checked one way
+# only, as Lumi checks it: an event without its capability is refused, the
+# capability alone is not.
 EVENTS = {
     "clipboard": "clipboard-history",
     "clipboard-ocr": "clipboard-history",
     # Lumi 1.36: Lumi taking a picture of the screen for itself (Copy Text
     # from Screen), at its start and its end.
     "screen-capture": "screen",
+    # Lumi 1.37: one of the extension's own windows leaving the screen for
+    # good. Only about its own window, so no capability.
+    "window-closed": None,
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -328,7 +332,7 @@ def check_manifest(entry_id: str, manifest: dict):
     for name in ext.get("events", []):
         if name not in EVENTS:
             fail(entry_id, f"unknown event {name!r} — Lumi sends {sorted(EVENTS)}")
-        if EVENTS[name] not in ext.get("capabilities", []):
+        if EVENTS[name] is not None and EVENTS[name] not in ext.get("capabilities", []):
             fail(entry_id, f"hearing {name!r} needs the {EVENTS[name]} capability — add it to capabilities")
     if "clipboard-ocr" in ext.get("events", []) and "clipboard" not in ext.get("events", []):
         fail(entry_id, 'hearing "clipboard-ocr" needs "clipboard" too — the text names a copy the extension has to have heard')

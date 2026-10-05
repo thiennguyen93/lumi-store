@@ -215,7 +215,7 @@ function Welcome() {
                   )}
                 </>
               )}
-              . Turn it on from the eye in the panel, Lumi’s menu bar or a key. Settings can ask
+              . Turn it on in Settings, from Lumi’s menu bar or with a key. Settings can ask
               for Touch ID first, or lock the whole history.
             </p>
             <div className="row-actions">
@@ -612,7 +612,7 @@ const COVER_BEATS: { on: number; shown: "none" | "one" | "all"; press: "one" | "
  * The privacy step: the list stays as it is, the preview beside it is
  * covered. The show key opens the budget; the next row is covered again; a
  * colour never is; the show-all key opens everything; then it is all
- * covered again — what a pinned panel left for another app does.
+ * covered again — what the panel closing does.
  */
 function Covered({ keys }: { keys: CoverKeys }) {
   const [beat, setBeat] = useState(0);

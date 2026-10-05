@@ -18,6 +18,7 @@
 pub mod history;
 pub mod host;
 pub mod links;
+pub mod math;
 pub mod rtf;
 pub mod snippets;
 
@@ -56,24 +57,50 @@ const PAUSED: &str = "paused";
 /// Settings tab, and all of them must flip the one switch.
 const PRIVACY: &str = "privacy";
 
-/// How long revealed previews stay shown with nothing done in the panel,
-/// as the `privacyIdle` setting spells it; `None` for until it closes.
-const PRIVACY_IDLES: &[(&str, Option<i64>)] =
-    &[("30s", Some(30_000)), ("1m", Some(60_000)), ("5m", Some(5 * 60_000)), ("never", None)];
+/// How long previews shown in privacy mode stay shown after the panel
+/// closes — "Cover again after panel closes", as the `privacyIdle` setting
+/// spells it; `None` for at once ("Immediately", stored as `never` from
+/// when the setting meant something else).
+const COVER_AFTERS: &[(&str, Option<i64>)] =
+    &[("never", None), ("30s", Some(30_000)), ("1m", Some(60_000)), ("5m", Some(5 * 60_000))];
 
-/// The idle when none is set, as the manifest's default says.
-const DEFAULT_PRIVACY_IDLE: Option<i64> = Some(60_000);
+/// Storage key of what the panel has shown in privacy mode (`Shown`), as the
+/// panel says while it is up; given a time to last until when the panel
+/// closes (the `window-closed` event), and handed back to an opening before
+/// then. Without that time — the panel still up, or a Lumi that never said
+/// it closed — nothing of it is handed back.
+const SHOWN: &str = "privacy.shown";
 
 /// Storage key of when an unlocked history locks again, in ms of Lumi's
-/// clock — kept only for "Lock again" after a while, so that openings within
-/// it open unlocked. "When the panel closes" keeps nothing: every opening
-/// starts locked, and what was unlocked goes with the page.
+/// clock — "Lock again after panel closes" after a while, set when the
+/// panel closes, so that openings within it open unlocked. "Immediately"
+/// keeps nothing: every opening starts locked.
 const LOCK_UNTIL: &str = "lock.until";
 
-/// How long a history unlocked with "Is it you?" stays unlocked, as the
-/// `lockAfter` setting spells it; `None` for until the panel closes.
+/// Set while an opening of the panel has the history unlocked — by "Is it
+/// you?", or by an unlock still holding as it opened — so that its closing
+/// starts "Lock again" from then.
+const LOCK_OPEN: &str = "lock.open";
+
+/// How long a history stays unlocked after the panel that unlocked it
+/// closes, as the `lockAfter` setting spells it; `None` for at once.
 const LOCK_AFTERS: &[(&str, Option<i64>)] =
     &[("close", None), ("1m", Some(60_000)), ("5m", Some(5 * 60_000)), ("15m", Some(15 * 60_000))];
+
+/// What the panel has shown in privacy mode — every row but `except`, or
+/// only `except` — and whether "Is it you?" said yes for it (privacy.ts
+/// `Veil`). `until`: when it is covered again, once the panel has closed.
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+struct Shown {
+    all: bool,
+    except: Vec<String>,
+    confirmed: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    until: Option<i64>,
+}
+
+/// The most row ids `Shown` keeps: one per row of the history at most.
+const SHOWN_IDS: usize = 5000;
 
 /// Set when the menu bar menu's Delete All Unpinned… opened the panel to
 /// do it: the panel's first list answers `clear` and takes the key, and
@@ -282,6 +309,8 @@ pub fn on_event(host: &impl Host, name: &str, payload: &str) -> Result<(), Strin
     match name {
         "clipboard" => on_copy(host, payload)?,
         "clipboard-ocr" => on_ocr(host, payload)?,
+        // Nothing in the history changed: nobody to tell.
+        "window-closed" => return on_window_closed(host, payload),
         // Events this build does not know are Lumi being newer than the
         // component, not something wrong with the copy.
         _ => return Ok(()),
@@ -323,10 +352,21 @@ fn paused(host: &impl Host) -> bool {
     matches!(host.get(PAUSED), Ok(Some(_)))
 }
 
-/// Until when an unlock made earlier holds, when it still does.
-fn unlocked_until(host: &impl Host) -> Option<i64> {
-    let until: i64 = host.get(LOCK_UNTIL).ok()??.value.parse().ok()?;
-    (until > host.now()).then_some(until)
+/// Whether an unlock made before holds: the panel is up and was unlocked
+/// in this opening, or — as it opens — "Lock again after panel closes" has
+/// not run out since it last closed. Unlocked on opening, the opening holds
+/// it until it closes too (`LOCK_OPEN`).
+fn lock_held(host: &impl Host, opening: bool) -> bool {
+    if !opening {
+        return matches!(host.get(LOCK_OPEN), Ok(Some(_)));
+    }
+    let _ = host.delete(LOCK_OPEN);
+    let until: Option<i64> = host.get(LOCK_UNTIL).ok().flatten().and_then(|stored| stored.value.parse().ok());
+    let held = until.is_some_and(|until| until > host.now());
+    if held {
+        let _ = host.put(LOCK_OPEN, "1", None);
+    }
+    held
 }
 
 fn private(host: &impl Host) -> bool {
@@ -342,7 +382,71 @@ pub const PRIVACY_CHANGED: &str = r#"{"kind":"privacy"}"#;
 /// `Conflict` on the `put` is the key already there: on already, which is
 /// what was asked. The posts are best effort: a page that is not up reads
 /// the switch when it opens.
+/// The panel closed (Lumi 1.37): what it showed in privacy mode lasts
+/// "Cover again after panel closes" from now, and an unlocked history
+/// "Lock again after panel closes" — or both end now, for "Immediately".
+fn on_window_closed(host: &impl Host, payload: &str) -> Result<(), String> {
+    #[derive(serde::Deserialize)]
+    struct Closed {
+        v: u32,
+        window: String,
+        at: i64,
+    }
+    let closed: Closed = serde_json::from_str(payload).map_err(|err| format!("bad window-closed event: {err}"))?;
+    if closed.v != 1 {
+        return Err(format!("window-closed event version {} is newer than this build", closed.v));
+    }
+    if closed.window != PANEL {
+        return Ok(());
+    }
+    let prefs = prefs(host);
+    match (read_shown(host), prefs.cover_after_ms) {
+        (Some(shown), Some(ms)) if private(host) => write_shown(host, &Shown { until: Some(closed.at + ms), ..shown })?,
+        _ => host.delete(SHOWN)?,
+    }
+    if host.get(LOCK_OPEN)?.is_some() {
+        match prefs.lock_after_ms {
+            Some(ms) if prefs.lock_history => {
+                let rev = host.get(LOCK_UNTIL)?.map(|stored| stored.rev);
+                if let Err(PutError::Failed(err)) = host.put(LOCK_UNTIL, &(closed.at + ms).to_string(), rev) {
+                    return Err(err);
+                }
+            }
+            _ => host.delete(LOCK_UNTIL)?,
+        }
+        host.delete(LOCK_OPEN)?;
+    }
+    Ok(())
+}
+
+fn read_shown(host: &impl Host) -> Option<Shown> {
+    serde_json::from_str(&host.get(SHOWN).ok()??.value).ok()
+}
+
+fn write_shown(host: &impl Host, shown: &Shown) -> Result<(), String> {
+    let text = serde_json::to_string(shown).map_err(|err| err.to_string())?;
+    let rev = host.get(SHOWN)?.map(|stored| stored.rev);
+    match host.put(SHOWN, &text, rev) {
+        Ok(_) | Err(PutError::Conflict) => Ok(()),
+        Err(PutError::Failed(err)) => Err(err),
+    }
+}
+
+/// What an opening of the panel shows straight away: what the panel showed
+/// before it last closed, while "Cover again after panel closes" has not
+/// run out. Anything else kept is forgotten.
+fn shown_on_opening(host: &impl Host) -> Option<Shown> {
+    let shown = read_shown(host)?;
+    if private(host) && shown.until.is_some_and(|until| until > host.now()) {
+        return Some(Shown { until: None, ..shown });
+    }
+    let _ = host.delete(SHOWN);
+    None
+}
+
 fn set_private(host: &impl Host, on: bool) -> Result<(), String> {
+    // Turned on or off, nothing shown before is shown again.
+    let _ = host.delete(SHOWN);
     if !on {
         host.delete(PRIVACY)?;
     } else if let Err(PutError::Failed(err)) = host.put(PRIVACY, "1", None) {
@@ -504,17 +608,17 @@ struct Prefs {
     match_snippets: snippets::Matching,
     /// The profiles ticked for `Matching::Selected`.
     snippet_profiles: Vec<String>,
-    /// "Cover again after": how long a preview shown in privacy mode stays
-    /// shown with nothing done in the panel; `None` for until it closes.
-    privacy_idle_ms: Option<i64>,
+    /// "Cover again after panel closes": how long previews shown in privacy
+    /// mode stay shown after the panel closes; `None` for at once.
+    cover_after_ms: Option<i64>,
     /// "Confirm it's you before showing": the first preview shown in an
     /// opening asks macOS's "Is it you?" dialog first.
     privacy_confirm: bool,
     /// "Lock history": the panel opens locked — no list, no preview, no
     /// action — until that dialog says it is the owner.
     lock_history: bool,
-    /// "Lock again": how long an unlock lasts; `None` for until the panel
-    /// closes.
+    /// "Lock again after panel closes": how long an unlocked history stays
+    /// unlocked after the panel closes; `None` for at once.
     lock_after_ms: Option<i64>,
 }
 
@@ -593,10 +697,10 @@ fn prefs(host: &impl Host) -> Prefs {
         },
         match_snippets: snippets::Matching::from_settings(&s["matchSnippets"], s["snippetsIn"].as_str()),
         snippet_profiles: snippets::picked(s["snippetProfiles"].as_str().unwrap_or_default()),
-        privacy_idle_ms: PRIVACY_IDLES
+        cover_after_ms: COVER_AFTERS
             .iter()
             .find(|(word, _)| s["privacyIdle"].as_str() == Some(word))
-            .map_or(DEFAULT_PRIVACY_IDLE, |(_, ms)| *ms),
+            .and_then(|(_, ms)| *ms),
         privacy_confirm: matches!(&s["privacyConfirm"], Value::Bool(true))
             || s["privacyConfirm"].as_str() == Some("true"),
         lock_history: matches!(&s["lockHistory"], Value::Bool(true)) || s["lockHistory"].as_str() == Some("true"),
@@ -815,6 +919,7 @@ fn on_copy(host: &impl Host, payload: &str) -> Result<(), String> {
         // Its links, found now and kept with it: the copy never changes,
         // so no preview has to look for them again.
         record.links = Some(links::kept(&record.items));
+        record.math = Some(math::kept(&record.items));
         let text = serde_json::to_string(record).map_err(|err| err.to_string())?;
         host.put(&record_key(&id), &text, None).map_err(|err| match err {
             PutError::Conflict => "a history record already had that id".to_string(),
@@ -895,6 +1000,29 @@ fn links_of_record(host: &impl Host, id: &str, record: &history::Record) -> link
     kept
 }
 
+/// The math the preview lists for an item, as its record keeps it. A
+/// record kept before records kept it, or by older rules, has it found now
+/// and kept, and its row's answer with it — once per item, as for links.
+fn math_of_record(host: &impl Host, id: &str, record: &history::Record) -> math::KeptMath {
+    if let Some(kept) = record.math.as_ref().filter(|kept| kept.current()) {
+        return kept.clone();
+    }
+    let kept = math::kept(&record.items);
+    // Best effort: unkept, it is only found again next time.
+    let _ = update_record(host, id, |record| record.math = Some(kept.clone()));
+    let answer = math::row_answer(&kept.list);
+    let stale = read_index(host).is_ok_and(|(index, _)| index.items.iter().any(|e| e.id == id && e.math != answer));
+    if stale {
+        let _ = update_index(host, |index| {
+            if let Some(entry) = index.items.iter_mut().find(|e| e.id == id) {
+                entry.math = answer.clone();
+            }
+            Ok(())
+        });
+    }
+    kept
+}
+
 /// What the copy expands to as a snippet trigger, in the profiles the
 /// setting names — nothing when it names none, or the copy is not one a
 /// trigger can be. Expansions that come out the same every time are kept
@@ -951,10 +1079,11 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
     match request["kind"].as_str().unwrap_or_default() {
         "list" => {
             let prefs = prefs(host);
+            let opening = request["opening"].as_bool() == Some(true);
             // The panel's first list since it opened tidies the history as it
             // reads it (`open_history`); a list asked again — after a copy, a
             // pin, a delete — only reads it.
-            let index = if request["opening"].as_bool() == Some(true) {
+            let index = if opening {
                 open_history(host, &prefs)?
             } else {
                 read_index(host)?.0
@@ -984,18 +1113,19 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "previewWidth": preview_width(host),
                 "previewSplit": preview_split(host),
                 "pdfFit": pdf_fit(host),
-                // Privacy mode: the page covers every preview until shown,
-                // and covers them again after `privacyIdle` ms of nothing
-                // done (null: only when it closes).
+                // Privacy mode: the page covers every preview until shown —
+                // but, on opening, what it showed before it last closed, for
+                // "Cover again after panel closes" (`shown`).
                 "privacy": private(host),
-                "privacyIdle": prefs.privacy_idle_ms,
+                "shown": if opening { shown_on_opening(host) } else { None },
                 "privacyConfirm": prefs.privacy_confirm,
-                // History lock: whether it is on, and until when an unlock
-                // made in an earlier opening still holds (null: none does).
-                // The page shows nothing of the history while locked.
+                // History lock: whether it is on, and whether an unlock from
+                // before this opening still holds. Once open, the panel stays
+                // unlocked until it closes; "Lock again after panel closes"
+                // runs from then. The page shows nothing while locked.
                 "lock": {
                     "on": prefs.lock_history,
-                    "until": if prefs.lock_history { unlocked_until(host) } else { None },
+                    "unlocked": prefs.lock_history && lock_held(host, opening),
                 },
                 // The menu bar asked for Delete All Unpinned… and opened
                 // the panel to do it; taken on the opening list only.
@@ -1081,6 +1211,8 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             // The web addresses in a text or rich copy, for the list under
             // its text — as kept with it, not looked for again.
             let links = links_of_record(host, &id, &record);
+            // The math in a text or rich copy, worked out when it was kept.
+            let math = math_of_record(host, &id, &record);
             // What the copy expands to, when it is a snippet's trigger.
             let expanded = snippets_of_record(host, &id, &record, &prefs);
             Ok(json!({
@@ -1095,6 +1227,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 "fileCount": history::file_count_of(&record.items),
                 "links": Some(&links.list).filter(|list| !list.is_empty()),
                 "linkCount": links.count,
+                "math": Some(&math.list).filter(|list| !list.is_empty()),
                 "snippets": Some(&expanded).filter(|shown| !shown.is_empty()),
             }))
         }
@@ -1266,6 +1399,23 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let _ = host.alert(&format!("Copied {text}"));
             Ok(json!({}))
         }
+        // An answer from the preview's Math section, or all of them. Taken
+        // only when it is one this still works out from the stored item,
+        // so the page cannot put anything else on the pasteboard.
+        "copyMath" => {
+            let id = id()?;
+            let record = read_record(host, &id)?;
+            let text = request["text"].as_str().unwrap_or_default();
+            if !math::is_answer(&math_of_record(host, &id, &record).list, text) {
+                return Err("That is not an answer worked out from the item.".to_string());
+            }
+            let rep = history::Rep { uti: "public.utf8-plain-text".to_string(), bytes: text.len() as u64, text: Some(text.to_string()), blob: None, file_size: None, path: None, file_token: None };
+            host.paste(&[vec![rep]], false)?;
+            put_away(host, request)?;
+            // Best effort: the copy happened whether or not it is said.
+            let _ = host.alert(&format!("Copied {}", text.replace('\n', " · ")));
+            Ok(json!({}))
+        }
         // What a row expands to as a snippet trigger, from the preview's
         // Copy. Taken only when the row still expands to it — or, for an
         // expansion made fresh each time (a date, a random value), when one
@@ -1413,38 +1563,44 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             Ok(json!({}))
         }
         // The page's "Is it you?" dialog said yes to unlocking the history:
-        // kept for "Lock again" after a while, so openings within it open
-        // unlocked. The answer is when it locks again (null: on closing).
+        // unlocked until the panel closes, and "Lock again after panel
+        // closes" from then (`on_window_closed`).
         "unlocked" => {
-            let prefs = prefs(host);
-            let until = match prefs.lock_after_ms {
-                Some(ms) if prefs.lock_history => Some(host.now() + ms),
-                _ => None,
-            };
-            match until {
-                Some(until) => {
-                    let rev = host.get(LOCK_UNTIL)?.map(|stored| stored.rev);
-                    if let Err(PutError::Failed(err)) = host.put(LOCK_UNTIL, &until.to_string(), rev) {
-                        return Err(err);
-                    }
-                }
-                None => host.delete(LOCK_UNTIL)?,
+            if let Err(PutError::Failed(err)) = host.put(LOCK_OPEN, "1", None) {
+                return Err(err);
             }
-            Ok(json!({ "until": until }))
-        }
-        // ⌘K's Lock history now, and an unlock that ran out: the next
-        // opening asks again.
-        "lock" => {
-            host.delete(LOCK_UNTIL)?;
             Ok(json!({}))
         }
-        // The eye in the panel's title bar and its ⌘K action. The panel
-        // covers itself as it asks; the post this sends is for the
-        // Settings tab and the menu bar row.
-        "privacy" => {
-            let on = request["on"].as_bool().ok_or("privacy mode is not on or off")?;
-            set_private(host, on)?;
-            Ok(json!({ "privacy": on }))
+        // ⌘K's Lock history now: this opening locked, and the next asks
+        // again; what was shown is covered with it.
+        "lock" => {
+            host.delete(LOCK_UNTIL)?;
+            host.delete(LOCK_OPEN)?;
+            host.delete(SHOWN)?;
+            Ok(json!({}))
+        }
+        // What the panel shows in privacy mode, each time that changes: kept
+        // for "Cover again after panel closes", timed when it closes.
+        "shown" => {
+            if !private(host) {
+                return Ok(json!({}));
+            }
+            let ids: Vec<String> = request["except"]
+                .as_array()
+                .map(|ids| ids.iter().filter_map(|id| id.as_str().map(str::to_string)).take(SHOWN_IDS).collect())
+                .unwrap_or_default();
+            let shown = Shown {
+                all: request["all"].as_bool() == Some(true),
+                except: ids,
+                confirmed: request["confirmed"].as_bool() == Some(true),
+                until: None,
+            };
+            if shown == Shown::default() {
+                host.delete(SHOWN)?;
+            } else {
+                write_shown(host, &shown)?;
+            }
+            Ok(json!({}))
         }
         // The pin in the panel's title bar: stay up while the person works
         // in another app. Lumi takes the pin off when the panel goes.
@@ -1945,7 +2101,7 @@ mod tests {
 
     fn privacy_of(host: &Memory) -> (bool, Value) {
         let list = ui(host, &json!({"kind": "list"})).unwrap();
-        (list["privacy"].as_bool().unwrap(), list["privacyIdle"].clone())
+        (list["privacy"].as_bool().unwrap(), list["shown"].clone())
     }
 
     /// The menu bar row, the command, the panel and the Settings tab all
@@ -1971,30 +2127,78 @@ mod tests {
         assert!(!privacy_of(&host).0, "the command flips it back");
         assert!(menu_ids(&host).contains(&("privacy".to_string(), "Turn On Privacy Mode".to_string())));
 
-        assert_eq!(ui(&host, &json!({"kind": "privacy", "on": true})).unwrap(), json!({"privacy": true}));
+        // The panel cannot turn it on or off: only Settings, the menu bar
+        // and the command do.
+        assert!(ui(&host, &json!({"kind": "privacy", "on": true})).is_err());
+        assert!(!privacy_of(&host).0);
+
+        assert_eq!(settings(&host, &json!({"kind": "setPrivacy", "on": true})).unwrap(), json!({"privacy": true}));
         assert_eq!(settings(&host, &json!({"kind": "privacy"})).unwrap(), json!({"privacy": true}));
-        // Asked on twice — the panel and the tab racing — is still on.
-        ui(&host, &json!({"kind": "privacy", "on": true})).unwrap();
+        // Asked on twice is still on.
+        settings(&host, &json!({"kind": "setPrivacy", "on": true})).unwrap();
         assert!(privacy_of(&host).0);
 
         settings(&host, &json!({"kind": "setPrivacy", "on": false})).unwrap();
         assert!(!privacy_of(&host).0);
         assert_eq!(told(&host), (5, 5));
-        assert!(ui(&host, &json!({"kind": "privacy"})).is_err(), "neither on nor off");
+        assert!(settings(&host, &json!({"kind": "setPrivacy"})).is_err(), "neither on nor off");
     }
 
-    /// "Cover again after" reaches the panel in milliseconds, null for
-    /// until it closes, and the manifest's default for anything else.
+    fn closed(host: &Memory, window: &str, at: i64) {
+        on_event(host, "window-closed", &json!({ "v": 1, "window": window, "at": at }).to_string()).unwrap();
+    }
+
+    fn shown_on_opening(host: &Memory) -> Value {
+        ui(host, &json!({"kind": "list", "opening": true})).unwrap()["shown"].clone()
+    }
+
+    /// What the panel showed in privacy mode is shown again by an opening
+    /// within "Cover again after panel closes" of its closing — and never
+    /// without Lumi saying it closed, nor once privacy mode was flipped.
     #[test]
-    fn the_panel_is_told_how_long_a_shown_preview_stays_shown() {
+    fn shown_previews_are_covered_again_a_while_after_the_panel_closes() {
         let host = Memory::default();
-        assert_eq!(privacy_of(&host).1, json!(60_000), "the default");
+        set_private(&host, true).unwrap();
         *host.settings.borrow_mut() = json!({"privacyIdle": "30s"});
-        assert_eq!(privacy_of(&host).1, json!(30_000));
-        *host.settings.borrow_mut() = json!({"privacyIdle": "never"});
-        assert_eq!(privacy_of(&host).1, Value::Null);
-        *host.settings.borrow_mut() = json!({"privacyIdle": "1y"});
-        assert_eq!(privacy_of(&host).1, json!(60_000));
+        let shown = json!({"kind": "shown", "all": false, "except": ["id1"], "confirmed": true});
+        let back = json!({"all": false, "except": ["id1"], "confirmed": true});
+
+        ui(&host, &shown).unwrap();
+        assert_eq!(shown_on_opening(&host), Value::Null, "no closing heard: covered");
+
+        ui(&host, &shown).unwrap();
+        closed(&host, "settings", 1_000);
+        closed(&host, PANEL, 1_000);
+        host.now.set(30_999);
+        assert_eq!(shown_on_opening(&host), back, "within 30 s of closing");
+        ui(&host, &shown).unwrap();
+        closed(&host, PANEL, 40_000);
+        host.now.set(70_000);
+        assert_eq!(shown_on_opening(&host), Value::Null, "ran out");
+
+        // Immediately (stored as `never`), and the default.
+        for settings in [json!({"privacyIdle": "never"}), json!({})] {
+            *host.settings.borrow_mut() = settings;
+            ui(&host, &shown).unwrap();
+            closed(&host, PANEL, 70_000);
+            assert_eq!(shown_on_opening(&host), Value::Null);
+        }
+
+        *host.settings.borrow_mut() = json!({"privacyIdle": "5m"});
+        ui(&host, &shown).unwrap();
+        closed(&host, PANEL, 70_000);
+        set_private(&host, false).unwrap();
+        set_private(&host, true).unwrap();
+        assert_eq!(shown_on_opening(&host), Value::Null, "privacy mode flipped");
+
+        ui(&host, &shown).unwrap();
+        ui(&host, &json!({"kind": "lock"})).unwrap();
+        closed(&host, PANEL, 70_000);
+        assert_eq!(shown_on_opening(&host), Value::Null, "Lock history now");
+
+        set_private(&host, false).unwrap();
+        ui(&host, &shown).unwrap();
+        assert!(host.get(SHOWN).unwrap().is_none(), "nothing kept with privacy mode off");
     }
 
     /// The show or hide keys reach the panel as the settings spell them —
@@ -2014,42 +2218,50 @@ mod tests {
         assert_eq!(keys(&host), (json!("cmd+shift+h"), json!("alt+shift+cmd+h")), "not keys anybody typed");
     }
 
-    fn lock_of(host: &Memory) -> Value {
-        ui(host, &json!({"kind": "list"})).unwrap()["lock"].clone()
+    fn lock_of(host: &Memory, opening: bool) -> Value {
+        ui(host, &json!({"kind": "list", "opening": opening})).unwrap()["lock"].clone()
     }
 
-    /// History lock: off, nothing locks; on, every opening is locked unless
-    /// an unlock "after a while" still holds — and only that kind is kept.
+    /// An unlocked history stays unlocked while the panel is up, and for
+    /// "Lock again after panel closes" from its closing: an opening within
+    /// that opens unlocked, and its own closing starts it again.
     #[test]
-    fn an_unlock_is_kept_only_for_lock_again_after_a_while() {
+    fn an_unlock_lasts_a_while_after_the_panel_closes() {
         let host = Memory::default();
-        assert_eq!(lock_of(&host), json!({"on": false, "until": null}));
+        assert_eq!(lock_of(&host, true), json!({"on": false, "unlocked": false}));
 
         *host.settings.borrow_mut() = json!({"lockHistory": "true"});
-        assert_eq!(lock_of(&host), json!({"on": true, "until": null}), "locked, every opening");
-        assert_eq!(ui(&host, &json!({"kind": "unlocked"})).unwrap(), json!({"until": null}));
-        assert_eq!(lock_of(&host)["until"], Value::Null, "until the panel closes: nothing kept");
-        *host.settings.borrow_mut() = json!({"lockHistory": "true", "lockAfter": "0s"});
-        assert_eq!(ui(&host, &json!({"kind": "unlocked"})).unwrap(), json!({"until": null}), "unknown: on closing, never at once");
+        assert_eq!(lock_of(&host, true), json!({"on": true, "unlocked": false}), "locked, every opening");
+        ui(&host, &json!({"kind": "unlocked"})).unwrap();
+        assert_eq!(lock_of(&host, false)["unlocked"], true, "while the panel is up");
+        closed(&host, PANEL, 1_000);
+        assert_eq!(lock_of(&host, true)["unlocked"], false, "Immediately: locked again");
 
         *host.settings.borrow_mut() = json!({"lockHistory": true, "lockAfter": "5m"});
-        host.now.set(1_000);
-        assert_eq!(ui(&host, &json!({"kind": "unlocked"})).unwrap(), json!({"until": 301_000}));
-        host.now.set(200_000);
-        assert_eq!(lock_of(&host)["until"], 301_000, "an opening within it opens unlocked");
         ui(&host, &json!({"kind": "unlocked"})).unwrap();
-        assert_eq!(lock_of(&host)["until"], 500_000, "unlocked again: from now");
-        host.now.set(500_001);
-        assert_eq!(lock_of(&host)["until"], Value::Null, "ran out");
+        host.now.set(900_000);
+        assert_eq!(lock_of(&host, false)["unlocked"], true, "up for a long while: still unlocked");
+        closed(&host, PANEL, 1_000_000);
+        host.now.set(1_200_000);
+        assert_eq!(lock_of(&host, true)["unlocked"], true, "an opening within it opens unlocked");
+        closed(&host, PANEL, 1_250_000);
+        host.now.set(1_549_999);
+        assert_eq!(lock_of(&host, true)["unlocked"], true, "its closing started it again");
+        host.now.set(2_000_000);
+        assert_eq!(lock_of(&host, true)["unlocked"], false, "ran out");
+        closed(&host, PANEL, 2_000_000);
+        assert_eq!(lock_of(&host, true)["unlocked"], false, "a locked opening's closing unlocks nothing");
 
-        host.now.set(0);
         ui(&host, &json!({"kind": "unlocked"})).unwrap();
         ui(&host, &json!({"kind": "lock"})).unwrap();
-        assert_eq!(lock_of(&host)["until"], Value::Null, "Lock history now");
+        assert_eq!(lock_of(&host, false)["unlocked"], false, "Lock history now");
+        closed(&host, PANEL, 2_000_000);
+        assert_eq!(lock_of(&host, true)["unlocked"], false);
 
         ui(&host, &json!({"kind": "unlocked"})).unwrap();
+        closed(&host, PANEL, 2_000_000);
         *host.settings.borrow_mut() = json!({"lockHistory": false, "lockAfter": "5m"});
-        assert_eq!(lock_of(&host), json!({"on": false, "until": null}), "off: no lock, whatever was kept");
+        assert_eq!(lock_of(&host, true), json!({"on": false, "unlocked": false}), "off: no lock, whatever was kept");
     }
 
     #[test]
@@ -2528,6 +2740,102 @@ mod tests {
             ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
             assert_eq!(stored(&host).rev, rev, "and only once");
         }
+    }
+
+    #[test]
+    fn plain_text_math_is_worked_out_kept_and_copied_only_as_answered() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "I have 1+2   +5 + 10 and x^(2)-5x+6=0")).unwrap();
+        let (index, _) = read_index(&host).unwrap();
+        assert_eq!(index.items[0].math, "∑ 2", "the row says how many");
+
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        let math = shown["math"].as_array().unwrap();
+        assert_eq!(math.len(), 2);
+        assert_eq!(math[0]["answers"][0]["copy"], "18");
+        assert_eq!((math[0]["from"].as_u64(), math[0]["to"].as_u64()), (Some(7), Some(20)));
+        assert_eq!(math[1]["sort"], "quadratic");
+
+        ui(&host, &json!({"kind": "copyMath", "id": "id1", "text": "x = 3"})).unwrap();
+        ui(&host, &json!({"kind": "copyMath", "id": "id1", "text": "18\nx = 2, x = 3"})).unwrap();
+        assert!(ui(&host, &json!({"kind": "copyMath", "id": "id1", "text": "rm -rf ~"})).is_err());
+        assert!(ui(&host, &json!({"kind": "copyMath", "id": "id1"})).is_err());
+        assert_eq!(*host.keystrokes.borrow(), [false, false], "two copies, no paste, nothing else");
+        assert_eq!(*host.alerts.borrow(), ["Copied x = 3", "Copied 18 · x = 2, x = 3"]);
+    }
+
+    #[test]
+    fn a_rich_copy_has_its_plain_text_worked_out() {
+        let host = Memory::default();
+        let rich = json!({ "v": 1, "at": 1, "hash": "h1", "items": [[
+            { "uti": "public.html", "text": "<p>Total: <b>12 * 3</b> + 4</p>", "bytes": 31 },
+            { "uti": "public.utf8-plain-text", "text": "Total: 12 * 3 + 4", "bytes": 17 },
+        ]]})
+        .to_string();
+        on_event(&host, "clipboard", &rich).unwrap();
+        assert_eq!(read_index(&host).unwrap().0.items[0].math, "= 40");
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["math"][0]["answers"][0]["copy"], "40");
+        ui(&host, &json!({"kind": "copyMath", "id": "id1", "text": "40"})).unwrap();
+    }
+
+    #[test]
+    fn math_is_not_looked_for_in_a_link_or_files() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "https://a.test/1+1")).unwrap();
+        let files = json!({ "v": 1, "at": 2, "hash": "h2", "items": [[{ "uti": "public.file-url", "text": "file:///tmp/1+1", "bytes": 15 }]] }).to_string();
+        on_event(&host, "clipboard", &files).unwrap();
+        let (index, _) = read_index(&host).unwrap();
+        assert!(index.items.iter().all(|e| e.math.is_empty()));
+    }
+
+    #[test]
+    fn a_row_kept_before_math_has_it_found_once_and_its_row_told() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "3x + 7 = 22")).unwrap();
+        let stored = |host: &Memory| host.kv.borrow()["item.id1"].clone();
+        let mut record: Value = serde_json::from_str(&stored(&host).value).unwrap();
+        record.as_object_mut().unwrap().remove("math");
+        host.put("item.id1", &record.to_string(), Some(stored(&host).rev)).unwrap();
+        update_index(&host, |index| {
+            index.items[0].math.clear();
+            Ok(())
+        })
+        .unwrap();
+
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["math"][0]["answers"][0]["copy"], "x = 5");
+        assert_eq!(read_index(&host).unwrap().0.items[0].math, "x = 5", "the row is told");
+        let rev = stored(&host).rev;
+        ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(stored(&host).rev, rev, "and only once");
+    }
+
+    #[test]
+    fn a_rich_row_kept_when_math_was_for_plain_text_only_is_worked_out_again() {
+        let host = Memory::default();
+        let text = "Split the bill: (450000 + 320000 + 95000) / 3 people, plus a 10% of 865000 tip";
+        let rich = json!({ "v": 1, "at": 1, "hash": "h1", "items": [[
+            { "uti": "public.html", "text": format!("<p>{text}</p>"), "bytes": text.len() + 7 },
+            { "uti": "public.utf8-plain-text", "text": text, "bytes": text.len() },
+        ]]})
+        .to_string();
+        on_event(&host, "clipboard", &rich).unwrap();
+        // As 0.76.0 kept it: worked out by the first rules, which left rich
+        // copies out — nothing found, and a row with no answer.
+        let stored = |host: &Memory| host.kv.borrow()["item.id1"].clone();
+        let mut record: Value = serde_json::from_str(&stored(&host).value).unwrap();
+        record["math"] = json!({ "v": 1, "list": [] });
+        host.put("item.id1", &record.to_string(), Some(stored(&host).rev)).unwrap();
+        update_index(&host, |index| {
+            index.items[0].math.clear();
+            Ok(())
+        })
+        .unwrap();
+
+        let shown = ui(&host, &json!({"kind": "preview", "id": "id1"})).unwrap();
+        assert_eq!(shown["math"].as_array().map(Vec::len), Some(2));
+        assert_eq!(read_index(&host).unwrap().0.items[0].math, "∑ 2", "the row is told");
     }
 
     #[test]

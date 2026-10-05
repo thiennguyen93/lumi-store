@@ -229,6 +229,13 @@ export function Row({
       <span className="title" ref={title}>{shown.text ? <Title text={shown.text} marks={shown.marks} /> : KIND_WORDS[row.kind]}</span>
       {/* Found in nothing the row shows: where, so the row is not a riddle. */}
       {found.note && <span className="found-in">{found.note}</span>}
+      {/* The math in a text or rich copy, answered: the extension's words,
+          built from the numbers it parsed. */}
+      {row.math && (
+        <span className="math-short" title={row.math.startsWith("∑") ? "Math in this copy" : "Worked out"}>
+          {row.math}
+        </span>
+      )}
       {/* Two fixed columns at the end, so a time growing from 9s to 10s
           never shoves the app name: the app, right-aligned against the
           time, and the time (or a pin's glyph) in a column of its own. */}

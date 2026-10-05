@@ -2,6 +2,8 @@
 // `history::Entry` in src/history.rs (serde camelCase) by hand — change one,
 // change the other.
 
+import type { Shown } from "./privacy";
+
 export type Kind = "text" | "link" | "color" | "rich" | "file" | "image";
 
 export interface Entry {
@@ -31,6 +33,9 @@ export interface Entry {
   fileExt?: string;
   /** How many files a file row holds, when more than one. */
   fileCount?: number;
+  /** The math in a text or rich copy, answered in a few characters ("= 18",
+   *  "x = 2, 3", "∑ 2"); absent when there is none. */
+  math?: string;
 }
 
 export interface ListAnswer {
@@ -59,13 +64,14 @@ export interface ListAnswer {
   revealAllKey?: string;
   /** Privacy mode: every preview is covered until shown. */
   privacy?: boolean;
-  /** How long a preview shown in privacy mode stays shown with nothing done
-   *  in the panel, in ms; null for until the panel closes. */
-  privacyIdle?: number | null;
+  /** On the opening list only: what the panel showed in privacy mode before
+   *  it last closed, while "Cover again after panel closes" holds it. */
+  shown?: Shown | null;
   /** "Confirm it's you before showing". */
   privacyConfirm?: boolean;
-  /** History lock: on, and until when an earlier unlock holds (ms). */
-  lock?: { on: boolean; until: number | null };
+  /** History lock: on, and whether an unlock still holds — one from this
+   *  opening, or, as it opens, one within "Lock again after panel closes". */
+  lock?: { on: boolean; unlocked: boolean };
   /** On the opening list only: the menu bar's Delete All Unpinned… opened
    *  the panel to delete here, where ⌘Z can bring the rows back. */
   clear?: boolean;
@@ -156,6 +162,9 @@ export type Request =
   /** What a row expands to as a snippet trigger, from the preview; taken
    *  only if the row still expands to it. */
   | { kind: "copySnippet"; id: string; text: string; pinned?: boolean }
+  /** An answer from the preview's Math section, or all of them one a
+   *  line; taken only if the extension still works it out of the row. */
+  | { kind: "copyMath"; id: string; text: string; pinned?: boolean }
   /** A link row's address; with `url`, one of the links the preview listed
    *  for a text or rich row — opened only if the item still has it — or,
    *  with `snippet`, one in what the row expands to. */
@@ -181,6 +190,8 @@ export type Request =
   | { kind: "setPrivacy"; on: boolean }
   /** History lock: "Is it you?" said yes; and Lock history now. */
   | { kind: "unlocked" }
+  /** What the panel shows in privacy mode, each time it changes. */
+  | { kind: "shown"; all: boolean; except: string[]; confirmed: boolean }
   | { kind: "lock" }
   | { kind: "stats" }
   | { kind: "previewWidth"; width: number }

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { blobUrl, call, callLatest, fileUrl, type Expansion, type FileItem, type Link } from "./bridge";
+import { blobUrl, call, callLatest, fileUrl, type Expansion, type FileItem, type Link, type MathFound } from "./bridge";
 import { AppMark } from "./AppMark";
 import { Superseded } from "./lanes";
 import { CollapseGlyph, CopyGlyph, ExpandGlyph, EyeOffGlyph, FileGlyph, FolderGlyph, KindGlyph, PauseGlyph, PlayGlyph, VolumeGlyph } from "./icons";
 import { codeLanguage, fileFamily, isTextFile, type FileFamily } from "./fileType";
 import { useItemDrag } from "./itemDrag";
 import { LinkList } from "./LinkList";
+import { MathPane } from "./MathPane";
 import { SnippetPane } from "./SnippetPane";
 import { ImageText, pickedCount, type Picked } from "./ImageText";
 import { PdfViewer } from "./PdfViewer";
@@ -42,6 +43,7 @@ type Full = {
   linkCount?: number;
   snippets?: Expansion[] | null;
   layout?: Layout | null;
+  math?: MathFound[] | null;
 };
 
 /** Previews already asked for, by row — and by whether the row has read
@@ -71,6 +73,7 @@ export function Preview({
   onOpen,
   onCopyColor,
   onCopySnippet,
+  onCopyMath,
   onCopyWords,
   query = "",
   used = "exact",
@@ -95,6 +98,8 @@ export function Preview({
   onCopyColor?: (text: string) => void;
   /** Copy what a row expands to as a snippet trigger. */
   onCopySnippet?: (id: string, text: string) => void;
+  /** Copy one of the answers to the math in a row's text, or all of them. */
+  onCopyMath?: (id: string, text: string) => void;
   /** Copy the words selected on a row's picture, by their two ends. */
   onCopyWords?: (id: string, picked: Picked) => void;
   /** What the list is searched by, marked in the card and scrolled to. */
@@ -108,6 +113,8 @@ export function Preview({
   split?: SplitGrip;
 }) {
   const card = useRef<HTMLDivElement>(null);
+  // A text or rich copy as drawn, where its math is marked.
+  const body = useRef<HTMLDivElement>(null);
   usePreviewMarks(card, query, used, row?.id);
   // The full text, keyed by the row it belongs to, so a late answer for a
   // row the selection has already left is never drawn under another.
@@ -162,7 +169,7 @@ export function Preview({
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
-        const { text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets, layout } = await callLatest({
+        const { text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets, layout, math } = await callLatest({
           kind: "preview",
           id: row.id,
         });
@@ -170,7 +177,7 @@ export function Preview({
           if (live) setGaveUp(row.id);
           return;
         }
-        const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets, layout };
+        const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets, layout, math };
         seen.delete(key);
         seen.set(key, answer);
         if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
@@ -280,6 +287,8 @@ export function Preview({
   const openLink = onOpen ? (url: string) => onOpen(row.id, url) : undefined;
   // What a text or rich copy expands to, when it is a snippet trigger.
   const expansions = (row.kind === "text" || row.kind === "rich") && mine?.snippets ? mine.snippets : [];
+  // The math in a text or rich copy, worked out by the extension.
+  const math = (row.kind === "text" || row.kind === "rich") && mine?.math ? mine.math : [];
 
   const from = row.appName || row.app;
   const times = row.count > 1 ? `${row.count}×` : "once";
@@ -440,14 +449,21 @@ export function Preview({
               html={html}
               links={bodyLinks}
               onOpen={openLink}
-              fallback={<div className="body rich">{linked(text, bodyLinks, openLink)}</div>}
+              bodyRef={body}
+              fallback={
+                <div ref={body} className="body rich">
+                  {linked(text, bodyLinks, openLink)}
+                </div>
+              }
             />
           ) : (
             row.kind === "link" && onOpen ? (
               <LinkBody text={text} onOpen={() => onOpen(row.id)} />
             ) : (
               row.kind !== "image" && (
-                <div className={row.kind === "rich" ? "body rich" : "body"}>{linked(text, bodyLinks, openLink)}</div>
+                <div ref={body} className={row.kind === "rich" ? "body rich" : "body"}>
+                  {linked(text, bodyLinks, openLink)}
+                </div>
               )
             )
           )}
@@ -459,6 +475,16 @@ export function Preview({
               expansions={expansions}
               onCopy={onCopySnippet ? (text) => onCopySnippet(row.id, text) : undefined}
               onOpen={onOpen ? (url) => onOpen(row.id, url, true) : undefined}
+            />
+          )}
+          {/* Its math worked out, each piece marked where it is written. */}
+          {math.length > 0 && (
+            <MathPane
+              key={`math:${row.id}`}
+              list={math}
+              text={text}
+              body={body}
+              onCopy={onCopyMath ? (text) => onCopyMath(row.id, text) : undefined}
             />
           )}
           {/* The text or the formatting stays as it is; its addresses are

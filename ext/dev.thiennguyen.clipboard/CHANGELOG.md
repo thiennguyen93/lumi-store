@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.79.0] - 2026-10-05
+
+### Changed
+
+- **Cover again after panel closes** (was **Cover again after**) now counts from when the panel closes. Reopen the panel within that time and what you showed is still shown. While the panel is open, nothing is covered again by itself, and a pinned panel stays as it is when you switch to another app. The choices are **Immediately** (the new default), 30 seconds, 1 minute and 5 minutes.
+- **Lock again after panel closes** (was **Lock again**) now counts from when the panel closes, not from when you unlocked. While the panel is open, it stays unlocked. The choices are **Immediately**, 1 minute, 5 minutes and 15 minutes.
+- **Lock again after panel closes** is greyed out while **Lock history** is off.
+- Needs Lumi 1.37.0 or later, which tells the extension when the panel closes.
+
+## [0.78.1] - 2026-10-05
+
+### Changed
+
+- In Settings, the settings that only act on covered previews (**Show or hide content**, **Show or hide all**, **Cover again after** and **Confirm it's you before showing**) are greyed out while privacy mode is off, and say "Works while privacy mode is on". They keep their values, and become available again when privacy mode is turned on.
+
+## [0.78.0] - 2026-10-05
+
+### Changed
+
+- Privacy mode can no longer be turned on or off from the panel. The eye in the panel's title bar now only shows that privacy mode is on, and **⌘K** no longer offers **Turn on privacy mode** or **Turn off privacy mode**. Turn it on or off in the extension's Settings tab, from Lumi's menu bar, or with the **Toggle privacy mode** key. Showing covered content in the panel works as before.
+
+## [0.77.2] - 2026-10-05
+
+### Fixed
+
+- **Copy all** in the Math section has its copy icon and lines up with the cards under it, instead of running into the preview's right edge.
+
+## [0.77.1] - 2026-10-05
+
+### Fixed
+
+- Rich text copied while 0.76.0 was installed now shows its **Math** section too. Those items had been marked as having no math, and copying the same text again did not look again. They are worked out the first time you preview them, and their row shows the answer from then on.
+
+## [0.77.0] - 2026-10-05
+
+### Added
+
+- Rich text copies get the **Math** section too. The math is read from the copy's text and marked where it is written in the formatted preview, even when it runs across bold, italic or coloured words. The row in the list shows its answer, as for plain text.
+
+## [0.76.0] - 2026-10-05
+
+### Added
+
+- Math in copied plain text is worked out in the preview. Under the text, a **Math** section shows each sum with its result (`1 + 2 + 5 + 10 = 18`), each equation in one unknown of degree one or two solved (`x² − 5x + 6 = 0` gives `x = 2` and `x = 3`, with exact roots like `2 ± √3` and complex ones), each written equality checked as true or false, and each `15% of 200` taken. Every result is typeset, and a click copies it; **Copy all** copies every answer. Where each one is written is marked in the text, and the row in the list shows its answer (`= 18`), or how many there are.
+- Dates, times, phone numbers, version numbers, ranges like `1-2` and sizes like `1920x1080` are left alone.
+
 ## [0.75.3] - 2026-10-05
 
 ### Fixed

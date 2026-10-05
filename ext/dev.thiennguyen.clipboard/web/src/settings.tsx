@@ -94,15 +94,17 @@ const THEMES: { value: Theme; label: string }[] = [
   { value: "system", label: "System" },
 ];
 
+// "Immediately" is stored as `never` and `close`: the values from before
+// both settings counted from the panel closing.
 const IDLES: { value: Idle; label: string }[] = [
+  { value: "never", label: "Immediately" },
   { value: "30s", label: "30 s" },
   { value: "1m", label: "1 min" },
   { value: "5m", label: "5 min" },
-  { value: "never", label: "On close" },
 ];
 
 const LOCK_AFTERS: { value: LockAfter; label: string }[] = [
-  { value: "close", label: "On close" },
+  { value: "close", label: "Immediately" },
   { value: "1m", label: "1 min" },
   { value: "5m", label: "5 min" },
   { value: "15m", label: "15 min" },
@@ -200,7 +202,7 @@ function read(raw: Record<string, unknown>): Values {
       .split(",")
       .map((id) => id.trim())
       .filter((id, at, all) => id && all.indexOf(id) === at),
-    privacyIdle: (IDLES.find((i) => i.value === raw.privacyIdle) ?? IDLES[1]!).value,
+    privacyIdle: (IDLES.find((i) => i.value === raw.privacyIdle) ?? IDLES[0]!).value,
     privacyConfirm: text(raw.privacyConfirm, "false") === "true",
     lockHistory: text(raw.lockHistory, "false") === "true",
     lockAfter: (LOCK_AFTERS.find((l) => l.value === raw.lockAfter) ?? LOCK_AFTERS[0]!).value,
@@ -516,16 +518,21 @@ function Settings() {
           </Row>
           {/* Privacy mode's own key, here beside the switch it serves rather
               than under Shortcuts. */}
+          {/* It and the rows under it act only on covered previews: with
+              privacy mode off there are none, so they wait, greyed. */}
           <Row
             label="Show or hide content"
             hint={
-              values.revealKey
-                ? "Shortcut while the panel is up; shows the selected item, or covers it again"
-                : "Pin has this key's default; press another to show items with a key"
+              !privacy
+                ? OFF_HINT
+                : values.revealKey
+                  ? "Shortcut while the panel is up; shows the selected item, or covers it again"
+                  : "Pin has this key's default; press another to show items with a key"
             }
-            bad={!values.revealKey}
+            bad={!!privacy && !values.revealKey}
           >
             <Recorder
+              disabled={!privacy}
               value={values.revealKey}
               fallback={DEFAULT_REVEAL_KEY}
               others={[...taken(values.pinKey, PIN_DOES), ...taken(values.revealAllKey, REVEAL_ALL_DOES)]}
@@ -535,25 +542,31 @@ function Settings() {
           <Row
             label="Show or hide all"
             hint={
-              values.revealAllKey
-                ? "Shortcut while the panel is up; shows every item until the panel covers them again, or covers them all"
-                : "Another shortcut has this key's default; press another to show every item with a key"
+              !privacy
+                ? OFF_HINT
+                : values.revealAllKey
+                  ? "Shortcut while the panel is up; shows every item until the panel covers them again, or covers them all"
+                  : "Another shortcut has this key's default; press another to show every item with a key"
             }
-            bad={!values.revealAllKey}
+            bad={!!privacy && !values.revealAllKey}
           >
             <Recorder
+              disabled={!privacy}
               value={values.revealAllKey}
               fallback={DEFAULT_REVEAL_ALL_KEY}
               others={[...taken(values.pinKey, PIN_DOES), ...taken(values.revealKey, REVEAL_DOES)]}
               onChange={(revealAllKey) => change({ revealAllKey }, true)}
             />
           </Row>
-          <Row label="Cover again after" hint="With nothing done in the panel. It is always covered again when it closes">
+          <Row
+            label="Cover again after panel closes"
+            hint={privacy ? "Reopened within this, the panel still shows what you showed" : OFF_HINT}
+          >
             <Segmented
               value={values.privacyIdle}
               options={IDLES}
               onChange={(privacyIdle) => change({ privacyIdle }, true)}
-              label="Cover again after"
+              label="Cover again after panel closes"
               disabled={!privacy}
             />
           </Row>
@@ -562,11 +575,14 @@ function Settings() {
             hint={
               canAsk === false
                 ? "Needs Lumi 1.36 and a password on this Mac"
-                : "Touch ID or your password, once each time previews are covered again"
+                : !privacy
+                  ? OFF_HINT
+                  : "Touch ID or your password, once each time previews are covered again"
             }
             bad={canAsk === false && values.privacyConfirm}
           >
             <Toggle
+              disabled={!privacy}
               on={values.privacyConfirm}
               label="Confirm it's you before showing"
               onChange={(privacyConfirm) =>
@@ -595,12 +611,19 @@ function Settings() {
               }
             />
           </Row>
-          <Row label="Lock again" hint="On close: every time the panel opens. Otherwise, a while after you unlock">
+          <Row
+            label="Lock again after panel closes"
+            hint={
+              values.lockHistory
+                ? "Reopened within this, the panel opens unlocked. While it is open, it stays unlocked"
+                : "Works while Lock history is on"
+            }
+          >
             <Segmented
               value={values.lockAfter}
               options={LOCK_AFTERS}
               onChange={(lockAfter) => change({ lockAfter }, true)}
-              label="Lock again"
+              label="Lock again after panel closes"
               disabled={!values.lockHistory}
             />
           </Row>
@@ -627,6 +650,9 @@ function Settings() {
   );
 }
 
+/** What a privacy-mode setting says while privacy mode is off. */
+const OFF_HINT = "Works while privacy mode is on";
+
 function Row({ label, hint, bad = false, children }: { label: string; hint?: ReactNode; bad?: boolean; children: ReactNode }) {
   return (
     <div className="row">
@@ -639,9 +665,27 @@ function Row({ label, hint, bad = false, children }: { label: string; hint?: Rea
   );
 }
 
-function Toggle({ on, label, onChange }: { on: boolean; label: string; onChange: (on: boolean) => void }) {
+function Toggle({
+  on,
+  label,
+  onChange,
+  disabled = false,
+}: {
+  on: boolean;
+  label: string;
+  onChange: (on: boolean) => void;
+  disabled?: boolean;
+}) {
   return (
-    <button type="button" role="switch" aria-checked={on} aria-label={label} className="toggle" onClick={() => onChange(!on)} />
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
+      className="toggle"
+      disabled={disabled}
+      onClick={() => onChange(!on)}
+    />
   );
 }
 
@@ -756,13 +800,20 @@ function Recorder({
   fallback,
   others,
   onChange,
+  disabled = false,
 }: {
   value: string;
   fallback: string;
   others: TakenKey[];
   onChange: (value: string) => void;
+  /** Kept as it is, and not recorded or reset, while what it serves is off. */
+  disabled?: boolean;
 }) {
   const [recording, setRecording] = useState(false);
+  // Turned off mid-recording: the next key is not taken.
+  useEffect(() => {
+    if (disabled) setRecording(false);
+  }, [disabled]);
   const [said, setSaid] = useState("");
   const combo = parseCombo(value);
   const home = parseCombo(fallback)!;
@@ -797,10 +848,11 @@ function Recorder({
   }, [recording, onChange, others]);
 
   return (
-    <div className="recorder">
-      {said && <span className="bad small">{said}</span>}
+    <div className="recorder" aria-disabled={disabled}>
+      {said && !disabled && <span className="bad small">{said}</span>}
       <button
         type="button"
+        disabled={disabled}
         className={recording ? "keycap recording" : "keycap"}
         aria-label={recording ? "Press the new shortcut, or Esc" : combo ? `Shortcut ${glyphs(combo)}, click to change` : "No shortcut, click to set one"}
         onClick={() => {
@@ -810,7 +862,7 @@ function Recorder({
       >
         {recording ? "Press keys…" : combo ? glyphs(combo) : "None"}
       </button>
-      {resettable && !recording && (
+      {resettable && !recording && !disabled && (
         <button type="button" className="add" onClick={() => onChange(fallback)}>
           Reset
         </button>

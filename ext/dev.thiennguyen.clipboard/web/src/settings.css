@@ -138,6 +138,9 @@ main > section:first-of-type h3 { margin-top: 0; }
 .seg button:focus-visible { outline: 2px solid var(--st-accent); }
 .seg { flex-wrap: wrap; }
 .seg[aria-disabled="true"] { opacity: 0.5; }
+/* Waiting for privacy mode: shown as set, not to be changed. */
+.toggle:disabled,
+.recorder[aria-disabled="true"] { opacity: 0.5; }
 
 /* The panel's glass, each drawn over the same wallpaper. */
 .glasses {

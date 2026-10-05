@@ -2,9 +2,10 @@
 // person has shown since the panel opened — some rows, or every row but
 // some. A preview is covered until shown — its content not asked for, not
 // drawn — and stays shown while the person moves about the list, until
-// something covers everything again: the panel closing (the page is
-// blanked, and this with it), the keyboard leaving a pinned panel, a while
-// with nothing done, or the mode being turned on.
+// something covers everything again: the panel closing — at once, or a
+// while after ("Cover again after panel closes": the extension keeps what
+// was shown, and hands it back to an opening within it) — or the mode
+// being turned on.
 //
 // No DOM in here, so `node --test` can reach it.
 
@@ -103,6 +104,25 @@ export function confirm(veil: Veil): Veil {
   return veil.confirmed ? veil : { ...veil, confirmed: true };
 }
 
+/** What the panel showed before it last closed, handed back by the
+ *  extension to an opening within "Cover again after panel closes". */
+export interface Shown {
+  all: boolean;
+  except: string[];
+  confirmed: boolean;
+}
+
+/** An opening shows again what was shown before, with privacy mode on. */
+export function restore(veil: Veil, shown: Shown | null | undefined): Veil {
+  if (!veil.on || !shown) return veil;
+  return { ...veil, all: shown.all, except: new Set(shown.except), confirmed: shown.confirmed };
+}
+
+/** What the extension keeps of the veil while the panel is up. */
+export function shownOf(veil: Veil): Shown {
+  return { all: veil.all, except: [...veil.except], confirmed: veil.confirmed };
+}
+
 /** Whether showing has to ask "Is it you?" first: the person asked for it
  *  ("Confirm it's you before showing"), and nothing has said yes since
  *  everything was last covered — nor an unlock of the history that still
@@ -111,20 +131,18 @@ export function needsConfirm(veil: Veil, asked: boolean, unlocked: boolean): boo
   return asked && veil.on && !veil.confirmed && !unlocked;
 }
 
-/** History lock, as the panel holds it: on or off, until when an unlock
- *  from an earlier opening holds, whether this opening was unlocked
- *  ("Lock again: when the panel closes", which keeps nothing — held while
- *  the panel is up, a pinned one in the background included: it has not
- *  closed), and whether the extension has said yet — the panel's first
- *  list. */
+/** History lock, as the panel holds it: on or off, whether this opening
+ *  has it unlocked — by "Is it you?", or by an unlock that still held as it
+ *  opened ("Lock again after panel closes"); either way it stays unlocked
+ *  until the panel closes, a pinned one in the background included — and
+ *  whether the extension has said yet — the panel's first list. */
 export interface Lock {
   on: boolean;
-  until: number | null;
   here: boolean;
   known: boolean;
 }
 
-export const LOCK_OFF: Lock = { on: false, until: null, here: false, known: true };
+export const LOCK_OFF: Lock = { on: false, here: false, known: true };
 
 /** The lock as a panel opens, before its first list says how it stands:
  *  locked — nothing read, shown or done meanwhile — but drawn as neither
@@ -132,38 +150,20 @@ export const LOCK_OFF: Lock = { on: false, until: null, here: false, known: true
  *  showed the open panel — the search, the filters, the paste keys — until
  *  that answer came; started on and drawn, an unlocked one would show the
  *  lock card as it opens. */
-export const LOCK_UNKNOWN: Lock = { on: true, until: null, here: false, known: false };
+export const LOCK_UNKNOWN: Lock = { on: true, here: false, known: false };
 
-export function isLocked(lock: Lock, now: number): boolean {
-  return lock.on && !lock.here && !(lock.until !== null && lock.until > now);
+export function isLocked(lock: Lock): boolean {
+  return lock.on && !lock.here;
 }
 
 /** Whether the panel shows that it is locked — the lock card, Unlock and
  *  its key, and asking "Is it you?" as it opens: locked, and known to be. */
-export function showsLock(lock: Lock, now: number): boolean {
-  return lock.known && isLocked(lock, now);
+export function showsLock(lock: Lock): boolean {
+  return lock.known && isLocked(lock);
 }
 
-/** Whether the history is unlocked — this opening, or by an earlier unlock
- *  that still holds — which counts as a yes for showing too. */
-export function isUnlocked(lock: Lock, now: number): boolean {
-  return lock.on && !isLocked(lock, now);
+/** Whether the history is unlocked, which counts as a yes for showing too. */
+export function isUnlocked(lock: Lock): boolean {
+  return lock.on && !isLocked(lock);
 }
 
-/** Whether a `lumi:keyboard` change is the keyboard leaving the panel —
- *  held, then not. Lumi tells `held: false` again for every hover of a
- *  pinned panel without the keyboard; only the first one after holding it
- *  is a leaving. */
-export function keyboardLeft(wasHeld: boolean, held: boolean): boolean {
-  return wasHeld && !held;
-}
-
-/** How long the keyboard stays away from the panel before that counts as
- *  the person leaving it. For Lumi 1.36.0 only: just after macOS's "Is it
- *  you?" dialog answers, it hands the panel the keyboard back, macOS gives
- *  it to the app in front a moment later, and Lumi takes it back — and it
- *  tells the panel each step, `false` then `true` within milliseconds,
- *  which covered again the show the dialog had just said yes to.
- *  Lumi 1.36.1 tells the page that asked nothing of the keyboard until it
- *  is back. Goes once `min-lumi-version` reaches 1.36.1. */
-export const AWAY_MS = 250;

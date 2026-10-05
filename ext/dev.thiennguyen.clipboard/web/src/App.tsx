@@ -49,19 +49,18 @@ import { type Combo, DEFAULT_PIN_KEY, DEFAULT_REVEAL_ALL_KEY, DEFAULT_REVEAL_KEY
 import {
   adopt,
   allShown,
-  anyShown as showsAny,
-  AWAY_MS,
   conceals,
   confirm,
   coverAll,
   covers,
   isLocked,
   isUnlocked,
-  keyboardLeft,
   type Lock,
   LOCK_UNKNOWN,
   needsConfirm,
+  restore,
   show,
+  shownOf,
   showsLock,
   toggle,
   toggleAll,
@@ -95,20 +94,22 @@ export function App() {
   // and which rows were shown since the panel opened. `reload` adopts the
   // switch, wherever it was flipped.
   const [veil, setVeil] = useState<Veil>(VEIL_OFF);
-  // How long shown previews stay shown with nothing done in the panel; null
-  // for until it closes. The list says.
-  const [privacyIdle, setPrivacyIdle] = useState<number | null>(null);
   // "Confirm it's you before showing": the first show after everything was
   // covered asks macOS's "Is it you?" dialog (Lumi 1.36).
   const [privacyConfirm, setPrivacyConfirm] = useState(false);
   // History lock (privacy.ts `Lock`): the list, the preview and every
-  // action wait for "Is it you?". `now` moves when an earlier unlock runs
-  // out, so the panel locks while it is up. Until the first list says how
-  // it stands, locked but drawn as neither (`LOCK_UNKNOWN`).
+  // action wait for "Is it you?". Once unlocked, unlocked until the panel
+  // closes. Until the first list says how it stands, locked but drawn as
+  // neither (`LOCK_UNKNOWN`).
   const [lock, setLock] = useState<Lock>(LOCK_UNKNOWN);
-  const [now, setNow] = useState(() => Date.now());
-  const locked = isLocked(lock, now);
-  const lockShown = showsLock(lock, now);
+  const locked = isLocked(lock);
+  const lockShown = showsLock(lock);
+  // What is shown in privacy mode, told to the extension as it changes: it
+  // keeps it for "Cover again after panel closes", timed from the closing.
+  useEffect(() => {
+    if (!veil.on) return;
+    void call({ kind: "shown", ...shownOf(veil) }).catch(() => {});
+  }, [veil]);
   // Whether "Is it you?" can be asked here at all; asked once.
   const [canAsk, setCanAsk] = useState<boolean | null>(null);
   // A dialog is up: another press waits for it rather than asking again.
@@ -177,11 +178,11 @@ export function App() {
     setRevealAllKey(own.revealAll);
     modeRef.current = answer.searchMode ?? "mixed";
     setMode(modeRef.current);
-    setVeil((veil) => adopt(veil, answer.privacy ?? false));
-    setPrivacyIdle(answer.privacyIdle ?? null);
+    // On opening, what was shown before the panel last closed, while
+    // "Cover again after panel closes" has not run out.
+    setVeil((veil) => restore(adopt(veil, answer.privacy ?? false), answer.shown));
     setPrivacyConfirm(answer.privacyConfirm ?? false);
-    setLock((lock) => ({ on: answer.lock?.on ?? false, until: answer.lock?.until ?? null, here: lock.here, known: true }));
-    setNow(Date.now());
+    setLock((lock) => ({ on: answer.lock?.on ?? false, here: lock.here || answer.lock?.unlocked === true, known: true }));
     if (keepId) {
       const at = search(
         answer.items.filter((row) => inFilter(row, filterRef.current)),
@@ -312,22 +313,6 @@ export function App() {
     });
   }, [act, pinned]);
 
-  /** The eye in the title bar: privacy mode on or off for every page that
-   *  shows it. Covered here before the extension answers — turning it on is
-   *  for right now — and put back if it refuses. */
-  const togglePrivacy = useCallback(() => {
-    const next = !veil.on;
-    setVeil((veil) => adopt(veil, next));
-    void act(async () => {
-      try {
-        await call({ kind: "privacy", on: next });
-      } catch (err) {
-        setVeil((veil) => adopt(veil, !next));
-        throw err;
-      }
-    });
-  }, [act, veil.on]);
-
   /** macOS's "Is it you?" dialog, once at a time: true for a yes. A no, or
    *  a dialog that could not be shown, says so and is not a yes. */
   const isItYou = useCallback(async (reason: string): Promise<boolean> => {
@@ -350,7 +335,7 @@ export function App() {
    *  showing" — once "Is it you?" says yes. Covering never asks. */
   const reveal = useCallback(
     (change: (veil: Veil) => Veil) => {
-      if (!needsConfirm(veil, privacyConfirm, isUnlocked(lock, Date.now()))) {
+      if (!needsConfirm(veil, privacyConfirm, isUnlocked(lock))) {
         setVeil(change);
         return;
       }
@@ -380,25 +365,20 @@ export function App() {
     else reveal(toggleAll);
   }, [reveal, veil]);
 
-  /** Unlock the history: "Is it you?", then — for "Lock again" after a
-   *  while — the extension keeps until when, so openings within it open
-   *  unlocked. The yes counts for showing too. */
+  /** Unlock the history: "Is it you?", then unlocked until the panel
+   *  closes — the extension is told, for "Lock again after panel closes".
+   *  The yes counts for showing too. */
   const unlock = useCallback(async () => {
     if (!(await isItYou("open your clipboard history"))) return;
     setVeil(confirm);
-    try {
-      const { until } = await call({ kind: "unlocked" });
-      setNow(Date.now());
-      setLock((lock) => (until === null ? { ...lock, here: true } : { ...lock, until, here: false }));
-    } catch {
-      // Not kept: unlocked for this opening all the same.
-      setLock((lock) => ({ ...lock, here: true }));
-    }
+    setLock((lock) => ({ ...lock, here: true }));
+    // Not kept: unlocked for this opening all the same, locked when it closes.
+    void call({ kind: "unlocked" }).catch(() => {});
   }, [isItYou]);
 
   /** ⌘K's Lock history now: locked, previews covered, the next unlock asks. */
   const lockNow = useCallback(() => {
-    setLock((lock) => ({ ...lock, until: null, here: false }));
+    setLock((lock) => ({ ...lock, here: false }));
     setVeil(coverAll);
     void call({ kind: "lock" }).catch(() => {});
   }, []);
@@ -426,59 +406,8 @@ export function App() {
     else input.current?.focus();
   }, [locked]);
 
-  // An earlier unlock running out while the panel is up locks it then.
-  useEffect(() => {
-    if (!lock.on || lock.until === null || lock.here || lock.until <= now) return;
-    const timer = window.setTimeout(() => setNow(Date.now()), lock.until - now + 50);
-    return () => window.clearTimeout(timer);
-  }, [lock, now]);
 
-  // Shown previews are covered again after a while with nothing done in the
-  // panel: a pinned panel left on screen while the person is away from it.
-  const anyShown = showsAny(veil) || veil.confirmed;
-  useEffect(() => {
-    if (!anyShown || privacyIdle === null) return;
-    let timer = 0;
-    const arm = () => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => setVeil(coverAll), privacyIdle);
-    };
-    arm();
-    const doings = ["keydown", "pointerdown", "pointermove", "wheel"] as const;
-    for (const doing of doings) window.addEventListener(doing, arm, true);
-    return () => {
-      window.clearTimeout(timer);
-      for (const doing of doings) window.removeEventListener(doing, arm, true);
-    };
-  }, [anyShown, privacyIdle]);
 
-  // The keyboard leaving a pinned panel for another app covers what was
-  // shown: the panel stays on screen, and nobody is looking at it. Lumi
-  // tells `held: false` again for every hover without the keyboard; only
-  // the first after holding it counts (`keyboardLeft`). A panel opens
-  // holding the keyboard, and an unpinned one is put away when it loses it.
-  // Counted only once the keyboard has stayed away (`AWAY_MS`), and never
-  // while "Is it you?" is up: the person answering it has not left. An
-  // unlocked history stays unlocked: a pinned panel in the background has
-  // not closed, and "Lock again: when the panel closes" means closed.
-  useEffect(() => {
-    let held = true;
-    let away = 0;
-    const left = () => {
-      if (!asking.current) setVeil(coverAll);
-    };
-    const told = (event: Event) => {
-      const now = (event as CustomEvent<{ held?: unknown } | null>).detail?.held === true;
-      if (keyboardLeft(held, now)) away = window.setTimeout(left, AWAY_MS);
-      else if (now) window.clearTimeout(away);
-      held = now;
-    };
-    window.addEventListener("lumi:keyboard", told);
-    return () => {
-      window.clearTimeout(away);
-      window.removeEventListener("lumi:keyboard", told);
-    };
-  }, []);
 
   const togglePin = useCallback(() => {
     if (!current) return;
@@ -736,12 +665,6 @@ export function App() {
               : { id: "showAll", label: "Show all content", glyph: <EyeGlyph />, keys: revealAllCap, run: toggleAllShown },
           ]
         : []),
-      {
-        id: "privacy",
-        label: veil.on ? "Turn off privacy mode" : "Turn on privacy mode",
-        glyph: veil.on ? <EyeGlyph /> : <EyeOffGlyph />,
-        run: togglePrivacy,
-      },
       ...(lock.on ? [{ id: "lockNow", label: "Lock history now", glyph: <LockGlyph />, run: lockNow }] : []),
       { id: "settings", label: "Settings…", glyph: <GearGlyph />, keys: "⌘,", run: openSettings },
       {
@@ -778,7 +701,7 @@ export function App() {
           ]
         : []),
     ];
-  }, [about, act, canAsk, current, lock.on, lockNow, lockShown, locked, openSettings, paste, pinKey, pinned, remove, removeAll, revealAllCap, revealCap, rows, togglePin, togglePrivacy, toggleAllShown, toggleShown, unlock, veil, zoomed]);
+  }, [about, act, canAsk, current, lock.on, lockNow, lockShown, locked, openSettings, paste, pinKey, pinned, remove, removeAll, revealAllCap, revealCap, rows, togglePin, toggleAllShown, toggleShown, unlock, veil, zoomed]);
 
   // After a pin or unpin has re-sorted the list: slide rows from where
   // they were. Before paint, so nobody sees them at the new place first.
@@ -975,17 +898,19 @@ export function App() {
             </button>
           ))}
         </nav>
-        <button
-          type="button"
-          className={veil.on ? "keep veil on" : "keep veil"}
-          aria-pressed={veil.on}
-          title={veil.on ? `Privacy mode: previews stay covered until shown${revealCap ? ` (${revealCap})` : ""}` : "Cover previews until shown"}
-          aria-label="Privacy mode"
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={togglePrivacy}
-        >
-          <EyeOffGlyph />
-        </button>
+        {/* Privacy mode is turned on and off in Settings only — the
+            extension's tab — never here: the panel says it is on, and
+            nothing more. */}
+        {veil.on && (
+          <span
+            className="keep veil on"
+            role="img"
+            title={`Privacy mode is on: previews stay covered until shown${revealCap ? ` (${revealCap})` : ""}. Turn it off in Settings.`}
+            aria-label="Privacy mode is on"
+          >
+            <EyeOffGlyph />
+          </span>
+        )}
         <button
           type="button"
           className={pinned ? "keep on" : "keep"}
@@ -1095,6 +1020,7 @@ export function App() {
             onOpen={(id, url, snippet) => void act(() => call({ kind: "open", id, url, snippet, pinned }))}
             onCopyColor={(text) => void act(() => call({ kind: "copyColor", text, pinned }))}
             onCopySnippet={(id, text) => void act(() => call({ kind: "copySnippet", id, text, pinned }))}
+            onCopyMath={(id, text) => void act(() => call({ kind: "copyMath", id, text, pinned }))}
             onCopyWords={(id, { from, to }) => void act(() => call({ kind: "copyText", id, from, to, pinned }))}
             zoomed={zoomed}
             onZoom={() => setZoom(!zoomed)}
