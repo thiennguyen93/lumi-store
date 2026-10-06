@@ -107,6 +107,16 @@
       ],
       "port": 5274,
       "autoPort": true
+    },
+    {
+      "name": "lumi-homepage",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "pnpm -C ../lumi/homepage exec vite --port ${PORT:-5299} --strictPort"
+      ],
+      "port": 5299,
+      "autoPort": true
     }
   ]
 }
