@@ -21,11 +21,22 @@
     <button type="button" id="reset">Reset</button>
   </div>
 
-  <!-- While cleaning: the time left over the board. -->
-  <section id="clean-lock" class="lock" hidden aria-live="polite">
-    <div id="clean-time" class="lock-time">0:00</div>
-    <div class="lock-title">Keyboard locked — wipe away</div>
-  </section>
+  <!-- While cleaning, in the bar's place and taking exactly the bar's room,
+       so the board under it does not move: what is happening, and the
+       unlock button (kept in place but out of sight when the trackpad is
+       locked too). The time left is the ring under the board. -->
+  <div id="clean-lock" class="bar lock-bar" hidden role="status">
+    <svg class="lock-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="3" y="7" width="10" height="7.5" rx="1.8"></rect>
+      <path d="M5.3 7V5a2.7 2.7 0 0 1 5.4 0v2"></path>
+    </svg>
+    <div class="lock-text">
+      <span class="lock-title">Keyboard locked</span>
+      <span class="lock-sub">Wipe away — each key lights up as you go</span>
+    </div>
+    <span class="grow"></span>
+    <button type="button" id="clean-hold" class="hold-button"><span class="hold-fill"></span><span class="hold-label">Hold to unlock</span></button>
+  </div>
 
   <!-- Lumi hands the page the keyboard when the tab opens (`focus = true`
        in the manifest). Keys are only heard while it has it, so when it
@@ -34,18 +45,30 @@
        cleaning, keys come from Lumi whatever has focus, so it stays away. -->
   <div class="board-wrap">
     <div id="board" class="board" tabindex="0" aria-label="Keyboard — press keys to test them"></div>
+    <!-- While cleaning, the time left as a line along the board's top edge,
+         drawn over the board's own padding so nothing moves. -->
+    <div id="clean-progress" class="clean-progress" hidden aria-hidden="true"><span id="clean-progress-fill"></span></div>
     <button type="button" id="focus-hint" class="cover" hidden>Click to test keys</button>
   </div>
 
-  <!-- While cleaning: the ways out. -->
-  <section id="clean-exit" class="lock-exit" hidden>
-    <button type="button" id="clean-hold" class="hold-button"><span class="hold-fill"></span><span class="hold-label">Hold to unlock</span></button>
-    <p><span id="clean-or">Or hold</span> <b>esc</b> and <b>right shift</b> together for 2 seconds<span id="clean-to">.</span></p>
-    <p class="muted small">Touch ID locks your Mac, which also ends cleaning — it can't be paused.</p>
-  </section>
+  <!-- While cleaning, under the board where there is room: the time left
+       as a ring that empties, and the other ways out. -->
+  <div id="clean-panel" class="lock-panel" hidden>
+    <div class="lock-ring" aria-hidden="true">
+      <svg viewBox="0 0 60 60">
+        <circle class="ring-track" cx="30" cy="30" r="26"></circle>
+        <circle id="clean-ring" class="ring-left" cx="30" cy="30" r="26" pathLength="100"></circle>
+      </svg>
+      <span id="clean-time" class="lock-time">0:00</span>
+    </div>
+    <div class="panel-text">
+      <span class="panel-title">The keyboard types again when the ring runs out.</span>
+      <span id="clean-ways" class="muted"></span>
+    </div>
+  </div>
 
-  <!-- After cleaning, how it went; or why it could not start. One line
-       under the board, so nothing above it moves. -->
+  <!-- One line under the board, so nothing above it moves: after cleaning,
+       how it went; or why it could not start. -->
   <p id="clean-done" class="done" hidden aria-live="polite"></p>
 
   <dl class="facts">

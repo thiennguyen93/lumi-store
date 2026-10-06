@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.4] - 2026-10-06
+
+### Changed
+
+- A new look for cleaning, in Lumi's own light or dark colours instead of black: the keyboard is outlined while it is locked, a line along its top runs down with the time, and a ring under it counts down the seconds left. The last ten seconds turn amber.
+
+## [0.4.3] - 2026-10-06
+
+### Changed
+
+- While cleaning, the keyboard stays exactly where it was: the time left and Hold to unlock take the place of the top bar, and the other ways out are one line under the keyboard.
+
 ## [0.4.2] - 2026-10-06
 
 ### Changed
