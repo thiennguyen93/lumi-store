@@ -43,9 +43,9 @@ after review.
 
    `category` is one of Productivity, Writing, Windows, Design,
    Developer or Utilities. It is the store's word for the extension,
-   settled in review, and so is `featured = true`, which puts it on the
-   plate at the top of Discover — neither is a manifest key, because
-   neither is the author's to claim.
+   settled in review, and so is `featured = true`, which puts it among
+   the plates turning over at the top of Discover — neither is a manifest
+   key, because neither is the author's to claim.
 
    Pictures for your extension's page in the store go in your manifest,
    from your own source (not a built front end):
