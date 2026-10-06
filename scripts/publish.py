@@ -1187,6 +1187,78 @@ def changelog_of(entry_id: str, crate: Path, version: str) -> list:
     return releases
 
 
+def versions_of(entry_id: str, entry: dict, crate: Path, version: str):
+    """Every other place the extension's version is written, held to the
+    manifest's: the crate's `version` in Cargo.toml — inherited from a
+    workspace too — its own row in a committed Cargo.lock, and `version` in
+    web/package.json for an entry whose front end the store builds.
+
+    The manifest's number is the one that counts — it names the package,
+    and Lumi's update check and review sheet read it — but cargo and pnpm
+    name the same build by theirs, and nothing compared them: the sample's
+    Cargo.toml said 0.1.0 through sixteen releases. One build, one number,
+    told in the pull request. All of them are read as data; nothing runs."""
+    problems = []
+
+    top = (ROOT / entry["path"]).resolve()
+    if not (crate / "Cargo.toml").is_file():
+        fail(entry_id, f"no Cargo.toml at {crate / 'Cargo.toml'}")
+    with open(crate / "Cargo.toml", "rb") as f:
+        cargo = tomllib.load(f)
+    package = cargo.get("package", {})
+    name = package.get("name", "")
+    # The workspace this crate is in: the nearest Cargo.toml above it with a
+    # [workspace] table, as cargo finds it, but never past the entry's own
+    # checkout. Cargo's members/exclude are not consulted — a crate a
+    # workspace above it excludes would be read as a member here.
+    workspace_dir, workspace = (crate, cargo) if "workspace" in cargo else (None, None)
+    for parent in crate.parents:
+        if workspace is not None or not parent.is_relative_to(top):
+            break
+        candidate = parent / "Cargo.toml"
+        if candidate.is_file():
+            with open(candidate, "rb") as f:
+                found = tomllib.load(f)
+            if "workspace" in found:
+                workspace_dir, workspace = parent, found
+    stated = package.get("version")
+    if isinstance(stated, dict) and stated.get("workspace") is True:
+        stated = (workspace or {}).get("workspace", {}).get("package", {}).get("version")
+    if not isinstance(stated, str):
+        problems.append(f'Cargo.toml gives the crate no version; write version = "{version}"')
+    elif stated != version:
+        problems.append(f"Cargo.toml says {stated}")
+
+    lock_path = (workspace_dir or crate) / "Cargo.lock"
+    if name and lock_path.is_file():
+        with open(lock_path, "rb") as f:
+            rows = tomllib.load(f).get("package", [])
+        # The crate's own row: a path package, so no `source`. One from a
+        # registry or git with the same name is somebody else's crate.
+        locked = next((r.get("version") for r in rows if r.get("name") == name and "source" not in r), None)
+        if locked is not None and locked != version:
+            problems.append(
+                f"{lock_path.relative_to(top)} has {name} at {locked} "
+                f"(run `cargo update -p {name} --offline` beside it)"
+            )
+
+    web = entry.get("web")
+    if isinstance(web, str):
+        manifest_json = (crate / web / "package.json").resolve()
+        # build_web refuses a `web` outside the crate with its own sentence.
+        if manifest_json.is_relative_to(crate) and manifest_json.is_file():
+            with open(manifest_json, "rb") as f:
+                said = json.load(f).get("version")
+            if not isinstance(said, str):
+                problems.append(f'{web}/package.json gives no version; write "version": "{version}"')
+            elif said != version:
+                problems.append(f"{web}/package.json says {said}")
+
+    if problems:
+        fail(entry_id, f"the manifest ships {version}, but " + "; ".join(problems)
+                       + " — every place that names the version names the manifest's")
+
+
 def discussion_of(entry_id: str):
     """`{number, url}` of the entry's GitHub Discussion, from the
     DISCUSSIONS variable `discussions.py` fills in CI, or None — on a
@@ -1379,6 +1451,7 @@ def main(check: bool = False, built: "Path | None" = None):
         # Before anything is built: a missing or out-of-step changelog is
         # the cheapest thing to tell a PR about.
         releases = changelog_of(entry_id, crate, ext["version"])
+        versions_of(entry_id, entry, crate, ext["version"])
         summaries = summaries_of(entry_id, releases)
         # From a build job when the halves are split, built here when they
         # are not — and in both cases the manifest and icon are packed from
