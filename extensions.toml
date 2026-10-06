@@ -12,7 +12,8 @@
 # category = "Productivity"  # the store's shelf for it, one of Productivity,
 #                            # Writing, Windows, Design, Developer, Utilities —
 #                            # decided in review, not by the author
-# featured = true            # optional: the one plate at the top of Discover
+# featured = true            # optional: among the plates turning over at the
+#                            # top of Discover, in this file's order
 # private = true             # first-party only: closed source, fetched with a
 #                            # deploy key (README, "First-party private entries")
 
@@ -33,17 +34,6 @@ subdir = "."
 category = "Utilities"
 
 
-# First-party and in-tree, for the sample's reason. Its panel is React +
-# TypeScript under web/, built by the store (`web`), so no ui/ is committed.
-[[extension]]
-id = "dev.thiennguyen.clipboard"
-path = "ext/dev.thiennguyen.clipboard"
-subdir = "."
-web = "web"
-category = "Productivity"
-featured = true
-
-
 # First-party and closed source: a private repo, `update = none` in
 # .gitmodules and fetched with a read-only deploy key by
 # scripts/fetch-private.sh. Its React editor under web/ is built by the store.
@@ -53,4 +43,16 @@ path = "ext/dev.thiennguyen.screenshot"
 subdir = "."
 web = "web"
 category = "Utilities"
+featured = true
 private = true
+
+
+# First-party and in-tree, for the sample's reason. Its panel is React +
+# TypeScript under web/, built by the store (`web`), so no ui/ is committed.
+[[extension]]
+id = "dev.thiennguyen.clipboard"
+path = "ext/dev.thiennguyen.clipboard"
+subdir = "."
+web = "web"
+category = "Productivity"
+featured = true
