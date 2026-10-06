@@ -84,6 +84,10 @@ def owner_of(body: str, ids) -> "str | None":
     return None
 
 
+class Refused(Exception):
+    """GitHub answered a query or mutation with errors."""
+
+
 def graphql(query: str, **variables) -> dict:
     token = os.environ.get("GH_TOKEN") or sys.exit("error: GH_TOKEN is not set")
     request = urllib.request.Request(
@@ -94,7 +98,7 @@ def graphql(query: str, **variables) -> dict:
     with urllib.request.urlopen(request, timeout=30) as response:
         reply = json.load(response)
     if reply.get("errors"):
-        sys.exit(f"error: GitHub answered {json.dumps(reply['errors'])}")
+        raise Refused(json.dumps(reply["errors"]))
     return reply["data"]
 
 
@@ -137,7 +141,10 @@ def main():
     owner, name = repo.split("/", 1)
     listed = publish.listed_entries()
     ids = [e["id"] for e in listed]
-    repo_id, category, threads = category_and_threads(owner, name)
+    try:
+        repo_id, category, threads = category_and_threads(owner, name)
+    except Refused as refused:
+        sys.exit(f"error: GitHub answered {refused}")
 
     found = {}
     for thread in threads:
@@ -159,26 +166,38 @@ def main():
             continue
         _, _, _, ext, _ = publish.sources(entry)
         title, body = title_of(ext), body_of(entry_id, ext)
+        # A refusal costs this entry what was refused and no one else their
+        # thread: a failed run is every extension's hearts gone from the
+        # index. Said as a warning on the run, which still passes.
         if thread is None:
-            thread = graphql(
-                """mutation($repo: ID!, $category: ID!, $title: String!, $body: String!) {
-                  createDiscussion(input: {repositoryId: $repo, categoryId: $category, title: $title, body: $body}) {
-                    discussion { id number url }
-                  }
-                }""",
-                repo=repo_id, category=category, title=title, body=body,
-            )["createDiscussion"]["discussion"]
+            try:
+                thread = graphql(
+                    """mutation($repo: ID!, $category: ID!, $title: String!, $body: String!) {
+                      createDiscussion(input: {repositoryId: $repo, categoryId: $category, title: $title, body: $body}) {
+                        discussion { id number url }
+                      }
+                    }""",
+                    repo=repo_id, category=category, title=title, body=body,
+                )["createDiscussion"]["discussion"]
+            except Refused as refused:
+                print(f"::warning::{entry_id}: GitHub refused to create its discussion, so it has none yet: {refused}", file=sys.stderr)
+                continue
             print(f"{entry_id}: created discussion #{thread['number']}", file=sys.stderr)
         elif thread["title"] != title or thread["body"].strip() != body.strip():
-            graphql(
-                """mutation($id: ID!, $title: String!, $body: String!) {
-                  updateDiscussion(input: {discussionId: $id, title: $title, body: $body}) {
-                    discussion { id }
-                  }
-                }""",
-                id=thread["id"], title=title, body=body,
-            )
-            print(f"{entry_id}: updated discussion #{thread['number']}", file=sys.stderr)
+            # Refused, the thread keeps its hearts under its old title and
+            # text until a run is allowed to bring them up to date.
+            try:
+                graphql(
+                    """mutation($id: ID!, $title: String!, $body: String!) {
+                      updateDiscussion(input: {discussionId: $id, title: $title, body: $body}) {
+                        discussion { id }
+                      }
+                    }""",
+                    id=thread["id"], title=title, body=body,
+                )
+                print(f"{entry_id}: updated discussion #{thread['number']}", file=sys.stderr)
+            except Refused as refused:
+                print(f"::warning::{entry_id}: GitHub refused to update discussion #{thread['number']}, which keeps its old title and text: {refused}", file=sys.stderr)
         out[entry_id] = {"number": thread["number"], "url": thread["url"]}
 
     print("discussions=" + json.dumps(out, separators=(",", ":")))

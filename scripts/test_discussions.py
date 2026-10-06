@@ -49,7 +49,7 @@ class Sync(unittest.TestCase):
     PUBLIC = "dev.thiennguyen.sample"
     PRIVATE = "dev.thiennguyen.screenshot"
 
-    def run_main(self, threads):
+    def run_main(self, threads, refuse=()):
         # The private entry made up here, so the test does not hang on what
         # extensions.toml lists today; its source is never read anyway.
         listed = [e for e in publish.listed_entries() if e["id"] == self.PUBLIC] + [
@@ -58,7 +58,11 @@ class Sync(unittest.TestCase):
         calls = []
 
         def graphql(query, **variables):
-            calls.append(query.split("(")[0].split()[-1])
+            # The mutation's own name, after its variables' parenthesis.
+            called = query.split("{", 2)[1].split("(")[0].strip()
+            calls.append(called)
+            if called in refuse:
+                raise discussions.Refused('[{"type": "FORBIDDEN"}]')
             return {"createDiscussion": {"discussion": {"id": "D9", "number": 9, "url": "https://x/9"}}}
 
         out = io.StringIO()
@@ -91,6 +95,19 @@ class Sync(unittest.TestCase):
         found, calls = self.run_main([self.public_thread()])
         self.assertEqual(found, {self.PUBLIC: {"number": 1, "url": "https://x/1"}})
         self.assertEqual(calls, [])
+
+    def test_a_refused_update_keeps_the_thread_and_everyone_elses(self):
+        stale = dict(self.public_thread(), title="An older name")
+        found, calls = self.run_main([stale], refuse={"updateDiscussion"})
+        self.assertEqual(found, {self.PUBLIC: {"number": 1, "url": "https://x/1"}})
+        self.assertEqual(calls, ["updateDiscussion"])
+
+    def test_a_refused_create_leaves_only_that_entry_without_one(self):
+        private = {"id": "D2", "number": 2, "url": "https://x/2", "title": "Screenshot",
+                   "body": discussions.body_of(self.PRIVATE, {"name": "Screenshot"})}
+        found, calls = self.run_main([private], refuse={"createDiscussion"})
+        self.assertEqual(found, {self.PRIVATE: {"number": 2, "url": "https://x/2"}})
+        self.assertEqual(calls, ["createDiscussion"])
 
 
 if __name__ == "__main__":
