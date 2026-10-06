@@ -1,4 +1,24 @@
 {
+  "0.7.0": {
+    "notesSha256": "2351d0df5435abea63e9828fc82506a5d3e95292bfcd72b3bb9946b1521d86df",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Double-click to enlarge previews",
+          "items": [
+            "Double-click a preview card's title to enlarge it, and again to shrink it back"
+          ]
+        },
+        "vi": {
+          "headline": "Nhấp đúp để phóng to bản xem trước",
+          "items": [
+            "Nhấp đúp vào tiêu đề thẻ xem trước để phóng to, nhấp lại để thu nhỏ"
+          ]
+        }
+      }
+    }
+  },
   "0.6.9": {
     "notesSha256": "950263eac6441fe0de8a1f674dbe3c45835c8ee6ed371fe8ff11a6accbab2aa7",
     "summary": {
