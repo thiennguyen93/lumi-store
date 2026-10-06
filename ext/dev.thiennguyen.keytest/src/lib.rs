@@ -1,4 +1,4 @@
-//! Keyboard Test: a tab in the extension's page in Lumi's Extensions pane
+//! Keyboard Cleaner: a tab in the extension's page in Lumi's Extensions pane
 //! that lights each key of a MacBook keyboard as it is pressed.
 //!
 //! **Nearly all of it is the page.** Key events are the page's own — the
@@ -31,14 +31,14 @@ struct KeyTest;
 
 impl lumi::Guest for KeyTest {
     fn run_command(name: String, _params: String) -> Result<String, String> {
-        Err(format!("Keyboard Test has no {name} command"))
+        Err(format!("Keyboard Cleaner has no {name} command"))
     }
 
     fn run_node(name: String, _params: String, _items: String) -> Result<String, String> {
-        Err(format!("Keyboard Test has no {name} node"))
+        Err(format!("Keyboard Cleaner has no {name} node"))
     }
 
-    /// The Keyboard test tab's requests:
+    /// The Keyboard tab's requests:
     ///
     /// - `{"kind":"state"}` → `{"hyperKeyEnabled": bool, "layout": "ansi"|"iso"}`,
     ///   asked as the page opens and whenever it gets the keyboard back;
@@ -46,7 +46,7 @@ impl lumi::Guest for KeyTest {
     ///   the page's own switch is pressed.
     fn run_ui(window: String, request: String) -> Result<String, String> {
         if window != ":page:keytest" {
-            return Err(format!("Keyboard Test has no {window} page"));
+            return Err(format!("Keyboard Cleaner has no {window} page"));
         }
         let asked: serde_json::Value =
             serde_json::from_str(&request).map_err(|err| format!("request: {err}"))?;
@@ -65,7 +65,7 @@ impl lumi::Guest for KeyTest {
                 keep_layout(layout)?;
                 Ok(serde_json::json!({ "layout": layout }).to_string())
             }
-            _ => Err("Keyboard Test's page asks for state or set-layout".to_string()),
+            _ => Err("Keyboard Cleaner's page asks for state or set-layout".to_string()),
         }
     }
 
@@ -73,7 +73,7 @@ impl lumi::Guest for KeyTest {
         Ok(())
     }
 
-    /// Keyboard Test asks to hear no events, so this is never called.
+    /// Keyboard Cleaner asks to hear no events, so this is never called.
     fn on_event(_name: String, _payload: String) -> Result<(), String> {
         Ok(())
     }

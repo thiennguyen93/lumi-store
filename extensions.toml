@@ -30,7 +30,7 @@ category = "Developer"
 id = "dev.thiennguyen.keytest"
 path = "ext/dev.thiennguyen.keytest"
 subdir = "."
-category = "Developer"
+category = "Utilities"
 
 
 # First-party and in-tree, for the sample's reason. Its panel is React +

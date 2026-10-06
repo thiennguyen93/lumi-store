@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0] - 2026-10-06
+
+### Changed
+
+- Keyboard Test is now Keyboard Cleaner, for what it is mostly used for: locking the keyboard while you wipe it. Its tab is now called Keyboard. Testing every key works as before.
+
 ## [0.5.6] - 2026-10-06
 
 ### Added

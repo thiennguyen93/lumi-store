@@ -1,4 +1,4 @@
-// Keyboard Test's sheet: says what Clean keyboard is about to do — read
+// Keyboard Cleaner's sheet: says what Clean keyboard is about to do — read
 // from the extension's settings, the same ones the Settings tab sets — and
 // answers the page that opened it: "lock", or nothing.
 

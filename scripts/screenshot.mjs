@@ -9,7 +9,7 @@
 // The store's pictures are the promo pages, at 1280×800 and scale 1:
 //
 //   node scripts/screenshot.mjs "http://127.0.0.1:5191/__promo__/?shot=1" \
-//     ext/dev.thiennguyen.keytest/shots/1-keyboard.png \
+//     ext/dev.thiennguyen.keytest/shots/1-clean.png \
 //     scripts/preview/shots/dev.thiennguyen.keytest-1.js 1280 800 1
 //
 // Headline, callout and page for each shot are in
