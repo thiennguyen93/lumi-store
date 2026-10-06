@@ -147,3 +147,29 @@ load().then(refreshPreview);
 permission("check");
 showProfile();
 showRunning();
+
+// A sheet: opened on the press, with the name to edit as its data; the
+// answer comes back as `lumi:sheet` — the new name, or null for Cancel,
+// Escape or a click on Lumi's scrim.
+const sheetName = document.getElementById("sheet-name");
+const sheetSaid = document.getElementById("sheet-said");
+document.getElementById("sheet-open").addEventListener("click", async () => {
+  sheetSaid.textContent = "";
+  const answer = await fetch("/__lumi__/sheet", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: "rename", data: { name: sheetName.value } }),
+  });
+  if (!answer.ok) {
+    sheetSaid.textContent = answer.status === 404 ? "Needs Lumi 1.38.0." : await answer.text();
+  }
+});
+window.addEventListener("lumi:sheet", (event) => {
+  const { result } = event.detail;
+  if (typeof result === "string") {
+    sheetName.value = result;
+    sheetSaid.textContent = `The sheet answered: ${result}`;
+  } else {
+    sheetSaid.textContent = "The sheet was cancelled.";
+  }
+});

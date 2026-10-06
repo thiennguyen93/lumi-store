@@ -1,0 +1,155 @@
+/* Keyboard Test's sheet: the question before cleaning, drawn inside Lumi's
+   own sheet frame, which is Lumi's — scrim, chrome and the extension's name.
+   Lumi puts its own stylesheet first; this adds the content, in Lumi's
+   tokens with fallbacks so the page also reads when opened on its own. */
+
+:root {
+  --kt-key: var(--card, rgba(128, 128, 128, 0.08));
+  --kt-line: var(--border, rgba(128, 128, 128, 0.28));
+  --kt-down: var(--accent, #378add);
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+main { padding: 2px 2px 0; }
+h1 { margin: 0 0 6px; font-size: 15px; }
+h2 {
+  margin: 14px 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+p { margin: 0; }
+.note { margin-top: 12px; }
+.actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+/* The ways out, each beside a small picture of it happening, on one
+   3.2-second beat: press, hold for two seconds while it fills, let go. */
+.ways { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ways li { display: flex; align-items: center; gap: 12px; }
+.way-text { min-width: 0; line-height: 1.35; }
+.ways li[hidden] { display: none; }
+
+.illo {
+  --beat: 3.2s;
+  position: relative;
+  flex: none;
+  width: 96px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.illo-fill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: var(--kt-down);
+  animation: illo-fill var(--beat) linear infinite;
+}
+
+/* The unlock button, pressed and filling. */
+.illo-button {
+  box-sizing: border-box;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid var(--kt-line);
+  background: var(--kt-key);
+  overflow: hidden;
+  font-size: 10.5px;
+  font-weight: 600;
+  animation: illo-press var(--beat) ease infinite;
+}
+.illo-button .illo-fill { opacity: 0.3; }
+.illo-label { position: relative; }
+
+/* esc and right shift going down together, the bar under them filling. */
+.illo-keys { gap: 4px; padding-bottom: 6px; }
+.keycap {
+  box-sizing: border-box;
+  height: 22px;
+  min-width: 28px;
+  padding: 0 5px;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 3px;
+  border-radius: 5px;
+  border: 1px solid var(--kt-line);
+  background: var(--kt-key);
+  box-shadow: 0 1.5px 0 var(--kt-line);
+  font-size: 9.5px;
+  animation: illo-key var(--beat) ease infinite;
+}
+.keycap.wide { min-width: 40px; }
+/* Right shift, legend in the bottom right as on its keycap. */
+.keycap.right { justify-content: flex-end; }
+.plus { font-size: 11px; opacity: 0.55; }
+.illo-bar {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--kt-down) 18%, transparent);
+}
+
+/* The time running out. */
+.illo-ring svg { width: 28px; height: 28px; transform: rotate(-90deg); }
+.illo-ring circle { fill: none; stroke-width: 3.5; }
+.illo-ring .ring-track { stroke: color-mix(in srgb, var(--kt-down) 18%, transparent); }
+.illo-ring .ring-left {
+  stroke: var(--kt-down);
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  animation: illo-ring var(--beat) linear infinite;
+}
+
+/* Touch ID, there to be pressed. */
+.illo-touch svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  animation: illo-pulse var(--beat) ease-in-out infinite;
+}
+
+@keyframes illo-fill {
+  0%, 12% { width: 0; opacity: 1; }
+  74% { width: 100%; opacity: 1; }
+  86%, 100% { width: 100%; opacity: 0; }
+}
+@keyframes illo-key {
+  0%, 8% { transform: translateY(0); box-shadow: 0 1.5px 0 var(--kt-line); background: var(--kt-key); }
+  12%, 78% { transform: translateY(1.5px); box-shadow: 0 0 0 var(--kt-line); background: color-mix(in srgb, var(--kt-down) 22%, var(--kt-key)); }
+  84%, 100% { transform: translateY(0); box-shadow: 0 1.5px 0 var(--kt-line); background: var(--kt-key); }
+}
+@keyframes illo-press {
+  0%, 8% { transform: scale(1); }
+  12%, 78% { transform: scale(0.97); }
+  84%, 100% { transform: scale(1); }
+}
+@keyframes illo-ring {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 100; }
+}
+@keyframes illo-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+/* Asked for less motion: the pictures stand still, at their clearest. */
+@media (prefers-reduced-motion: reduce) {
+  .illo, .illo * { animation: none !important; }
+  .illo-fill { width: 60%; }
+}

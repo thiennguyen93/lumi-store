@@ -1,0 +1,53 @@
+<!doctype html>
+<!-- Keyboard Test's sheet (`[[sheet]] confirm`): asked before every clean.
+     Lumi draws the frame around it — over the whole window, naming this
+     extension — and this page fills it: what is about to be locked, and
+     every way out, each shown moving. Lock keyboard answers "lock"; Cancel
+     and Escape answer nothing. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Clean the keyboard</title>
+  <link rel="stylesheet" href="confirm.css">
+</head>
+<body>
+  <main>
+    <h1>Clean the keyboard</h1>
+    <p id="confirm-what"><span id="confirm-held">No key</span> will do anything, in any app, for <b id="confirm-time">1 minute</b>. Each key you wipe still lights up here.</p>
+
+    <h2>How to unlock</h2>
+    <ul class="ways">
+      <li id="way-button">
+        <span class="illo illo-button" aria-hidden="true"><span class="illo-fill"></span><span class="illo-label">Hold to unlock</span></span>
+        <span class="way-text">Press and hold <b>Hold to unlock</b>, at the top right, for 2 seconds.</span>
+      </li>
+      <li>
+        <span class="illo illo-keys" aria-hidden="true">
+          <span class="keycap">esc</span><span class="plus">+</span><span class="keycap wide right">shift</span>
+          <span class="illo-bar"><span class="illo-fill"></span></span>
+        </span>
+        <span class="way-text"><span id="way-keys-or">Or hold</span> <b>esc</b> and <b>right shift</b> together for 2 seconds.</span>
+      </li>
+      <li>
+        <span class="illo illo-ring" aria-hidden="true">
+          <svg viewBox="0 0 28 28"><circle class="ring-track" cx="14" cy="14" r="11"></circle><circle class="ring-left" cx="14" cy="14" r="11" pathLength="100"></circle></svg>
+        </span>
+        <span class="way-text">Or wait — it unlocks by itself when the time runs out.</span>
+      </li>
+      <li>
+        <span class="illo illo-touch" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"></circle><path d="M8.2 15.5c.6-1 .9-2.2.9-3.5a2.9 2.9 0 0 1 5.8 0c0 1.9-.4 3.6-1.1 5.1M10.8 18c.9-1.7 1.3-3.7 1.2-6M7 9.6a5.3 5.3 0 0 1 10 2.4c0 .9-.1 1.8-.2 2.6"></path></svg>
+        </span>
+        <span class="way-text"><b>Touch ID</b> locks your Mac, which ends cleaning too.</span>
+      </li>
+    </ul>
+
+    <p class="note muted small">How long, and whether the trackpad is locked too, are in the Settings tab.</p>
+    <div class="actions">
+      <button type="button" id="confirm-cancel">Cancel</button>
+      <button type="button" id="confirm-lock" class="primary">Lock keyboard</button>
+    </div>
+  </main>
+  <script src="confirm.js"></script>
+</body>
+</html>

@@ -551,12 +551,17 @@
       .catch(() => {});
   }
 
+  /** Whether this page's own question (`[[sheet]] confirm`) is up: it has
+   *  the keyboard then, and the board under it stays as it was rather than
+   *  turning to "Click to test keys" behind the question and back. */
+  let asking = false;
+
   // Keys held while the page loses focus never send their up here — unless
   // cleaning, when they come from Lumi whatever has focus.
   const focusChanged = () => {
     const focused = document.hasFocus();
     if (focused && hint.hidden === false) askState();
-    hint.hidden = focused || cleaning;
+    hint.hidden = focused || cleaning || asking;
     if (!focused && !cleaning && down.size) {
       down.clear();
       paint();
@@ -611,7 +616,41 @@
     cleanButton.title = `Lock every key${cleanPointer ? " and the trackpad" : ""} for ${time}. Change it in the Settings tab.`;
   }
 
+  // Asked first, every time, in a sheet of this extension's own over the
+  // whole of Lumi's window (`[[sheet]] confirm`, `ui/confirm.html`): what is
+  // about to be locked, and every way out. Lumi opens it on this press and
+  // hands back its answer as `lumi:sheet`; only "lock" starts.
   cleanButton.addEventListener("click", async () => {
+    done.hidden = true;
+    // Before the sheet can take the keyboard, so the blur it causes is
+    // already known for what it is.
+    asking = true;
+    let answer;
+    try {
+      answer = await fetch("/__lumi__/sheet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "confirm" }),
+      });
+    } catch {
+      asking = false;
+      return refuse("Cleaning works only inside Lumi.");
+    }
+    if (answer.ok) return;
+    asking = false;
+    if (answer.status === 404) return refuse("Cleaning needs Lumi 1.38 or later.");
+    return refuse(sentence(await answer.text()));
+  });
+  window.addEventListener("lumi:sheet", (event) => {
+    const detail = event.detail || {};
+    if (detail.name !== "confirm") return;
+    asking = false;
+    if (detail.result === "lock") startCleaning();
+    // Lumi answers once the keyboard is back, so the hint settles now.
+    focusChanged();
+  });
+
+  async function startCleaning() {
     done.hidden = true;
     let answer;
     try {
@@ -633,7 +672,7 @@
       return refuse("Lumi answered in a way this page does not understand.");
     }
     beginCleaning(held);
-  });
+  }
 
   /** Lumi's refusal, as a sentence for the line under the board. */
   const sentence = (text) => {

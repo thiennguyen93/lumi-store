@@ -169,6 +169,8 @@ COMPONENT_HEADER = b"\x00asm\x0d\x00\x01\x00"
 # [[shortcut]], reserved whether or not a manifest declares one.
 MAX_PAGES = 4
 MAX_PAGE_LABEL = 24
+# Lumi's `manifest::MAX_SHEETS`: how many [[sheet]]s one extension declares.
+MAX_SHEETS = 4
 # `ext::manifest`'s MAX_FOLDERS, MAX_FOLDER_NAME and MAX_FOLDER_LABEL.
 # `ext::manifest::PanelPosition::parse`'s words.
 PANEL_POSITIONS = ("", "cursor", "center", "top-left", "top-right", "bottom-left", "bottom-right")
@@ -429,6 +431,7 @@ def check_manifest(entry_id: str, manifest: dict):
             if floor > size:
                 fail(entry_id, f"the window {name}'s {key} ({floor:g}) is more than its {side} ({size:g}); it would open smaller than it may be made")
     check_page_tabs(entry_id, manifest)
+    check_sheets(entry_id, manifest)
     check_shortcuts(entry_id, manifest)
     check_tabs(entry_id, manifest)
     check_folders(entry_id, manifest)
@@ -628,6 +631,31 @@ def check_tabs(entry_id: str, manifest: dict):
     return tabs
 
 
+def check_sheets(entry_id: str, manifest: dict):
+    """The [[sheet]]s, held to Lumi's `manifest::parse`: at most MAX_SHEETS,
+    the window-name alphabet up to 64 characters, no name twice, and a plain
+    path under ui/. Sizes are clamped by Lumi, never refused, so only their
+    type is checked here."""
+    sheets = manifest.get("sheet", [])
+    if len(sheets) > MAX_SHEETS:
+        fail(entry_id, f"the manifest declares {len(sheets)} sheets — at most {MAX_SHEETS}")
+    names = set()
+    for sheet in sheets:
+        name = sheet.get("name", "")
+        if not NAME_RE.match(name) or len(name) > 64:
+            fail(entry_id, f"sheet name {name!r} may hold only letters, digits, '-' and '_', up to 64 of them")
+        if name in names:
+            fail(entry_id, f"two sheets are named {name}")
+        names.add(name)
+        path = str(sheet.get("path", "")).strip() or "index.html"
+        if not is_valid_ui_path(path):
+            fail(entry_id, f"the sheet {name} points at {path!r}, which is not a plain relative path")
+        for side in ("width", "height"):
+            value = sheet.get(side, 0)
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                fail(entry_id, f"the sheet {name}'s {side} = {value!r} is not a number")
+
+
 def check_page_tabs(entry_id: str, manifest: dict):
     """The [[page]] tabs, held to Lumi's `manifest::parse`: at most
     MAX_PAGES, the window-name alphabet up to 64 characters, a label of at
@@ -661,7 +689,8 @@ def check_page_tabs(entry_id: str, manifest: dict):
 
 def declared_pages(entry_id: str, manifest: dict) -> list:
     """Every ui/ page the manifest names outside [[window]], as (noun, path):
-    a page drawn in one of Lumi's tabs, each [[page]], and the installer.
+    a page drawn in one of Lumi's tabs, each [[page]] and [[sheet]], and the
+    installer.
     Lumi's installer refuses a package naming a page it does not ship — a
     tab opening on a 404, an Install button that opens nothing — so they are
     held to the window rule here, in both halves: a plain path, and a file
@@ -674,6 +703,9 @@ def declared_pages(entry_id: str, manifest: dict) -> list:
     for page in manifest.get("page", []):
         path = str(page.get("path", "")).strip() or "index.html"
         pages.append((f"page {page.get('name', '')}", path))
+    for sheet in manifest.get("sheet", []):
+        path = str(sheet.get("path", "")).strip() or "index.html"
+        pages.append((f"sheet {sheet.get('name', '')}", path))
     install = manifest.get("install")
     if install is not None:
         page = str(install.get("page", "")).strip()
