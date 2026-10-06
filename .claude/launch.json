@@ -117,6 +117,19 @@
       ],
       "port": 5299,
       "autoPort": true
+    },
+    {
+      "name": "sticky-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "../lumi-sticky-notes/web",
+        "dev",
+        "--port",
+        "5185",
+        "--strictPort"
+      ],
+      "port": 5185
     }
   ]
 }
