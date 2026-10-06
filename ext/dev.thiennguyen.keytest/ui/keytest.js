@@ -764,7 +764,7 @@
     const detail = event.detail || {};
     cleaning = false;
     clearInterval(ticker);
-    cancelUnlockKeys();
+    unlockDown.clear();
     cancelHold();
     document.body.classList.remove("cleaning");
     lockBar.hidden = true;
@@ -783,14 +783,61 @@
     paint();
   });
 
-  // Hold to unlock: two seconds pressed, so a palm on the trackpad or a
-  // tap-to-click while wiping does not count.
+  // Hold to unlock — the button pressed, or esc and right shift held
+  // together — for two seconds, so a palm on the trackpad or a cloth on a
+  // key does not count. While it runs, unlocking is all the person wants:
+  // the board dims under one big ring that empties, the seconds left inside
+  // it (`#clean-unlock`). Under a pointer, the button fills as well.
+  const unlockCover = document.getElementById("clean-unlock");
+  const unlockCount = document.getElementById("clean-unlock-count");
+  const unlockSay = document.getElementById("clean-unlock-say");
+  unlockCover.style.setProperty("--unlock", `${UNLOCK_MS}ms`);
+  /** What holds — "pointer", "keys", or both. The two seconds run from the
+   *  first, for as long as either still holds. */
+  const holding = new Set();
+  let holdSince;
   let holdTimer;
+  let holdTicker;
+  function holdOn(by) {
+    if (!cleaning) return;
+    holding.add(by);
+    if (by === "pointer") holdButton.classList.add("holding");
+    if (holdSince !== undefined) return;
+    holdSince = performance.now();
+    unlockCover.classList.remove("opening");
+    unlockSay.textContent = "Keep holding to unlock";
+    countHold();
+    unlockCover.hidden = false;
+    holdTicker = setInterval(countHold, 100);
+    // Left at its end until let go, so a refused `DELETE` drops back
+    // rather than leaving the ring up.
+    holdTimer = setTimeout(() => {
+      clearInterval(holdTicker);
+      unlockCover.classList.add("opening");
+      unlockSay.textContent = "Unlocking…";
+      unlock();
+    }, UNLOCK_MS);
+  }
+  function holdOff(by) {
+    holding.delete(by);
+    if (by === "pointer") holdButton.classList.remove("holding");
+    if (holding.size === 0) cancelHold();
+  }
   function cancelHold() {
     clearTimeout(holdTimer);
-    holdTimer = undefined;
+    clearInterval(holdTicker);
+    holding.clear();
+    holdSince = undefined;
+    unlockCover.hidden = true;
     holdButton.classList.remove("holding");
   }
+  /** The seconds left, to the tenth — never 0.0, which a tick landing just
+   *  before the unlock could show. */
+  function countHold() {
+    const left = UNLOCK_MS - (performance.now() - holdSince);
+    unlockCount.textContent = (Math.max(1, Math.ceil(left / 100)) / 10).toFixed(1);
+  }
+
   holdButton.addEventListener("pointerdown", (event) => {
     if (!cleaning) return;
     // Captured so sliding off the button while holding still counts as
@@ -798,36 +845,21 @@
     try {
       holdButton.setPointerCapture(event.pointerId);
     } catch {}
-    holdButton.classList.add("holding");
-    holdTimer = setTimeout(() => {
-      cancelHold();
-      unlock();
-    }, UNLOCK_MS);
+    holdOn("pointer");
   });
   for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
-    holdButton.addEventListener(type, cancelHold);
+    holdButton.addEventListener(type, () => holdOff("pointer"));
   }
 
-  // esc and right shift, held together for two seconds: the way out that
-  // needs no trackpad. Two keys in opposite corners, so a cloth across the
-  // board does not hold both.
+  // esc and right shift: the way out that needs no trackpad. Two keys in
+  // opposite corners, so a cloth across the board does not hold both.
   const unlockDown = new Set();
-  let unlockTimer;
-  function cancelUnlockKeys() {
-    clearTimeout(unlockTimer);
-    unlockTimer = undefined;
-    unlockDown.clear();
-  }
   function unlockKeys(code, isDown) {
     if (code !== "Escape" && code !== "ShiftRight") return;
     if (isDown) unlockDown.add(code);
     else unlockDown.delete(code);
-    if (unlockDown.size === 2) {
-      if (unlockTimer === undefined) unlockTimer = setTimeout(unlock, UNLOCK_MS);
-    } else {
-      clearTimeout(unlockTimer);
-      unlockTimer = undefined;
-    }
+    if (unlockDown.size === 2) holdOn("keys");
+    else holdOff("keys");
   }
 
   document.getElementById("reset").addEventListener("click", () => {

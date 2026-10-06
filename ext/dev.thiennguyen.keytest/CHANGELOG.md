@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.6] - 2026-10-06
+
+### Added
+
+- Holding to unlock shows how long is left. While esc and right shift — or the Hold to unlock button — are held, the keyboard dims under a big ring in its middle that starts full and empties counter-clockwise over the 2 seconds, with the seconds left counting down inside it. Let go early and it goes away; hold on and its lock opens.
+
+### Changed
+
+- The Clean keyboard question shows esc and right shift with that ring, emptying until its lock opens, instead of a bar.
+
 ## [0.5.2] - 2026-10-06
 
 ### Fixed
