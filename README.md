@@ -172,9 +172,13 @@ private repo pinned as a submodule like any other, with two differences:
   repo it cannot read;
 - `private = true` on its entry in `extensions.toml`.
 
-CI checks it out with a read-only deploy key (`scripts/fetch-private.sh`,
-secret `SCREENSHOT_DEPLOY_KEY`) in the entry's own build leg and in the
-signing job, and deletes the key before any build script runs. The package
+CI checks it out with a read-only deploy key of its own
+(`scripts/fetch-private.sh`): a deploy key opens one repository, so each
+private entry has a secret named after the last part of its id —
+`SCREENSHOT_DEPLOY_KEY` for `dev.thiennguyen.screenshot`, `STICKY_DEPLOY_KEY`
+for `dev.thiennguyen.sticky` — passed in each workflow step that fetches.
+The entry's own build leg is handed only its own key; the signing job gets
+them all. Each key is deleted before any build script runs. The package
 is still built from the pinned source and signed by CI — no developer-built
 binary — and is published like every other, so its wasm and ui/ are
 public; only the source is not. A fork's pull request has no key, and
