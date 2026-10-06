@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.1] - 2026-10-06
+
+### Changed
+
+- Clean keyboard locks the trackpad too, unless you turn that off in the Settings tab, so a wipe across it clicks nothing. If you had already chosen there, your choice stays.
+
 ## [0.6.0] - 2026-10-06
 
 ### Changed
