@@ -331,6 +331,74 @@ body.cleaning .board {
 }
 .clean-progress.ending span { background: var(--kt-bad); }
 
+/* A hold to unlock, over the board: dimmed under one big ring that starts
+   full and empties in the time the page waits (`--unlock`, set from
+   `UNLOCK_MS`) — starting over each time the cover is shown — the seconds
+   left inside it, and an open lock in their place once it is done. */
+.unlock-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, Canvas 72%, transparent);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  pointer-events: none;
+}
+.unlock-cover[hidden] { display: none; }
+.unlock-ring {
+  position: relative;
+  flex: none;
+  width: 120px;
+  height: 120px;
+}
+/* Turned to start at twelve: what is left runs clockwise from there, so
+   its end draws back counter-clockwise as it empties. */
+.unlock-ring > svg:first-child {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.unlock-ring circle { fill: none; stroke-width: 8; }
+.unlock-track { stroke: color-mix(in srgb, var(--kt-down) 18%, transparent); }
+.unlock-left {
+  stroke: var(--kt-down);
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+  animation: unlock-left var(--unlock, 2s) linear forwards;
+}
+@keyframes unlock-left { to { stroke-dashoffset: 100; } }
+.unlock-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.unlock-count small { margin-left: 2px; font-size: 16px; font-weight: 600; opacity: 0.65; }
+.unlock-open {
+  position: absolute;
+  inset: 32%;
+  display: none;
+  fill: none;
+  stroke: var(--kt-down);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.unlock-open rect { fill: color-mix(in srgb, var(--kt-down) 22%, transparent); }
+.unlock-cover.opening .unlock-count,
+.unlock-cover.opening .unlock-left { display: none; }
+.unlock-cover.opening .unlock-open { display: block; }
+.unlock-say { font-size: 15px; font-weight: 600; }
+
 /* Held for two seconds to unlock: the fill grows across it while pressed,
    and drops back the moment it is let go. */
 .hold-button {

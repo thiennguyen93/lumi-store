@@ -49,6 +49,24 @@
          drawn over the board's own padding so nothing moves. -->
     <div id="clean-progress" class="clean-progress" hidden aria-hidden="true"><span id="clean-progress-fill"></span></div>
     <button type="button" id="focus-hint" class="cover" hidden>Click to test keys</button>
+    <!-- While a hold to unlock runs — esc and right shift, or the button —
+         unlocking is all the person wants: the board dims under one big
+         ring that empties as the hold goes on, the seconds left inside it,
+         and an open lock once it is done. -->
+    <div id="clean-unlock" class="unlock-cover" hidden aria-hidden="true">
+      <div class="unlock-ring">
+        <svg viewBox="0 0 120 120">
+          <circle class="unlock-track" cx="60" cy="60" r="52"></circle>
+          <circle class="unlock-left" cx="60" cy="60" r="52" pathLength="100"></circle>
+        </svg>
+        <span class="unlock-count"><span id="clean-unlock-count">2.0</span><small>s</small></span>
+        <svg class="unlock-open" viewBox="0 0 16 16">
+          <rect x="3" y="7" width="10" height="7.5" rx="1.8"></rect>
+          <path d="M5.3 7V5a2.7 2.7 0 0 1 5.2-1"></path>
+        </svg>
+      </div>
+      <span id="clean-unlock-say" class="unlock-say">Keep holding to unlock</span>
+    </div>
   </div>
 
   <!-- While cleaning, under the board where there is room: the time left
