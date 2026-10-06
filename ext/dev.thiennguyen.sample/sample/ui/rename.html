@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- The sample's sheet (`[[sheet]] rename`): drawn inside Lumi's own sheet
+     frame, which says whose it is. It reads the name it was opened with and
+     answers the new one, or nothing — and grows for its error line and back
+     (`POST /__lumi__/size`). -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Rename</title>
+  <style>
+    body { margin: 0; font: 13px/1.45 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+    form { display: flex; flex-direction: column; gap: 10px; padding: 2px 2px 0; }
+    h1 { margin: 0; font-size: 15px; }
+    .row { display: flex; justify-content: flex-end; gap: 8px; }
+    .error { margin: 0; color: var(--denied, #b3261e); }
+  </style>
+</head>
+<body>
+  <form id="form">
+    <h1>Rename</h1>
+    <input id="name" autocomplete="off" aria-label="Name" aria-describedby="error">
+    <p id="error" class="error" role="alert" hidden>A name can't be empty.</p>
+    <div class="row">
+      <button type="button" id="cancel">Cancel</button>
+      <button type="submit" class="primary">Rename</button>
+    </div>
+  </form>
+  <script src="rename.js"></script>
+</body>
+</html>

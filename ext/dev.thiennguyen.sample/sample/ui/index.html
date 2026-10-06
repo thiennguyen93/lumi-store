@@ -58,6 +58,21 @@
   </div>
   <p class="muted" id="permission-said"></p>
 
+  <!-- A sheet: a dialog of this extension's own over the whole of Lumi's
+       window, in Lumi's frame (`[[sheet]] rename`). Only an embedded page
+       opens one, on a press; opened as this extension's own `settings`
+       window, this same file is refused, and says so. -->
+  <h2>A sheet</h2>
+  <p class="muted">
+    A dialog over the whole of Lumi's window, in Lumi's own frame. This page
+    opens it on a press, hands it a name, and hears what it answers.
+  </p>
+  <div class="row">
+    <input id="sheet-name" value="Sample">
+    <button id="sheet-open">Rename in a sheet</button>
+  </div>
+  <p class="muted" id="sheet-said"></p>
+
   <p class="muted" id="running"></p>
 
   <script src="app.js"></script>

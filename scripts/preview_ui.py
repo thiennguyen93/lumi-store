@@ -33,7 +33,12 @@ machine.
   python3 scripts/preview_ui.py ext/dev.thiennguyen.sample/sample --port 5190
 
 A page Lumi draws in a pane is told its theme as `?theme=light|dark`; add
-that to the URL to see either.
+that to the URL to see either. In Lumi the page's `prefers-color-scheme`
+always agrees with it — the Appearance setting is put on every window, and a
+webview's media query follows its window — but a browser's follows the
+system, and an iframe cannot be told otherwise. So set the browser's colour
+scheme to match (DevTools → Rendering), or a page that keys on the media
+query draws wrong here and only here; the frame says so when they differ.
 
 A private entry keeps its promo spec in its own repo, beside the pictures,
 so this public one holds nothing of it: `--promo <its file>`.
@@ -54,15 +59,32 @@ DEFAULT_LUMI_CSS = ROOT.parent / "lumi" / "src-tauri" / "src" / "ext" / "lumi.cs
 
 # A pane page in Lumi sits inside the Settings window's content inset, on
 # the window's own colour (`Canvas`), with lumi.css injected — the frame
-# gives it the same three so a screenshot shows what Lumi shows.
+# gives it the same three so a screenshot shows what Lumi shows. And a line
+# along the bottom while the browser's colour scheme is not `theme`: a pair
+# Lumi never draws a page in (see the module's note on `?theme=`).
 FRAME = """<!doctype html>
 <html data-theme="{theme}"><head><meta charset="utf-8"><title>{page}</title>
 <style>
   :root {{ color-scheme: {theme}; }}
   html, body {{ margin: 0; height: 100%; background: Canvas; }}
   iframe {{ border: 0; width: 100%; height: 100%; box-sizing: border-box; padding: 20px 24px; }}
+  .mismatch {{
+    position: fixed; left: 0; right: 0; bottom: 0; margin: 0; padding: 6px 12px;
+    font: 12px/1.4 -apple-system, system-ui, sans-serif;
+    background: #fff4d6; color: #5c4300; border-top: 1px solid #e0b84d;
+  }}
 </style></head>
-<body><iframe src="/{page}?theme={theme}"></iframe></body></html>
+<body><iframe src="/{page}?theme={theme}"></iframe>
+<p class="mismatch" hidden>theme={theme}, but this browser's prefers-color-scheme is not {theme}.
+Lumi always pairs the two, so anything here that follows the media query is not what Lumi shows.
+Emulate {theme} in DevTools → Rendering to match.</p>
+<script>
+  const dark = matchMedia("(prefers-color-scheme: dark)");
+  const mismatch = document.querySelector(".mismatch");
+  const check = () => (mismatch.hidden = dark.matches === ("{theme}" === "dark"));
+  dark.addEventListener("change", check);
+  check();
+</script></body></html>
 """
 
 

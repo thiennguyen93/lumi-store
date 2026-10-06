@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.5.2] - 2026-10-06
+
+### Fixed
+
+- The Clean keyboard question is as tall as what it lists: with the trackpad locked too, it no longer leaves empty room under its buttons.
+
+## [0.5.1] - 2026-10-06
+
+### Fixed
+
+- The keyboard behind the Clean keyboard question stays as it was while the question is up, instead of turning to "Click to test keys" and back.
+
+## [0.5.0] - 2026-10-06
+
+### Changed
+
+- The question before cleaning opens over the whole of Lumi's window, in Lumi's own sheet, instead of inside the tab.
+
+## [0.4.6] - 2026-10-06
+
+### Fixed
+
+- In the Clean keyboard dialog, the right shift key is drawn with its label in the bottom right, as on the key itself.
+
+## [0.4.5] - 2026-10-06
+
+### Added
+
+- Clean keyboard asks first, every time: it says what will be locked and for how long, and shows each way to unlock moving — esc and right shift held, the time running out, Touch ID, and, when the trackpad is not locked, the Hold to unlock button at the top right. Only Lock keyboard starts; Cancel or esc leaves everything as it was.
+
 ## [0.4.4] - 2026-10-06
 
 ### Changed

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.16.1] - 2026-10-06
+
+### Changed
+
+- The rename sheet says when the name is empty, and grows to fit the line saying so.
+
+## [0.16.0] - 2026-10-06
+
+### Added
+
+- Rename in a sheet, on the Settings page: a dialog over the whole of Lumi's window, in Lumi's own frame, that answers the new name back to the page. Needs Lumi 1.38.
+
 ## [0.15.0] - 2026-10-06
 
 ### Added

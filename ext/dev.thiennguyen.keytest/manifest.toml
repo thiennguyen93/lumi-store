@@ -1,9 +1,10 @@
-# Keyboard Test's manifest. One tab of its own, a Settings tab Lumi draws
-# for cleaning, and one capability: holding the keyboard while it is cleaned.
+# Keyboard Test's manifest. One tab of its own, a sheet it asks with before
+# cleaning, a Settings tab Lumi draws for cleaning, and one capability:
+# holding the keyboard while it is cleaned.
 [extension]
 id = "dev.thiennguyen.keytest"
 name = "Keyboard Test"
-version = "0.4.4"
+version = "0.5.2"
 description = "Check every key of a MacBook keyboard, catch keys that double-type, and lock it while you clean it."
 author = "Thien Nguyen"
 summary = "Opens a Keyboard test tab here in Lumi: press each key and watch it light up on a MacBook keyboard. It counts the keys you have covered, shows which are held, and flags a key that registers twice from one press — the chatter a worn or dusty switch produces. Clean keyboard locks every key for a while so you can wipe it, and lights each key you wipe, so cleaning tests it too. Nothing leaves the page."
@@ -38,6 +39,17 @@ fn-key = true
 # reaches it. While the tab is in front, Lumi takes F1–F12 from the system
 # and relays them as `lumi:key` events; media keys are left alone.
 function-keys = true
+
+# The question before every clean: a dialog over the whole of Lumi's
+# window, in Lumi's own frame, opened by the tab's Clean keyboard button and
+# answered back to it (`ui/confirm.html`). Sized to its content — the four
+# ways out and the buttons; a shorter window scrolls it.
+[[sheet]]
+name = "confirm"
+path = "confirm.html"
+width = 420
+height = 360
+title = "Clean the keyboard"
 
 # How long Clean keyboard locks the keys. Chosen here, in the Settings tab
 # Lumi draws, so the page's Clean keyboard button only has to start.
