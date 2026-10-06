@@ -5,11 +5,11 @@
 //
 // Keys are matched by `KeyboardEvent.code` — the physical position, not
 // the character — so the test means the same thing under any input
-// source, Vietnamese Telex included. What is kept between visits — the
-// layout and the cleaning choices — goes through the bridge's settings
-// route; the one question for the extension's own code is whether Lumi's
-// Hyper key is on (`askHyper`); and cleaning is Lumi's input hold, asked
-// for over the bridge (`/__lumi__/input-hold`).
+// source, Vietnamese Telex included. The layout is the page's memory, kept
+// by the extension's own code (`askState`, `set-layout`); how cleaning goes
+// is a setting, from the Settings tab Lumi draws (`lumi:settings`); and
+// cleaning itself is Lumi's input hold, asked for over the bridge
+// (`/__lumi__/input-hold`).
 
 (() => {
   "use strict";
@@ -528,19 +528,25 @@
     }
   });
 
-  /** Ask the extension's own code whether Lumi's Hyper key is on. On load
-   *  and whenever the page gets the keyboard back, since the person may
-   *  have flipped it meanwhile — both moments when the page is in front,
-   *  which is the only time Lumi lets it call. A refusal leaves the last
-   *  answer standing. */
-  function askHyper() {
-    fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "hyper" }) })
+  /** Ask the extension's own code what the page cannot know by itself:
+   *  whether Lumi's Hyper key is on, and which layout was last chosen. On
+   *  load and whenever the page gets the keyboard back, since the person
+   *  may have flipped the Hyper key meanwhile — both moments when the page
+   *  is in front, which is the only time Lumi lets it call. A refusal
+   *  leaves the last answer standing. The layout is taken only until the
+   *  person has pressed the switch here, so a late answer cannot undo it. */
+  let layoutChosen = false;
+  function askState() {
+    fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "state" }) })
       .then((response) => (response.ok ? response.json() : null))
       .then((answer) => {
-        if (answer && typeof answer.hyperKeyEnabled === "boolean") {
-          hyperOn = answer.hyperKeyEnabled;
-          paint();
+        if (!answer) return;
+        if (typeof answer.hyperKeyEnabled === "boolean") hyperOn = answer.hyperKeyEnabled;
+        if (!layoutChosen && answer.layout in LAYOUTS && answer.layout !== layout) {
+          layout = answer.layout;
+          draw();
         }
+        paint();
       })
       .catch(() => {});
   }
@@ -549,7 +555,7 @@
   // cleaning, when they come from Lumi whatever has focus.
   const focusChanged = () => {
     const focused = document.hasFocus();
-    if (focused && hint.hidden === false) askHyper();
+    if (focused && hint.hidden === false) askState();
     hint.hidden = focused || cleaning;
     if (!focused && !cleaning && down.size) {
       down.clear();
@@ -572,18 +578,15 @@
   // ----------------------------------------------------------------------
 
   const cleanButton = document.getElementById("clean");
-  const sheet = document.getElementById("clean-sheet");
-  const pointerBox = document.getElementById("clean-pointer");
-  const cleanError = document.getElementById("clean-error");
-  const startButton = document.getElementById("clean-start");
   const lockHead = document.getElementById("clean-lock");
   const lockTime = document.getElementById("clean-time");
   const lockExit = document.getElementById("clean-exit");
   const holdButton = document.getElementById("clean-hold");
   const done = document.getElementById("clean-done");
 
-  /** How long to clean for, and whether the trackpad goes too — kept for
-   *  next time. */
+  /** How long to clean for, and whether the trackpad goes too — chosen in
+   *  the Settings tab Lumi draws from the manifest's `[[settings]]`, and
+   *  kept current by `lumi:settings`. The button only starts. */
   let cleanSeconds = 60;
   let cleanPointer = false;
   /** Whether a hold is on, and when it ends at the latest (Unix ms). */
@@ -594,46 +597,15 @@
   const cleanPressed = new Set();
   const cleanChatter = new Set();
 
-  function drawSheet() {
-    for (const button of sheet.querySelectorAll("[data-seconds]")) {
-      button.setAttribute("aria-checked", String(Number(button.dataset.seconds) === cleanSeconds));
-    }
-    pointerBox.checked = cleanPointer;
+  /** The button's tooltip says what pressing it will do, and where that is
+   *  changed. */
+  function describeCleaning() {
+    const time = cleanSeconds < 60 ? `${cleanSeconds} seconds` : `${cleanSeconds / 60} minute${cleanSeconds === 60 ? "" : "s"}`;
+    cleanButton.title = `Lock every key${cleanPointer ? " and the trackpad" : ""} for ${time}. Change it in the Settings tab.`;
   }
 
-  function saveCleaning() {
-    fetch("/__lumi__/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ "clean-seconds": String(cleanSeconds), "clean-pointer": String(cleanPointer) }),
-    }).catch(() => {});
-  }
-
-  cleanButton.addEventListener("click", () => {
-    sheet.hidden = !sheet.hidden;
-    cleanError.hidden = true;
+  cleanButton.addEventListener("click", async () => {
     done.hidden = true;
-    drawSheet();
-    if (!sheet.hidden) startButton.focus();
-  });
-  document.getElementById("clean-cancel").addEventListener("click", () => {
-    sheet.hidden = true;
-    board.focus();
-  });
-  for (const button of sheet.querySelectorAll("[data-seconds]")) {
-    button.addEventListener("click", () => {
-      cleanSeconds = Number(button.dataset.seconds);
-      drawSheet();
-      saveCleaning();
-    });
-  }
-  pointerBox.addEventListener("change", () => {
-    cleanPointer = pointerBox.checked;
-    saveCleaning();
-  });
-
-  startButton.addEventListener("click", async () => {
-    cleanError.hidden = true;
     let answer;
     try {
       answer = await fetch("/__lumi__/input-hold", {
@@ -656,15 +628,16 @@
     beginCleaning(held);
   });
 
-  /** Lumi's refusal, as a sentence for the sheet. */
+  /** Lumi's refusal, as a sentence for the line under the board. */
   const sentence = (text) => {
     const said = String(text || "").trim();
     return said ? `${said.charAt(0).toUpperCase()}${said.slice(1)}.`.replace(/\.\.$/, ".") : "Lumi would not lock the keyboard.";
   };
 
   function refuse(text) {
-    cleanError.textContent = text;
-    cleanError.hidden = false;
+    done.textContent = text;
+    done.classList.add("bad");
+    done.hidden = false;
   }
 
   function beginCleaning(held) {
@@ -673,7 +646,6 @@
     cleanPressed.clear();
     cleanChatter.clear();
     down.clear();
-    sheet.hidden = true;
     document.body.classList.add("cleaning");
     lockHead.hidden = false;
     lockExit.hidden = false;
@@ -726,6 +698,7 @@
       ? "No key was pressed."
       : `${pressed} ${pressed === 1 ? "key" : "keys"} pressed while cleaning${twice.length ? `; typed twice: ${twice.join(", ")}` : ", none typed twice"}.`;
     done.textContent = `${ENDINGS[detail.reason] || ENDINGS.gone} ${counted}`;
+    done.classList.remove("bad");
     done.hidden = false;
     focusChanged();
     paint();
@@ -793,32 +766,36 @@
     button.addEventListener("click", () => {
       if (button.dataset.layout === layout) return;
       layout = button.dataset.layout;
+      layoutChosen = true;
       draw();
       board.focus();
-      // Kept for the next visit. Fails quietly when the page is opened on
-      // its own, outside Lumi, where there is no bridge.
-      fetch("/__lumi__/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ layout }),
+      // Kept for the next visit by the extension's own code. A press is in
+      // front, so Lumi lets it call; it fails quietly when the page is
+      // opened on its own, outside Lumi, where there is no bridge.
+      fetch("/__lumi__/call", {
+        method: "POST",
+        body: JSON.stringify({ kind: "set-layout", layout }),
       }).catch(() => {});
     });
   }
 
   draw();
   focusChanged();
-  askHyper();
+  askState();
+  /** What the settings say about cleaning: on load, and on every
+   *  `lumi:settings` — a change in the Settings tab. */
+  function applySettings(settings) {
+    if (!settings || typeof settings !== "object") return;
+    const seconds = Number(settings["clean-seconds"]);
+    if ([30, 60, 120, 300].includes(seconds)) cleanSeconds = seconds;
+    cleanPointer = settings["clean-pointer"] === "true";
+    describeCleaning();
+  }
+  window.addEventListener("lumi:settings", (event) => applySettings(event.detail));
+
+  describeCleaning();
   fetch("/__lumi__/settings")
     .then((response) => (response.ok ? response.json() : {}))
-    .then((settings) => {
-      if (settings.layout in LAYOUTS && settings.layout !== layout) {
-        layout = settings.layout;
-        draw();
-      }
-      const seconds = Number(settings["clean-seconds"]);
-      if ([30, 60, 120, 300].includes(seconds)) cleanSeconds = seconds;
-      cleanPointer = settings["clean-pointer"] === "true";
-      drawSheet();
-    })
+    .then(applySettings)
     .catch(() => {});
 })();

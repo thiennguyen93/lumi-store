@@ -209,26 +209,6 @@ body {
 .notes ul { margin: 6px 0 0; padding-left: 18px; opacity: 0.8; }
 .notes li { margin: 3px 0; }
 
-/* Cleaning. The sheet before it sits under the bar, in the page's own
-   colours. */
-.sheet {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0 0 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--kt-line);
-  background: var(--kt-key);
-}
-.sheet[hidden] { display: none; }
-.sheet h2 { margin: 0; font-size: 14px; }
-.sheet p { margin: 0; }
-.sheet-row { display: flex; align-items: center; gap: 10px; }
-.sheet-check { display: flex; align-items: center; gap: 6px; }
-.sheet-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
-
 /* While cleaning the page goes dark, whatever Lumi's theme — a dark field
    is what shows dust and smudges on the keys being wiped, and it says at a
    glance that this is not the ordinary tester. The board's own tokens are
