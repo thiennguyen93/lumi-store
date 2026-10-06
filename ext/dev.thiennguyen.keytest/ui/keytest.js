@@ -1,4 +1,4 @@
-// Keyboard Test: light each key of a MacBook keyboard as it is pressed,
+// Keyboard Cleaner: light each key of a MacBook keyboard as it is pressed,
 // count what has been covered, and catch a key that types twice — and
 // clean the keyboard: hold every key from every app while it is wiped,
 // lighting each one wiped, so cleaning is a test too.

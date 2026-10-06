@@ -2,14 +2,27 @@
   "color": "#2563eb",
   "shots": [
     {
-      "headline": "Test every key on your Mac",
-      "sub": "Press each key and watch it light up — Keyboard Test counts what you've covered and shows what's held.",
+      "headline": "Wipe your keyboard without typing a thing",
+      "sub": "Clean keyboard locks every key in every app for a while — and each key you wipe lights up, so cleaning tests it too.",
       "window": "Lumi Settings",
-      "tab": "Extensions › Keyboard Test",
+      "tab": "Extensions › Keyboard Cleaner",
       "page": "keytest.html",
       "theme": "light",
       "callout": {
-        "title": "Keyboard Test",
+        "title": "Keyboard Cleaner",
+        "label": "Done early?",
+        "body": "Hold <b>esc</b> and <b>right shift</b> for 2 seconds to unlock — or let the time run out."
+      }
+    },
+    {
+      "headline": "Test every key on your Mac",
+      "sub": "Press each key and watch it light up — Keyboard Cleaner counts what you've covered and shows what's held.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Keyboard Cleaner",
+      "page": "keytest.html",
+      "theme": "light",
+      "callout": {
+        "title": "Keyboard Cleaner",
         "label": "Double-typed",
         "body": "<b>E</b> registered twice from one press — the chatter a worn or dusty switch makes."
       }
@@ -18,7 +31,7 @@
       "headline": "ANSI or ISO, light or dark",
       "sub": "The board matches the MacBook in front of you, and the theme matches Lumi.",
       "window": "Lumi Settings",
-      "tab": "Extensions › Keyboard Test",
+      "tab": "Extensions › Keyboard Cleaner",
       "page": "keytest.html",
       "theme": "dark"
     }

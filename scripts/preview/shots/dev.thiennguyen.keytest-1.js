@@ -1,43 +1,42 @@
 (async () => {
   const frame = document.querySelector("iframe");
-  const doc = frame ? frame.contentDocument : document;
+  const win = frame.contentWindow;
+  const doc = frame.contentDocument;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  // What Lumi does on opening the tab (`focus = true`): the page has the
-  // keyboard, so the "click to test" cover is down.
-  if (frame) frame.contentWindow.focus();
-  doc.getElementById("board").focus();
-  const hint = doc.getElementById("focus-hint");
-  hint.hidden = true;
-  const fire = (type, code, key) =>
-    doc.dispatchEvent(new KeyboardEvent(type, { code, key, bubbles: true, cancelable: true }));
-  const codes = [];
-  for (const c of "QWERTYUIOPASDFGHJKLZXCVBNM") codes.push(["Key" + c, c.toLowerCase()]);
-  for (const d of "1234567890") codes.push(["Digit" + d, d]);
-  codes.push(["Space", " "], ["Enter", "Enter"], ["Tab", "Tab"], ["Backspace", "Backspace"],
-    ["Minus", "-"], ["Equal", "="], ["BracketLeft", "["], ["BracketRight", "]"],
-    ["Semicolon", ";"], ["Quote", "'"], ["Comma", ","], ["Period", "."], ["Slash", "/"],
-    ["ArrowLeft", "ArrowLeft"], ["ArrowRight", "ArrowRight"], ["ArrowUp", "ArrowUp"], ["ArrowDown", "ArrowDown"],
-    ["Escape", "Escape"], ["Backquote", "`"], ["Backslash", "\\"]);
-  for (const [code, key] of codes) {
-    fire("keydown", code, key);
-    await sleep(30);
-    fire("keyup", code, key);
-    await sleep(30);
-  }
-  // A worn E: released and pressed again a few milliseconds later.
-  fire("keydown", "KeyE", "e");
-  await sleep(40);
-  fire("keyup", "KeyE", "e");
-  await sleep(8);
-  fire("keydown", "KeyE", "e");
-  await sleep(40);
-  fire("keyup", "KeyE", "e");
+  // Cleaning, part way through a minute. The preview has no input hold, so
+  // the page's `PUT /__lumi__/input-hold` is answered here as Lumi would,
+  // and the page's clock is moved on so the ring has run down a third.
+  const fetched = win.fetch.bind(win);
+  win.fetch = (url, init = {}) =>
+    String(url) === "/__lumi__/input-hold"
+      ? Promise.resolve(new win.Response(JSON.stringify({ until: Date.now() + 60_000, pointer: false }), { status: 200 }))
+      : fetched(url, init);
+  win.focus();
+  // What the question answers when Lock keyboard is pressed.
+  win.dispatchEvent(new win.CustomEvent("lumi:sheet", { detail: { name: "confirm", result: "lock" } }));
   await sleep(200);
-  // Two keys held down when the picture is taken.
-  fire("keydown", "ShiftLeft", "Shift");
-  await sleep(40);
-  fire("keydown", "KeyK", "K");
-  await sleep(100);
-  hint.hidden = true;
+  const now = win.Date.now.bind(win.Date);
+  win.Date.now = () => now() + 22_000;
+  // The cloth so far: the left of the board, row by row, as Lumi relays
+  // each held key to the page.
+  const key = (code, down) => win.dispatchEvent(new win.CustomEvent("lumi:key", { detail: { code, down } }));
+  const wiped = [
+    "Escape", "F1", "F2", "F3", "F4", "F5",
+    "Backquote", "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6",
+    "Tab", "KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY",
+    "CapsLock", "KeyA", "KeyS", "KeyD", "KeyF", "KeyG",
+    "ShiftLeft", "KeyZ", "KeyX", "KeyC", "KeyV",
+    "Fn", "ControlLeft", "AltLeft", "MetaLeft",
+  ];
+  for (const code of wiped) {
+    key(code, true);
+    await sleep(25);
+    key(code, false);
+    await sleep(25);
+  }
+  // And under it now: two keys held.
+  key("KeyB", true);
+  key("KeyH", true);
+  await sleep(400);
   return "ok";
 })()
