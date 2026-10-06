@@ -4,17 +4,17 @@
 [extension]
 id = "dev.thiennguyen.keytest"
 name = "Keyboard Cleaner"
-version = "0.6.0"
+version = "0.6.1"
 description = "Lock your MacBook keyboard while you wipe it, then check every key and catch keys that double-type."
 author = "Thien Nguyen"
-summary = "Opens a Keyboard tab here in Lumi. Clean keyboard locks every key on your Mac for a while — and the trackpad too, if you choose — so you can wipe it without typing into anything, and lights each key you wipe on a drawn MacBook keyboard, so cleaning tests it too. Any time, press each key and watch it light up: it counts the keys you have covered, shows which are held, and flags a key that registers twice from one press — the chatter a worn or dusty switch produces. Nothing leaves the page."
+summary = "Opens a Keyboard tab here in Lumi. Clean keyboard locks every key on your Mac for a while — and the trackpad too, unless you turn that off — so you can wipe it without typing into anything, and lights each key you wipe on a drawn MacBook keyboard, so cleaning tests it too. Any time, press each key and watch it light up: it counts the keys you have covered, shows which are held, and flags a key that registers twice from one press — the chatter a worn or dusty switch produces. Nothing leaves the page."
 homepage = "https://lumikeys.app/docs/extensions"
 # 1.38.0 for `input-hold`, the capability cleaning needs: an older Lumi
 # does not know the word and would refuse the manifest for it. (WIT 0.3,
 # [[page]] and the settings layout all came before it.)
 min-lumi-version = "1.38.0"
 # Cleaning: the page asks Lumi to hold every key on the Mac — and the
-# trackpad, if the person turned that on in Settings — and to relay each held key to it, so
+# trackpad, unless the person turned that off in Settings — and to relay each held key to it, so
 # the board lights as the keyboard is wiped (`/__lumi__/input-hold`). The
 # review sheet says both halves: the keyboard stops reaching any app for a
 # while, and the extension sees the keys pressed meanwhile.
@@ -76,12 +76,14 @@ label = "2 min"
 value = "300"
 label = "5 min"
 
-# Whether Clean keyboard locks the trackpad too.
+# Whether Clean keyboard locks the trackpad too. On unless turned off: a
+# cloth across the keyboard drags over the trackpad as well, and a click
+# or a swipe it makes lands in whatever app is in front.
 [[settings]]
 name = "clean-pointer"
 label = "Lock the trackpad too"
 kind = "bool"
-default = "false"
+default = "true"
 
 # The tab is for cleaning and nothing else. The board's layout is not a
 # setting: it is switched on the page and kept in the extension's own

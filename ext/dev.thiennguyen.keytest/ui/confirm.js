@@ -16,7 +16,8 @@
 
   function show(settings) {
     const seconds = Number(settings["clean-seconds"]);
-    const pointer = settings["clean-pointer"] === "true";
+    // On unless turned off, as the manifest's default says.
+    const pointer = settings["clean-pointer"] !== "false";
     document.getElementById("confirm-time").textContent = durationWords(
       [30, 60, 120, 300].includes(seconds) ? seconds : 60,
     );
@@ -69,8 +70,11 @@
   });
 
   lock.focus();
+  // Unread settings are the defaults, so the sheet still says what the
+  // page will do.
   fetch("/__lumi__/settings")
     .then((response) => (response.ok ? response.json() : {}))
+    .catch(() => ({}))
     .then(show)
     .catch(() => {})
     .then(fit);

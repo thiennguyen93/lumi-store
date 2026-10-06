@@ -597,7 +597,7 @@
    *  the Settings tab Lumi draws from the manifest's `[[settings]]`, and
    *  kept current by `lumi:settings`. The button only starts. */
   let cleanSeconds = 60;
-  let cleanPointer = false;
+  let cleanPointer = true;
   /** Whether a hold is on, when it ends at the latest (Unix ms), and how
    *  long it was for — the ring and the line count down the share left. */
   let cleaning = false;
@@ -899,7 +899,8 @@
     if (!settings || typeof settings !== "object") return;
     const seconds = Number(settings["clean-seconds"]);
     if ([30, 60, 120, 300].includes(seconds)) cleanSeconds = seconds;
-    cleanPointer = settings["clean-pointer"] === "true";
+    // On unless turned off, as the manifest's default says.
+    cleanPointer = settings["clean-pointer"] !== "false";
     describeCleaning();
   }
   window.addEventListener("lumi:settings", (event) => applySettings(event.detail));

@@ -2,10 +2,10 @@ Lock every key on your Mac while you wipe the keyboard, right inside Lumi — th
 
 ## Clean your keyboard
 
-**Clean keyboard**, in the **Keyboard** tab this adds to Lumi, locks every key on your Mac at once, so you can wipe the keyboard without typing into anything. Brightness, volume, media, Mission Control and Spotlight keys are held too. In the **Settings** tab, choose how long — 30 seconds to 5 minutes — and whether the trackpad is locked as well.
+**Clean keyboard**, in the **Keyboard** tab this adds to Lumi, locks every key on your Mac at once, so you can wipe the keyboard without typing into anything. Brightness, volume, media, Mission Control and Spotlight keys are held too, and so is the trackpad, so a wipe across it clicks nothing. In the **Settings** tab, choose how long — 30 seconds to 5 minutes — and whether the trackpad is locked as well.
 
 - **Wipe and test at once.** Each key you wipe lights up, so when you are done you know which keys work and which type twice.
-- **Three ways out.** Hold the unlock button for 2 seconds, hold **esc** and **right shift** together for 2 seconds, or let the time run out.
+- **Ways out.** Hold **esc** and **right shift** together for 2 seconds, or let the time run out. With the trackpad left unlocked, holding the unlock button for 2 seconds works too.
 - **Touch ID can't be locked.** Pressing it locks your Mac, which ends cleaning.
 
 ## Test every key
