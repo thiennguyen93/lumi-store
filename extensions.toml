@@ -61,7 +61,7 @@ featured = true
 # First-party and closed source, Screenshot's arrangement: a private repo,
 # `update = none` in .gitmodules, fetched with a read-only deploy key of its
 # own (STICKY_DEPLOY_KEY) by scripts/fetch-private.sh. Its React front end
-# under web/ is built by the store. Needs Lumi 1.39.0 (`remember-frame`).
+# under web/ is built by the store. Needs Lumi 1.40.0 (`remember-frame`).
 [[extension]]
 id = "dev.thiennguyen.sticky"
 path = "ext/dev.thiennguyen.sticky"
