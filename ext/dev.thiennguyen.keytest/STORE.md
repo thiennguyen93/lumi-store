@@ -12,7 +12,15 @@ Check every key of a MacBook keyboard, right inside Lumi. Useful after a spill, 
 - **Dead keys.** Anything you pressed that never lit up is easy to spot.
 - **The awkward ones.** `fn` / Globe and `F1`–`F12` are heard too, even the ones macOS normally keeps for itself.
 
+## Clean your keyboard
+
+**Clean keyboard…** locks every key on your Mac for 30 seconds to 5 minutes, so you can wipe the keyboard without typing into anything. Brightness, volume, media, Mission Control and Spotlight keys are held too, and you can lock the trackpad as well.
+
+- **Wipe and test at once.** Each key you wipe lights up, so when you are done you know which keys work and which type twice.
+- **Three ways out.** Hold the unlock button for 2 seconds, hold **esc** and **right shift** together for 2 seconds, or let the time run out.
+- **Touch ID can't be locked.** Pressing it locks your Mac, which ends cleaning.
+
 ## Good to know
 
 - ANSI (US) or ISO layout, to match the Mac in front of you, in Lumi's light or dark theme.
-- It asks for nothing outside Lumi, and nothing leaves the page.
+- Cleaning asks Lumi to hold your keyboard, which the install sheet tells you before you add it. Nothing leaves the page.

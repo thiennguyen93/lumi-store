@@ -26,12 +26,36 @@ impl lumi::Guest for Sample {
     fn run_command(name: String, params: String) -> Result<String, String> {
         match name.as_str() {
             "translate" => translate(&params),
+            // A panel that opens in the background (`focus = false`) at the
+            // bottom-right corner: the keys stay where the person was typing.
+            "card" => {
+                lumi::open_window("card")?;
+                Ok("{}".to_string())
+            }
+            // The page does the rest: the hold is asked for over the bridge,
+            // and nothing of it reaches this component.
+            "hold" | "hold-panel" => {
+                lumi::open_window(&name)?;
+                Ok("{}".to_string())
+            }
             "configure" => {
                 // One line is the whole feature: the window is declared in
                 // the manifest, its files shipped in the package, and this
                 // call may only name what was declared.
                 lumi::open_window("settings")?;
                 Ok("opened the settings window".to_string())
+            }
+            // What a yes unlocks is the extension's to decide; here it is
+            // only the sentence that says which it was.
+            "confirm" => {
+                if !lumi::owner::available()? {
+                    return Ok("this Mac cannot ask: no password is set".to_string());
+                }
+                Ok(if lumi::owner::authenticate("try the owner check")? {
+                    "confirmed: it is you".to_string()
+                } else {
+                    "not confirmed".to_string()
+                })
             }
             "spin" => loop {
                 // Nothing but compute, so nothing yields: the epoch
@@ -83,6 +107,17 @@ impl lumi::Guest for Sample {
         // And its Welcome window, which asks for the same `about` and
         // `open-settings` the settings page does — and the two unified
         // windows, whose band buttons ask for `titlebar-height`.
+        // And the background card, whose Close asks for `close-card`.
+        if window == "card" {
+            return match serde_json::from_str::<serde_json::Value>(&request)
+                .ok()
+                .and_then(|parsed| parsed.get("kind").and_then(|k| k.as_str()).map(str::to_string))
+                .as_deref()
+            {
+                Some("close-card") => lumi::close_window("card").map(|()| "{}".to_string()),
+                _ => Err("the card asks only for close-card".to_string()),
+            };
+        }
         if !["settings", ":settings", "welcome", "unified", "unified-tall"].contains(&window.as_str()) {
             return Err(format!("the sample has no {window} window"));
         }
@@ -108,6 +143,22 @@ impl lumi::Guest for Sample {
             // pay for (`input`), so the tests watch it refused.
             Some("write-all") => return write_all(),
             // A blob handed to the person as a file, under the name asked.
+            // A blob written into a declared folder, as the page names it —
+            // the folder and the file name are the tests' to choose, so they
+            // can see an undeclared folder refused and a name checked.
+            Some("folder-write") => {
+                let folder = parsed.get("folder").and_then(|f| f.as_str()).unwrap_or("saves");
+                let name = parsed.get("name").and_then(|n| n.as_str()).unwrap_or("sample {date}.png");
+                let blob = lumi::storage::blob_write(&[0x89, b'P', b'N', b'G'])?;
+                let written = lumi::folders::write(folder, name, &blob);
+                lumi::storage::blob_delete(&blob)?;
+                return match written {
+                    Ok(()) => Ok(serde_json::json!({ "written": true }).to_string()),
+                    Err(lumi::folders::Problem::NotChosen) => Ok(serde_json::json!({ "problem": "not-chosen" }).to_string()),
+                    Err(lumi::folders::Problem::Gone) => Ok(serde_json::json!({ "problem": "gone" }).to_string()),
+                    Err(lumi::folders::Problem::Refused(said)) => Err(said),
+                };
+            }
             Some("save-blob") => {
                 let name = parsed.get("name").and_then(|n| n.as_str()).unwrap_or("sample.png");
                 let blob = lumi::storage::blob_write(&[0x89, b'P', b'N', b'G'])?;
@@ -133,6 +184,23 @@ impl lumi::Guest for Sample {
                 })
                 .to_string());
             }
+            // The same area, as a JPEG at screen size and at the quality
+            // the page asked for — the encoding is what the tests read off
+            // the host's log, and a quality of 0 is how they see it clamped.
+            Some("capture-as") => {
+                let area = lumi::screen::Rect { x: 10.0, y: 20.0, width: 30.0, height: 40.0 };
+                let quality = parsed.get("quality").and_then(|q| q.as_u64()).unwrap_or(85).min(255) as u8;
+                let shot = lumi::screen::capture_as(
+                    lumi::screen::Target::Area(area),
+                    lumi::screen::Encoding {
+                        format: lumi::screen::Format::Jpeg,
+                        quality,
+                        resolution: lumi::screen::Resolution::Points,
+                    },
+                )?;
+                lumi::storage::blob_delete(&shot.blob)?;
+                return Ok(serde_json::json!({ "width": shot.width, "height": shot.height }).to_string());
+            }
             // A blob the page uploaded (`PUT /__lumi__/blob`), measured from
             // this side and deleted: how big Lumi says it is, which the
             // page compares with what it sent.
@@ -153,6 +221,35 @@ impl lumi::Guest for Sample {
                 let height = lumi::set_titlebar_height(&window, asked)?;
                 return Ok(serde_json::json!({ "height": height }).to_string());
             }
+            // This window at the size the page asked, through the component
+            // — the size it became is what reaches the page.
+            Some("size") => {
+                let width = parsed.get("width").and_then(|w| w.as_f64()).unwrap_or(480.0);
+                let height = parsed.get("height").and_then(|h| h.as_f64()).unwrap_or(360.0);
+                let size = lumi::set_size(&window, width, height)?;
+                return Ok(serde_json::json!({ "width": size.width, "height": size.height }).to_string());
+            }
+            // A picture of the page's own, read: the blob is written, read
+            // with what the page asked for, and deleted. What reaches the
+            // page is the reading in brief, which is all the tests need.
+            Some("ocr") => {
+                let blob = lumi::storage::blob_write(&[0x89, b'P', b'N', b'G'])?;
+                let read = lumi::ocr::read(&lumi::ocr::Source::Blob(blob.clone()), &ocr_options(&parsed));
+                lumi::storage::blob_delete(&blob)?;
+                return Ok(reading_json(&read?).to_string());
+            }
+            // The same area `capture` takes, read and never kept.
+            Some("ocr-screen") => {
+                let area = lumi::screen::Rect { x: 10.0, y: 20.0, width: 30.0, height: 40.0 };
+                let reading = lumi::ocr::read(
+                    &lumi::ocr::Source::Screen(lumi::screen::Target::Area(area)),
+                    &ocr_options(&parsed),
+                )?;
+                return Ok(reading_json(&reading).to_string());
+            }
+            Some("ocr-languages") => {
+                return Ok(serde_json::json!(lumi::ocr::languages(lumi::ocr::Level::Accurate)?).to_string());
+            }
             // The person's window, then a picture of it by its id.
             Some("pick") => {
                 let Some(picked) = lumi::screen::select_window()? else {
@@ -162,6 +259,24 @@ impl lumi::Guest for Sample {
                 let shot = lumi::screen::capture(lumi::screen::Target::Window(window))?;
                 lumi::storage::blob_delete(&shot.blob)?;
                 return Ok(serde_json::json!({ "window": picked.id }).to_string());
+            }
+            // The window in front, named, then captured by the id it came
+            // back with — so the name is the picture's whatever comes to
+            // the front in between.
+            Some("front-named") => {
+                let Some(front) = lumi::screen::about_window(None)? else {
+                    return Ok(serde_json::json!({ "window": null }).to_string());
+                };
+                let window = lumi::screen::Window { id: Some(front.id), shadow: false };
+                let shot = lumi::screen::capture(lumi::screen::Target::Window(window))?;
+                lumi::storage::blob_delete(&shot.blob)?;
+                return Ok(serde_json::json!({
+                    "window": front.id,
+                    "app": front.app,
+                    "bundleId": front.bundle_id,
+                    "title": front.title,
+                })
+                .to_string());
             }
             // The person's area, then a picture of it: the two calls a
             // screenshot tool makes, in the order it makes them.
@@ -248,6 +363,16 @@ impl lumi::Guest for Sample {
                 lumi::drag(&[vec![text_rep("dragged")]], close)?;
                 return Ok(serde_json::json!({ "dragged": true }).to_string());
             }
+            // The same drag, its file named: `names` from the request.
+            Some("drag-named") => {
+                let names: Vec<Option<String>> = parsed
+                    .get("names")
+                    .and_then(|n| n.as_array())
+                    .map(|n| n.iter().map(|name| name.as_str().map(str::to_string)).collect())
+                    .unwrap_or_default();
+                lumi::drag_named(&[vec![text_rep("dragged")]], &names, false)?;
+                return Ok(serde_json::json!({ "dragged": true }).to_string());
+            }
             // Esc in a window: closed by name, the way it was opened.
             Some("close") => {
                 lumi::close_window("settings")?;
@@ -324,10 +449,61 @@ impl lumi::Guest for Sample {
         if name == "capture" {
             return lumi::screen::capture(lumi::screen::Target::Display).map(|_| ());
         }
+        // A blob is the extension's own: read from an event, the reading is
+        // kept where the test can find it. The screen is a capture, and
+        // refused here exactly as `capture` is.
+        if name == "ocr" {
+            let blob = lumi::storage::blob_write(&[0x89, b'P', b'N', b'G'])?;
+            let read = lumi::ocr::read(&lumi::ocr::Source::Blob(blob.clone()), &lumi::ocr::Options::default());
+            lumi::storage::blob_delete(&blob)?;
+            return lumi::storage::put("last-event", &read?.text, None)
+                .map(|_| ())
+                .map_err(lumi::storage::PutError::into_message);
+        }
+        if name == "ocr-screen" {
+            let source = lumi::ocr::Source::Screen(lumi::screen::Target::Display);
+            return lumi::ocr::read(&source, &lumi::ocr::Options::default()).map(|_| ());
+        }
         lumi::storage::put("last-event", &format!("{name} {payload}"), None)
             .map(|_| ())
             .map_err(lumi::storage::PutError::into_message)
     }
+}
+
+/// `ocr.read`'s options from a page's request: every field the page
+/// leaves out is the default.
+fn ocr_options(parsed: &serde_json::Value) -> lumi::ocr::Options {
+    let mut options = lumi::ocr::Options::default();
+    if parsed.get("level").and_then(|l| l.as_str()) == Some("fast") {
+        options.level = lumi::ocr::Level::Fast;
+    }
+    if let Some(languages) = parsed.get("languages").and_then(|l| l.as_array()) {
+        options.languages = languages.iter().filter_map(|l| l.as_str().map(str::to_string)).collect();
+    }
+    if let Some(correct) = parsed.get("correct").and_then(|c| c.as_bool()) {
+        options.language_correction = correct;
+    }
+    options.minimum_text_height = parsed.get("min").and_then(|m| m.as_f64()).map(|m| m as f32);
+    options.alternatives = parsed.get("alternatives").and_then(|a| a.as_u64()).unwrap_or(0).min(255) as u8;
+    options.words = parsed.get("words").and_then(|w| w.as_bool()).unwrap_or(false);
+    options
+}
+
+fn reading_json(reading: &lumi::ocr::Reading) -> serde_json::Value {
+    serde_json::json!({
+        "text": reading.text,
+        "size": [reading.width, reading.height],
+        "frame": reading.frame.map(|f| [f.x, f.y, f.width, f.height]),
+        "scale": reading.scale,
+        "truncated": reading.truncated,
+        "lines": reading.lines.iter().map(|line| serde_json::json!({
+            "text": line.text,
+            "frame": [line.frame.x, line.frame.y, line.frame.width, line.frame.height],
+            "corners": line.corners.iter().map(|p| [p.x, p.y]).collect::<Vec<_>>(),
+            "words": line.words.iter().map(|w| w.text.clone()).collect::<Vec<_>>(),
+            "alternatives": line.alternatives.len(),
+        })).collect::<Vec<_>>(),
+    })
 }
 
 /// The languages the menu offers, as Google Translate's codes and the
@@ -352,17 +528,19 @@ fn menu_target() -> String {
 fn draw_menu() -> Result<(), String> {
     use lumi::menu::Entry;
     let target = menu_target();
+    // Icons on an item and a submenu, the two kinds that carry one; the
+    // check rows draw their ticks.
     let mut entries = vec![
-        Entry::item("translate", "Translate Selection"),
+        Entry::item("translate", "Translate Selection").icon("speech"),
         Entry::separator("s1"),
-        Entry::submenu("to", "Translate To"),
+        Entry::submenu("to", "Translate To").icon("globe"),
     ];
     for (code, name) in MENU_TARGETS {
         entries.push(Entry::check(&format!("to.{code}"), name, *code == target).under("to"));
     }
     entries.push(Entry::separator("s2"));
-    entries.push(Entry::item("settings", "Sample Settings…"));
-    lumi::menu::set(&entries)
+    entries.push(Entry::item("settings", "Sample Settings…").icon("settings"));
+    lumi::menu::set_rows(&entries)
 }
 
 fn menu_pressed(id: &str) -> Result<(), String> {

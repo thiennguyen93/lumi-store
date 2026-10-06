@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- The sample's background card: a panel declared `focus = false` at
+     `position = "bottom-right"`. It opens over the app in front without
+     taking its keyboard, sizes itself with `POST /__lumi__/size`, and asks
+     macOS's "is it you?" dialog with `POST /__lumi__/authenticate`. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Background card</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <style>
+    html, body { margin: 0; background: transparent; }
+    body { font: 13px/1.45 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+    main { display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+    h1 { margin: 0; font-size: 14px; }
+    p { margin: 0; opacity: 0.75; }
+    .row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .extra { display: none; }
+    .tall .extra { display: block; }
+  </style>
+</head>
+<body>
+  <main id="card">
+    <h1>Background card</h1>
+    <p>Opened without the keyboard: keep typing where you were. Hover it, click it, it stays until Close.</p>
+    <p class="extra">Grown with <code>POST /__lumi__/size</code> — the bottom-right corner stays where it was, so the card grows upward.</p>
+    <div class="row">
+      <button type="button" id="grow">Taller</button>
+      <button type="button" id="confirm" hidden>Confirm it's you</button>
+      <button type="button" id="close">Close</button>
+    </div>
+    <p id="said"></p>
+  </main>
+  <script src="card.js"></script>
+</body>
+</html>

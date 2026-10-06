@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.15.0] - 2026-10-06
+
+### Added
+
+- Hold input from a window or a panel: for ten seconds no key reaches any app, and the keys pressed are listed. A second button holds the trackpad too. Needs Lumi 1.38.
+
 ## [0.14.1] - 2026-10-06
 
 ### Changed

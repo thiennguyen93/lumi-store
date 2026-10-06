@@ -208,3 +208,92 @@ body {
 .notes summary { cursor: default; opacity: 0.75; }
 .notes ul { margin: 6px 0 0; padding-left: 18px; opacity: 0.8; }
 .notes li { margin: 3px 0; }
+
+/* Cleaning. The sheet before it sits under the bar, in the page's own
+   colours. */
+.sheet {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--kt-line);
+  background: var(--kt-key);
+}
+.sheet[hidden] { display: none; }
+.sheet h2 { margin: 0; font-size: 14px; }
+.sheet p { margin: 0; }
+.sheet-row { display: flex; align-items: center; gap: 10px; }
+.sheet-check { display: flex; align-items: center; gap: 6px; }
+.sheet-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
+
+/* While cleaning the page goes dark, whatever Lumi's theme — a dark field
+   is what shows dust and smudges on the keys being wiped, and it says at a
+   glance that this is not the ordinary tester. The board's own tokens are
+   re-pointed, so every key draws dark too. */
+body.cleaning {
+  --kt-key: rgba(255, 255, 255, 0.07);
+  --kt-line: rgba(255, 255, 255, 0.18);
+  --kt-seen: rgba(74, 194, 107, 0.26);
+  --kt-seen-line: rgba(74, 194, 107, 0.6);
+  --kt-bad: #e0a33e;
+  background: #0b0b0d;
+  color: #f2f2f4;
+  color-scheme: dark;
+}
+body.cleaning .bar,
+body.cleaning .notes-wrap,
+body.cleaning .caps-how { display: none; }
+
+.lock { flex: none; text-align: center; margin: 4px 0 14px; }
+.lock[hidden] { display: none; }
+.lock-time {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.lock-title { opacity: 0.75; }
+
+.lock-exit {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  text-align: center;
+}
+.lock-exit[hidden] { display: none; }
+.lock-exit p { margin: 0; }
+
+/* Held for two seconds to unlock: the fill grows across it while pressed,
+   and drops back the moment it is let go. */
+.hold-button {
+  position: relative;
+  overflow: hidden;
+  min-width: 180px;
+  padding: 8px 18px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font-weight: 600;
+  touch-action: none;
+}
+.hold-button[hidden] { display: none; }
+.hold-fill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: var(--kt-down);
+  opacity: 0.55;
+  transition: width 120ms ease-out;
+}
+.hold-button.holding .hold-fill { width: 100%; transition: width 2s linear; }
+.hold-label { position: relative; }
+
+.done { flex: none; margin: 12px 0 0; }
+.done[hidden] { display: none; }
