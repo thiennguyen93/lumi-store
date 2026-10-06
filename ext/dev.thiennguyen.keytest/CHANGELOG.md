@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.2] - 2026-10-06
+
+### Changed
+
+- The keyboard layout is chosen only on the Keyboard test tab; the Settings tab is for Clean keyboard alone. If you had picked ISO, pick it once more — it is kept from then on.
+
+## [0.4.1] - 2026-10-06
+
+### Changed
+
+- Clean keyboard starts right away. How long it locks the keys, and whether it locks the trackpad too, are set in the new Settings tab, beside the keyboard layout.
+
 ## [0.4.0] - 2026-10-06
 
 ### Added

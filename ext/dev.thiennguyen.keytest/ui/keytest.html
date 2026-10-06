@@ -17,32 +17,9 @@
     </div>
     <span class="grow"></span>
     <span id="progress" class="muted" aria-live="polite"></span>
-    <button type="button" id="clean">Clean keyboard…</button>
+    <button type="button" id="clean">Clean keyboard</button>
     <button type="button" id="reset">Reset</button>
   </div>
-
-  <!-- Before cleaning: how long, and whether the trackpad goes too. The
-       choice is kept for next time through the bridge's settings route. -->
-  <section id="clean-sheet" class="sheet" hidden aria-labelledby="clean-title">
-    <h2 id="clean-title">Clean the keyboard</h2>
-    <p>No key will type anything, in any app, while you wipe the keyboard. Each key you wipe still lights up here, so you also see which ones work.</p>
-    <div class="sheet-row">
-      <span>Lock for</span>
-      <div class="segmented" role="radiogroup" aria-label="Lock for">
-        <button type="button" data-seconds="30" role="radio">30 s</button>
-        <button type="button" data-seconds="60" role="radio">1 min</button>
-        <button type="button" data-seconds="120" role="radio">2 min</button>
-        <button type="button" data-seconds="300" role="radio">5 min</button>
-      </div>
-    </div>
-    <label class="sheet-check"><input type="checkbox" id="clean-pointer"> Lock the trackpad too</label>
-    <p class="muted small">With the trackpad locked, unlock by holding <b>esc</b> and <b>right shift</b> for 2 seconds.</p>
-    <p id="clean-error" class="bad" role="alert" hidden></p>
-    <div class="sheet-actions">
-      <button type="button" id="clean-cancel">Cancel</button>
-      <button type="button" id="clean-start" class="primary">Lock keyboard</button>
-    </div>
-  </section>
 
   <!-- While cleaning: the time left over the board. -->
   <section id="clean-lock" class="lock" hidden aria-live="polite">
@@ -67,6 +44,8 @@
     <p class="muted small">Touch ID locks your Mac, which also ends cleaning — it can't be paused.</p>
   </section>
 
+  <!-- After cleaning, how it went; or why it could not start. One line
+       under the board, so nothing above it moves. -->
   <p id="clean-done" class="done" hidden aria-live="polite"></p>
 
   <dl class="facts">
@@ -98,6 +77,7 @@
     <details class="notes">
       <summary>While cleaning</summary>
       <ul>
+        <li><b>Clean keyboard</b> locks every key right away, for as long as the <b>Settings</b> tab says — and the trackpad too, if you turned that on there.</li>
         <li><b>Every key is held</b>, in every app: letters, ⌘Tab, Spotlight, brightness, volume and media. Lumi's own shortcuts and snippets rest too.</li>
         <li><b>Three ways out</b>: hold the button here, hold <b>esc</b> and <b>right shift</b> together, or wait for the time to run out. If this page stops answering, Lumi lets go itself after 5 seconds of the same two keys.</li>
         <li><b>Touch ID and the power key</b> can't be held. A press locks your Mac, which ends cleaning.</li>

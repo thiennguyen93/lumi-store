@@ -1,1 +1,4 @@
-{ "hyper": { "hyperKeyEnabled": false } }
+{
+  "state": { "hyperKeyEnabled": false, "layout": "ansi" },
+  "set-layout": { "layout": "ansi" }
+}
