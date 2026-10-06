@@ -402,6 +402,10 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f"the panel {name} sets capturable, which only a window has — Lumi's captures leave every panel out already")
             if not isinstance(window["capturable"], bool):
                 fail(entry_id, f"the window {name}'s capturable = {window['capturable']!r} is not true or false")
+        # `manifest.rs`'s remember-frame rule: every kind's, and a boolean —
+        # Lumi refuses anything else as a manifest that does not parse.
+        if "remember-frame" in window and not isinstance(window["remember-frame"], bool):
+            fail(entry_id, f"the window {name}'s remember-frame = {window['remember-frame']!r} is not true or false")
         # `manifest.rs`'s material rule, same sentences.
         material = str(window.get("material", "")).strip()
         if material and kind == "window":
