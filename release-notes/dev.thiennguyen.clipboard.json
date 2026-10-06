@@ -1,4 +1,400 @@
 {
+  "0.81.0": {
+    "notesSha256": "ec359efa4c2f53f8252abe4d45f6077cfe031da5ce2b8f516f1f60c64f91bfe7",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Lock your history from the panel with a keyboard shortcut",
+          "items": [
+            "Press Shift-Command-L in the panel to lock your history immediately",
+            "The panel asks for confirmation before showing your history again after you lock it",
+            "Choose your own keyboard shortcut for locking in Settings under Lock again after panel closes",
+            "The panel prevents you from picking a shortcut already used by another panel action"
+          ]
+        },
+        "vi": {
+          "headline": "Khóa lịch sử từ bảng điều khiển bằng phím tắt",
+          "items": [
+            "Nhấn Shift-Command-L trong bảng điều khiển để khóa lịch sử ngay lập tức",
+            "Bảng điều khiển yêu cầu xác nhận trước khi hiển thị lại lịch sử sau khi bạn khóa",
+            "Chọn phím tắt riêng để khóa trong Cài đặt mục Khóa lại sau khi đóng bảng điều khiển",
+            "Bảng điều khiển ngăn bạn chọn phím tắt đã được dùng cho hành động khác"
+          ]
+        }
+      }
+    }
+  },
+  "0.80.5": {
+    "notesSha256": "7969fbdd0088b47fedd754bf70a553cc5c46d1faf07c3d8a7197b0f8c09b750a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour polish",
+          "items": [
+            "Buttons in the Welcome tour no longer jump between the privacy mode and Touch ID steps"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện hướng dẫn chào mừng",
+          "items": [
+            "Các nút trong hướng dẫn chào mừng không còn nhảy khi chuyển giữa bước chế độ riêng tư và Touch ID"
+          ]
+        }
+      }
+    }
+  },
+  "0.80.4": {
+    "notesSha256": "95156700c25f19c70013d9167093ee44f5a74a1552dba62f40e718feb82dd517",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour buttons no longer jump when pressed",
+          "items": [
+            "Welcome tour buttons now stay in place when pressed instead of shrinking and moving",
+            "Ask before showing option remains visible but dimmed in the Touch ID step when history is locked"
+          ]
+        },
+        "vi": {
+          "headline": "Các nút trong hướng dẫn không còn nhảy khi nhấn",
+          "items": [
+            "Các nút trong hướng dẫn giờ đây giữ nguyên vị trí khi nhấn thay vì thu nhỏ và di chuyển",
+            "Tùy chọn hỏi trước khi hiển thị vẫn hiện nhưng mờ đi trong bước Touch ID khi lịch sử đã khóa"
+          ]
+        }
+      }
+    }
+  },
+  "0.80.3": {
+    "notesSha256": "1d7a982b55b4eb7e9c17b21546eb008288e86acf21b4a2c954fca45e8a1ac0dd",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Privacy mode indicator removed from title bar",
+          "items": [
+            "The eye icon in the title bar has been removed to avoid confusion with the pin button"
+          ]
+        },
+        "vi": {
+          "headline": "Đã xóa biểu tượng chế độ riêng tư khỏi thanh tiêu đề",
+          "items": [
+            "Biểu tượng con mắt trên thanh tiêu đề đã được xóa để tránh nhầm lẫn với nút ghim"
+          ]
+        }
+      }
+    }
+  },
+  "0.80.2": {
+    "notesSha256": "ce4f11a691c5be2b2a702a12d9d8dfe83f289f3e03e6955f9ce4312487682de5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Settings that depend on others now dim instead of hiding",
+          "items": [
+            "Settings that only work when another is on now dim as a whole row instead of hiding",
+            "Look in stays visible and dims when Match snippets is off",
+            "Theme dims when Dark glass is chosen",
+            "Where biometric unlock is unavailable, the app now says it needs a password on this Mac"
+          ]
+        },
+        "vi": {
+          "headline": "Các cài đặt phụ thuộc giờ mờ đi thay vì ẩn",
+          "items": [
+            "Các cài đặt chỉ hoạt động khi cài đặt khác bật giờ mờ toàn bộ hàng thay vì ẩn",
+            "Tìm trong vẫn hiển thị và mờ đi khi Khớp đoạn mã tắt tắt",
+            "Giao diện mờ đi khi chọn Kính tối",
+            "Ở nơi không thể dùng sinh trắc học, ứng dụng giờ nói cần mật khẩu trên Mac này"
+          ]
+        }
+      }
+    }
+  },
+  "0.80.1": {
+    "notesSha256": "03ccac536408f60110844a0e5feb6f4f2a11dab422a2cd922a14ea82dd965f66",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clearer privacy settings when history is locked",
+          "items": [
+            "Confirm it's you before showing is now disabled while Lock history is on",
+            "Turning off privacy mode no longer asks for authentication when history is locked",
+            "The Welcome tour no longer offers Ask before showing if history is already locked"
+          ]
+        },
+        "vi": {
+          "headline": "Cài đặt bảo mật rõ ràng hơn khi lịch sử đã khóa",
+          "items": [
+            "Xác nhận danh tính trước khi hiển thị giờ bị vô hiệu hóa khi Khóa lịch sử đang bật",
+            "Tắt chế độ riêng tư không còn yêu cầu xác thực khi lịch sử đã được khóa",
+            "Hướng dẫn chào mừng không còn đề xuất Hỏi trước khi hiển thị nếu lịch sử đã khóa"
+          ]
+        }
+      }
+    }
+  },
+  "0.80.0": {
+    "notesSha256": "b4d03451da1108225d71d1bf41f4de55ccb58271b8f7437871320ed42c632df0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Privacy mode now asks for confirmation before turning off",
+          "items": [
+            "Turning off privacy mode now asks for confirmation, whether from Settings, menu bar, or keyboard shortcut",
+            "Someone at your Mac can no longer disable privacy mode to see your clipboard without confirming identity",
+            "Turning privacy mode on still works instantly without asking"
+          ]
+        },
+        "vi": {
+          "headline": "Chế độ riêng tư giờ yêu cầu xác nhận trước khi tắt",
+          "items": [
+            "Tắt chế độ riêng tư giờ yêu cầu xác nhận trước, dù từ Cài đặt, thanh menu hay phím tắt",
+            "Người khác không thể tắt chế độ riêng tư để xem nội dung clipboard mà không xác nhận danh tính",
+            "Bật chế độ riêng tư vẫn hoạt động ngay lập tức mà không cần hỏi"
+          ]
+        }
+      }
+    }
+  },
+  "0.79.0": {
+    "notesSha256": "6dfd5337ec7826d333d593929a02aae860cdbc0e9f387a8fa9d617a12fb2f0d7",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Cover and lock timers now count from when the panel closes",
+          "items": [
+            "Cover again after panel closes now counts from when you close the panel, not from when you showed an item",
+            "Reopen the panel within the timer and what you showed is still shown",
+            "Lock again after panel closes now counts from when you close the panel, not from when you unlocked",
+            "While the panel is open, nothing is covered or locked by itself",
+            "Requires Lumi 1.37.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Bộ đếm che và khóa giờ tính từ khi đóng bảng điều khiển",
+          "items": [
+            "Che lại sau khi đóng bảng điều khiển giờ tính từ khi bạn đóng bảng, không phải từ khi hiển thị mục",
+            "Mở lại bảng điều khiển trong thời gian đếm và nội dung đã hiển thị vẫn còn đó",
+            "Khóa lại sau khi đóng bảng điều khiển giờ tính từ khi bạn đóng bảng, không phải từ khi mở khóa",
+            "Khi bảng điều khiển đang mở, không có gì tự động bị che hoặc khóa",
+            "Yêu cầu Lumi 1.37.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.78.1": {
+    "notesSha256": "71ce351adbe6b7c3ac2bea53603b0d68d16105005bec6e5faefd0ce6bc2edf0d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Settings now show when privacy features are available",
+          "items": [
+            "Privacy settings are greyed out when privacy mode is off and show when they work",
+            "Settings keep their values and become available again when privacy mode is on"
+          ]
+        },
+        "vi": {
+          "headline": "Cài đặt hiện rõ khi nào tính năng riêng tư hoạt động",
+          "items": [
+            "Các cài đặt riêng tư bị mờ khi chế độ riêng tư tắt và hiển thị khi nào chúng hoạt động",
+            "Cài đặt giữ nguyên giá trị và khả dụng trở lại khi bật chế độ riêng tư"
+          ]
+        }
+      }
+    }
+  },
+  "0.78.0": {
+    "notesSha256": "4baaf47dcfcd594ffb68af490679155de342cafabf899a83ff7fe1d2ec9fbcd0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Privacy mode is now controlled from Settings",
+          "items": [
+            "Privacy mode can only be toggled from Settings or with a keyboard shortcut",
+            "The eye icon in the panel now only shows when privacy mode is on",
+            "Command-K no longer offers to turn privacy mode on or off"
+          ]
+        },
+        "vi": {
+          "headline": "Chế độ riêng tư giờ chỉ điều khiển từ Cài đặt",
+          "items": [
+            "Chế độ riêng tư chỉ có thể bật tắt từ Cài đặt hoặc bằng phím tắt",
+            "Biểu tượng con mắt trong bảng giờ chỉ hiện khi chế độ riêng tư đang bật",
+            "Command-K không còn tùy chọn bật tắt chế độ riêng tư"
+          ]
+        }
+      }
+    }
+  },
+  "0.77.2": {
+    "notesSha256": "874490a9a9b55390523fb556ce62440ba016b53252cb67d31c7a7fd06f8a7ea2",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed layout in Math section",
+          "items": [
+            "Copy all button in Math section now aligns properly with cards below it"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa bố cục trong phần Toán học",
+          "items": [
+            "Nút sao chép tất cả trong phần Toán học giờ căn chỉnh đúng với các thẻ bên dưới"
+          ]
+        }
+      }
+    }
+  },
+  "0.77.1": {
+    "notesSha256": "99a84067b974e1f185b5e4d579fec82dba19325931db0ad2ab29a16edf094f02",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Math formulas in rich text now appear correctly",
+          "items": [
+            "Rich text copied in version 0.76.0 now shows its math formulas when previewed",
+            "Items that were missing math are recalculated the first time you view them"
+          ]
+        },
+        "vi": {
+          "headline": "Công thức toán trong văn bản định dạng hiện hiển thị đúng",
+          "items": [
+            "Văn bản định dạng đã sao chép ở phiên bản 0.76.0 giờ hiển thị công thức toán khi xem trước",
+            "Các mục thiếu công thức toán sẽ được tính lại khi bạn xem lần đầu"
+          ]
+        }
+      }
+    }
+  },
+  "0.77.0": {
+    "notesSha256": "2fcc5e04f10503571b13f2d8aa68234255b53e5a36f526cc16a8f42294ed4c93",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Math detection now works with rich text",
+          "items": [
+            "Math formulas in rich text are detected and calculated, even across bold, italic, or colored text",
+            "The answer appears in the list row, just like it does for plain text"
+          ]
+        },
+        "vi": {
+          "headline": "Nhận diện toán học giờ hoạt động với văn bản định dạng",
+          "items": [
+            "Công thức toán trong văn bản định dạng giờ được nhận diện và tính, cả khi trải qua chữ đậm, nghiêng hay màu",
+            "Kết quả hiện trong hàng danh sách, giống như với văn bản thường"
+          ]
+        }
+      }
+    }
+  },
+  "0.76.0": {
+    "notesSha256": "32438b9ecd012a9abb0a18e735017ec955f3dba070a21e88dbbeb2aca91a0bf2",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Math in copied text is now calculated automatically",
+          "items": [
+            "Copied text with math shows results below: sums, equations solved, percentages calculated",
+            "Click any result to copy it, or use Copy all to copy every answer at once",
+            "Each result appears typeset and shows where it came from in the original text",
+            "The list shows the answer or how many calculations were found in that item",
+            "Dates, times, phone numbers, version numbers and ranges are not treated as math"
+          ]
+        },
+        "vi": {
+          "headline": "Tự động tính toán trong văn bản đã sao chép",
+          "items": [
+            "Văn bản có phép tính hiển thị kết quả bên dưới: tổng, phương trình giải, phần trăm",
+            "Nhấn vào kết quả để sao chép, hoặc dùng Sao chép tất cả để lấy mọi đáp án",
+            "Mỗi kết quả được trình bày rõ ràng và đánh dấu vị trí trong văn bản gốc",
+            "Danh sách hiển thị đáp án hoặc số lượng phép tính tìm thấy trong mục đó",
+            "Ngày tháng, giờ, số điện thoại, số phiên bản và khoảng không bị coi là phép tính"
+          ]
+        }
+      }
+    }
+  },
+  "0.75.3": {
+    "notesSha256": "d663eb8c4b2e5434d093453b48bacd51e9e715aca7470b766f62084bfd8a4ce5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Pinned panel no longer locks history when switching apps",
+          "items": [
+            "A pinned panel in the background no longer locks your history when you switch to another app",
+            "With Lock again set to When the panel closes, history stays unlocked until you close the pinned panel",
+            "Privacy mode still covers previews when switching away without asking Is it you again"
+          ]
+        },
+        "vi": {
+          "headline": "Bảng ghim không còn khóa lịch sử khi chuyển ứng dụng",
+          "items": [
+            "Bảng ghim ở chế độ nền không còn khóa lịch sử khi bạn chuyển sang ứng dụng khác",
+            "Với Khóa lại đặt là Khi đóng bảng, lịch sử giữ nguyên mở khóa cho đến khi bạn đóng bảng ghim",
+            "Chế độ riêng tư vẫn che xem trước khi chuyển đi mà không hỏi Có phải bạn không lần nữa"
+          ]
+        }
+      }
+    }
+  },
+  "0.75.2": {
+    "notesSha256": "5105edf019eb2aab3697bf789592c2601e771868fbfc9aed8f1e7d804d8b13d0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Smoother lock screen when opening the panel",
+          "items": [
+            "The panel no longer briefly shows the search box and filters before displaying the lock screen"
+          ]
+        },
+        "vi": {
+          "headline": "Màn hình khóa mượt mà hơn khi mở bảng điều khiển",
+          "items": [
+            "Bảng điều khiển không còn hiển thị thoáng qua ô tìm kiếm và bộ lọc trước khi hiện màn hình khóa"
+          ]
+        }
+      }
+    }
+  },
+  "0.75.1": {
+    "notesSha256": "48f201534d63ebf05b9a31c6f194b1d85acf4ac3a12f5ad63bf5cee34e3180e6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Lock history stays unlocked after you confirm it's you",
+          "items": [
+            "Lock history no longer locks itself again right after you confirm your identity",
+            "Items shown after authentication no longer cover themselves a moment later",
+            "Pinned panels still lock when you switch to another app as expected"
+          ]
+        },
+        "vi": {
+          "headline": "Lịch sử khóa không tự khóa lại sau khi bạn xác nhận",
+          "items": [
+            "Lịch sử khóa không tự động khóa lại ngay sau khi bạn xác nhận danh tính",
+            "Các mục hiển thị sau xác thực không tự che phủ lại sau vài giây",
+            "Bảng ghim vẫn tự khóa khi bạn chuyển sang ứng dụng khác như bình thường"
+          ]
+        }
+      }
+    }
+  },
   "0.75.0": {
     "notesSha256": "6dd59b82a958c779b71e7ee9f7edc9deeb3bc4e032bbc320972d6d0999ef8db7",
     "summary": {
@@ -70,422 +466,6 @@
             "Khóa lịch sử ngay lập tức từ bảng lệnh",
             "Tắt một trong hai tính năng này trong Cài đặt sẽ yêu cầu xác thực trước",
             "Cả hai tính năng yêu cầu Lumi 1.36 trở lên"
-          ]
-        }
-      }
-    }
-  },
-  "0.72.1": {
-    "notesSha256": "224111b08e73600ce8f7ea47b17d86fc62c9893ad3042a684ebca56971bc7f52",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Privacy mode now leaves colour previews visible",
-          "items": [
-            "Privacy mode no longer covers colour previews since they already show the full value"
-          ]
-        },
-        "vi": {
-          "headline": "Chế độ riêng tư không còn che màu sắc",
-          "items": [
-            "Chế độ riêng tư không che phần xem trước màu vì chúng đã hiển thị đầy đủ giá trị"
-          ]
-        }
-      }
-    }
-  },
-  "0.72.0": {
-    "notesSha256": "d457c02acf63490fcd8d6c76f24989fc003f200b4b680b4715f3b5140b975155",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Show all items at once in privacy mode",
-          "items": [
-            "Privacy mode can now reveal all items at once with ⌥⇧⌘H instead of one by one",
-            "Revealed items stay visible until the panel covers them again",
-            "The same shortcut hides all revealed items at once",
-            "Show all content and Hide all content appear in the ⌘K menu",
-            "You can set your own shortcut for this under Privacy in Settings"
-          ]
-        },
-        "vi": {
-          "headline": "Hiện tất cả mục cùng lúc trong chế độ riêng tư",
-          "items": [
-            "Chế độ riêng tư giờ có thể hiện tất cả mục cùng lúc bằng ⌥⇧⌘H thay vì từng mục một",
-            "Các mục đã hiện sẽ giữ nguyên cho đến khi bảng điều khiển che lại",
-            "Phím tắt này cũng ẩn tất cả mục đã hiện cùng lúc",
-            "Hiện tất cả nội dung và Ẩn tất cả nội dung xuất hiện trong menu ⌘K",
-            "Bạn có thể đặt phím tắt riêng cho chức năng này trong phần Riêng tư ở Cài đặt"
-          ]
-        }
-      }
-    }
-  },
-  "0.71.1": {
-    "notesSha256": "a7f379836f097504ac602389c7ca0c124793840f7c6d8e1da74f2182da7831de",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Privacy shortcut moved, reset button fix",
-          "items": [
-            "The shortcut for showing or hiding items moved to Privacy in Settings",
-            "Reset no longer appears next to shortcuts that are already at their default"
-          ]
-        },
-        "vi": {
-          "headline": "Di chuyển phím tắt riêng tư, sửa nút đặt lại",
-          "items": [
-            "Phím tắt để hiện hoặc ẩn mục đã chuyển sang phần Riêng tư trong Cài đặt",
-            "Nút Đặt lại không còn hiện bên cạnh phím tắt đã ở trạng thái mặc định"
-          ]
-        }
-      }
-    }
-  },
-  "0.71.0": {
-    "notesSha256": "69bbf2239f37cc98c15206635614dce7d36454a3b5461676fae953cf884bb8b6",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Customize the privacy mode shortcut and fix modifier key handling",
-          "items": [
-            "You can now set your own keyboard shortcut for showing and hiding items in privacy mode",
-            "Showing and hiding an item uses Shift-Command-H until you change it",
-            "Shortcuts that conflict with existing panel actions are rejected with an explanation",
-            "Holding Shift with your Pin shortcut now works correctly instead of triggering other actions"
-          ]
-        },
-        "vi": {
-          "headline": "Tùy chỉnh phím tắt chế độ riêng tư và sửa lỗi phím bổ trợ",
-          "items": [
-            "Giờ bạn có thể đặt phím tắt riêng để hiện và ẩn mục trong chế độ riêng tư",
-            "Phím tắt hiện và ẩn mục là Shift-Command-H cho đến khi bạn thay đổi",
-            "Phím tắt trùng với thao tác đã có sẽ bị từ chối kèm giải thích",
-            "Giữ Shift cùng phím tắt Ghim giờ hoạt động đúng thay vì kích hoạt thao tác khác"
-          ]
-        }
-      }
-    }
-  },
-  "0.70.1": {
-    "notesSha256": "6916acdc616366297f17e20c5e91d8331f03613827d2d8385f08af79c8f8ac89",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Fixed keyboard shortcut conflict with pinned items",
-          "items": [
-            "Pinned items skip the letter K since Command-K always opens the actions menu",
-            "Items already pinned to K move to the next available letter when you open the panel"
-          ]
-        },
-        "vi": {
-          "headline": "Sửa xung đột phím tắt với mục đã ghim",
-          "items": [
-            "Các mục ghim bỏ qua chữ K vì Command-K luôn mở menu thao tác",
-            "Mục đã ghim vào K sẽ chuyển sang chữ cái trống tiếp theo khi bạn mở bảng"
-          ]
-        }
-      }
-    }
-  },
-  "0.70.0": {
-    "notesSha256": "438936f19914474b1087929bb5860130b3b71a05ba7c268008ca6b2852fb168c",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Privacy mode covers previews until you choose to show them",
-          "items": [
-            "Privacy mode covers item previews so nothing is visible just by scrolling past it",
-            "Click a cover or press Command-Shift-H to show an item, Command-Shift-H again to hide it",
-            "Turn privacy mode on or off from the eye icon, Command-K, the menu bar, or Settings",
-            "Covered items can still be pasted, dragged, copied, pinned, and deleted",
-            "Covers reset when the panel closes, loses focus, or after a minute of inactivity"
-          ]
-        },
-        "vi": {
-          "headline": "Chế độ riêng tư che nội dung xem trước cho đến khi bạn muốn hiện",
-          "items": [
-            "Chế độ riêng tư che nội dung xem trước để không hiện gì khi cuộn qua",
-            "Nhấp vào lớp che hoặc nhấn Command-Shift-H để hiện một mục, nhấn lại để che",
-            "Bật tắt chế độ riêng tư từ biểu tượng con mắt, Command-K, thanh menu hoặc Cài đặt",
-            "Các mục bị che vẫn có thể dán, kéo ra, sao chép, ghim và xóa",
-            "Lớp che đặt lại khi đóng bảng, mất tiêu điểm hoặc sau một phút không hoạt động"
-          ]
-        }
-      }
-    }
-  },
-  "0.69.1": {
-    "notesSha256": "bfb7fbbdbea4ea0f22abf67f8cdb4632ed534801991fac6cdb1ec356c7c49fd6",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Smoother browsing and fewer busy warnings",
-          "items": [
-            "Moving through the list no longer triggers warnings about doing too many things at once",
-            "Image text is now read only for the item you stop on, not every item you pass",
-            "Preview requests happen one at a time instead of all at once",
-            "Image reading pauses automatically when you interact with the panel",
-            "Rejected requests are retried briefly before being abandoned"
-          ]
-        },
-        "vi": {
-          "headline": "Duyệt mượt hơn và ít cảnh báo bận rộn hơn",
-          "items": [
-            "Di chuyển trong danh sách không còn gây ra cảnh báo về việc làm quá nhiều thứ cùng lúc",
-            "Chữ trong ảnh chỉ được đọc cho mục bạn dừng lại, không phải mọi mục bạn đi qua",
-            "Yêu cầu xem trước diễn ra từng cái một thay vì tất cả cùng lúc",
-            "Đọc ảnh tự động tạm dừng khi bạn tương tác với bảng điều khiển",
-            "Yêu cầu bị từ chối được thử lại trong chốc lát trước khi bỏ qua"
-          ]
-        }
-      }
-    }
-  },
-  "0.69.0": {
-    "notesSha256": "034df2f092c02883da0eea61c26e9b5f5199c06d4c77ed5d1cfbc0245c6fad47",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Select text on images and find every image by its words",
-          "items": [
-            "Select text directly on a copied image by dragging across words or double-clicking a line",
-            "Press Command-C or Copy to copy just the selected words, or press Escape to deselect",
-            "Images are now read for text when the panel opens or when Search text in images is turned on",
-            "Every image can be found by its words, even if copied while that setting was off"
-          ]
-        },
-        "vi": {
-          "headline": "Chọn văn bản trên ảnh và tìm mọi ảnh theo nội dung chữ",
-          "items": [
-            "Chọn văn bản trực tiếp trên ảnh bằng cách kéo qua các từ hoặc nhấp đúp vào dòng",
-            "Nhấn Command-C hoặc Copy để chỉ sao chép phần đã chọn, hoặc nhấn Escape để bỏ chọn",
-            "Ảnh giờ được đọc văn bản khi mở bảng điều khiển hoặc khi bật tính năng Tìm chữ trong ảnh",
-            "Mọi ảnh giờ đều tìm được bằng nội dung chữ, kể cả ảnh sao chép khi tắt tính năng"
-          ]
-        }
-      }
-    }
-  },
-  "0.68.0": {
-    "notesSha256": "835a7e3758ff83388d25e4b75e0cc9fa81f436ef12b318a6e95fb5943f32ef26",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Icons in the menu and clearer pause state",
-          "items": [
-            "Every item in the menu bar now shows an icon",
-            "Pause Recording changes to Resume Recording when paused instead of showing a tick"
-          ]
-        },
-        "vi": {
-          "headline": "Biểu tượng trong menu và trạng thái tạm dừng rõ ràng hơn",
-          "items": [
-            "Mỗi mục trong thanh menu giờ đây hiển thị biểu tượng",
-            "Tạm dừng ghi nhận đổi thành Tiếp tục ghi nhận khi đang tạm dừng thay vì hiện dấu tick"
-          ]
-        }
-      }
-    }
-  },
-  "0.67.0": {
-    "notesSha256": "df1a8c9b3a285785458db2cf20bf8f3242de1f9a4c7e4d052c4268199dfa0f73",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Pause recording and manage history from the menu bar",
-          "items": [
-            "The menu bar menu now has Show Clipboard History, Pause Recording, Delete All Unpinned and Settings",
-            "Pause Recording stops saving what you copy until you turn it back on",
-            "Delete All Unpinned opens the panel and clears items there so you can undo",
-            "The preview width, split position and PDF zoom are now remembered when you close the panel",
-            "Requires Lumi 1.33.0 or later"
-          ]
-        },
-        "vi": {
-          "headline": "Tạm dừng ghi lại và quản lý lịch sử từ thanh menu",
-          "items": [
-            "Menu trên thanh menu giờ có Hiện Lịch Sử Clipboard, Tạm Dừng Ghi Lại, Xóa Tất Cả Mục Chưa Ghim và Cài Đặt",
-            "Tạm Dừng Ghi Lại ngừng lưu những gì bạn sao chép cho đến khi bạn bật lại",
-            "Xóa Tất Cả Mục Chưa Ghim mở bảng điều khiển và xóa ở đó để bạn có thể hoàn tác",
-            "Độ rộng xem trước, vị trí chia và mức phóng to PDF giờ được ghi nhớ khi bạn đóng bảng",
-            "Yêu cầu Lumi 1.33.0 trở lên"
-          ]
-        }
-      }
-    }
-  },
-  "0.66.1": {
-    "notesSha256": "a718405e79938019231d429acf57385558f9c4380ace361a438808a23bb07a3c",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Faster keyboard focus when the panel is pinned",
-          "items": [
-            "Pinned panel gets keyboard focus immediately when you press Show clipboard history from another app"
-          ]
-        },
-        "vi": {
-          "headline": "Lấy nét bàn phím nhanh hơn khi bảng được ghim",
-          "items": [
-            "Bảng được ghim nhận nét bàn phím ngay lập tức khi bạn nhấn Hiện lịch sử clipboard từ ứng dụng khác"
-          ]
-        }
-      }
-    }
-  },
-  "0.66.0": {
-    "notesSha256": "2214f7470bf0bf64d629781a2f499ae6e04c7af0f93c756fb9209f365931331c",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "More control over when the panel appears and disappears",
-          "items": [
-            "Show clipboard history now only opens the panel and never closes it",
-            "When the panel is already open, the shortcut brings focus back and blinks the selection",
-            "Two new commands let you assign your own shortcuts to hide or toggle the panel",
-            "Press Escape or use the new Hide command to close the panel"
-          ]
-        },
-        "vi": {
-          "headline": "Kiểm soát tốt hơn khi bảng điều khiển hiện và ẩn",
-          "items": [
-            "Hiện lịch sử clipboard giờ chỉ mở bảng và không bao giờ đóng nó",
-            "Khi bảng đã mở, phím tắt sẽ đưa tiêu điểm về và nhấp nháy mục đang chọn",
-            "Hai lệnh mới cho phép bạn gán phím tắt riêng để ẩn hoặc bật tắt bảng",
-            "Nhấn Escape hoặc dùng lệnh Ẩn mới để đóng bảng"
-          ]
-        }
-      }
-    }
-  },
-  "0.65.1": {
-    "notesSha256": "55747f960af878a6467c076d10344ad474c33bafa5f29ec2cec900f076e0dc75",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Scroll bars no longer cover text",
-          "items": [
-            "Scroll bars in the preview now sit along the right edge instead of covering text"
-          ]
-        },
-        "vi": {
-          "headline": "Thanh cuộn không còn che chữ",
-          "items": [
-            "Thanh cuộn trong bản xem trước giờ nằm sát mép phải thay vì che chữ"
-          ]
-        }
-      }
-    }
-  },
-  "0.65.0": {
-    "notesSha256": "d32c50a43d6b754eaa0fb20259ca376538724b35442176143dd1091a6bdde23c",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Resize the preview by dragging the divider",
-          "items": [
-            "Drag the line across the preview up or down to adjust the space between the image and text",
-            "The divider stays where you place it as you move through items",
-            "Double-click the divider to reset it to its original position"
-          ]
-        },
-        "vi": {
-          "headline": "Thay đổi kích thước xem trước bằng cách kéo đường phân chia",
-          "items": [
-            "Kéo đường ngang trong khung xem trước lên hoặc xuống để điều chỉnh không gian giữa hình ảnh và văn bản",
-            "Đường phân chia giữ nguyên vị trí khi bạn di chuyển qua các mục",
-            "Nhấp đúp vào đường phân chia để đặt lại về vị trí ban đầu"
-          ]
-        }
-      }
-    }
-  },
-  "0.64.0": {
-    "notesSha256": "97ff4102e1530bbd222139535f16162986c0b6cfde6466a8784a024b44abf397",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Panel shortcut now refocuses when pinned",
-          "items": [
-            "When the panel is pinned and another app is active, the shortcut brings keyboard focus back to the panel",
-            "The selected item blinks briefly to show the panel is ready for searching or navigation",
-            "If the command menu is open, the chosen action blinks instead",
-            "Press the shortcut again to hide the panel"
-          ]
-        },
-        "vi": {
-          "headline": "Phím tắt giờ đưa tiêu điểm về bảng khi ghim",
-          "items": [
-            "Khi bảng đang ghim và bạn dùng ứng dụng khác, phím tắt đưa bàn phím về bảng",
-            "Mục đang chọn nhấp nháy để báo bảng sẵn sàng tìm kiếm hoặc di chuyển",
-            "Nếu menu lệnh đang mở, hành động đã chọn sẽ nhấp nháy",
-            "Nhấn phím tắt lần nữa để ẩn bảng"
-          ]
-        }
-      }
-    }
-  },
-  "0.63.26": {
-    "notesSha256": "dde792e136600dd5d2503530266c356ff84530d8a460f317026bb38e17572a7f",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Snippets in the panel",
-          "items": [
-            "Copy a snippet trigger and the preview shows what it expands to",
-            "Web addresses in snippet previews turn into links and can be copied",
-            "Click the heading in a snippet preview to fold it away",
-            "Snippets that change each time are expanded again when you return to them",
-            "Settings has a new Snippets section to turn matching on or off",
-            "Choose which snippet profiles to search in Settings under Snippets"
-          ]
-        },
-        "vi": {
-          "headline": "Snippet trong bảng điều khiển",
-          "items": [
-            "Sao chép mã kích hoạt snippet để xem nội dung mở rộng trong bản xem trước",
-            "Địa chỉ web trong bản xem trước snippet có thể nhấp và sao chép",
-            "Nhấp vào tiêu đề trong bản xem trước snippet để thu gọn",
-            "Snippet thay đổi mỗi lần sẽ được mở rộng lại khi bạn quay lại",
-            "Cài đặt có mục Snippet mới để bật hoặc tắt tính năng khớp",
-            "Chọn hồ sơ snippet nào để tìm kiếm trong Cài đặt mục Snippet"
-          ]
-        }
-      }
-    }
-  },
-  "0.62.1": {
-    "notesSha256": "22d1a243d4c91ffddf1a291e0aee22108b5f836bdf087e87ed514a76ca12c939",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Fixed search field overflow in actions menu",
-          "items": [
-            "The search field in the actions menu no longer extends beyond the menu edge"
-          ]
-        },
-        "vi": {
-          "headline": "Sửa lỗi ô tìm kiếm tràn ra ngoài menu hành động",
-          "items": [
-            "Ô tìm kiếm trong menu hành động không còn vượt ra ngoài viền menu"
           ]
         }
       }
