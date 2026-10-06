@@ -1,4 +1,88 @@
 {
+  "0.16.1": {
+    "notesSha256": "34f41c17906df6f478e33315f819e4fc5fc1509e73e9a3d6e20eb395f8ab8eb5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Improved rename sheet",
+          "items": [
+            "The rename sheet now tells you when the name is empty",
+            "The rename sheet grows to fit its message"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện hộp thoại đổi tên",
+          "items": [
+            "Hộp thoại đổi tên giờ báo khi tên để trống",
+            "Hộp thoại đổi tên tự mở rộng để vừa nội dung"
+          ]
+        }
+      }
+    }
+  },
+  "0.16.0": {
+    "notesSha256": "b4ccb4a293128565c72b2462174581669e9d9dcdfcfb3b4981e73e7472ad71cd",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Rename through a dialog over Lumi's window",
+          "items": [
+            "You can now rename through a dialog that appears over Lumi's window"
+          ]
+        },
+        "vi": {
+          "headline": "Đổi tên qua hộp thoại trên cửa sổ Lumi",
+          "items": [
+            "Giờ bạn có thể đổi tên qua hộp thoại hiện trên cửa sổ Lumi"
+          ]
+        }
+      }
+    }
+  },
+  "0.15.0": {
+    "notesSha256": "f4a578628a3c08cdbfdc9df329bd67963ce2bf259d17ffc2cc1825760868e0b9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Hold input to see what keys you press",
+          "items": [
+            "Hold input from a window or panel to see every key pressed for ten seconds",
+            "A second button also holds trackpad input"
+          ]
+        },
+        "vi": {
+          "headline": "Giữ đầu vào để xem phím bạn nhấn",
+          "items": [
+            "Giữ đầu vào từ cửa sổ hoặc bảng để xem mọi phím nhấn trong mười giây",
+            "Nút thứ hai cũng giữ đầu vào từ trackpad"
+          ]
+        }
+      }
+    }
+  },
+  "0.14.1": {
+    "notesSha256": "ca74812f01c33bfbbf30890bcd7f071f90b295a1a7a603bda49e15a59e08cee7",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "New icon",
+          "items": [
+            "The icon now uses a translation symbol instead of the A and 文 characters"
+          ]
+        },
+        "vi": {
+          "headline": "Biểu tượng mới",
+          "items": [
+            "Biểu tượng giờ dùng ký hiệu dịch thuật thay vì chữ A và 文"
+          ]
+        }
+      }
+    }
+  },
   "0.14.0": {
     "notesSha256": "475da3c90016ecbe5e5cc8ce12d0c5c9280f903b30a7fdc14c55e2b9d0d0e159",
     "summary": {

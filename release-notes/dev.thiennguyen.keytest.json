@@ -1,4 +1,304 @@
 {
+  "0.6.1": {
+    "notesSha256": "7425c6e091d794672e708e4232f82dd05f1946c2bc99abd967b03c9037b1fb45",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Trackpad now locks by default when cleaning your keyboard",
+          "items": [
+            "Cleaning your keyboard now also locks the trackpad so wiping across it clicks nothing",
+            "You can turn off trackpad locking in the Settings tab",
+            "If you already chose a trackpad setting before, your choice stays the same"
+          ]
+        },
+        "vi": {
+          "headline": "Trackpad giờ cũng khóa theo mặc định khi làm sạch bàn phím",
+          "items": [
+            "Làm sạch bàn phím giờ cũng khóa trackpad để lau qua không gây nhấp chuột",
+            "Bạn có thể tắt khóa trackpad trong tab Cài đặt",
+            "Nếu bạn đã chọn cài đặt trackpad trước đó thì lựa chọn của bạn vẫn giữ nguyên"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.0": {
+    "notesSha256": "f768956059045cd05c4b4cd31cdb2eb841ce4d0fdfa98b5d14c673d323798257",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Keyboard Test is now Keyboard Cleaner",
+          "items": [
+            "Renamed to Keyboard Cleaner to reflect its main use: locking your keyboard while you wipe it",
+            "The tab is now called Keyboard instead of Keyboard Test",
+            "Testing every key works exactly as before"
+          ]
+        },
+        "vi": {
+          "headline": "Keyboard Test giờ là Keyboard Cleaner",
+          "items": [
+            "Đổi tên thành Keyboard Cleaner để phản ánh công dụng chính: khóa bàn phím khi bạn lau",
+            "Tab giờ có tên là Keyboard thay vì Keyboard Test",
+            "Kiểm tra từng phím vẫn hoạt động như trước"
+          ]
+        }
+      }
+    }
+  },
+  "0.5.6": {
+    "notesSha256": "d6a79d5315b7d47b610ce0138c2487303ddb39a671f72888908c3e34e59c9e51",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Hold to unlock now shows a countdown ring",
+          "items": [
+            "Holding to unlock shows a countdown ring that empties over 2 seconds",
+            "The Clean keyboard prompt now shows the countdown ring instead of a bar"
+          ]
+        },
+        "vi": {
+          "headline": "Giữ để mở khóa giờ hiển thị vòng đếm ngược",
+          "items": [
+            "Giữ để mở khóa hiển thị vòng đếm ngược trong 2 giây",
+            "Hộp thoại Làm sạch bàn phím giờ hiển thị vòng đếm ngược thay vì thanh tiến trình"
+          ]
+        }
+      }
+    }
+  },
+  "0.5.2": {
+    "notesSha256": "5c381789d594a886d46db569b5c23851b0a74c0a09fe40617872fe947993fd36",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed layout of keyboard cleaning dialog",
+          "items": [
+            "The Clean keyboard question is as tall as what it lists"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa bố cục hộp thoại làm sạch bàn phím",
+          "items": [
+            "Hộp thoại Làm sạch bàn phím giờ vừa khít với nội dung hiển thị"
+          ]
+        }
+      }
+    }
+  },
+  "0.5.1": {
+    "notesSha256": "0578590ef5e24c3efb5c8a1e94b41e88f5fc3b4406419a6b05e08c9cf432efdc",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed keyboard state during cleaning prompt",
+          "items": [
+            "The keyboard stays as it was while the Clean keyboard question is up, not resetting to Click to test keys"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa trạng thái bàn phím khi hỏi làm sạch",
+          "items": [
+            "Bàn phím giữ nguyên trạng thái khi hiện câu hỏi Làm sạch thay vì chuyển về Nhấn để kiểm tra phím"
+          ]
+        }
+      }
+    }
+  },
+  "0.5.0": {
+    "notesSha256": "b6ef70938c1cc9a986d8c2f281168385b2ba75b9dd2e8acedb49f9ecd5c27c13",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Cleaning confirmation now appears as a full window sheet",
+          "items": [
+            "The question before cleaning now opens over the whole window instead of inside the tab"
+          ]
+        },
+        "vi": {
+          "headline": "Xác nhận làm sạch giờ hiện dưới dạng sheet toàn cửa sổ",
+          "items": [
+            "Câu hỏi trước khi làm sạch giờ mở ra trên toàn bộ cửa sổ thay vì bên trong tab"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.6": {
+    "notesSha256": "96c5cc7b6ce886555f7375e1b15350293ba454a39747aadb2123d070538da824",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Improved keyboard layout accuracy",
+          "items": [
+            "The right shift key now shows its label in the bottom right corner, matching the actual key"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện độ chính xác của bố cục bàn phím",
+          "items": [
+            "Phím shift bên phải giờ hiển thị nhãn ở góc dưới bên phải, giống như trên phím thật"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.5": {
+    "notesSha256": "b54386e5804bcd36d4e57a9ad8c94b81037a4f82f27dbe169332eff64aaed63f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clean keyboard now asks first and shows all ways to unlock",
+          "items": [
+            "Clean keyboard asks first, showing what will be locked and for how long",
+            "The confirmation shows every way to unlock: esc and right shift held, timer, Touch ID, and Hold to unlock",
+            "Only Lock keyboard starts the lock; Cancel or esc leaves everything as it was"
+          ]
+        },
+        "vi": {
+          "headline": "Dọn bàn phím giờ hỏi trước và hiển thị mọi cách mở khóa",
+          "items": [
+            "Dọn bàn phím hỏi trước, cho biết sẽ khóa gì và trong bao lâu",
+            "Xác nhận hiển thị mọi cách mở khóa: giữ esc và shift phải, bộ đếm thời gian, Touch ID, và nút Giữ để mở khóa",
+            "Chỉ Khóa bàn phím mới bắt đầu khóa; Hủy hoặc esc để mọi thứ như cũ"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.4": {
+    "notesSha256": "0b3617f9fe6d857385b9344a9f8ffbfc93655e3fda36f296b3bb8d4bee7c2b1f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "A new look for cleaning mode",
+          "items": [
+            "Cleaning mode now uses Lumi's light or dark colours instead of black",
+            "The keyboard is outlined while locked, with a line running down as time passes",
+            "A ring under the keyboard counts down the seconds remaining",
+            "The last ten seconds of cleaning mode turn amber"
+          ]
+        },
+        "vi": {
+          "headline": "Giao diện mới cho chế độ vệ sinh",
+          "items": [
+            "Chế độ vệ sinh giờ dùng màu sáng hoặc tối của Lumi thay vì màu đen",
+            "Bàn phím được viền khi khóa, với đường chạy xuống theo thời gian",
+            "Vòng tròn dưới bàn phím đếm ngược số giây còn lại",
+            "Mười giây cuối của chế độ vệ sinh chuyển sang màu hổ phách"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.3": {
+    "notesSha256": "2bf7dea67324204126dfdb610671392612cf29b7f953bd54d38b9ba80de03315",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Cleaning mode now keeps the keyboard in place",
+          "items": [
+            "While cleaning, the keyboard stays exactly where it was on screen",
+            "The time left and Hold to unlock replace the top bar during cleaning",
+            "Other exit options appear one line below the keyboard"
+          ]
+        },
+        "vi": {
+          "headline": "Chế độ vệ sinh giữ nguyên vị trí bàn phím",
+          "items": [
+            "Khi vệ sinh, bàn phím giữ nguyên vị trí trên màn hình",
+            "Thời gian còn lại và Giữ để mở khóa thay thế thanh trên cùng khi vệ sinh",
+            "Các tùy chọn thoát khác xuất hiện dưới bàn phím một dòng"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.2": {
+    "notesSha256": "c1f8d3fc4ff66245eea2e11f876129b732e707cd30cbad0e8aabd998f0bc1ac0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Keyboard layout choice moved to the Keyboard test tab",
+          "items": [
+            "The keyboard layout is now chosen on the Keyboard test tab instead of Settings",
+            "Settings tab is now only for Clean keyboard options",
+            "If you had picked ISO layout before, you need to pick it once more"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn bố cục bàn phím được chuyển sang tab Kiểm tra bàn phím",
+          "items": [
+            "Bố cục bàn phím giờ được chọn ở tab Kiểm tra bàn phím thay vì trong Cài đặt",
+            "Tab Cài đặt giờ chỉ dành cho các tùy chọn Làm sạch bàn phím",
+            "Nếu bạn đã chọn bố cục ISO trước đó, bạn cần chọn lại một lần nữa"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.1": {
+    "notesSha256": "776e082805077409b2675a800dccba14e6f089654f2d9a91fb8848fa37bae1c8",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clean keyboard starts instantly, with new settings for duration",
+          "items": [
+            "Clean keyboard starts right away when you click it",
+            "How long the keys stay locked is now set in the new Settings tab",
+            "Whether the trackpad locks too is now set in the new Settings tab"
+          ]
+        },
+        "vi": {
+          "headline": "Làm sạch bàn phím khởi động ngay lập tức với cài đặt mới",
+          "items": [
+            "Làm sạch bàn phím bắt đầu ngay khi bạn nhấp vào",
+            "Thời gian khóa phím được đặt trong tab Cài đặt mới",
+            "Có khóa trackpad hay không được đặt trong tab Cài đặt mới"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.0": {
+    "notesSha256": "f52bff9848702a64aa203b2f69e2ec29c4c82a2f858d220c9cac2e4d82f6c4e1",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Lock your keyboard to clean it without typing anything",
+          "items": [
+            "Lock every key for 30 seconds to 5 minutes so you can wipe the keyboard without typing",
+            "Each key you wipe lights up on the board and is checked for double-typing as you clean",
+            "Unlock by holding the button for 2 seconds or by holding esc and right shift together",
+            "While cleaning, F1–F12 light up without fn and shortcuts like ⌘Tab can be tested",
+            "Requires Lumi 1.38 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Khóa bàn phím để lau mà không gõ nhầm",
+          "items": [
+            "Khóa mọi phím từ 30 giây đến 5 phút để lau bàn phím mà không gõ nhầm gì",
+            "Mỗi phím bạn lau sẽ sáng lên trên bảng và được kiểm tra gõ nhảy luôn",
+            "Mở khóa bằng cách giữ nút 2 giây hoặc giữ esc và shift phải cùng lúc",
+            "Khi đang lau, F1–F12 sáng mà không cần fn và các phím tắt như ⌘Tab cũng được kiểm tra",
+            "Yêu cầu Lumi 1.38 trở lên"
+          ]
+        }
+      }
+    }
+  },
   "0.3.1": {
     "notesSha256": "6038698b34fa40126972febbef1bc5ab6adcc9bd157a7f9dffeedc6b0a08e773",
     "summary": {
@@ -138,168 +438,6 @@
           "headline": "Cải thiện hiển thị bàn phím",
           "items": [
             "Mở 'Phím trang này không nghe được' giờ chỉ cuộn phần ghi chú, giữ bàn phím luôn hiển thị"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.6": {
-    "notesSha256": "3744081a685bdf45536c27fb4ce789ea85ccfdc9d962b4197ab58256c77566d6",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Keyboard now matches MacBook Pro layout with proper key sizes",
-          "items": [
-            "The keyboard now shows a MacBook Pro layout with real key sizes and shapes",
-            "Function keys are full height with Touch ID shown on the right",
-            "Arrow keys show the correct half-height left and right keys",
-            "Modifier keys display their symbols instead of text labels",
-            "ISO Return key appears as one L-shaped key instead of two separate keys",
-            "Key labels resize to fit when you make the window narrower"
-          ]
-        },
-        "vi": {
-          "headline": "Bàn phím hiển thị đúng bố cục MacBook Pro với kích thước thật",
-          "items": [
-            "Bàn phím hiện theo bố cục MacBook Pro với kích thước và hình dạng thật",
-            "Phím chức năng có chiều cao đầy đủ với Touch ID ở bên phải",
-            "Phím mũi tên trái và phải hiển thị đúng chiều cao một nửa",
-            "Phím bổ trợ hiển thị ký hiệu thay vì chữ",
-            "Phím Return kiểu ISO hiện dạng chữ L liền khối thay vì hai phím riêng",
-            "Nhãn phím tự động co lại khi thu nhỏ cửa sổ"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.5": {
-    "notesSha256": "4d1c3cdba2ba63c552c306d0169b1618005d072a24dc73a478814e4b2ead99c2",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Added a hint for testing Caps Lock",
-          "items": [
-            "A hint now appears under the keyboard explaining how to test Caps Lock"
-          ]
-        },
-        "vi": {
-          "headline": "Thêm gợi ý kiểm tra phím Caps Lock",
-          "items": [
-            "Giờ có gợi ý hiển thị dưới bàn phím hướng dẫn cách kiểm tra phím Caps Lock"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.4": {
-    "notesSha256": "54c1294a114de1bd79532ff00d7a6dd0f6f11f68824ae2530ca254948032a26a",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Start testing immediately when the tab opens",
-          "items": [
-            "The test now captures your keyboard as soon as you open the tab",
-            "When you click away, a cover appears and one click resumes the test"
-          ]
-        },
-        "vi": {
-          "headline": "Bắt đầu kiểm tra ngay khi mở tab",
-          "items": [
-            "Bàn phím được nhận diện ngay khi bạn mở tab",
-            "Khi nhấp ra ngoài, một lớp phủ xuất hiện và một cú nhấp sẽ tiếp tục kiểm tra"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.3": {
-    "notesSha256": "b94f5a19f08ce5a5e1335d1c189f0f79f7245eee5b379f9fee3698a332a3c83c",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Caps Lock now registers when used as Hyper key",
-          "items": [
-            "Caps Lock now counts as pressed when Lumi's Hyper key is set to toggle Caps Lock on a tap"
-          ]
-        },
-        "vi": {
-          "headline": "Caps Lock giờ được nhận diện khi dùng làm phím Hyper",
-          "items": [
-            "Caps Lock giờ được tính là đã nhấn khi phím Hyper của Lumi được đặt để bật tắt Caps Lock khi chạm"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.2": {
-    "notesSha256": "84c877d9d24a05772f85b4ccb284f8b14e219e61e8d10d1d21e514c915ff624b",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Modifier tracking and Caps Lock detection improvements",
-          "items": [
-            "The last key pressed now shows which modifier keys were held down",
-            "Caps Lock is now detected even when Hyper key remap is configured but inactive"
-          ]
-        },
-        "vi": {
-          "headline": "Cải thiện theo dõi phím bổ trợ và phát hiện Caps Lock",
-          "items": [
-            "Phím vừa nhấn giờ hiển thị các phím bổ trợ đang được giữ",
-            "Caps Lock giờ được phát hiện ngay cả khi Hyper key đã cấu hình nhưng chưa hoạt động"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.1": {
-    "notesSha256": "b3780b5cf68b0852494a0932038ed1e9d785a8edddc44a840b626883cf4b8819",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Caps Lock now works with Hyper key enabled",
-          "items": [
-            "Caps Lock can now be tested even when Lumi's Hyper key is turned on"
-          ]
-        },
-        "vi": {
-          "headline": "Caps Lock hoạt động với phím Hyper đã bật",
-          "items": [
-            "Caps Lock giờ có thể kiểm tra được ngay cả khi phím Hyper của Lumi đang bật"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.0": {
-    "notesSha256": "0b700dc6d25a70c9c6c5694f0175b7f28aa609374a756b60459e03659d678cfe",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "First release: test every key and catch double-typing",
-          "items": [
-            "A keyboard test tab shows a MacBook keyboard that lights up as you press each key",
-            "Counts how many keys you have tested so far",
-            "Shows which keys are currently held down",
-            "Flags keys that register twice from a single press, indicating a worn switch",
-            "Supports both ANSI and ISO keyboard layouts"
-          ]
-        },
-        "vi": {
-          "headline": "Phiên bản đầu tiên: kiểm tra từng phím và phát hiện gõ kép",
-          "items": [
-            "Tab kiểm tra bàn phím hiển thị bàn phím MacBook sáng lên khi bạn nhấn từng phím",
-            "Đếm số lượng phím bạn đã kiểm tra",
-            "Hiển thị các phím đang được giữ",
-            "Đánh dấu phím kích hoạt hai lần khi chỉ nhấn một lần, dấu hiệu công tắc bị mòn",
-            "Hỗ trợ cả bố trí bàn phím ANSI và ISO"
           ]
         }
       }
