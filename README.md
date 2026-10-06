@@ -123,7 +123,11 @@ after review.
 3. Review is human, of source: the manifest's capabilities against what
    the code actually calls, nothing phoning home, no misbehaviour shipped
    as a feature. Updates are PRs that bump the submodule commit and the
-   manifest version, with a `CHANGELOG.md` section for that version.
+   manifest version, with a `CHANGELOG.md` section for that version. The
+   crate's `version` in `Cargo.toml` (and its row in a committed
+   `Cargo.lock` — `cargo update -p <crate> --offline` moves it), and
+   `version` in `web/package.json` for an entry with `web`, move with it:
+   the PR is refused while any of them names another number.
 4. Every PR is checked first: CI validates each manifest, builds each
    extension from source and packs it, and signs nothing — the job holds
    no secret, because a submission's build script runs inside it. Run the
@@ -266,6 +270,14 @@ still has, the sha256 of that version's notes and a `lumi_notes` summary
 with an `en` and a `vi` headline (≤ 70 characters) and 1–6 items
 (≤ 110), plain text. `python3 -m unittest discover -s scripts -p
 'test_*.py'` runs the parser's own tests.
+
+The manifest's `version` is the only one Lumi reads, so it is the one the
+others are held to: the crate's in `Cargo.toml` — a `version.workspace =
+true` read from the workspace above it, within the submodule — the
+crate's own row in a committed `Cargo.lock`, and `web/package.json`'s for
+an entry the store builds a front end for. Each that names another number
+is listed in one refusal. A version left out is refused too, with the line
+to write; a `Cargo.lock` that is not committed is not asked for.
 
 Packages are reproducible tarballs (fixed metadata, sorted entries):
 rebuilding an unchanged extension publishes identical bytes.

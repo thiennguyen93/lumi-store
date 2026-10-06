@@ -292,10 +292,10 @@ impl lumi::Guest for Sample {
                 .to_string());
             }
             // Lumi's permissions, the four calls: `do` is "check", "ask",
-            // "request" or "open". The sample's own manifest does not declare
-            // `screen`, so in the sample as shipped each one is refused by
-            // name — the point of the arm is the host's tests, which stage a
-            // manifest that does.
+            // "request" or "open" — the Permissions part of the settings page
+            // (`ui/app.js`). The manifest declares `screen`, the capability
+            // Screen Recording is for; without it each call is refused by
+            // name, which the host's tests stage a manifest to watch.
             Some("permissions") => {
                 use lumi::permissions::{self, Permission, Requested, State};
                 let screen = Permission::ScreenRecording;
