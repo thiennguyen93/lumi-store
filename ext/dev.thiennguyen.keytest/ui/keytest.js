@@ -578,10 +578,14 @@
   // ----------------------------------------------------------------------
 
   const cleanButton = document.getElementById("clean");
-  const lockHead = document.getElementById("clean-lock");
+  const lockBar = document.getElementById("clean-lock");
   const lockTime = document.getElementById("clean-time");
-  const lockExit = document.getElementById("clean-exit");
   const holdButton = document.getElementById("clean-hold");
+  const ring = document.getElementById("clean-ring");
+  const panel = document.getElementById("clean-panel");
+  const ways = document.getElementById("clean-ways");
+  const progressLine = document.getElementById("clean-progress");
+  const progressFill = document.getElementById("clean-progress-fill");
   const done = document.getElementById("clean-done");
 
   /** How long to clean for, and whether the trackpad goes too — chosen in
@@ -589,10 +593,13 @@
    *  kept current by `lumi:settings`. The button only starts. */
   let cleanSeconds = 60;
   let cleanPointer = false;
-  /** Whether a hold is on, and when it ends at the latest (Unix ms). */
+  /** Whether a hold is on, when it ends at the latest (Unix ms), and how
+   *  long it was for — the ring and the line count down the share left. */
   let cleaning = false;
   let cleanUntil = 0;
+  let cleanTotal = 1;
   let ticker;
+  let shownSeconds;
   /** What was pressed, and what typed twice, during this cleaning. */
   const cleanPressed = new Set();
   const cleanChatter = new Set();
@@ -643,26 +650,58 @@
   function beginCleaning(held) {
     cleaning = true;
     cleanUntil = typeof held.until === "number" ? held.until : Date.now() + cleanSeconds * 1000;
+    cleanTotal = Math.max(1, cleanUntil - Date.now());
+    shownSeconds = undefined;
     cleanPressed.clear();
     cleanChatter.clear();
     down.clear();
     document.body.classList.add("cleaning");
-    lockHead.hidden = false;
-    lockExit.hidden = false;
+    lockBar.hidden = false;
+    progressLine.hidden = false;
     // A locked trackpad cannot press a button, so only the keys are offered.
     const keysOnly = held.pointer === true;
-    holdButton.hidden = keysOnly;
-    document.getElementById("clean-or").textContent = keysOnly ? "Hold" : "Or hold";
-    document.getElementById("clean-to").textContent = keysOnly ? " to unlock." : ".";
+    // Out of sight but keeping its place, so the bar stays the bar's height
+    // and the board does not jump.
+    holdButton.classList.toggle("unseen", keysOnly);
+    holdButton.disabled = keysOnly;
+    // The other ways out, beside the ring.
+    const key = (name) => {
+      const b = document.createElement("b");
+      b.textContent = name;
+      return b;
+    };
+    ways.replaceChildren(
+      keysOnly ? "Hold " : "Or hold ",
+      key("esc"),
+      " and ",
+      key("right shift"),
+      ` together for 2 seconds${keysOnly ? " to unlock" : ""}. Touch ID locks your Mac, which ends cleaning too.`,
+    );
+    done.hidden = true;
+    panel.hidden = false;
     hint.hidden = true;
     tick();
     ticker = setInterval(tick, 250);
     paint();
   }
 
+  /** One step of the countdown, four a second: the ring and the line show
+   *  the share of the time left — CSS glides them between steps — the
+   *  digits change once a second, and the last ten seconds are drawn in
+   *  the warning colour. A timer rather than animation frames, which stop
+   *  while the window is covered: the count has to be right whenever the
+   *  person looks back. */
   function tick() {
-    const left = Math.max(0, Math.ceil((cleanUntil - Date.now()) / 1000));
-    lockTime.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+    const leftMs = Math.max(0, cleanUntil - Date.now());
+    const share = Math.min(1, leftMs / cleanTotal);
+    ring.style.strokeDashoffset = String(100 * (1 - share));
+    progressFill.style.transform = `scaleX(${share})`;
+    const left = Math.ceil(leftMs / 1000);
+    if (left !== shownSeconds) {
+      shownSeconds = left;
+      lockTime.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+      for (const part of [lockBar, progressLine, panel]) part.classList.toggle("ending", left <= 10);
+    }
   }
 
   /** Let go — this page's own ways out end here. */
@@ -689,8 +728,9 @@
     cancelUnlockKeys();
     cancelHold();
     document.body.classList.remove("cleaning");
-    lockHead.hidden = true;
-    lockExit.hidden = true;
+    lockBar.hidden = true;
+    progressLine.hidden = true;
+    panel.hidden = true;
     down.clear();
     const pressed = cleanPressed.size;
     const twice = [...cleanChatter].map(nameOf);

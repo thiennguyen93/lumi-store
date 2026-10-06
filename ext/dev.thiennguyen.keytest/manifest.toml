@@ -3,7 +3,7 @@
 [extension]
 id = "dev.thiennguyen.keytest"
 name = "Keyboard Test"
-version = "0.4.2"
+version = "0.4.4"
 description = "Check every key of a MacBook keyboard, catch keys that double-type, and lock it while you clean it."
 author = "Thien Nguyen"
 summary = "Opens a Keyboard test tab here in Lumi: press each key and watch it light up on a MacBook keyboard. It counts the keys you have covered, shows which are held, and flags a key that registers twice from one press — the chatter a worn or dusty switch produces. Clean keyboard locks every key for a while so you can wipe it, and lights each key you wipe, so cleaning tests it too. Nothing leaves the page."

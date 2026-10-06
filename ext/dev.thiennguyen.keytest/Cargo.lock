@@ -181,7 +181,7 @@ dependencies = [
 
 [[package]]
 name = "lumi-keytest-ext"
-version = "0.4.2"
+version = "0.4.4"
 dependencies = [
  "lumi-extension-api",
  "serde_json",
