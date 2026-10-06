@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- Holding the keyboard (`PUT /__lumi__/input-hold`, Lumi 1.38.0). One page,
+     two kinds of webview: the `hold` window and the `hold-panel` panel open
+     it, so the same calls are seen to work from both. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Hold input</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <style>
+    body { margin: 0; font: 13px/1.45 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+    main { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
+    h1 { margin: 0; font-size: 14px; }
+    p { margin: 0; }
+    .muted { opacity: 0.7; }
+    .row { display: flex; gap: 6px; flex-wrap: wrap; }
+    ol { margin: 0; padding-left: 18px; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Hold input</h1>
+    <p class="muted">For ten seconds no key reaches any app. Touch ID still locks the Mac, which ends the hold.</p>
+    <div class="row">
+      <button type="button" id="keys">Hold keys, show them</button>
+      <button type="button" id="all">Hold keys and trackpad</button>
+      <button type="button" id="release">Release</button>
+    </div>
+    <p id="status" aria-live="polite"></p>
+    <p id="exit" class="muted"></p>
+    <ol id="pressed"></ol>
+  </main>
+  <script src="hold.js"></script>
+</body>
+</html>

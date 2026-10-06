@@ -17,17 +17,57 @@
     </div>
     <span class="grow"></span>
     <span id="progress" class="muted" aria-live="polite"></span>
+    <button type="button" id="clean">Clean keyboard…</button>
     <button type="button" id="reset">Reset</button>
   </div>
+
+  <!-- Before cleaning: how long, and whether the trackpad goes too. The
+       choice is kept for next time through the bridge's settings route. -->
+  <section id="clean-sheet" class="sheet" hidden aria-labelledby="clean-title">
+    <h2 id="clean-title">Clean the keyboard</h2>
+    <p>No key will type anything, in any app, while you wipe the keyboard. Each key you wipe still lights up here, so you also see which ones work.</p>
+    <div class="sheet-row">
+      <span>Lock for</span>
+      <div class="segmented" role="radiogroup" aria-label="Lock for">
+        <button type="button" data-seconds="30" role="radio">30 s</button>
+        <button type="button" data-seconds="60" role="radio">1 min</button>
+        <button type="button" data-seconds="120" role="radio">2 min</button>
+        <button type="button" data-seconds="300" role="radio">5 min</button>
+      </div>
+    </div>
+    <label class="sheet-check"><input type="checkbox" id="clean-pointer"> Lock the trackpad too</label>
+    <p class="muted small">With the trackpad locked, unlock by holding <b>esc</b> and <b>right shift</b> for 2 seconds.</p>
+    <p id="clean-error" class="bad" role="alert" hidden></p>
+    <div class="sheet-actions">
+      <button type="button" id="clean-cancel">Cancel</button>
+      <button type="button" id="clean-start" class="primary">Lock keyboard</button>
+    </div>
+  </section>
+
+  <!-- While cleaning: the time left over the board. -->
+  <section id="clean-lock" class="lock" hidden aria-live="polite">
+    <div id="clean-time" class="lock-time">0:00</div>
+    <div class="lock-title">Keyboard locked — wipe away</div>
+  </section>
 
   <!-- Lumi hands the page the keyboard when the tab opens (`focus = true`
        in the manifest). Keys are only heard while it has it, so when it
        is lost — a click elsewhere, another app in front — `#focus-hint`
-       covers the board and one click anywhere on it brings it back. -->
+       covers the board and one click anywhere on it brings it back. While
+       cleaning, keys come from Lumi whatever has focus, so it stays away. -->
   <div class="board-wrap">
     <div id="board" class="board" tabindex="0" aria-label="Keyboard — press keys to test them"></div>
     <button type="button" id="focus-hint" class="cover" hidden>Click to test keys</button>
   </div>
+
+  <!-- While cleaning: the ways out. -->
+  <section id="clean-exit" class="lock-exit" hidden>
+    <button type="button" id="clean-hold" class="hold-button"><span class="hold-fill"></span><span class="hold-label">Hold to unlock</span></button>
+    <p><span id="clean-or">Or hold</span> <b>esc</b> and <b>right shift</b> together for 2 seconds<span id="clean-to">.</span></p>
+    <p class="muted small">Touch ID locks your Mac, which also ends cleaning — it can't be paused.</p>
+  </section>
+
+  <p id="clean-done" class="done" hidden aria-live="polite"></p>
 
   <dl class="facts">
     <dt>Last key</dt>
@@ -50,9 +90,18 @@
       <ul>
         <li><b>fn / Globe</b> on its own is heard through Lumi, which needs its Accessibility permission. If pressing it alone does nothing, hold it and press <b>delete</b> or an <b>arrow</b>: those make keys a MacBook does not have, which is how this page knows fn works either way.</li>
       <li><b>Touch ID and the power key</b> never reach a web page, so they stay grey.</li>
-        <li><b>F1–F12</b> control brightness, volume and media by default. Hold <b>fn</b> while pressing them to test them as keys. Lumi keeps macOS from taking them while this tab is in front, so <b>F11</b> tests here instead of showing the desktop.</li>
+        <li><b>F1–F12</b> control brightness, volume and media by default. Hold <b>fn</b> while pressing them to test them as keys. Lumi keeps macOS from taking them while this tab is in front, so <b>F11</b> tests here instead of showing the desktop. While cleaning, they light up without fn too.</li>
         <li><b>Caps Lock as Lumi's Hyper key</b> is never heard as itself. Tap it on its own if the tap toggles Caps Lock, or hold it and press a key none of your Hyper shortcuts use — either tells this page it works.</li>
-        <li><b>Shortcuts macOS or Lumi take first</b> — ⌘Tab, ⌘Space, ⌘Q, a shortcut you recorded in Lumi — are used up before they get here. Test those keys on their own.</li>
+        <li><b>Shortcuts macOS or Lumi take first</b> — ⌘Tab, ⌘Space, ⌘Q, a shortcut you recorded in Lumi — are used up before they get here. Test those keys on their own, or while cleaning, when nothing takes them.</li>
+      </ul>
+    </details>
+    <details class="notes">
+      <summary>While cleaning</summary>
+      <ul>
+        <li><b>Every key is held</b>, in every app: letters, ⌘Tab, Spotlight, brightness, volume and media. Lumi's own shortcuts and snippets rest too.</li>
+        <li><b>Three ways out</b>: hold the button here, hold <b>esc</b> and <b>right shift</b> together, or wait for the time to run out. If this page stops answering, Lumi lets go itself after 5 seconds of the same two keys.</li>
+        <li><b>Touch ID and the power key</b> can't be held. A press locks your Mac, which ends cleaning.</li>
+        <li><b>Another app's password field</b> can keep the keyboard to itself; cleaning can't start until it lets go.</li>
       </ul>
     </details>
   </div>

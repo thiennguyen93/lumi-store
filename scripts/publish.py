@@ -99,6 +99,9 @@ CAPABILITIES = {
     "snippets",
     # Lumi 1.33: the `menu` interface (rows of its own in the menu bar menu).
     "menu",
+    # Lumi 1.38: a page's `/__lumi__/input-hold` (hold every key, and the
+    # pointer if asked, for a while).
+    "input-hold",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way

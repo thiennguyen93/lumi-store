@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0] - 2026-10-06
+
+### Added
+
+- Clean keyboard: lock every key for 30 seconds to 5 minutes so you can wipe the keyboard without typing anything, in any app. Brightness, volume, media, Mission Control and Spotlight keys are held too, and the trackpad can be locked as well.
+- While cleaning, each key you wipe lights up on the board and is checked for double-typing, so cleaning is a test too. A summary says how many keys were pressed when it ends.
+- Unlock by holding the button for 2 seconds, by holding esc and right shift together for 2 seconds, or let the time run out. Touch ID locking your Mac ends cleaning too.
+- While cleaning, F1–F12 light up without fn, and ⌘Tab, ⌘Space and other shortcuts macOS takes first can be tested.
+
+### Changed
+
+- Needs Lumi 1.38 or later.
+
 ## [0.3.1] - 2026-09-30
 
 ### Added

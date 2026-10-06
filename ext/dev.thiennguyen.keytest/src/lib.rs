@@ -2,13 +2,14 @@
 //! that lights each key of a MacBook keyboard as it is pressed.
 //!
 //! **Nearly all of it is the page.** Key events are the page's own — the
-//! webview hears them while it has focus — and the layout it remembers goes
+//! webview hears them while it has focus — and what it remembers goes
 //! through the bridge's settings route, which needs no call into this
-//! component. The one thing the page cannot learn by itself is whether
-//! Lumi's Hyper key has Caps Lock, and that is the one request answered
-//! here: `lumi::hyper_key_enabled`, which costs no capability. So the
-//! manifest still declares none, and the review sheet can say "reaches
-//! nothing outside Lumi", the honest description of a keyboard tester.
+//! component. Cleaning is the page's too: it asks Lumi over the bridge to
+//! hold the keyboard (`/__lumi__/input-hold`), which is what the manifest's
+//! one capability, `input-hold`, is for — nothing in this component reaches
+//! it. The one thing the page cannot learn by itself is whether Lumi's
+//! Hyper key has Caps Lock, and that is the one request answered here:
+//! `lumi::hyper_key_enabled`, which costs no capability.
 
 use lumi_extension_api as lumi;
 

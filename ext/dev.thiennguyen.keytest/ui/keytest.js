@@ -1,11 +1,15 @@
 // Keyboard Test: light each key of a MacBook keyboard as it is pressed,
-// count what has been covered, and catch a key that types twice.
+// count what has been covered, and catch a key that types twice — and
+// clean the keyboard: hold every key from every app while it is wiped,
+// lighting each one wiped, so cleaning is a test too.
 //
 // Keys are matched by `KeyboardEvent.code` — the physical position, not
 // the character — so the test means the same thing under any input
-// source, Vietnamese Telex included. Nothing here calls the extension's
-// own code: the one thing kept between visits, the layout, goes through
-// the bridge's settings route.
+// source, Vietnamese Telex included. What is kept between visits — the
+// layout and the cleaning choices — goes through the bridge's settings
+// route; the one question for the extension's own code is whether Lumi's
+// Hyper key is on (`askHyper`); and cleaning is Lumi's input hold, asked
+// for over the bridge (`/__lumi__/input-hold`).
 
 (() => {
   "use strict";
@@ -14,6 +18,40 @@
    *  re-pressed by a finger: human double-taps sit well above 60 ms, a
    *  chattering switch bounces an up and a down in a few. */
   const CHATTER_MS = 40;
+
+  /** A re-press `gap` ms after the last release is chatter. Only a gap
+   *  measured on one clock counts: a key from the page's own events is
+   *  timed on `performance.now()`, a key Lumi relays on the Mac's uptime
+   *  (`detail.time`), and a release on one with a press on the other is
+   *  a huge gap or a negative one — never a bounce. */
+  const bounced = (gap) => gap >= 0 && gap < CHATTER_MS;
+
+  /** How long the unlock button and the unlock keys are held. */
+  const UNLOCK_MS = 2000;
+
+  /** The function row's system keys, as Lumi names them while cleaning,
+   *  onto the keycap each sits under on a MacBook — F1–F12 pressed without
+   *  fn are brightness, Mission Control, Spotlight, media and volume, not
+   *  F-keys. Two names for F7 and F9 (older keyboards send track keys) and
+   *  for F5 and F6 (keyboard backlight on an Intel MacBook Pro). */
+  const FN_ROW = {
+    BrightnessDown: "F1",
+    BrightnessUp: "F2",
+    ShowAllWindows: "F3",
+    BrowserSearch: "F4",
+    Dictate: "F5",
+    KbdIllumDown: "F5",
+    DoNotDisturb: "F6",
+    KbdIllumUp: "F6",
+    MediaRewind: "F7",
+    MediaTrackPrevious: "F7",
+    MediaPlayPause: "F8",
+    MediaFastForward: "F9",
+    MediaTrackNext: "F9",
+    AudioVolumeMute: "F10",
+    AudioVolumeDown: "F11",
+    AudioVolumeUp: "F12",
+  };
 
   // One row per line of keys, each key [code, label, width, options]:
   // widths in key units, and every row is 14.5 of them — a MacBook Pro's
@@ -308,12 +346,14 @@
     const now = event.timeStamp;
     if (!down.has(code)) {
       const released = lastUp.get(code);
-      if (released !== undefined && now - released < CHATTER_MS) {
+      if (released !== undefined && bounced(now - released)) {
         chatter.set(code, (chatter.get(code) || 0) + 1);
+        if (cleaning) cleanChatter.add(code);
       }
     }
     down.set(code, now);
     seen.add(code);
+    if (cleaning) cleanPressed.add(code);
     paint();
   }
 
@@ -430,40 +470,61 @@
   // manifest): WebKit sends a page nothing for it, so Lumi's event tap
   // hears it and dispatches `lumi:fn` with `{ down }`. Held and released
   // like any key, so a stuck or bouncing fn shows up the same way.
+  //
+  // Lumi 1.38 and later also sends each edge as `lumi:key` with code `Fn`,
+  // right after this one; once that has been heard, this is left to it,
+  // so one press is never counted twice.
+  let fnAsKey = false;
   window.addEventListener("lumi:fn", (event) => {
+    if (fnAsKey) return;
     const now = performance.now();
     if (event.detail && event.detail.down) {
       lastOut.textContent = "fn";
-      if (!down.has("Fn")) {
-        const released = lastUp.get("Fn");
-        if (released !== undefined && now - released < CHATTER_MS) {
-          chatter.set("Fn", (chatter.get("Fn") || 0) + 1);
-        }
-      }
-      down.set("Fn", now);
-      seen.add("Fn");
+      press("Fn", { repeat: false, timeStamp: now });
     } else {
-      down.delete("Fn");
-      lastUp.set("Fn", now);
+      release("Fn", now);
     }
-    paint();
   });
 
-  // F1–F12 taken from macOS's shortcuts by Lumi (`function-keys = true`):
-  // while the tab is in front they arrive as `lumi:key` rather than as key
-  // events, so F11 — Show Desktop — can be tested without the window being
-  // swept aside. Counted and chatter-checked like any key.
+  /** One key coming up: no longer held, and its time kept for the next
+   *  press's chatter check. */
+  function release(code, now) {
+    down.delete(code);
+    lastUp.set(code, now);
+    paint();
+  }
+
+  // Keys Lumi hands the page rather than WebKit, as `lumi:key`:
+  //
+  // - F1–F12 taken from macOS's shortcuts (`function-keys = true`), so F11
+  //   — Show Desktop — tests without the window being swept aside;
+  // - fn on its own (`fn-key = true`, Lumi 1.38 and later);
+  // - while cleaning, every key on the Mac, the function row's system keys
+  //   by their own names (`FN_ROW`).
+  //
+  // Counted and chatter-checked like any key, timed on the Mac's clock
+  // when Lumi says when (`detail.time`, 1.38) and on arrival otherwise.
   window.addEventListener("lumi:key", (event) => {
     const detail = event.detail || {};
-    if (typeof detail.code !== "string" || !keys.has(detail.code)) return;
-    const now = performance.now();
+    if (typeof detail.code !== "string") return;
+    const now = typeof detail.time === "number" ? detail.time : performance.now();
+    const named = detail.code;
+    const code = FN_ROW[named] || named;
+    if (code === "Fn") fnAsKey = true;
+    if (cleaning) unlockKeys(code, detail.down === true);
+    if (!keys.has(code)) {
+      if (detail.down) lastOut.textContent = `${named} (not on this layout)`;
+      return;
+    }
     if (detail.down) {
-      lastOut.textContent = `${detail.code} · taken from macOS by Lumi`;
-      press(detail.code, { repeat: false, timeStamp: now });
-    } else {
-      down.delete(detail.code);
-      lastUp.set(detail.code, now);
-      paint();
+      lastOut.textContent = code === named
+        ? `${code} · ${cleaning ? "while cleaning" : "taken from macOS by Lumi"}`
+        : `${code} · ${named}`;
+      // Caps Lock arrives as a press with no hold: it toggles a lock.
+      if (code === "CapsLock") return flash(code);
+      press(code, { repeat: detail.repeat === true, timeStamp: now });
+    } else if (code !== "CapsLock") {
+      release(code, now);
     }
   });
 
@@ -484,12 +545,13 @@
       .catch(() => {});
   }
 
-  // Keys held while the page loses focus never send their up here.
+  // Keys held while the page loses focus never send their up here — unless
+  // cleaning, when they come from Lumi whatever has focus.
   const focusChanged = () => {
     const focused = document.hasFocus();
     if (focused && hint.hidden === false) askHyper();
-    hint.hidden = focused;
-    if (!focused && down.size) {
+    hint.hidden = focused || cleaning;
+    if (!focused && !cleaning && down.size) {
       down.clear();
       paint();
     }
@@ -498,6 +560,223 @@
   window.addEventListener("blur", focusChanged);
   board.addEventListener("mousedown", () => board.focus());
   hint.addEventListener("click", () => board.focus());
+
+  // ----------------------------------------------------------------------
+  // Cleaning: Lumi holds every key on the Mac (`PUT /__lumi__/input-hold`)
+  // and relays each one here, so the board lights as the keyboard is wiped.
+  // The ways out this page offers are its own — the unlock button and esc +
+  // right shift held — and both end in a `DELETE`. Lumi keeps ways out of
+  // its own besides (the time running out, the same two keys held longer,
+  // the screen locking, its menu bar row) and tells the page how it ended
+  // with `lumi:input-hold`.
+  // ----------------------------------------------------------------------
+
+  const cleanButton = document.getElementById("clean");
+  const sheet = document.getElementById("clean-sheet");
+  const pointerBox = document.getElementById("clean-pointer");
+  const cleanError = document.getElementById("clean-error");
+  const startButton = document.getElementById("clean-start");
+  const lockHead = document.getElementById("clean-lock");
+  const lockTime = document.getElementById("clean-time");
+  const lockExit = document.getElementById("clean-exit");
+  const holdButton = document.getElementById("clean-hold");
+  const done = document.getElementById("clean-done");
+
+  /** How long to clean for, and whether the trackpad goes too — kept for
+   *  next time. */
+  let cleanSeconds = 60;
+  let cleanPointer = false;
+  /** Whether a hold is on, and when it ends at the latest (Unix ms). */
+  let cleaning = false;
+  let cleanUntil = 0;
+  let ticker;
+  /** What was pressed, and what typed twice, during this cleaning. */
+  const cleanPressed = new Set();
+  const cleanChatter = new Set();
+
+  function drawSheet() {
+    for (const button of sheet.querySelectorAll("[data-seconds]")) {
+      button.setAttribute("aria-checked", String(Number(button.dataset.seconds) === cleanSeconds));
+    }
+    pointerBox.checked = cleanPointer;
+  }
+
+  function saveCleaning() {
+    fetch("/__lumi__/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ "clean-seconds": String(cleanSeconds), "clean-pointer": String(cleanPointer) }),
+    }).catch(() => {});
+  }
+
+  cleanButton.addEventListener("click", () => {
+    sheet.hidden = !sheet.hidden;
+    cleanError.hidden = true;
+    done.hidden = true;
+    drawSheet();
+    if (!sheet.hidden) startButton.focus();
+  });
+  document.getElementById("clean-cancel").addEventListener("click", () => {
+    sheet.hidden = true;
+    board.focus();
+  });
+  for (const button of sheet.querySelectorAll("[data-seconds]")) {
+    button.addEventListener("click", () => {
+      cleanSeconds = Number(button.dataset.seconds);
+      drawSheet();
+      saveCleaning();
+    });
+  }
+  pointerBox.addEventListener("change", () => {
+    cleanPointer = pointerBox.checked;
+    saveCleaning();
+  });
+
+  startButton.addEventListener("click", async () => {
+    cleanError.hidden = true;
+    let answer;
+    try {
+      answer = await fetch("/__lumi__/input-hold", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ seconds: cleanSeconds, pointer: cleanPointer, keys: true }),
+      });
+    } catch {
+      return refuse("Cleaning works only inside Lumi.");
+    }
+    const body = await answer.text();
+    if (answer.status === 404) return refuse("Cleaning needs Lumi 1.38 or later.");
+    if (!answer.ok) return refuse(sentence(body));
+    let held;
+    try {
+      held = JSON.parse(body);
+    } catch {
+      return refuse("Lumi answered in a way this page does not understand.");
+    }
+    beginCleaning(held);
+  });
+
+  /** Lumi's refusal, as a sentence for the sheet. */
+  const sentence = (text) => {
+    const said = String(text || "").trim();
+    return said ? `${said.charAt(0).toUpperCase()}${said.slice(1)}.`.replace(/\.\.$/, ".") : "Lumi would not lock the keyboard.";
+  };
+
+  function refuse(text) {
+    cleanError.textContent = text;
+    cleanError.hidden = false;
+  }
+
+  function beginCleaning(held) {
+    cleaning = true;
+    cleanUntil = typeof held.until === "number" ? held.until : Date.now() + cleanSeconds * 1000;
+    cleanPressed.clear();
+    cleanChatter.clear();
+    down.clear();
+    sheet.hidden = true;
+    document.body.classList.add("cleaning");
+    lockHead.hidden = false;
+    lockExit.hidden = false;
+    // A locked trackpad cannot press a button, so only the keys are offered.
+    const keysOnly = held.pointer === true;
+    holdButton.hidden = keysOnly;
+    document.getElementById("clean-or").textContent = keysOnly ? "Hold" : "Or hold";
+    document.getElementById("clean-to").textContent = keysOnly ? " to unlock." : ".";
+    hint.hidden = true;
+    tick();
+    ticker = setInterval(tick, 250);
+    paint();
+  }
+
+  function tick() {
+    const left = Math.max(0, Math.ceil((cleanUntil - Date.now()) / 1000));
+    lockTime.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+  }
+
+  /** Let go — this page's own ways out end here. */
+  function unlock() {
+    fetch("/__lumi__/input-hold", { method: "DELETE" }).catch(() => {});
+  }
+
+  /** How a cleaning ended, by Lumi's `reason`. */
+  const ENDINGS = {
+    released: "Unlocked.",
+    deadline: "Time's up — the keyboard types again.",
+    chord: "Unlocked with esc and right shift.",
+    menu: "Released from Lumi's menu.",
+    locked: "Your Mac locked, so cleaning ended.",
+    "secure-input": "Another app took the keyboard for a password field, so cleaning ended.",
+    gone: "Cleaning ended.",
+  };
+
+  window.addEventListener("lumi:input-hold", (event) => {
+    if (!cleaning) return;
+    const detail = event.detail || {};
+    cleaning = false;
+    clearInterval(ticker);
+    cancelUnlockKeys();
+    cancelHold();
+    document.body.classList.remove("cleaning");
+    lockHead.hidden = true;
+    lockExit.hidden = true;
+    down.clear();
+    const pressed = cleanPressed.size;
+    const twice = [...cleanChatter].map(nameOf);
+    const counted = pressed === 0
+      ? "No key was pressed."
+      : `${pressed} ${pressed === 1 ? "key" : "keys"} pressed while cleaning${twice.length ? `; typed twice: ${twice.join(", ")}` : ", none typed twice"}.`;
+    done.textContent = `${ENDINGS[detail.reason] || ENDINGS.gone} ${counted}`;
+    done.hidden = false;
+    focusChanged();
+    paint();
+  });
+
+  // Hold to unlock: two seconds pressed, so a palm on the trackpad or a
+  // tap-to-click while wiping does not count.
+  let holdTimer;
+  function cancelHold() {
+    clearTimeout(holdTimer);
+    holdTimer = undefined;
+    holdButton.classList.remove("holding");
+  }
+  holdButton.addEventListener("pointerdown", (event) => {
+    if (!cleaning) return;
+    // Captured so sliding off the button while holding still counts as
+    // letting go; a pointer that cannot be captured still holds.
+    try {
+      holdButton.setPointerCapture(event.pointerId);
+    } catch {}
+    holdButton.classList.add("holding");
+    holdTimer = setTimeout(() => {
+      cancelHold();
+      unlock();
+    }, UNLOCK_MS);
+  });
+  for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
+    holdButton.addEventListener(type, cancelHold);
+  }
+
+  // esc and right shift, held together for two seconds: the way out that
+  // needs no trackpad. Two keys in opposite corners, so a cloth across the
+  // board does not hold both.
+  const unlockDown = new Set();
+  let unlockTimer;
+  function cancelUnlockKeys() {
+    clearTimeout(unlockTimer);
+    unlockTimer = undefined;
+    unlockDown.clear();
+  }
+  function unlockKeys(code, isDown) {
+    if (code !== "Escape" && code !== "ShiftRight") return;
+    if (isDown) unlockDown.add(code);
+    else unlockDown.delete(code);
+    if (unlockDown.size === 2) {
+      if (unlockTimer === undefined) unlockTimer = setTimeout(unlock, UNLOCK_MS);
+    } else {
+      clearTimeout(unlockTimer);
+      unlockTimer = undefined;
+    }
+  }
 
   document.getElementById("reset").addEventListener("click", () => {
     seen.clear();
@@ -536,6 +815,10 @@
         layout = settings.layout;
         draw();
       }
+      const seconds = Number(settings["clean-seconds"]);
+      if ([30, 60, 120, 300].includes(seconds)) cleanSeconds = seconds;
+      cleanPointer = settings["clean-pointer"] === "true";
+      drawSheet();
     })
     .catch(() => {});
 })();
