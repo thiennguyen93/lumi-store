@@ -11,6 +11,8 @@ laptop run identically:
       validate CHANGELOG.md (a section for the version it ships)
       pack manifest.toml + extension.wasm into a reproducible .tar.gz
       minisign the tarball with the store key
+      -- or, for a version the store already serves, the package and
+         signature it was first published as (`carried`)
   -> dist/extensions/{index.json, *.tar.gz, *.tar.gz.sig}
 
 `--check` runs everything up to the signature and stops there: every
@@ -89,6 +91,10 @@ BASE_URL = os.environ.get(
     "BASE_URL", "https://thiennguyen93.github.io/lumi-store/extensions"
 ).rstrip("/")
 KEY_FILE = os.environ.get("STORE_KEY_FILE", "")
+# The store as it is served now: the gh-pages branch's `extensions/`, as
+# publish.yml and check.yml unpack it. Unset on a laptop, where nothing is
+# carried and nothing is held to it.
+PUBLISHED_DIR = os.environ.get("PUBLISHED_DIR", "")
 
 # What Lumi lets an extension declare.
 CAPABILITIES = {
@@ -969,8 +975,11 @@ def pack(
     strip_comments: bool = False,
 ) -> bytes:
     """A reproducible tarball: fixed metadata, fixed order, no gzip
-    timestamp — an unchanged extension republished is identical bytes,
-    so mirrors and caches can compare instead of guessing.
+    timestamp — the same members always pack to the same bytes. The
+    members are not always the same: `extension.wasm` comes out of
+    whatever Rust the runner has, and two runner images build one source
+    into two different components. That is why a published version is
+    never packed again (`carried`).
 
     `CHANGELOG.md` rides in the package as well as being published beside
     it: Lumi's Changelog tab reads the installed copy's, so it says what
@@ -1028,6 +1037,93 @@ def sign(entry_id: str, package_path: Path):
         ],
         check=True,
     )
+
+
+def serving() -> dict:
+    """The index the store serves now, by id — `PUBLISHED_DIR/index.json`.
+    Empty when the run was not told where it is, or nothing is published
+    yet."""
+    if not PUBLISHED_DIR:
+        return {}
+    path = Path(PUBLISHED_DIR) / "index.json"
+    if not path.is_file():
+        return {}
+    return {row["id"]: row for row in json.loads(path.read_text(encoding="utf-8"))}
+
+
+def sources_sha256(entry_id: str, crate: Path, ext: dict) -> str:
+    """A fingerprint of what the package is made from: every file git
+    tracks in the entry's source, by path and content — except the store
+    page's own, `STORE.md` and the folders the screenshots live in, which
+    change without a new version (`screenshots_of`).
+
+    Read from git, never the disk, so a build's leftovers (target/,
+    node_modules/, a web build) do not count; and from the commit main
+    pins, so the check job and the sign job get the same answer."""
+    listed = subprocess.run(
+        ["git", "-C", str(crate), "ls-files", "-s", "-z"],
+        capture_output=True,
+        check=False,
+    )
+    if listed.returncode != 0:
+        fail(entry_id, f"git cannot list the source at {crate}: {listed.stderr.decode(errors='replace').strip()}")
+    page_files = {"STORE.md"}
+    page_folders = set()
+    shots = ext.get("screenshots", [])
+    for shot in shots if isinstance(shots, list) else []:
+        if not isinstance(shot, str):
+            continue  # screenshots_of refuses it, by name
+        folder = shot.rpartition("/")[0]
+        if folder:
+            page_folders.add(folder + "/")
+        else:
+            page_files.add(shot)
+    rows = []
+    for record in listed.stdout.split(b"\0"):
+        if not record:
+            continue
+        stat, _, path = record.decode("utf-8").partition("\t")
+        if path in page_files or any(path.startswith(folder) for folder in page_folders):
+            continue
+        mode, blob, _ = stat.split(" ")
+        rows.append(f"{path}\0{mode}\0{blob}")
+    return hashlib.sha256("\n".join(sorted(rows)).encode("utf-8")).hexdigest()
+
+
+def carried(entry_id: str, version: str, sources: str, row: "dict | None") -> "Path | None":
+    """The package this version was first published as, when the store
+    already serves it — its signature lies beside it, as `.sig`.
+
+    A published version is never packed again. Its URL is named by the
+    version and is cached as one file — what serves the store keeps a file
+    for a year — while the signature is a second file, cached on its own.
+    Packed again, the wasm comes out different (`pack`), and a cache that
+    holds the old package beside the new signature hands Lumi a pair that
+    does not verify: "not signed by the extension store". Carried, a
+    publish that changes nothing about an extension — release notes, a
+    picture, another extension — leaves its two files byte for byte.
+
+    The other side of that: a source that changed under a version already
+    out would never ship. So a version is held to the sources it was
+    published from (`sources_sha256`), and moving them without a new
+    version stops the run — on the pull request, in check.yml, before any
+    merge. A row from before the fingerprint was recorded is carried as
+    it is, and recorded from then on."""
+    if row is None or row.get("version") != version:
+        return None
+    was = row.get("sourcesSha256")
+    if was and was != sources:
+        fail(
+            entry_id,
+            f"{version} is already published, and its source has changed since; a published "
+            "version is never packed again, so give the change a version of its own "
+            "(manifest.toml, Cargo.toml, web/package.json, CHANGELOG.md)",
+        )
+    name = f"{entry_id}-{version}.tar.gz"
+    package = Path(PUBLISHED_DIR) / name
+    if not package.is_file() or not package.with_name(name + ".sig").is_file():
+        fail(entry_id, f"the store's index lists {version}, and the store has no {name} with its signature")
+    return package
 
 
 def listed_entries() -> list:
@@ -1478,6 +1574,7 @@ def build_one(entry_id: str, out: Path):
 def main(check: bool = False, built: "Path | None" = None):
     listed = listed_entries()
     DIST.mkdir(parents=True, exist_ok=True)
+    served = serving()
     index = []
     for entry in listed:
         entry_id = entry["id"]
@@ -1491,23 +1588,33 @@ def main(check: bool = False, built: "Path | None" = None):
         releases = changelog_of(entry_id, crate, ext["version"])
         versions_of(entry_id, entry, crate, ext["version"])
         summaries = summaries_of(entry_id, releases)
-        # From a build job when the halves are split, built here when they
-        # are not — and in both cases the manifest and icon are packed from
-        # the reviewed source by this process.
-        if built is None:
-            wasm = build_wasm(entry_id, crate, bool(entry.get("private")))
-            ui_dir = ui_of(entry_id, entry, crate, manifest)
-        else:
-            wasm = built_wasm(entry_id, built)
-            ui_dir = built_ui(entry_id, entry, crate, manifest, built)
-        package = pack(entry_id, manifest_path, wasm, icon, ui_dir, strip_comments=bool(entry.get("private")))
+        made_from = sources_sha256(entry_id, crate, ext)
+        kept = carried(entry_id, ext["version"], made_from, served.get(entry_id))
         package_name = f"{entry_id}-{ext['version']}.tar.gz"
         package_path = DIST / package_name
-        package_path.write_bytes(package)
-        # A check has no key to sign with, by design: the job a pull
-        # request runs is the one a submission's build script runs in.
-        if not check:
-            sign(entry_id, package_path)
+        if kept is not None and not check:
+            # The bytes it went out as, and the signature made over them.
+            package = kept.read_bytes()
+            package_path.write_bytes(package)
+            Path(f"{package_path}.sig").write_bytes(Path(f"{kept}.sig").read_bytes())
+        else:
+            # From a build job when the halves are split, built here when
+            # they are not — and in both cases the manifest and icon are
+            # packed from the reviewed source by this process. A check
+            # still builds and packs a carried version: it is how the pull
+            # request learns its source still builds.
+            if built is None:
+                wasm = build_wasm(entry_id, crate, bool(entry.get("private")))
+                ui_dir = ui_of(entry_id, entry, crate, manifest)
+            else:
+                wasm = built_wasm(entry_id, built)
+                ui_dir = built_ui(entry_id, entry, crate, manifest, built)
+            package = pack(entry_id, manifest_path, wasm, icon, ui_dir, strip_comments=bool(entry.get("private")))
+            package_path.write_bytes(package)
+            # A check has no key to sign with, by design: the job a pull
+            # request runs is the one a submission's build script runs in.
+            if not check:
+                sign(entry_id, package_path)
 
         # The pictures, the page's text and the icon, beside the package,
         # each named by its content rather than the version: they change
@@ -1528,6 +1635,8 @@ def main(check: bool = False, built: "Path | None" = None):
             for line in newest["notes"].splitlines()[:12]:
                 print(f"    {line}")
             print(f"    (summary: {'yes' if summarized else 'pending — proposed after merge'})")
+            if kept is not None:
+                print(f"    (package: {newest['version']} is already published; the store keeps serving it)")
         # Same two spellings the host's own manifest reader accepts
         # (`min-lumi-version`, aliased from `min_lumi_version`) — mirrored
         # into the index so Lumi's update check can word a recommendation
@@ -1603,6 +1712,9 @@ def main(check: bool = False, built: "Path | None" = None):
                 # Extra context the app tolerates and future surfaces can
                 # use; Lumi tolerates unknown index fields by design.
                 "sha256": hashlib.sha256(package).hexdigest(),
+                # What the package was made from (`sources_sha256`): the
+                # next run carries this version only while it still is.
+                "sourcesSha256": made_from,
             }
         )
 
