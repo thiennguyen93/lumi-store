@@ -1,4 +1,24 @@
 {
+  "0.17.0": {
+    "notesSha256": "d9b9d5303901150895ab8be85d2062077a4d8ec1d780631268d06c274e4e3a97",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Background card remembers its position and size",
+          "items": [
+            "The background card reopens where you left it and at the size you set, if you use Lumi 1.40.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Thẻ nền nhớ vị trí và kích thước",
+          "items": [
+            "Thẻ nền mở lại đúng vị trí và kích thước bạn đã đặt, nếu bạn dùng Lumi 1.40.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
   "0.16.1": {
     "notesSha256": "34f41c17906df6f478e33315f819e4fc5fc1509e73e9a3d6e20eb395f8ab8eb5",
     "summary": {
