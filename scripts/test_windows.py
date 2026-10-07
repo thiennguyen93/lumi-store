@@ -54,6 +54,14 @@ class Overhang(unittest.TestCase):
         for wrong in ("-1", '"a lot"', "true"):
             self.assertIn("not a distance", refusal(f'kind = "panel"\nmaterial = "popover"\noverhang = {wrong}'))
 
+    def test_it_may_name_its_sides(self):
+        check('kind = "panel"\nmaterial = "popover"\noverhang = { below = 280, left = 280, right = 280 }')
+        check('kind = "panel"\nmaterial = "popover"\noverhang = {}')
+        refused = refusal('kind = "panel"\nmaterial = "popover"\noverhang = { below = -1 }')
+        self.assertIn("overhang below is not a distance", refused)
+        refused = refusal('kind = "panel"\nmaterial = "popover"\noverhang = { bottom = 280 }')
+        self.assertIn("table of sides", refused)
+
 
 class Listed(unittest.TestCase):
     def test_it_is_true_or_false(self):
