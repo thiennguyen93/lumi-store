@@ -2,3 +2,7 @@
 	path = ext/dev.thiennguyen.screenshot
 	url = git@github.com:thiennguyen93/lumi-screenshot.git
 	update = none
+[submodule "ext/dev.thiennguyen.sticky"]
+	path = ext/dev.thiennguyen.sticky
+	url = git@github.com:thiennguyen93/lumi-sticky-notes.git
+	update = none

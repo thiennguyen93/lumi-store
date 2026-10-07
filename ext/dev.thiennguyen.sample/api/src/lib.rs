@@ -268,7 +268,7 @@ pub fn fetch(request: &Request) -> Result<Response, String> {
 /// A window is declared under `[[window]]` and drawn from the `ui/` files
 /// that shipped in your package — any static bundle; a React build's
 /// output is the expected shape. The page runs with no access to Lumi's
-/// internals and no network: it talks to your extension through `fetch`
+/// internals and no network of its own: it talks to your extension through `fetch`
 /// against its own origin — `GET`/`PUT /__lumi__/settings` for your
 /// settings, and
 /// `POST /__lumi__/call` with any string, which arrives at your

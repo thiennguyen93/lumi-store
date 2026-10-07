@@ -10,9 +10,9 @@
 # the key every copy of Lumi trusts. The same reason keeps the token out of
 # the checkout (`persist-credentials: false`) and the permissions at read.
 #
-# One secret does reach this job on a pull request from this repository:
-# the read-only deploy key for the private entries' source, handed to the
-# one step that fetches it and gone from the disk before anything is
+# Secrets do reach this job on a pull request from this repository: the
+# private entries' read-only deploy keys, one per entry, handed to the one
+# step that fetches their source and gone from the disk before anything is
 # built. A fork's run has no secrets, fetches nothing, and `--check`
 # skips those entries and says so. publish.yml's header has the rest.
 #
@@ -42,7 +42,8 @@ jobs:
       # checkout above left them empty.
       - name: Private sources
         env:
-          DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+          SCREENSHOT_DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+          STICKY_DEPLOY_KEY: ${{ secrets.STICKY_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
 
       # No minisign: nothing here signs. corepack for a web entry's pinned

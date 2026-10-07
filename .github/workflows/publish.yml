@@ -44,9 +44,10 @@
 # **Private entries** (`private = true` in extensions.toml) are the store
 # owner's closed-source extensions: private repos, pinned as submodules
 # marked `update = none`, so every recursive checkout here skips them.
-# `scripts/fetch-private.sh` checks them out with a read-only deploy key,
-# which opens that one repository and nothing else, in three places only:
-# the entry's own build leg — before `publish.py --build`, with the key
+# `scripts/fetch-private.sh` checks each out with a read-only deploy key of
+# its own (`<NAME>_DEPLOY_KEY`, the id's last part), which opens that one
+# repository and nothing else, in three places only: the entry's own build
+# leg — handed only its own key, before `publish.py --build`, with the key
 # deleted by the time any build script runs — the sign job, which packs
 # their manifests and icons, and the discussions job, which reads their
 # names for the threads; the last two run no submission's code. Their
@@ -108,11 +109,14 @@ jobs:
 
       # Only in a private entry's own leg, and before the build: the key
       # is on disk for this step alone.
+      # Each key only in its own entry's leg: a leg is handed the one
+      # secret that opens its repository, and an empty string for the rest.
       - name: Private source
         if: contains(fromJSON(needs.plan.outputs.private), matrix.id)
         env:
           ID: ${{ matrix.id }}
-          DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+          SCREENSHOT_DEPLOY_KEY: ${{ matrix.id == 'dev.thiennguyen.screenshot' && secrets.SCREENSHOT_DEPLOY_KEY || '' }}
+          STICKY_DEPLOY_KEY: ${{ matrix.id == 'dev.thiennguyen.sticky' && secrets.STICKY_DEPLOY_KEY || '' }}
         run: scripts/fetch-private.sh "$ID"
 
       # No minisign and no secret: nothing here signs. Node is the
@@ -168,7 +172,8 @@ jobs:
       # from them runs here, and the key is gone before the next step.
       - name: Private sources
         env:
-          DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+          SCREENSHOT_DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+          STICKY_DEPLOY_KEY: ${{ secrets.STICKY_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
       - id: sync
         env:
@@ -194,7 +199,8 @@ jobs:
       # below. Nothing from them runs here.
       - name: Private sources
         env:
-          DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+          SCREENSHOT_DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+          STICKY_DEPLOY_KEY: ${{ secrets.STICKY_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
 
       - name: Toolchain
