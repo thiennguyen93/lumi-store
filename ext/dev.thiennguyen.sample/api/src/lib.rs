@@ -399,6 +399,16 @@ pub fn set_pinned(name: &str, pinned: bool) -> Result<(), String> {
     lumi::ext::ui::set_pinned(name, pinned)
 }
 
+/// Bring one of your windows that is up to the front of the windows at its
+/// level, without the keyboard: the window holding it keeps it. For windows
+/// of yours that overlap, ordered as you say. Levels still stand: a panel
+/// up with the keyboard sits above pinned panels, whatever you raise under
+/// it. Only a window that is up, from a request your page sends on a press.
+/// Needs Lumi 1.41.0 or later — say so with `min-lumi-version`.
+pub fn raise_window(name: &str) -> Result<(), String> {
+    lumi::ext::ui::raise_window(name)
+}
+
 /// Make one of your windows' unified title bar `height` points tall, and
 /// macOS's traffic lights move to stay centred in it — a compact mode, a
 /// second row of controls. Answers the height it became, clamped to 32–96;

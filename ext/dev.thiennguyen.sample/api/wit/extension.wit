@@ -463,6 +463,16 @@ interface ui {
     /// Added in Lumi 1.29.
     set-pinned: func(name: string, pinned: bool) -> result<_, string>;
 
+    /// Bring one of your windows that is up to the front of the windows at
+    /// its level, without the keyboard: the window holding it keeps it. For
+    /// windows of yours that overlap — a note left on the desk raised over
+    /// the panel it came from when that panel is pressed. Levels still
+    /// stand: a panel up with the keyboard sits above pinned panels and
+    /// ordinary windows, so one of those raised stays under it. Only a
+    /// window that is up, and only for something the person did in one of
+    /// your windows. Added in Lumi 1.41.
+    raise-window: func(name: string) -> result<_, string>;
+
     /// Make one of your windows' unified title bar `height` points tall —
     /// taller or shorter than the manifest's `titlebar-height` — and macOS's
     /// traffic lights move to stay centred in it. Answers the height it
