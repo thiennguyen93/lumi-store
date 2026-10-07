@@ -199,6 +199,30 @@ git submodule update --init --checkout ext/dev.thiennguyen.screenshot
 This is not open to third-party submissions: the store's promise to
 everyone else is still a public repo, reviewed before it ships.
 
+### Following a first-party entry
+
+A private entry may also say `follow = true`. Then a new version is one
+push away: bump the version and the CHANGELOG in the extension's own repo,
+push to its `main`, and within a quarter of an hour `.github/workflows/follow.yml`
+opens the pull request that moves its pin — titled with the version, with
+the CHANGELOG sections it moves past and a link to the check that built and
+packed it. Merging it publishes it, as merging any pin does. A later
+version, pushed before that one is merged, brings the same pull request up
+to date (`follow/<id>`). Commits on `main` that leave the version as it is
+propose nothing.
+
+Only a private entry may be followed (`publish.py` refuses `follow` on any
+other): following moves a pin with nobody reviewing the commit, which is
+the owner's to do for the owner's own source and nobody else's. The look
+uses the entry's read-only deploy key; the check is check.yml's, with no
+token that writes; the job that pushes the branch and opens the pull
+request builds nothing and holds no key (`scripts/follow.py`).
+
+It needs the repository setting "Allow GitHub Actions to create and approve
+pull requests" (Settings → Actions → General); without it, the propose job
+fails and says so. Run it by hand from the Actions tab (`follow`, Run
+workflow) to look at once.
+
 ## Store pictures
 
 The first-party extensions' `screenshots` are promo pages: a headline over

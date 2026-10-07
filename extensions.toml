@@ -16,6 +16,9 @@
 #                            # top of Discover, in this file's order
 # private = true             # first-party only: closed source, fetched with a
 #                            # deploy key (README, "First-party private entries")
+# follow = true              # private only: a newer version on the source's main
+#                            # is proposed as a pull request by follow.yml
+#                            # (README, "Following a first-party entry")
 
 # First-party and in-tree — a third-party entry is a pinned submodule
 # instead; ext/dev.thiennguyen.sample/README.md carries the distinction.
@@ -45,6 +48,7 @@ web = "web"
 category = "Utilities"
 featured = true
 private = true
+follow = true
 
 
 # First-party and in-tree, for the sample's reason. Its panel is React +
@@ -70,3 +74,4 @@ subdir = "."
 web = "web"
 category = "Productivity"
 private = true
+follow = true
