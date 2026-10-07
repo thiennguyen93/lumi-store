@@ -123,6 +123,8 @@ PARAM_KINDS = {
 }
 # The kinds whose value is one or more of their options.
 CHOICE_KINDS = {"select", "segmented", "multiselect"}
+# `manifest::MAX_COPIES`: the most copies one `[[window]]` may have.
+MAX_COPIES = 32
 # Lowercase only, as Lumi's `manifest::is_valid_id` is: the id is a
 # directory name on a case-insensitive filesystem, and a second spelling of
 # an installed id was a takeover of its directory.
@@ -412,6 +414,26 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"the window {name} sets a material, which only a panel has")
         if material not in ("", "popover", "hud", "sidebar", "clear"):
             fail(entry_id, f'the panel {name} asks for material {material!r}; a panel\'s material is "popover", "hud", "sidebar" or "clear"')
+        # `manifest.rs`'s listed rule: every kind's, and a boolean.
+        if "listed" in window and not isinstance(window["listed"], bool):
+            fail(entry_id, f"the window {name}'s listed = {window['listed']!r} is not true or false")
+        # `manifest.rs`'s copies rule, same sentences: 2 to 32, never listed.
+        if "copies" in window:
+            copies = window["copies"]
+            if isinstance(copies, bool) or not isinstance(copies, int) or not 2 <= copies <= MAX_COPIES:
+                fail(entry_id, f"the window {name} asks for {copies!r} copies; a window has 2 to {MAX_COPIES}, or leaves copies out to be one")
+            if window.get("listed") is True:
+                fail(entry_id, f"the window {name} has copies and says listed = true; a copy has no button — only the extension knows what one is for")
+        # `manifest.rs`'s overhang rule, same sentences: a panel's with a
+        # material, a distance in points. Lumi clamps a long one to 400.
+        if "overhang" in window:
+            overhang = window["overhang"]
+            if kind == "window":
+                fail(entry_id, f"the window {name} sets an overhang, which only a panel has — a window's page draws inside its frame")
+            if not material:
+                fail(entry_id, f"the panel {name} sets an overhang, which needs a material: the band around the panel is see-through, and a panel without one is an opaque sheet")
+            if isinstance(overhang, bool) or not isinstance(overhang, (int, float)) or not overhang >= 0:
+                fail(entry_id, f"the panel {name}'s overhang is not a distance in points")
         # `manifest.rs`'s title bar rule, same sentences.
         titlebar = str(window.get("titlebar", "")).strip()
         if titlebar == "unified" and kind == "panel":
@@ -434,6 +456,18 @@ def check_manifest(entry_id: str, manifest: dict):
             floor = min(max(asked, least), most)
             if floor > size:
                 fail(entry_id, f"the window {name}'s {key} ({floor:g}) is more than its {side} ({size:g}); it would open smaller than it may be made")
+    # `manifest.rs`'s rule that every name a window answers to is one
+    # window's: a copy `card-2` and a window declared `card-2` would be one
+    # address for two windows.
+    answering = set()
+    for window in manifest.get("window", []):
+        name = window.get("name", "")
+        copies = window.get("copies")
+        names = [f"{name}-{k}" for k in range(1, copies + 1)] if "copies" in window else [name]
+        for one in names:
+            if one in answering:
+                fail(entry_id, f"two windows answer to {one}")
+            answering.add(one)
     check_page_tabs(entry_id, manifest)
     check_sheets(entry_id, manifest)
     check_shortcuts(entry_id, manifest)
@@ -1516,10 +1550,15 @@ def main(check: bool = False, built: "Path | None" = None):
                 # Window titles, for the page and any future surface: the
                 # one contribution that draws arbitrary content deserves a
                 # line on the shelf too. Lumi ignores this field — the app
-                # reads windows out of the verified package's manifest.
+                # reads windows out of the verified package's manifest. A
+                # window declared `listed = false`, or with copies, is the
+                # extension's to open and has no button in Lumi, so it is not
+                # on the shelf either; the review sheet, which reads the
+                # package, lists it.
                 "windows": [
                     w.get("title") or w.get("name", "")
                     for w in manifest.get("window", [])
+                    if w.get("listed", True) is not False and "copies" not in w
                 ],
                 "icon": icon_url,
                 # The Extension Store's shelf copy. The store's own words

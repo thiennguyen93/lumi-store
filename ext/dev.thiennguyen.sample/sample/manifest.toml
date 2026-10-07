@@ -250,6 +250,8 @@ position = "bottom-right"
 material = "popover"
 width = 280
 height = 200
+# Back where it was dragged to, at the size it was left at (Lumi 1.40.0).
+remember-frame = true
 
 [[command]]
 name = "card"
