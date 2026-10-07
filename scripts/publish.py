@@ -1147,6 +1147,12 @@ def listed_entries() -> list:
             fail(entry_id, "featured is true or false")
         if not isinstance(entry.get("private", False), bool):
             fail(entry_id, "private is true or false")
+        if not isinstance(entry.get("follow", False), bool):
+            fail(entry_id, "follow is true or false")
+        # Following moves a pin with nobody reviewing the commit: only for
+        # the owner's own source, whose `main` the owner alone pushes to.
+        if entry.get("follow") and not entry.get("private"):
+            fail(entry_id, "follow = true is for a first-party private entry only; a third-party pin moves in a reviewed pull request")
     return listed
 
 

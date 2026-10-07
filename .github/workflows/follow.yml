@@ -1,0 +1,137 @@
+# A newer version of a followed first-party entry, proposed as the pull
+# request that moves its pin — which the owner merges, and merging is
+# publishing, as it is for any pin (publish.yml).
+#
+# Followed means `follow = true` in extensions.toml, which `publish.py`
+# allows only beside `private = true`: the store owner's own extensions,
+# whose `main` only the owner pushes to. A third-party pin never moves here;
+# it moves in a pull request somebody reviewed. And nothing here publishes:
+# it proposes. The merge stays the owner's, and the merge is what runs
+# publish.yml — a pull request this workflow merged itself would not, since
+# GitHub runs no workflow for what a workflow's own token pushes.
+#
+# Every quarter of an hour, or by hand. Three jobs, kept apart for
+# publish.yml's reason — what builds a submission's code holds nothing that
+# writes, and what writes builds nothing:
+#
+#   look     reads each followed source's `main` and pinned commit with its
+#            read-only deploy key, and finds a version newer than the pin
+#            that `follow/<id>` does not already propose. Builds nothing.
+#            Nothing found, and the run ends here.
+#   check    check.yml's job on the found commits — the pins put in the
+#            index first, so fetch-private.sh checks those out — down to
+#            `publish.py --check`. A read-only token, never persisted.
+#   propose  commits each pin on `follow/<id>`, pushes it, and opens the
+#            pull request or brings the open one up to date, with the
+#            CHANGELOG sections the pin moves past. Writes contents and pull
+#            requests; holds no deploy key and builds nothing. Only after
+#            the check passed.
+#
+# Opening a pull request with the workflow's token needs the repository
+# setting "Allow GitHub Actions to create and approve pull requests"
+# (Settings → Actions → General). A pull request the token opens runs no
+# check.yml either — the same rule — which is why `check` runs here, and
+# the pull request links to it.
+
+name: follow
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+# Nothing by default; each job asks for what it needs.
+permissions: {}
+
+concurrency:
+  group: follow
+  cancel-in-progress: false
+
+jobs:
+  look:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      found: ${{ steps.look.outputs.found }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Look
+        id: look
+        env:
+          SCREENSHOT_DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+          STICKY_DEPLOY_KEY: ${{ secrets.STICKY_DEPLOY_KEY }}
+        run: python3 scripts/follow.py look >> "$GITHUB_OUTPUT"
+
+  check:
+    needs: look
+    if: needs.look.outputs.found != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: The pins proposed
+        env:
+          FOUND: ${{ needs.look.outputs.found }}
+        run: python3 scripts/follow.py pin
+
+      # check.yml from here on: the private entries' sources — at the
+      # commits pinned in the index just above — then what it builds.
+      - name: Private sources
+        env:
+          SCREENSHOT_DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
+          STICKY_DEPLOY_KEY: ${{ secrets.STICKY_DEPLOY_KEY }}
+        run: scripts/fetch-private.sh
+
+      - name: Toolchain
+        run: |
+          rustup target add wasm32-wasip2
+          corepack enable
+
+      - name: Store script tests
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
+      - name: Published packages
+        run: |
+          mkdir -p "$RUNNER_TEMP/published"
+          set +e
+          git ls-remote --exit-code --heads origin gh-pages > /dev/null
+          found=$?
+          set -e
+          case "$found" in
+            0)
+              git fetch -q --depth 1 origin gh-pages
+              git archive FETCH_HEAD extensions | tar -x -C "$RUNNER_TEMP/published"
+              ;;
+            2) echo "nothing published yet" ;;
+            *) exit "$found" ;;
+          esac
+
+      - name: Validate, build, pack
+        env:
+          PUBLISHED_DIR: ${{ runner.temp }}/published/extensions
+        run: python3 scripts/publish.py --check
+
+  propose:
+    needs: [look, check]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Propose
+        env:
+          FOUND: ${{ needs.look.outputs.found }}
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python3 scripts/follow.py propose
