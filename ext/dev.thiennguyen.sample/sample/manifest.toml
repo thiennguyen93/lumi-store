@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.16.1"
+version = "0.17.0"
 # 1.38.0: the floor is the newest thing this manifest names. The component
 # calls nothing past 1.34 — WIT 0.3 grew `screen` in 1.30, `snippets` in
 # 1.31, `permissions` and `menu` in 1.33, and `ui.set-size` and
