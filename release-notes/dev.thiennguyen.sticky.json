@@ -1,4 +1,198 @@
 {
+  "0.1.17": {
+    "notesSha256": "0bd3a62c7bbd6d28cfaaeae91a6fe509e620353d143108cf8f25478f0be84729",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clearer names for keeping notes visible",
+          "items": [
+            "Keep on top renamed to Float on Top to match macOS Stickies",
+            "Float on Top toolbar button now shows a window floating over another instead of a pin",
+            "Pin note remains for keeping a note at the top of Browse with ⌘1–⌘9"
+          ]
+        },
+        "vi": {
+          "headline": "Tên gọi rõ ràng hơn cho tính năng giữ ghi chú hiển thị",
+          "items": [
+            "Keep on top đổi tên thành Float on Top để khớp với Stickies của macOS",
+            "Nút Float on Top trên thanh công cụ giờ hiển thị cửa sổ nổi thay vì ghim",
+            "Pin note vẫn giữ nguyên để giữ ghi chú ở đầu Browse bằng ⌘1–⌘9"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.16": {
+    "notesSha256": "c030b43ad229c9b1ef197142eb575d21b2b792a0d339c5591dbc9bcef08971f5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Notes now feel like native Mac windows",
+          "items": [
+            "Title bar, footer, toolbar and menus no longer act like web text you can select",
+            "Right-clicking the interface no longer shows browser options like Reload or Inspect",
+            "Right-clicking text in a note still shows Copy, Look Up, Translate and spelling"
+          ]
+        },
+        "vi": {
+          "headline": "Ghi chú giờ hoạt động như cửa sổ Mac thực sự",
+          "items": [
+            "Thanh tiêu đề, chân trang, thanh công cụ và menu không còn bị chọn như văn bản web",
+            "Nhấp chuột phải giao diện không còn hiện tùy chọn trình duyệt như Reload hay Inspect",
+            "Nhấp chuột phải văn bản trong ghi chú vẫn hiện Copy, Tra cứu, Dịch và chính tả"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.15": {
+    "notesSha256": "4f5576013f79286bb9916b7b728d133b5f3ef985290b060f0bbdd24fa3f0161c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Slash menu keyboard and pointer navigation improvements",
+          "items": [
+            "The slash menu highlights only one row at a time when using both keyboard and pointer",
+            "Scrolling the slash menu with arrow keys keeps the selected row visible",
+            "Labels and headings in the slash menu now align in a single column"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện điều hướng bàn phím và con trỏ trong menu gạch chéo",
+          "items": [
+            "Menu gạch chéo chỉ tô sáng một hàng tại một thời điểm khi dùng cả bàn phím và con trỏ",
+            "Cuộn menu gạch chéo bằng phím mũi tên giữ hàng đã chọn luôn hiển thị",
+            "Nhãn và tiêu đề trong menu gạch chéo giờ căn thẳng trong một cột"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.14": {
+    "notesSha256": "88d66ae1ba15aa221f6c60963a3aee770a720ffc88233d701efa099076253e27",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Notes stay on top when the main panel opens",
+          "items": [
+            "Notes with Keep on top enabled now stay in front when you open the main panel"
+          ]
+        },
+        "vi": {
+          "headline": "Ghi chú vẫn ở trên khi mở bảng điều khiển",
+          "items": [
+            "Ghi chú có bật Luôn ở trên giờ vẫn nằm phía trước khi bạn mở bảng điều khiển chính"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.13": {
+    "notesSha256": "e1302c50fa13fe54bb87916e43a857a8d3772eb547988165d59470cdb74251eb",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "New icons for Sticky Notes",
+          "items": [
+            "New Sticky Note and Show Sticky Notes now have their own icons in menus",
+            "Notes on the desktop show Lumi's mark in the title bar"
+          ]
+        },
+        "vi": {
+          "headline": "Biểu tượng mới cho Sticky Notes",
+          "items": [
+            "New Sticky Note và Show Sticky Notes giờ có biểu tượng riêng trong menu",
+            "Ghi chú trên màn hình hiển thị logo Lumi trên thanh tiêu đề"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.12": {
+    "notesSha256": "0092d1714b1897fd31ae5dd486cde1309ac06fc65b704bac656eac3bc9086a76",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Notes stay visible when moved back from desktop",
+          "items": [
+            "Putting a note back from the desktop opens Sticky Notes on it when the main panel is closed"
+          ]
+        },
+        "vi": {
+          "headline": "Ghi chú vẫn hiển thị khi chuyển về từ desktop",
+          "items": [
+            "Chuyển ghi chú về từ desktop sẽ mở Sticky Notes trên desktop đó khi bảng chính đang đóng"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.11": {
+    "notesSha256": "9bed2627e99d6a106abe075c78f94e327140e0b9985bddbe9675a6b42b89e554",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Menu refinements",
+          "items": [
+            "Close is now the last item in the Actions menu, separated from Delete note"
+          ]
+        },
+        "vi": {
+          "headline": "Cải tiến menu",
+          "items": [
+            "Đóng giờ là mục cuối cùng trong menu Thao tác, tách biệt khỏi Xóa ghi chú"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.10": {
+    "notesSha256": "727d17467ee73a007580091ad78747fb044ad3d3b14e743ef9fe4efd4e7f0fa4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Close notes with Command-W",
+          "items": [
+            "You can now close a note with ⌘W or from its Actions menu, just like Esc"
+          ]
+        },
+        "vi": {
+          "headline": "Đóng ghi chú bằng Command-W",
+          "items": [
+            "Giờ bạn có thể đóng ghi chú bằng ⌘W hoặc từ menu Hành động, giống như phím Esc"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.9": {
+    "notesSha256": "243605c7a1a786ccd484e321d2410865f35dd562afc8085ced021adf2592771b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Notes now reach the menu bar on every display",
+          "items": [
+            "A note dragged to the top of the screen now goes right up to the menu bar, on every display"
+          ]
+        },
+        "vi": {
+          "headline": "Ghi chú giờ chạm được thanh menu trên mọi màn hình",
+          "items": [
+            "Ghi chú kéo lên đầu màn hình giờ chạm sát thanh menu trên mọi màn hình"
+          ]
+        }
+      }
+    }
+  },
   "0.1.8": {
     "notesSha256": "835a7b8c84a265deb44a279f069876c31cfe6022d58dbd52b9e8bf7a7442c9bd",
     "summary": {
