@@ -130,6 +130,21 @@
         "--strictPort"
       ],
       "port": 5185
+    },
+    {
+      "name": "sticky-promo",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "scripts/preview_ui.py",
+        "../lumi-sticky-notes",
+        "--promo",
+        "../lumi-sticky-notes/shots/promo.json",
+        "--port",
+        "5193",
+        "--proxy",
+        "http://localhost:5185"
+      ],
+      "port": 5193
     }
   ]
 }

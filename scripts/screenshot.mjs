@@ -75,6 +75,8 @@ if (!process.env.THEME) {
 if (script) {
   const answer = await send("Runtime.evaluate", { expression: script, awaitPromise: true });
   if (answer.result?.exceptionDetails) console.error(JSON.stringify(answer.result.exceptionDetails));
+  // What the scene says it did — "ok", or the step it could not get to.
+  else if (answer.result?.result?.value !== undefined) console.log("scene:", answer.result.result.value);
   await sleep(500);
 }
 const shot = await send("Page.captureScreenshot", { format: "png" });
