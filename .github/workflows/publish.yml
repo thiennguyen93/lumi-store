@@ -3,8 +3,10 @@
 # Merging to main is publishing — this runs on every push and rebuilds the
 # whole store, because the store is small and "rebuild everything" has no
 # stale-diff edge cases. Everything is rebuilt from pinned submodules, so
-# what ships is what was reviewed; packages are reproducible, so an
-# unchanged extension republished is identical bytes.
+# what ships is what was reviewed. A version the store already serves is
+# not packed again: its package and signature go out as they first did
+# (`publish.py` `carried`), because the wasm a runner builds depends on the
+# runner's Rust, and a new package under an old URL is a cache's mismatch.
 #
 # **The build and the signature are different jobs, and that is the whole
 # design of this file.** `cargo build` runs a submission's `build.rs` and
@@ -248,8 +250,31 @@ jobs:
                       shutil.move(os.path.join(built, name), os.path.join(dest_dir, name))
           PY
 
+      # What the store serves now: the gh-pages branch, as the last run
+      # pushed it. `publish.py` carries a version it already serves rather
+      # than packing and signing it again, and holds that version to the
+      # source it was published from (`carried`). Fetched from the public
+      # branch, so no token; a branch that is not there yet is the first
+      # publish, and anything else stops the run.
+      - name: Published packages
+        run: |
+          mkdir -p "$RUNNER_TEMP/published"
+          set +e
+          git ls-remote --exit-code --heads origin gh-pages > /dev/null
+          found=$?
+          set -e
+          case "$found" in
+            0)
+              git fetch -q --depth 1 origin gh-pages
+              git archive FETCH_HEAD extensions | tar -x -C "$RUNNER_TEMP/published"
+              ;;
+            2) echo "nothing published yet" ;;
+            *) exit "$found" ;;
+          esac
+
       - name: Pack, sign, index
         env:
+          PUBLISHED_DIR: ${{ runner.temp }}/published/extensions
           # The Pages custom domain — the account serves *.github.io from
           # thiennguyen.dev, so this is the URL that answers without a
           # redirect, and the one compiled into Lumi's store client.

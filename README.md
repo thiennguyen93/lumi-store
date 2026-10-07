@@ -283,8 +283,14 @@ an entry the store builds a front end for. Each that names another number
 is listed in one refusal. A version left out is refused too, with the line
 to write; a `Cargo.lock` that is not committed is not asked for.
 
-Packages are reproducible tarballs (fixed metadata, sorted entries):
-rebuilding an unchanged extension publishes identical bytes.
+Packages are reproducible tarballs (fixed metadata, sorted entries), but
+the wasm in them is whatever the runner's Rust builds, and two runner
+images build one source into two components. So a version is published
+once: while the store serves it, every later run publishes the package and
+signature it first went out as, and a source that changes under it stops
+the run — on the pull request — until it has a version of its own. The
+store page's own files (`STORE.md`, the screenshots' folders) change
+without one.
 
 ## Owner setup (once)
 

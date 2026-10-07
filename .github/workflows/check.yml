@@ -56,5 +56,29 @@ jobs:
       - name: Store script tests
         run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
+      # What the store serves now: the gh-pages branch, as the last run
+      # pushed it. `publish.py` carries a version it already serves rather
+      # than packing and signing it again, and holds that version to the
+      # source it was published from (`carried`). Fetched from the public
+      # branch, so no token; a branch that is not there yet is the first
+      # publish, and anything else stops the run.
+      - name: Published packages
+        run: |
+          mkdir -p "$RUNNER_TEMP/published"
+          set +e
+          git ls-remote --exit-code --heads origin gh-pages > /dev/null
+          found=$?
+          set -e
+          case "$found" in
+            0)
+              git fetch -q --depth 1 origin gh-pages
+              git archive FETCH_HEAD extensions | tar -x -C "$RUNNER_TEMP/published"
+              ;;
+            2) echo "nothing published yet" ;;
+            *) exit "$found" ;;
+          esac
+
       - name: Validate, build, pack
+        env:
+          PUBLISHED_DIR: ${{ runner.temp }}/published/extensions
         run: python3 scripts/publish.py --check
