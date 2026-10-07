@@ -431,15 +431,20 @@ def check_manifest(entry_id: str, manifest: dict):
             if window.get("listed") is True:
                 fail(entry_id, f"the window {name} has copies and says listed = true; a copy has no button — only the extension knows what one is for")
         # `manifest.rs`'s overhang rule, same sentences: a panel's with a
-        # material, a distance in points. Lumi clamps a long one to 400.
+        # material, a distance in points for every side or a table of the
+        # sides that have one (Lumi 1.41). Lumi clamps a long one to 400.
         if "overhang" in window:
             overhang = window["overhang"]
             if kind == "window":
                 fail(entry_id, f"the window {name} sets an overhang, which only a panel has — a window's page draws inside its frame")
             if not material:
                 fail(entry_id, f"the panel {name} sets an overhang, which needs a material: the band around the panel is see-through, and a panel without one is an opaque sheet")
-            if isinstance(overhang, bool) or not isinstance(overhang, (int, float)) or not overhang >= 0:
-                fail(entry_id, f"the panel {name}'s overhang is not a distance in points")
+            sides = overhang if isinstance(overhang, dict) else {"": overhang}
+            if isinstance(overhang, dict) and not set(overhang) <= {"above", "below", "left", "right"}:
+                fail(entry_id, f"the panel {name}'s overhang is a distance in points, or a table of sides: above, below, left, right")
+            for side, points in sides.items():
+                if isinstance(points, bool) or not isinstance(points, (int, float)) or not points >= 0:
+                    fail(entry_id, f"the panel {name}'s overhang{' ' + side if side else ''} is not a distance in points")
         # `manifest.rs`'s title bar rule, same sentences.
         titlebar = str(window.get("titlebar", "")).strip()
         if titlebar == "unified" and kind == "panel":
