@@ -132,7 +132,10 @@ PROMO = """<!doctype html>
   .lights {{ position: absolute; left: 20px; display: flex; gap: 8px; }}
   .bar .title {{ margin-left: 10px; }}
   .bar .tab {{ margin-left: auto; font-weight: 400; opacity: 0.6; }}
-  iframe {{ border: 0; width: 100%; height: calc(100% - {bar_height}px); display: block; padding: {inset}; zoom: {zoom}; }}
+  /* The page's own scheme on the frame too: a dark page in a frame whose
+     scheme is not dark gets an opaque backdrop from the browser, which a
+     see-through (`transparent`) shot draws as a black box. */
+  iframe {{ border: 0; width: 100%; height: calc(100% - {bar_height}px); display: block; padding: {inset}; zoom: {zoom}; color-scheme: {theme}; }}
   .callout {{
     position: absolute; right: 60px; bottom: 44px; width: 440px;
     border-radius: 16px; padding: 18px 20px;
@@ -346,10 +349,16 @@ def handler_for(
             else:
                 super().do_GET()
 
-        def _forward(self):
-            """The dev server's answer for this path, passed through as is."""
+        def _forward(self, method: str = "GET", body: bytes | None = None):
+            """The dev server's answer for this path, passed through as is —
+            a `PUT` or `POST` this does not answer itself too, body and all:
+            a dev server's own stand-in for the bridge keeps what a page
+            writes (a picture as a blob) where its next `GET` finds it."""
+            request = urllib.request.Request(proxy + self.path, data=body, method=method)
+            if body is not None:
+                request.add_header("Content-Type", self.headers.get("Content-Type", "application/octet-stream"))
             try:
-                with urllib.request.urlopen(proxy + self.path, timeout=30) as upstream:
+                with urllib.request.urlopen(request, timeout=30) as upstream:
                     data = upstream.read()
                     status = upstream.status
                     kind = upstream.headers.get("Content-Type", "application/octet-stream")
@@ -364,16 +373,23 @@ def handler_for(
             self.end_headers()
             self.wfile.write(data)
 
+        def _raw(self) -> bytes:
+            return self.rfile.read(int(self.headers.get("Content-Length") or 0))
+
         def do_PUT(self):
             if self.path.split("?", 1)[0] == "/__lumi__/settings":
                 settings.update(self._body())
                 self._json(settings)
+            elif proxy:
+                self._forward("PUT", self._raw())
             else:
                 self.send_error(404)
 
         def do_POST(self):
             if self.path.split("?", 1)[0] == "/__lumi__/call":
                 self._json(calls.get(str(self._body().get("kind", "")), {}))
+            elif proxy:
+                self._forward("POST", self._raw())
             else:
                 self.send_error(404)
 

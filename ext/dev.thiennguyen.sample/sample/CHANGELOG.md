@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.17.0] - 2026-10-07
+
+### Added
+
+- The background card comes back where you left it, at the size you left it, on Lumi 1.40.0 and later. An older Lumi opens it at its corner, as before.
+
 ## [0.16.1] - 2026-10-06
 
 ### Changed
