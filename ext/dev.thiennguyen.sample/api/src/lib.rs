@@ -365,6 +365,15 @@ pub fn open_settings() -> Result<(), String> {
     lumi::ext::ui::open_settings()
 }
 
+/// Bring up Lumi's Settings on your extension with its Permissions sheet
+/// open — where the person's own switches over it stand, the menu bar
+/// switch among them. For a "Show in Lumi's settings" beside what you say
+/// when [`menu::shown`] answers `false`. Only for a press. Needs Lumi
+/// 1.44.0 or later.
+pub fn open_permissions() -> Result<(), String> {
+    lumi::ext::ui::open_permissions()
+}
+
 /// Choose the glass one of your panels opens on from now on — "popover",
 /// "hud" or "sidebar" — for an appearance setting. The panel's manifest
 /// entry must declare one of those three; a `"clear"` panel stays clear.
@@ -1287,6 +1296,23 @@ pub mod menu {
     /// Take your rows out of the menu.
     pub fn clear() -> Result<(), String> {
         wit::clear()
+    }
+
+    /// Whether Lumi lets your rows show in its menu bar menu. Two switches
+    /// decide what is drawn: yours, which is [`set`] and [`clear`], and the
+    /// person's, the Menu bar switch Lumi keeps on your Permissions sheet.
+    /// Rows show only while both are on, and theirs outranks yours: [`set`]
+    /// goes on keeping your tree while it is hidden, and the tree comes back
+    /// as you left it when they show it again. Nothing in the SDK turns
+    /// theirs. When your own setting says show and this answers `false`, say
+    /// so where that setting is, and offer
+    /// [`open_permissions`](crate::open_permissions) to take the person to
+    /// the switch. Declare `events = ["menu-shown"]` to be told in
+    /// [`Guest::on_event`](crate::Guest::on_event) when it changes, with
+    /// `{"v":1, "shown":bool, "at":<ms since the Unix epoch>}`. Needs `menu`
+    /// and Lumi 1.44.0.
+    pub fn shown() -> Result<bool, String> {
+        wit::shown()
     }
 
     /// The id of the row pressed, when `run_ui` was called for a press on

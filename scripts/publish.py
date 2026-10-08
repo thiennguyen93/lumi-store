@@ -125,6 +125,9 @@ EVENTS = {
     # Lumi 1.37: one of the extension's own windows leaving the screen for
     # good. Only about its own window, so no capability.
     "window-closed": None,
+    # Lumi 1.44: the person showing or hiding the extension's rows in Lumi's
+    # menu bar menu, with Lumi's own switch over them.
+    "menu-shown": "menu",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
