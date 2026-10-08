@@ -23,9 +23,19 @@ import { join } from "node:path";
 const [url, out, scriptFile, w = "800", h = "480", scale = "2"] = process.argv.slice(2);
 const script = scriptFile ? readFileSync(scriptFile, "utf8") : "";
 const port = 9333;
+// A scene may start sound — a game playing to its music, on the audio
+// clock — with no press to let it: no autoplay gate, and nothing heard.
 const chrome = spawn(
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), "shoot-"))}`, "--hide-scrollbars", "about:blank"],
+  [
+    "--headless=new",
+    `--remote-debugging-port=${port}`,
+    `--user-data-dir=${mkdtempSync(join(tmpdir(), "shoot-"))}`,
+    "--hide-scrollbars",
+    "--autoplay-policy=no-user-gesture-required",
+    "--mute-audio",
+    "about:blank",
+  ],
   { stdio: "ignore" },
 );
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

@@ -1,0 +1,38 @@
+# Changelog
+
+## [0.1.3] - 2026-10-08
+
+### Fixed
+
+- Free music shows the songs for the newest search. A genre chosen while the first search was still out could show that search's songs under the genre's name.
+
+## [0.1.2] - 2026-10-08
+
+### Added
+
+- Settings › Menu bar: show or hide Play Rhythm Keys in Lumi's menu bar menu. Without it, open Rhythm Keys from Extensions in Lumi's settings.
+- When Lumi is hiding the row, Settings says so and opens Lumi's settings, where its own Menu bar switch for Rhythm Keys is.
+
+### Fixed
+
+- Settings rows are no longer drawn faded and small in Lumi.
+
+## [0.1.1] - 2026-10-08
+
+### Changed
+
+- Rhythm Keys opens from Play Rhythm Keys in Lumi's menu bar menu. It is no longer offered as an action for a shortcut.
+
+### Fixed
+
+- Add music and a song's info open below the window's title bar, so the window's buttons no longer sit over them.
+
+## [0.1.0] - 2026-10-08
+
+### Added
+
+- Rhythm Keys: a rhythm game in its own window. Notes fall to the beat; press D F J K, or play with 6 or 7 keys.
+- A library of your own songs: free music found through Openverse, files from your Mac, or a link. Each song is read on your Mac and charted for Easy, Normal, Hard and Expert.
+- Listen before you add a song, and hear a song's liveliest part when you choose it.
+- Collections, favourites, a daily song with a streak, and results with a timing histogram.
+- Settings for keys, scroll speed, volumes and audio offset, with a tap-along calibration.
