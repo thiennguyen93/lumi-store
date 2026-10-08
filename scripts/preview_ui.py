@@ -21,7 +21,11 @@ photographed for the store's `screenshots` without a Lumi build:
                             "partial" says so), and "keep": false answers the
                             bytes themselves, at most 8 MB, instead of a blob
                             — Lumi 1.44.0's rules, `download_ask`'s
-  GET  /__lumi__/blob/<id>  a blob this run downloaded, as opaque bytes
+  GET  /__lumi__/blob/<id>  a blob downloaded or kept here, as opaque bytes
+  PUT  /__lumi__/blob       the body kept as a blob: {"blob"}
+                            Blobs are files under the system's temp folder,
+                            one folder per extension, so what a page keeps
+                            outlives a restart, as Lumi's storage does
   GET  /__preview__/?page=about.html&theme=light
                             a page Lumi draws inside a pane (About, Settings,
                             a [[page]] tab), framed with the pane's inset and
@@ -59,8 +63,10 @@ import http.server
 import ipaddress
 import json
 import secrets
+import re
 import socket
 import ssl
+import tempfile
 import tomllib
 import urllib.error
 import urllib.parse
@@ -279,12 +285,24 @@ def handler_for(
     name: str,
     icon: bytes,
     proxy: str,
+    blob_dir: Path,
 ):
-    # This run's downloads, by blob id. Gone when the server stops: a page
-    # that keeps what it downloaded keeps it itself.
-    blobs: dict[str, bytes] = {}
+    # Blobs, by id: a file each in `blob_dir`. An id is this server's own
+    # hex, so a path never comes from the page.
+    blob_id = re.compile(r"^[0-9a-f]{32}$")
+
+    def keep_blob(data: bytes) -> str:
+        blob = secrets.token_hex(16)
+        (blob_dir / blob).write_bytes(data)
+        return blob
 
     class Bridge(http.server.SimpleHTTPRequestHandler):
+        def end_headers(self):
+            # A preview is for files being edited: always ask again, so an
+            # edit shows on the next load rather than after the cache gives up.
+            self.send_header("Cache-Control", "no-cache")
+            super().end_headers()
+
         def _json(self, body, status=200):
             data = json.dumps(body).encode()
             self.send_response(status)
@@ -313,10 +331,11 @@ def handler_for(
             elif path == "/__lumi__/shortcuts":
                 self._json({"on": True, "commands": [], "ess": []})
             elif path.startswith("/__lumi__/blob/"):
-                data = blobs.get(path[len("/__lumi__/blob/"):])
-                if data is None:
+                blob = path[len("/__lumi__/blob/"):]
+                if not blob_id.match(blob) or not (blob_dir / blob).is_file():
                     self.send_error(404)
                     return
+                data = (blob_dir / blob).read_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/octet-stream")
                 self.send_header("X-Content-Type-Options", "nosniff")
@@ -454,8 +473,7 @@ def handler_for(
                 self.end_headers()
                 self.wfile.write(data)
                 return
-            blob = secrets.token_hex(16)
-            blobs[blob] = data
+            blob = keep_blob(data)
             self._json({"blob": blob, "type": "application/octet-stream", "size": len(data), "url": final, "partial": partial}, 201)
 
         def _raw(self) -> bytes:
@@ -465,6 +483,12 @@ def handler_for(
             if self.path.split("?", 1)[0] == "/__lumi__/settings":
                 settings.update(self._body())
                 self._json(settings)
+            elif self.path.split("?", 1)[0] == "/__lumi__/blob":
+                length = int(self.headers.get("Content-Length") or 0)
+                if not 0 < length <= 160 * 1024 * 1024:
+                    self.send_error(400, "a blob is some bytes, at most 160 MB")
+                    return
+                self._json({"blob": keep_blob(self.rfile.read(length))}, 201)
             elif proxy:
                 self._forward("PUT", self._raw())
             else:
@@ -533,8 +557,11 @@ def main():
     if not lumi_css:
         print(f"note: no lumi.css at {args.lumi_css}; pages draw without Lumi's look")
 
+    blob_dir = Path(tempfile.gettempdir()) / "lumi-preview-blobs" / (extension_id or "extension")
+    blob_dir.mkdir(parents=True, exist_ok=True)
     server = http.server.ThreadingHTTPServer(
-        ("127.0.0.1", args.port), handler_for(crate / "ui", lumi_css, settings, calls, promo, name, icon, args.proxy.rstrip("/"))
+        ("127.0.0.1", args.port),
+        handler_for(crate / "ui", lumi_css, settings, calls, promo, name, icon, args.proxy.rstrip("/"), blob_dir),
     )
     print(f"serving {crate / 'ui'} at http://127.0.0.1:{args.port}/")
     server.serve_forever()
