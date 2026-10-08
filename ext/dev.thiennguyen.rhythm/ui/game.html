@@ -6,6 +6,8 @@
 <head>
   <meta charset="utf-8">
   <title>Rhythm Keys</title>
+  <!-- Lumi's tokens and controls; a window is not given them, so it asks. -->
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
   <link rel="stylesheet" href="game.css">
 </head>
 <body>
@@ -15,7 +17,7 @@
       <path d="M10.59 4.81 Q12 3.4 13.41 4.81 L19.19 10.59 Q20.6 12 19.19 13.41 L13.41 19.19 Q12 20.6 10.59 19.19 L4.81 13.41 Q3.4 12 4.81 10.59 Z" fill="none" stroke="currentColor" stroke-width="1.85"/>
       <path d="M13.0 7.2 L9.2 12.9 L11.5 12.9 L11.0 16.8 L14.8 11.1 L12.5 11.1 Z" fill="currentColor"/>
     </svg>
-    <span class="title">Rhythm Keys</span>
+    <span class="title" id="band-title">Rhythm Keys</span>
     <span class="grow"></span>
     <button type="button" class="icon" id="open-add" aria-label="Add music" title="Add music (⌘N)">
       <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -186,7 +188,6 @@
         <b>Drop songs here</b>
         <span class="meta">MP3, M4A, WAV, AIFF or FLAC</span>
         <button type="button" class="primary" id="choose">Choose songs…</button>
-        <input type="file" id="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.aiff,.aif,.flac" multiple hidden>
       </div>
       <div class="note">Your own songs, for playing here. They are copied into Rhythm Keys' storage; the originals stay where they are.</div>
     </div>
@@ -218,6 +219,7 @@
     <div class="row-buttons"><button type="button" id="i-delete" class="danger">Delete song</button></div>
   </div>
 </div>
+<script src="bridge.js"></script>
 <script src="audio.js"></script>
 <script src="analyze.js"></script>
 <script src="library.js"></script>

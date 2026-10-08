@@ -2,48 +2,29 @@
    collections, and each song's reading (analyze.js). Nothing ships with the
    extension; every song is one the person chose.
 
-   Kept here in the browser (IndexedDB for the sound and its reading,
-   localStorage for the list) so the preview works on its own. In Lumi the
-   same calls land in the extension's storage: a download is
-   `POST /__lumi__/download`, a file from the Mac is `files.open`, the
-   bytes come back from `/__lumi__/blob/<id>`, the list is a storage key. */
+   A song is two blobs in the extension's storage — its sound, as it
+   arrived, and its reading, as JSON — and a line in the list, which is kept
+   under the `library` key (RKBridge). Downloads and files from the Mac
+   arrive as blobs already; a reading is written by the page. */
 (function () {
   'use strict';
 
+  const B = window.RKBridge;
   // What Lumi gives one extension's storage.
   const LIMIT = 512 * 1024 * 1024;
-  const META = 'rhythm-keys:library';
-
-  // ---------- IndexedDB, for the bytes ----------
-  let db = null;
-  function open() {
-    if (db) return Promise.resolve(db);
-    return new Promise((resolve, reject) => {
-      const r = indexedDB.open('rhythm-keys', 1);
-      r.onupgradeneeded = () => { r.result.createObjectStore('audio'); r.result.createObjectStore('analysis'); };
-      r.onsuccess = () => resolve((db = r.result));
-      r.onerror = () => reject(r.error);
-    });
-  }
-  async function idb(store, mode, run) {
-    await open();
-    return new Promise((resolve, reject) => {
-      const t = db.transaction(store, mode), req = run(t.objectStore(store));
-      t.oncomplete = () => resolve(req && req.result);
-      t.onerror = () => reject(t.error);
-    });
-  }
-  const get = (s, k) => idb(s, 'readonly', st => st.get(k));
-  const put = (s, k, v) => idb(s, 'readwrite', st => st.put(v, k));
-  const del = (s, k) => idb(s, 'readwrite', st => st.delete(k));
 
   // ---------- the list ----------
   let meta = { songs: [], collections: [] };
-  try { const raw = localStorage.getItem(META); if (raw) meta = Object.assign(meta, JSON.parse(raw)); } catch { /* a fresh library */ }
   const listeners = new Set();
   const emit = () => listeners.forEach(f => f());
+  const ready = B.load().then(kept => {
+    try { if (kept && kept.library) meta = Object.assign(meta, JSON.parse(kept.library)); } catch { /* a fresh library */ }
+    // A line whose sound was never kept as a blob cannot be played: let it go.
+    meta.songs = meta.songs.filter(s => s.audio && s.reading);
+    emit();
+  }, () => emit());
   function save() {
-    try { localStorage.setItem(META, JSON.stringify(meta)); } catch { /* not kept; this session still has it */ }
+    B.save('library', JSON.stringify(meta));
     emit();
   }
   const uid = () => Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, '0')).join('');
@@ -89,63 +70,77 @@
     return { title: out.TIT2, artist: out.TPE1 };
   }
 
+  const keepReading = reading => B.putBlob(new TextEncoder().encode(JSON.stringify(reading)));
+
   // ---------- adding ----------
-  async function ingest(id, bytes, info) {
+  // A song whose sound is already a blob: read it, keep the reading, list it.
+  // A song that cannot be read is let go of, so nothing is kept for nothing.
+  async function ingest(id, audio, bytes, info) {
     job(id, { stage: 'reading', progress: 0, title: info.title, error: null });
     try {
       const buffer = await RKAudio.decode(bytes);
       const reading = await RKAnalyze.analyze(buffer, p => job(id, { progress: p }));
-      await put('audio', id, bytes);
-      await put('analysis', id, reading);
+      const kept = await keepReading(reading);
       remember(id, buffer);
       readings.set(id, reading);
       meta.songs.unshift(Object.assign({
         id, artist: 'Unknown artist', source: 'mac', license: null, licenseUrl: null, landing: null,
         duration: buffer.duration, bpm: Math.round(reading.bpm), size: bytes.byteLength,
-        addedAt: Date.now(), fav: false, offset: 0,
+        addedAt: Date.now(), fav: false, offset: 0, audio, reading: kept,
       }, info));
       jobs.delete(id);
       save();
     } catch {
+      B.forget([audio]);
       job(id, { stage: 'error', error: 'This file could not be read as audio.' });
     }
   }
 
-  async function addFiles(files) {
-    for (const file of files) {
+  // Songs from the Mac: Lumi's Open panel, each file a blob already.
+  async function addFromMac() {
+    let opened;
+    try { opened = await B.openFiles(); } catch { return; }
+    for (const file of opened) {
       const id = uid();
-      job(id, { stage: 'reading', progress: 0, title: file.name });
-      const bytes = await file.arrayBuffer();
+      const title = file.name.replace(/\.[^.]+$/, '');
+      job(id, { stage: 'reading', progress: 0, title, error: null });
+      let bytes;
+      try { bytes = await B.getBlob(file.blob); } catch { job(id, { stage: 'error', error: 'That file could not be opened.' }); continue; }
       const t = tags(bytes);
-      await ingest(id, bytes, { title: t.title || file.name.replace(/\.[^.]+$/, ''), artist: t.artist || 'Unknown artist', source: 'mac' });
+      await ingest(id, file.blob, bytes, { title: t.title || title, artist: t.artist || 'Unknown artist', source: 'mac' });
     }
   }
 
-  // A download, the way Lumi does it for a page: `POST /__lumi__/download`
-  // fetches the file into the extension's storage — the page has no network
-  // of its own, and the other site's CORS does not apply — then the bytes
-  // come back from `/__lumi__/blob/<id>`. Lumi says nothing until it is done,
-  // so there is no percentage to show.
-  async function fetchBytes(url) {
-    const r = await fetch('/__lumi__/download', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
-    if (!r.ok) throw new Error('download answered ' + r.status);
-    const { blob } = await r.json();
-    const b = await fetch('/__lumi__/blob/' + encodeURIComponent(blob));
-    if (!b.ok) throw new Error('blob answered ' + b.status);
-    return b.arrayBuffer();
+  // Files dropped on the window, where the webview hands them over.
+  async function addDropped(files) {
+    for (const file of files) {
+      const id = uid();
+      const title = file.name.replace(/\.[^.]+$/, '');
+      job(id, { stage: 'reading', progress: 0, title, error: null });
+      let bytes, blob;
+      try { bytes = await file.arrayBuffer(); blob = await B.putBlob(bytes); } catch { job(id, { stage: 'error', error: 'That file could not be kept.' }); continue; }
+      const t = tags(bytes);
+      await ingest(id, blob, bytes, { title: t.title || title, artist: t.artist || 'Unknown artist', source: 'mac' });
+    }
+  }
+
+  async function downloaded(id, url, fail) {
+    job(id, { stage: 'downloading', progress: null, error: null });
+    try {
+      const got = await B.download(url);
+      return { blob: got.blob, bytes: await B.getBlob(got.blob) };
+    } catch {
+      job(id, { stage: 'error', error: fail });
+      return null;
+    }
   }
 
   async function addFromCatalog(item) {
-    if (has(item.id) || jobs.has(item.id)) return;
-    job(item.id, { stage: 'downloading', progress: null, title: item.title, error: null });
-    let bytes;
-    try {
-      bytes = await fetchBytes(item.url);
-    } catch {
-      job(item.id, { stage: 'error', error: 'The download did not finish.' });
-      return;
-    }
-    await ingest(item.id, bytes, {
+    if (has(item.id) || (jobs.has(item.id) && jobs.get(item.id).stage !== 'error')) return;
+    job(item.id, { title: item.title });
+    const got = await downloaded(item.id, item.url, 'The download did not finish.');
+    if (!got) return;
+    await ingest(item.id, got.blob, got.bytes, {
       title: item.title, artist: item.artist, source: item.source,
       license: item.license, licenseUrl: item.licenseUrl, landing: item.landing,
     });
@@ -155,16 +150,11 @@
     const id = uid();
     let name = 'Song';
     try { name = decodeURIComponent(new URL(url).pathname.split('/').pop() || 'Song').replace(/\.[^.]+$/, ''); } catch { /* keep "Song" */ }
-    job(id, { stage: 'downloading', progress: null, title: name, error: null });
-    let bytes;
-    try {
-      bytes = await fetchBytes(url);
-    } catch {
-      job(id, { stage: 'error', error: 'That link did not give a file this Mac could download.' });
-      return;
-    }
-    const t = tags(bytes);
-    await ingest(id, bytes, { title: t.title || name, artist: t.artist || 'Unknown artist', source: 'link', landing: url });
+    job(id, { title: name });
+    const got = await downloaded(id, url, 'That link did not give a file this Mac could download.');
+    if (!got) return;
+    const t = tags(got.bytes);
+    await ingest(id, got.blob, got.bytes, { title: t.title || name, artist: t.artist || 'Unknown artist', source: 'link', landing: url });
   }
 
   // ---------- reading back ----------
@@ -173,27 +163,39 @@
 
   async function buffer(id) {
     if (buffers.has(id)) { const b = buffers.get(id); remember(id, b); return b; }
-    const bytes = await get('audio', id);
-    const b = await RKAudio.decode(bytes);
+    const s = song(id);
+    if (!s) throw new Error('no such song');
+    const b = await RKAudio.decode(await B.getBlob(s.audio));
     remember(id, b);
     return b;
   }
+  // A reading from an older Rhythm Keys is read again, and replaces it.
   async function reading(id) {
     if (readings.has(id)) return readings.get(id);
-    let r = await get('analysis', id);
-    if (!r || r.v !== RKAnalyze.VERSION) { r = await RKAnalyze.analyze(await buffer(id), () => {}); await put('analysis', id, r); }
+    const s = song(id);
+    if (!s) throw new Error('no such song');
+    let r = null;
+    try { r = JSON.parse(new TextDecoder().decode(await B.getBlob(s.reading))); } catch { r = null; }
+    if (!r || r.v !== RKAnalyze.VERSION) {
+      r = await RKAnalyze.analyze(await buffer(id), () => {});
+      const old = s.reading;
+      s.reading = await keepReading(r);
+      B.forget([old]);
+      save();
+    }
     readings.set(id, r);
     return r;
   }
 
   async function remove(id) {
-    await del('audio', id);
-    await del('analysis', id);
+    const s = song(id);
+    if (!s) return;
     buffers.delete(id);
     readings.delete(id);
-    meta.songs = meta.songs.filter(s => s.id !== id);
+    meta.songs = meta.songs.filter(x => x.id !== id);
     for (const c of meta.collections) c.songs = c.songs.filter(x => x !== id);
     save();
+    await B.forget([s.audio, s.reading]);
   }
   function update(id, patch) { const s = song(id); if (s) { Object.assign(s, patch); save(); } }
 
@@ -209,12 +211,12 @@
   }
 
   window.RKLibrary = {
-    LIMIT,
+    LIMIT, ready,
     get songs() { return meta.songs; },
     get collections() { return meta.collections; },
     jobs,
     song, has, buffer, reading, remove, update,
-    addFiles, addFromCatalog, addFromLink,
+    addFromMac, addDropped, addFromCatalog, addFromLink,
     dismiss(id) { jobs.delete(id); emit(); },
     createCollection, renameCollection, removeCollection, toggleIn,
     used: () => meta.songs.reduce((n, s) => n + (s.size || 0), 0),

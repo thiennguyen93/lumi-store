@@ -15,18 +15,9 @@
   const listeners = new Set();
   const emit = () => listeners.forEach(f => f());
 
-  // The first bytes of a song, not kept: in Lumi a page has no network of
-  // its own, so this is the bridge's download asked for only its start and
-  // for the bytes back rather than a blob (`most`, `keep: false`; Lumi 1.44.0).
-  async function head(url) {
-    const r = await fetch('/__lumi__/download', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, most: HEAD, keep: false }),
-    });
-    if (!r.ok) throw new Error('listen answered ' + r.status);
-    return r.arrayBuffer();
-  }
+  // The first bytes of a song, not kept: the bridge's download asked for
+  // only its start, and for the bytes back rather than a blob.
+  const head = url => RKBridge.head(url, HEAD);
 
   function stop() {
     if (!now) return;

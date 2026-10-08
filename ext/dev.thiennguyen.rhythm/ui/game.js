@@ -31,19 +31,20 @@
   const AUTOPLAY = new URLSearchParams(location.search).has('autoplay');
 
   // ---------- what is kept ----------
-  // Settings, best scores and the daily streak. The preview keeps them in
-  // localStorage; in Lumi it is a key in the extension's storage.
+  // Settings, best scores and the daily streak: the `progress` key in the
+  // extension's storage (RKBridge), read once as the window opens.
   const DEFAULTS = { sel: null, view: 'all', diff: 'normal', lanes: 4, speed: 2.2, offset: 0, music: 0.8, sfx: 0.5, hitsound: true, listen: true, earlyLate: true, flash: true, calm: false };
   let saved = { settings: {}, best: {}, daily: { last: '', streak: 0 } };
-  try {
-    const raw = localStorage.getItem('rhythm-keys');
-    if (raw) saved = Object.assign(saved, JSON.parse(raw));
-  } catch { /* nothing kept yet */ }
-  const S = Object.assign({}, DEFAULTS, saved.settings);
-  S.keys = Object.assign({}, KEYS, (saved.settings && saved.settings.keys) || {});
+  const S = Object.assign({}, DEFAULTS);
+  S.keys = Object.assign({}, KEYS);
+  function restore(raw) {
+    try { if (raw) saved = Object.assign(saved, JSON.parse(raw)); } catch { /* nothing kept yet */ }
+    Object.assign(S, saved.settings);
+    S.keys = Object.assign({}, KEYS, (saved.settings && saved.settings.keys) || {});
+  }
   function persist() {
     saved.settings = S;
-    try { localStorage.setItem('rhythm-keys', JSON.stringify(saved)); } catch { /* not kept; the game still plays */ }
+    RKBridge.save('progress', JSON.stringify(saved));
   }
 
   // ---------- small things ----------
@@ -132,6 +133,8 @@
     screen = name;
     for (const id of ['home', 'play-screen', 'results', 'settings', 'calibrate']) $('#' + id).hidden = id !== (name === 'play' ? 'play-screen' : name);
     $('#app').classList.toggle('playing', name === 'play');
+    // The band names the song while it plays, the game otherwise.
+    if (name !== 'play') $('#band-title').textContent = 'Rhythm Keys';
     if (name === 'home') renderHome();
     if (name === 'settings') renderSettings();
   }
@@ -365,7 +368,7 @@
       const a = el('button', 'link', s.license + ' ↗');
       a.type = 'button';
       a.title = 'Open the song’s page';
-      a.onclick = () => window.open(s.landing || s.licenseUrl, '_blank', 'noopener');
+      a.onclick = () => RKBridge.openUrl(s.landing || s.licenseUrl);
       lic.appendChild(a);
     } else lic.textContent = s.source === 'mac' ? 'Your own file' : 'Not stated';
     $('#i-offset').textContent = (s.offset > 0 ? '+' : '') + (s.offset || 0) + ' ms';
@@ -491,8 +494,7 @@
     $('#link-url').value = '';
     Lib.addFromLink(url);
   };
-  $('#choose').onclick = () => $('#file').click();
-  $('#file').onchange = e => { const files = [...e.target.files]; e.target.value = ''; if (files.length) Lib.addFiles(files); };
+  $('#choose').onclick = () => Lib.addFromMac();
   const drop = $('#drop');
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
@@ -500,7 +502,7 @@
     e.preventDefault();
     drop.classList.remove('over');
     const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('audio/') || /\.(mp3|m4a|aac|wav|aiff?|flac)$/i.test(f.name));
-    if (files.length) Lib.addFiles(files);
+    if (files.length) Lib.addDropped(files);
   });
   $('#add-done').onclick = closeAdd;
   $('#open-add').onclick = () => openAdd();
@@ -540,6 +542,7 @@
     stopRun();
     const id = ++runs;
     $('#now-title').textContent = pick.song.title + ' · ' + DIFFS.find(d => d[0] === S.diff)[1];
+    $('#band-title').textContent = pick.song.title + ' — ' + pick.song.artist;
     $('#pause').hidden = true;
     $('#loading').hidden = false;
     show('play');
@@ -922,8 +925,21 @@
     const text = 'Rhythm Keys · ' + s.title + ' — ' + s.artist + ' (' + DIFFS.find(d => d[0] === S.diff)[1] + ', ' + G.k + ' keys)\n' +
       g + ' · ' + (acc * 100).toFixed(2) + '% · ' + score.toLocaleString('en-US') + ' · combo ' + G.maxCombo + '\n' +
       'Perfect ' + G.counts.perfect + ' · Great ' + G.counts.great + ' · Good ' + G.counts.good + ' · Miss ' + G.counts.miss;
-    const done = () => { $('#r-copy').textContent = 'Copied'; setTimeout(() => ($('#r-copy').textContent = 'Copy result'), 1400); };
-    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
+    const said = word => { $('#r-copy').textContent = word; setTimeout(() => ($('#r-copy').textContent = 'Copy result'), 1400); };
+    // The page's own copy, as a text field's ⌘C is: no clipboard reach
+    // asked of Lumi for a line the person pressed a button to copy.
+    const field = el('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+    document.body.appendChild(field);
+    field.select();
+    let copied = false;
+    try { copied = document.execCommand('copy'); } catch { copied = false; }
+    field.remove();
+    if (copied) said('Copied');
+    else if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => said('Copied'), () => said('Could not copy'));
+    else said('Could not copy');
   }
 
   // ---------- settings ----------
@@ -944,8 +960,13 @@
     for (const id of ['earlyLate', 'flash', 'calm', 'hitsound', 'listen']) $('#' + id).checked = S[id];
     outputs();
     const used = Lib.used();
-    $('#room-text').textContent = Lib.songs.length + (Lib.songs.length === 1 ? ' song · ' : ' songs · ') + mb(used) + ' of 512 MB';
-    $('#room-bar').style.width = Math.min(100, (used / Lib.LIMIT) * 100) + '%';
+    const room = (bytes, limit) => {
+      $('#room-text').textContent = Lib.songs.length + (Lib.songs.length === 1 ? ' song · ' : ' songs · ') + mb(bytes) + ' of ' + mb(limit);
+      $('#room-bar').style.width = Math.min(100, (bytes / limit) * 100) + '%';
+    };
+    room(used, Lib.LIMIT);
+    // What the storage itself says, encryption and readings included.
+    RKBridge.usage().then(u => { if (u && u.limit && screen === 'settings') room(u.bytes, u.limit); }, () => {});
   }
   function outputs() {
     $('#speed-out').textContent = Number(S.speed).toFixed(1) + '×';
@@ -1101,5 +1122,9 @@
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden && screen === 'play' && G && !G.paused && !G.done) togglePause(); });
 
-  show('home');
+  // Opened: what was kept, then the library.
+  Promise.all([RKBridge.load().catch(() => ({})), Lib.ready]).then(([kept]) => {
+    restore(kept && kept.progress);
+    show('home');
+  });
 })();

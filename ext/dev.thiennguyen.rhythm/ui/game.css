@@ -58,9 +58,31 @@ kbd {
   body { display: block; }
   #app { width: 100vw; height: 100vh; border: 0; border-radius: 0; box-shadow: none; }
 }
-#app.playing .top { display: none; }
+/* In Lumi the page is the window, whatever size the person makes it; the
+   library keeps to a readable column in a wide one. */
+.in-lumi body { display: block; }
+.in-lumi #app { width: 100vw; height: 100vh; border: 0; border-radius: 0; box-shadow: none; }
+.in-lumi #home, .in-lumi #results, .in-lumi #settings, .in-lumi #calibrate, .in-lumi .sheet > * {
+  width: 100%;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.in-lumi .sheet { align-items: center; }
+/* The band: the window's own title bar in Lumi (`titlebar = "unified"`), as
+   tall as Lumi says, starting where macOS's traffic lights end. While
+   playing it keeps only the song's name, over the stage's dark. */
+#app.playing .top { background: var(--rk-stage); color: rgba(255, 255, 255, 0.85); }
+#app.playing .top .icon { display: none; }
 
-.top { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 10px 0 14px; flex: none; }
+.top {
+  display: flex; align-items: center; gap: 8px;
+  height: var(--bar, 44px);
+  padding: 0 10px 0 calc(var(--lights, 0px) + 14px);
+  flex: none;
+  min-width: 0;
+}
+.top .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .top .mark { width: 18px; height: 18px; color: var(--rk-gold); }
 .top .title { font-weight: 600; font-size: 14px; }
 .grow { flex: 1; }

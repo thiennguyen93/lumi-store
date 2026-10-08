@@ -1,34 +1,43 @@
-# Rhythm Keys — a draft manifest, there for the UI preview
-# (scripts/preview_ui.py reads it). No crate yet: nothing here is built or
-# published until the extension is written for real.
+# Rhythm Keys' manifest: one window to play in, a command and a menu bar
+# row that open it, and the reach the free music search needs.
 [extension]
 id = "dev.thiennguyen.rhythm"
 name = "Rhythm Keys"
-version = "0.0.1"
-description = "A rhythm game for the keys under your fingers: notes fall to the beat, you press D F J K."
+version = "0.1.0"
+description = "A rhythm game for the keys under your fingers: notes fall to the beat of your own songs, you press D F J K."
 author = "Thien Nguyen"
+summary = "A rhythm game in a window of its own. Add the songs you want to play, free music found through Openverse, files from your Mac, or a link, and Rhythm Keys reads each one on your Mac and writes its charts, Easy to Expert, for 4, 6 or 7 keys. Taps and holds are judged to the millisecond, with a daily song, collections, and listening before you add a song. Songs stay on your Mac; the internet is reached only for the free music search and the downloads you ask for."
 homepage = "https://lumikeys.app/docs/extensions"
 # 1.44.0: a page's download paced by its body rather than one 15-second
-# deadline (songs of several megabytes from slow servers), and `most` /
+# deadline (songs of several megabytes from slow file servers), and `most` /
 # `keep: false` for listening to a song's start before downloading it.
 min-lumi-version = "1.44.0"
-# Free music: the search goes out through the component, the songs through
-# the page's download into this extension's storage.
-capabilities = ["network"]
+# `network`: the free music search goes out from the component, and songs
+# come in through the page's download. `menu`: the Play row in Lumi's menu
+# bar menu.
+capabilities = ["network", "menu"]
 
 [[command]]
 name = "play"
 label = "Play Rhythm Keys"
 icon = "music"
 
-# The game: a floating panel that takes the keyboard while it is up. Esc
-# pauses; hidden is paused.
+# Offered at install; Lumi arms it only if nothing else holds the keys.
+[[shortcut]]
+command = "play"
+key = "ctrl+alt+cmd+r"
+
+# The game. A window, not a panel: it stays while the person plays, comes
+# and goes with ⌘-Tab, and keeps the keyboard. Its page draws its own title
+# bar (the toolbar with Add and Settings), under macOS's traffic lights.
 [[window]]
 name = "game"
 title = "Rhythm Keys"
 path = "game.html"
-kind = "panel"
-position = "center"
-material = "popover"
-width = 420
-height = 680
+titlebar = "unified"
+titlebar-height = 44
+width = 460
+height = 760
+min-width = 400
+min-height = 620
+remember-frame = true

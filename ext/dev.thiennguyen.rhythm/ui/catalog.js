@@ -1,11 +1,11 @@
 /* Rhythm Keys — finding free music. Openverse indexes openly licensed
    audio (Jamendo, ccMixter, Freesound, Wikimedia) behind one API with no
-   key. The preview asks it from the page; in Lumi a page has no network of
-   its own, so the component asks (`net.fetch`, behind `network`). */
+   key. A page has no network of its own: in Lumi the component asks it
+   (`net.fetch`, behind `network`), in the preview the page does
+   (`RKBridge.search`). Picking what to show is done here, either way. */
 (function () {
   'use strict';
 
-  const API = 'https://api.openverse.org/v1/audio/';
   const SOURCES = { jamendo: 'Jamendo', ccmixter: 'ccMixter', freesound: 'Freesound', wikimedia_audio: 'Wikimedia' };
   const GENRES = ['Electronic', 'Lo-fi', 'Pop', 'Rock', 'Jazz', 'Chiptune', 'Piano', 'Hip hop', 'Funk', 'Ambient'];
 
@@ -15,10 +15,7 @@
   const licenseName = (l, v) => (l === 'cc0' ? 'CC0' : l === 'pdm' ? 'Public domain' : 'CC ' + String(l).toUpperCase() + (v ? ' ' + v : ''));
 
   async function search(q) {
-    const r = await fetch(API + '?' + new URLSearchParams({ q, category: 'music', page_size: '20' }));
-    if (r.status === 429) throw new Error('Too many searches for now — try again in a minute.');
-    if (!r.ok) throw new Error('Free music search is not answering right now.');
-    const d = await r.json();
+    const d = await RKBridge.search(q);
     // Songs, not stings or hour-long mixes: one to eight minutes.
     return (d.results || [])
       .filter(x => x.url && x.duration >= 60000 && x.duration <= 480000)
