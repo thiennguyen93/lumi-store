@@ -145,6 +145,17 @@
         "http://localhost:5185"
       ],
       "port": 5193
+    },
+    {
+      "name": "rhythm-ui",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "scripts/preview_ui.py",
+        "ext/dev.thiennguyen.rhythm",
+        "--port",
+        "5194"
+      ],
+      "port": 5194
     }
   ]
 }

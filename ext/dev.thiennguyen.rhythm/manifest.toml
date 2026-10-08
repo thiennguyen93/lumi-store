@@ -1,0 +1,34 @@
+# Rhythm Keys — a draft manifest, there for the UI preview
+# (scripts/preview_ui.py reads it). No crate yet: nothing here is built or
+# published until the extension is written for real.
+[extension]
+id = "dev.thiennguyen.rhythm"
+name = "Rhythm Keys"
+version = "0.0.1"
+description = "A rhythm game for the keys under your fingers: notes fall to the beat, you press D F J K."
+author = "Thien Nguyen"
+homepage = "https://lumikeys.app/docs/extensions"
+# 1.44.0: a page's download paced by its body rather than one 15-second
+# deadline (songs of several megabytes from slow servers), and `most` /
+# `keep: false` for listening to a song's start before downloading it.
+min-lumi-version = "1.44.0"
+# Free music: the search goes out through the component, the songs through
+# the page's download into this extension's storage.
+capabilities = ["network"]
+
+[[command]]
+name = "play"
+label = "Play Rhythm Keys"
+icon = "music"
+
+# The game: a floating panel that takes the keyboard while it is up. Esc
+# pauses; hidden is paused.
+[[window]]
+name = "game"
+title = "Rhythm Keys"
+path = "game.html"
+kind = "panel"
+position = "center"
+material = "popover"
+width = 420
+height = 680
