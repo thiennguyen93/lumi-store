@@ -60,6 +60,22 @@ after review.
    store publishes the files beside your package. How the first-party
    extensions' pictures are made is under "Store pictures" below.
 
+   A demo video goes beside them, as a link to it on YouTube:
+
+   ```toml
+   [extension]
+   video = "https://youtu.be/3xeg8odiBO8"
+   ```
+
+   One video, landscape — a link from Share or the address bar, not a
+   Short, a playlist or a channel. It leads the pictures on your page:
+   Lumi draws it as a tile that opens the video in the browser, and
+   lumikeys.app plays it in place. The store takes YouTube's own picture
+   of the video and publishes it beside your package, so a page opened in
+   Lumi asks nothing of YouTube until somebody presses play; a link to a
+   video that is not there fails the PR. Like `screenshots`, the key is
+   in your manifest, so adding or changing it is a new version.
+
    The longer words for that page go in a `STORE.md` beside your
    manifest. Without one, the page shows your manifest's one-line
    `description`. Lumi draws a small part of markdown: `#` headings,

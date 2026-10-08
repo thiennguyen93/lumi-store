@@ -81,6 +81,9 @@ import subprocess
 import sys
 import tarfile
 import tomllib
+import urllib.error
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -210,6 +213,23 @@ CATEGORIES = ["Productivity", "Writing", "Windows", "Design", "Developer", "Util
 MAX_SCREENSHOTS = 4
 MAX_SCREENSHOT = 1024 * 1024
 SCREENSHOT_KINDS = {b"\x89PNG\r\n\x1a\n": "png", b"\xff\xd8\xff": "jpg"}
+# `[extension] video`: one demo video for the extension's page, as a link
+# to it on YouTube. Store-only, like the screenshots. The index carries the
+# video's id, never the link the author wrote: each reader builds the one
+# URL it trusts — the watch page Lumi opens in the browser, the no-cookie
+# player lumikeys.app embeds — out of eleven characters it can check,
+# rather than parsing somebody's URL a second time. And the picture it is
+# drawn with is fetched here, once, and published beside the package like
+# a screenshot, so a store page opened in Lumi asks nothing of YouTube:
+# Lumi talks to the store's host and no other until somebody presses play.
+VIDEO_HOSTS = {"youtu.be", "youtube.com", "www.youtube.com", "m.youtube.com"}
+YOUTUBE_ID_RE = re.compile(r"[A-Za-z0-9_-]{11}")
+# YouTube's own pictures of a video, largest first. `maxresdefault` exists
+# only for a video uploaded in HD, and is the one made at 16:9 without
+# bars; the other two are letterboxed into 4:3 and are the fallback, not a
+# choice. A 404 on every one is a video that is not there — which is how a
+# mistyped link fails the pull request instead of shipping a dead tile.
+VIDEO_POSTERS = ["maxresdefault", "sddefault", "hqdefault"]
 # `STORE.md` beside the manifest: the longer words for the extension's
 # page in Lumi's Extension Store, in the small markdown Lumi draws
 # (headings, lists, emphasis, code, https links). Store-only, like the
@@ -1233,6 +1253,65 @@ def screenshots_of(entry_id: str, crate: Path, ext: dict) -> list:
     return shots
 
 
+def video_of(entry_id: str, ext: dict):
+    """`[extension] video`'s YouTube id, or None when it has none.
+
+    The links YouTube hands out are accepted as they are — Share's
+    `https://youtu.be/<id>` (its `?si=` and `?t=` included), the address
+    bar's `https://www.youtube.com/watch?v=<id>`, and `/embed/<id>` — and
+    nothing else is: a channel, a playlist or a Short is refused by name.
+    A Short is vertical, and every frame the store draws is landscape."""
+    declared = ext.get("video")
+    if declared is None:
+        return None
+    wanted = 'video is a link to one YouTube video, such as "https://youtu.be/…"'
+    if not isinstance(declared, str) or not declared.strip():
+        fail(entry_id, wanted)
+    url = urllib.parse.urlsplit(declared.strip())
+    host = (url.hostname or "").lower()
+    if url.scheme != "https" or host not in VIDEO_HOSTS:
+        fail(entry_id, f"{wanted}; {declared!r} is not")
+    if host == "youtu.be":
+        candidate = url.path.removeprefix("/")
+    elif url.path == "/watch":
+        candidate = (urllib.parse.parse_qs(url.query).get("v") or [""])[0]
+    elif url.path.startswith("/embed/"):
+        candidate = url.path.removeprefix("/embed/")
+    else:
+        candidate = ""
+    if not YOUTUBE_ID_RE.fullmatch(candidate):
+        fail(entry_id, f"{wanted}; {declared!r} is not")
+    return candidate
+
+
+def video_poster(entry_id: str, youtube_id: str) -> bytes:
+    """The picture a video is drawn with before it plays: YouTube's own,
+    the largest it has (`VIDEO_POSTERS`), held to a screenshot's ceiling
+    and to being a JPEG. Asked on every run, a check included — the check
+    is where a mistyped id is caught — and published by its content, so a
+    picture YouTube regenerates is a new file rather than a stale cache.
+
+    The host is fixed and the id has already matched `YOUTUBE_ID_RE`, so
+    nothing an author writes reaches this URL but eleven checked letters."""
+    for size in VIDEO_POSTERS:
+        url = f"https://i.ytimg.com/vi/{youtube_id}/{size}.jpg"
+        try:
+            with urllib.request.urlopen(url, timeout=30) as response:
+                data = response.read(MAX_SCREENSHOT + 1)
+        except urllib.error.HTTPError as err:
+            if err.code == 404:
+                continue
+            fail(entry_id, f"YouTube answered {err.code} for the picture of video {youtube_id}; run it again")
+        except (urllib.error.URLError, TimeoutError) as err:
+            fail(entry_id, f"YouTube did not answer for the picture of video {youtube_id} ({err}); run it again")
+        if len(data) > MAX_SCREENSHOT:
+            fail(entry_id, f"YouTube's picture of video {youtube_id} is over {MAX_SCREENSHOT} bytes")
+        if not data.startswith(b"\xff\xd8\xff"):
+            fail(entry_id, f"YouTube's picture of video {youtube_id} is not a JPEG")
+        return data
+    fail(entry_id, f"YouTube has no video {youtube_id} — check the link in video")
+
+
 def store_text(entry_id: str, path: Path, most: int):
     """A store-only text file's contents, or None when it is absent. Text
     a page will draw, so it is held to being text: a plain file, UTF-8,
@@ -1598,6 +1677,10 @@ def main(check: bool = False, built: "Path | None" = None):
         # the cheapest thing to tell a PR about.
         releases = changelog_of(entry_id, crate, ext["version"])
         versions_of(entry_id, entry, crate, ext["version"])
+        # A link that is not one video is refused before the build, with
+        # the changelog, for the same reason; its picture is fetched with
+        # the screenshots, below.
+        video = video_of(entry_id, ext)
         summaries = summaries_of(entry_id, releases)
         made_from = sources_sha256(entry_id, crate, ext)
         kept = carried(entry_id, ext["version"], made_from, served.get(entry_id))
@@ -1635,6 +1718,7 @@ def main(check: bool = False, built: "Path | None" = None):
             published(entry_id, shot.read_bytes(), kind)
             for shot, kind in screenshots_of(entry_id, crate, ext)
         ]
+        poster_url = published(entry_id, video_poster(entry_id, video), "jpg") if video else ""
         details = details_of(entry_id, crate)
         details_url = published(entry_id, details, "md") if details is not None else ""
         icon_url = published(entry_id, icon.read_bytes(), "svg") if icon is not None else ""
@@ -1689,6 +1773,12 @@ def main(check: bool = False, built: "Path | None" = None):
                 "category": entry["category"],
                 "featured": entry.get("featured", False),
                 "screenshots": shot_urls,
+                # `{youtube, poster}` or null: the demo video, as the id
+                # `video_of` read out of the author's link and the picture
+                # `video_poster` published beside the package. Its own
+                # field rather than a row of `screenshots`, which a Lumi
+                # from before it downloads as a picture and would refuse.
+                "video": {"youtube": video, "poster": poster_url} if video else None,
                 "details": details_url,
                 # The release history: `[{version, date, notes, notesSha256,
                 # summary}]`, newest first — the author's CHANGELOG.md
