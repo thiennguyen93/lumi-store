@@ -19,6 +19,13 @@
 //! And the ways in: a row in Lumi's menu bar menu, and the window itself
 //! opening once, right after install. No command: the game is not a
 //! shortcut action.
+//!
+//! **The row has two switches.** Rhythm Keys' own, in its Settings, which
+//! sets or clears the row; and Lumi's, the person's, on Rhythm Keys'
+//! Permissions sheet in Lumi's settings. The row shows only while both are
+//! on, and Lumi's outranks this one: nothing here turns it. When it is off,
+//! the window says so beside Rhythm Keys' own switch, and offers the way to
+//! it (`ui.open-permissions`).
 
 use lumi_extension_api as lumi;
 use lumi_extension_api::storage::{self, PutError};
@@ -29,6 +36,12 @@ const WINDOW: &str = "game";
 /// What the page may keep, and nothing else: the library, and the player's
 /// progress. Values are the page's JSON, held as written.
 const KEYS: [&str; 2] = ["library", "progress"];
+
+/// Where Rhythm Keys keeps the person's own switch over its menu bar row,
+/// apart from the page's keys: this component reads it on an update, with
+/// no window open. `"off"` hides the row; anything else, or nothing yet,
+/// shows it.
+const MENU: &str = "menu-row";
 
 /// Openverse's audio search. The only address this extension asks for
 /// itself; downloads are the page's, through the bridge.
@@ -60,7 +73,11 @@ impl lumi::Guest for RhythmKeys {
     /// - `open-files` → `[{"name", "blob"}]`, empty when the person cancels;
     /// - `forget` `{blobs: [id]}` → `{}`, a blob already gone not an error;
     /// - `usage` → `{"bytes", "limit"}`, the storage this extension holds;
-    /// - `open` `{url}` → `{}`, a song's page, `https` only.
+    /// - `open` `{url}` → `{}`, a song's page, `https` only;
+    /// - `menu` → `{"kind":"menu", "mine", "lumi"}`, the menu bar row's two
+    ///   switches ([`menu_state`]);
+    /// - `set-menu` `{on}` → the same, after setting Rhythm Keys' own;
+    /// - `open-permissions` → `{}`, Lumi's settings where Lumi's switch is.
     fn run_ui(window: String, request: String) -> Result<String, String> {
         if let Some(row) = lumi::menu::pressed(&window, &request) {
             return match row.as_str() {
@@ -125,7 +142,20 @@ impl lumi::Guest for RhythmKeys {
                 lumi::open_url(url)?;
                 Ok("{}".to_string())
             }
-            _ => Err("Rhythm Keys' window asks for load, save, search, open-files, forget, usage or open".to_string()),
+            Some("menu") => menu_state(),
+            Some("set-menu") => {
+                let on = asked
+                    .get("on")
+                    .and_then(|on| on.as_bool())
+                    .ok_or_else(|| "set-menu needs on, true or false".to_string())?;
+                keep(MENU, if on { "on" } else { "off" })?;
+                menu()?;
+                menu_state()
+            }
+            Some("open-permissions") => lumi::open_permissions().map(|()| "{}".to_string()),
+            _ => Err("Rhythm Keys' window asks for load, save, search, open-files, forget, usage, open, \
+                      menu, set-menu or open-permissions"
+                .to_string()),
         }
     }
 
@@ -145,16 +175,40 @@ impl lumi::Guest for RhythmKeys {
         }
     }
 
-    /// Rhythm Keys asks to hear no events, so this is never called.
-    fn on_event(_name: String, _payload: String) -> Result<(), String> {
+    /// `menu-shown`: the person moved Lumi's switch over the row. An open
+    /// window redraws its Settings row from it; a closed one asks when it
+    /// opens.
+    fn on_event(name: String, _payload: String) -> Result<(), String> {
+        if name == "menu-shown" {
+            // `false` is a window not on screen: nobody to tell.
+            lumi::post(WINDOW, &menu_state()?)?;
+        }
         Ok(())
     }
 }
 
-/// The one row in Lumi's menu bar menu.
+/// The one row in Lumi's menu bar menu, as Rhythm Keys' own switch has it:
+/// set while the person wants it, cleared when not. Lumi keeps a set row
+/// while its own switch hides it, and draws it again when that is back on.
 fn menu() -> Result<(), String> {
     use lumi::menu::Entry;
-    lumi::menu::set_rows(&[Entry::item("play", "Play Rhythm Keys").icon("music")])
+    if wanted()? {
+        lumi::menu::set_rows(&[Entry::item("play", "Play Rhythm Keys").icon("music")])
+    } else {
+        lumi::menu::clear()
+    }
+}
+
+/// Rhythm Keys' own switch over its row.
+fn wanted() -> Result<bool, String> {
+    Ok(storage::get(MENU)?.is_none_or(|entry| entry.value != "off"))
+}
+
+/// Both switches over the row, as the window draws them: `mine`, Rhythm
+/// Keys' own, and `lumi`, whether Lumi lets the row show, which outranks it.
+/// `kind` lets the same object arrive as a `lumi:message`.
+fn menu_state() -> Result<String, String> {
+    Ok(serde_json::json!({ "kind": "menu", "mine": wanted()?, "lumi": lumi::menu::shown()? }).to_string())
 }
 
 /// Keep `value` under `key`, over whatever another run wrote in between: the

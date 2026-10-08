@@ -141,7 +141,7 @@
     // The band names the song while it plays, the game otherwise.
     if (name !== 'play') $('#band-title').textContent = 'Rhythm Keys';
     if (name === 'home') renderHome();
-    if (name === 'settings') renderSettings();
+    if (name === 'settings') { renderSettings(); askMenu(); }
   }
 
   function segmented(box, items, currentValue, onPick) {
@@ -971,9 +971,42 @@
       $('#room-bar').style.width = Math.min(100, (bytes / limit) * 100) + '%';
     };
     room(used, Lib.LIMIT);
+    renderMenu();
     // What the storage itself says, encryption and readings included.
     RKBridge.usage().then(u => { if (u && u.limit && screen === 'settings') room(u.bytes, u.limit); }, () => {});
   }
+
+  // The menu bar row. Two switches: Rhythm Keys' own, this checkbox, and
+  // Lumi's, the person's, which outranks it. While Lumi hides the row this
+  // one keeps its value, dimmed, and the window says why and where to go.
+  let menuRow = null;
+  function renderMenu(said) {
+    const m = menuRow;
+    $('#menu-label').hidden = $('#menu-group').hidden = !m;
+    if (!m) return;
+    const held = !m.lumi;
+    $('#menuRow').checked = m.mine;
+    $('#menuRow').disabled = held;
+    $('#menu-row').classList.toggle('off', held);
+    $('#menu-hint').classList.toggle('off', held);
+    $('#menu-hint-text').textContent = said || 'Without it, open Rhythm Keys from Extensions in Lumi\'s settings.';
+    $('#menu-hidden').hidden = !held;
+  }
+  function askMenu() {
+    RKBridge.menu().then(m => { menuRow = m; renderMenu(); }, () => {});
+  }
+  $('#menuRow').addEventListener('change', e => {
+    RKBridge.setMenu(e.target.checked).then(
+      m => { menuRow = m; renderMenu(); },
+      err => renderMenu(err.message || 'The row could not be changed.'),
+    );
+  });
+  $('#open-permissions').onclick = () => {
+    RKBridge.openPermissions().catch(err => renderMenu(err.message || 'Lumi\'s settings could not be opened.'));
+  };
+  RKBridge.onMenu(m => { menuRow = m; renderMenu(); });
+  // Back from Lumi's settings: ask again, in case the word was missed.
+  window.addEventListener('focus', () => { if (screen === 'settings') askMenu(); });
   function outputs() {
     $('#speed-out').textContent = Number(S.speed).toFixed(1) + '×';
     $('#music-out').textContent = Math.round(S.music * 100) + '%';

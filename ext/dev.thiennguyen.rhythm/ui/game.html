@@ -142,6 +142,15 @@
         <div class="row small"><span class="meta">Notes late for you? Raise it. Early? Lower it.</span><button type="button" class="link" id="open-calibrate">Calibrate…</button></div>
       </div>
 
+      <!-- The menu bar row's two switches: Rhythm Keys' own here, and Lumi's,
+           which outranks it. Drawn once Rhythm Keys has said where both stand. -->
+      <div class="label" id="menu-label" hidden>Menu bar</div>
+      <div class="group" id="menu-group" hidden>
+        <label class="row" id="menu-row"><span>Play Rhythm Keys in Lumi's menu bar menu</span><input type="checkbox" id="menuRow" class="switch"></label>
+        <div class="row small" id="menu-hint"><span class="meta" id="menu-hint-text">Without it, open Rhythm Keys from Extensions in Lumi's settings.</span></div>
+        <div class="row small" id="menu-hidden" hidden><span class="meta">Lumi is hiding this row: its Menu bar switch for Rhythm Keys is off.</span><button type="button" class="link" id="open-permissions">Open Lumi's settings</button></div>
+      </div>
+
       <div class="label">Library</div>
       <div class="group">
         <div class="row"><span id="room-text"></span></div>

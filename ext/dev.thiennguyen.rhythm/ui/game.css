@@ -436,6 +436,13 @@ kbd {
 .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 38px; }
 .row + .row, .caps + .row { border-top: 1px solid var(--rk-line); }
 .row.small { min-height: 32px; }
+/* A setting's row is a <label> so its words toggle it. Lumi's page sheet
+   draws a bare label as a form's caption, small, faded and spaced
+   (`:where(label)` in lumi.css): a row is none of those. */
+label.row { margin: 0; opacity: 1; font-size: inherit; }
+/* A setting that means nothing right now: dimmed whole, its value kept. */
+.row.off { opacity: 0.5; }
+.row .link { flex: none; }
 .slider { display: flex; align-items: center; gap: 8px; }
 .slider input { width: 130px; }
 .slider output { width: 52px; text-align: right; font-variant-numeric: tabular-nums; color: var(--rk-muted); font-size: 12px; }

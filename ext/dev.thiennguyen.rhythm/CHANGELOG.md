@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.2] - 2026-10-08
+
+### Added
+
+- Settings › Menu bar: show or hide Play Rhythm Keys in Lumi's menu bar menu. Without it, open Rhythm Keys from Extensions in Lumi's settings.
+- When Lumi is hiding the row, Settings says so and opens Lumi's settings, where its own Menu bar switch for Rhythm Keys is.
+
+### Fixed
+
+- Settings rows are no longer drawn faded and small in Lumi.
+
 ## [0.1.1] - 2026-10-08
 
 ### Changed

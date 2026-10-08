@@ -21,4 +21,5 @@ Each song is read on your Mac as it is added: its tempo, its beats and where its
 ## Good to know
 
 - Change the keys, the scroll speed and the volumes in Settings, and calibrate your audio offset by tapping along.
+- Rather not have the Play row in Lumi's menu bar menu? Turn it off in Settings, and open Rhythm Keys from Extensions in Lumi's settings instead.
 - Songs stay on your Mac, in Rhythm Keys' own storage. The install sheet tells you it reaches the internet: that is the free music search and the downloads you ask for.

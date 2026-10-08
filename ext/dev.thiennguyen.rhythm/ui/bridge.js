@@ -159,5 +159,38 @@
     else window.open(url, '_blank', 'noopener');
   }
 
-  window.RKBridge = { IN_LUMI, load, save, flush, putBlob, getBlob, download, head, forget, search, openFiles, usage, openUrl };
+  // ---------- the menu bar row: Rhythm Keys' switch, and Lumi's ----------
+  // `{kind: 'menu', mine, lumi}`: the row shows only while both are on, and
+  // Lumi's outranks Rhythm Keys'. In the preview, Lumi's switch is
+  // `?lumi-menu=off` in the address.
+  function previewMenu() {
+    let mine = true;
+    try { mine = localStorage.getItem('rhythm-keys:menu-row') !== 'off'; } catch { /* not kept */ }
+    return { kind: 'menu', mine, lumi: new URLSearchParams(location.search).get('lumi-menu') !== 'off' };
+  }
+  function menu() {
+    return IN_LUMI ? call('menu') : Promise.resolve(previewMenu());
+  }
+  function setMenu(on) {
+    if (IN_LUMI) return call('set-menu', { on });
+    try { localStorage.setItem('rhythm-keys:menu-row', on ? 'on' : 'off'); } catch { /* not kept */ }
+    return Promise.resolve(previewMenu());
+  }
+  // Lumi's settings, where its switch over the row is. Called on a press.
+  function openPermissions() {
+    return IN_LUMI ? call('open-permissions') : Promise.resolve({});
+  }
+  // Lumi's switch moving while the window is open: the component hears
+  // `menu-shown` and posts both switches on.
+  function onMenu(handler) {
+    window.addEventListener('lumi:message', e => {
+      const said = e.detail;
+      if (said && said.kind === 'menu') handler(said);
+    });
+  }
+
+  window.RKBridge = {
+    IN_LUMI, load, save, flush, putBlob, getBlob, download, head, forget, search, openFiles, usage, openUrl,
+    menu, setMenu, openPermissions, onMenu,
+  };
 })();
