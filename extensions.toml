@@ -37,6 +37,14 @@ subdir = "."
 category = "Utilities"
 
 
+# First-party and in-tree, for the sample's reason.
+[[extension]]
+id = "dev.thiennguyen.rhythm"
+path = "ext/dev.thiennguyen.rhythm"
+subdir = "."
+category = "Utilities"
+
+
 # First-party and closed source: a private repo, `update = none` in
 # .gitmodules and fetched with a read-only deploy key by
 # scripts/fetch-private.sh. Its React editor under web/ is built by the store.

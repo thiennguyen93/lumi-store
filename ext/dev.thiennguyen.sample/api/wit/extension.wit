@@ -432,6 +432,15 @@ interface ui {
     /// panel's "Settings…". Only for something the person did. Added in 0.3.
     open-settings: func() -> result<_, string>;
 
+    /// Bring up Lumi's Settings on this extension with its Permissions
+    /// sheet open: what it may reach, and the switches over it that are the
+    /// person's rather than the extension's — the folders it writes into,
+    /// whether its rows show in Lumi's menu bar menu. Lumi draws that sheet
+    /// whatever the extension's own pages draw, so it is where to send
+    /// somebody when `menu.shown` answers `false`. Only for something the
+    /// person did. Added in Lumi 1.44.0.
+    open-permissions: func() -> result<_, string>;
+
     /// Choose the glass one of your panels opens on from now on:
     /// "popover", "hud" or "sidebar" — for a setting that lets the person
     /// pick. Only a panel whose manifest declares one of those three — a
@@ -1222,6 +1231,15 @@ interface menu {
     set-rows: func(rows: list<row>) -> result<_, string>;
     /// Take your rows out of the menu.
     clear: func() -> result<_, string>;
+    /// Whether Lumi lets your rows show in its menu bar menu. Two switches
+    /// decide: yours, which is `set` and `clear`, and the person's, the Menu
+    /// bar switch on your Permissions sheet. Rows show only while both are
+    /// on, and theirs outranks yours: `set` goes on keeping your tree while
+    /// it is hidden, and the tree comes back as you left it when they show
+    /// it again. Nothing here turns theirs. When yours says show and this
+    /// answers `false`, say so, and offer `ui.open-permissions`. Hear
+    /// `"menu-shown"` to be told when it changes. Added in Lumi 1.44.0.
+    shown: func() -> result<bool, string>;
 }
 
 world extension {

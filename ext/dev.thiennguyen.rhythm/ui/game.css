@@ -1,0 +1,500 @@
+/* Rhythm Keys, on top of Lumi's own sheet (put first by Lumi when it embeds
+   the page). The chrome is Lumi's tokens with fallbacks, so it follows the
+   theme; the highway is a stage of its own and is dark in both. */
+
+:root {
+  color-scheme: light dark;
+  --rk-line: var(--border, rgba(128, 128, 128, 0.28));
+  --rk-card: var(--card, rgba(128, 128, 128, 0.08));
+  --rk-hover: var(--row-hover, rgba(128, 128, 128, 0.16));
+  --rk-raised: var(--raised, Canvas);
+  --rk-accent: var(--accent, #378add);
+  --rk-muted: color-mix(in srgb, CanvasText 55%, transparent);
+  --rk-gold: #f5b83d;
+  --rk-stage: #0e1016;
+}
+
+* { box-sizing: border-box; }
+/* `hidden` means hidden, whatever display a class gives the element. */
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body {
+  display: grid;
+  place-items: center;
+  background: Canvas;
+  color: CanvasText;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+kbd {
+  display: inline-block;
+  min-width: 16px;
+  padding: 0 4px;
+  margin: 0 1px;
+  border-radius: 4px;
+  border: 1px solid var(--rk-line);
+  font: 600 10.5px/15px -apple-system, system-ui, sans-serif;
+  text-align: center;
+  color: var(--rk-muted);
+}
+
+/* The panel. In Lumi the window is exactly this size and the page fills it;
+   in a browser it sits in the middle at the size Lumi gives it. */
+#app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(420px, 100vw);
+  height: min(680px, 100vh);
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--rk-line);
+  background: Canvas;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+@media (max-width: 440px), (max-height: 700px) {
+  body { display: block; }
+  #app { width: 100vw; height: 100vh; border: 0; border-radius: 0; box-shadow: none; }
+}
+/* In Lumi the page is the window, whatever size the person makes it; the
+   library keeps to a readable column in a wide one. */
+.in-lumi body { display: block; }
+.in-lumi #app { width: 100vw; height: 100vh; border: 0; border-radius: 0; box-shadow: none; }
+.in-lumi #home, .in-lumi #results, .in-lumi #settings, .in-lumi #calibrate, .in-lumi .sheet > * {
+  width: 100%;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.in-lumi .sheet { align-items: center; }
+/* The band: the window's own title bar in Lumi (`titlebar = "unified"`), as
+   tall as Lumi says, starting where macOS's traffic lights end. While
+   playing it keeps only the song's name, over the stage's dark. */
+#app.playing .top { background: var(--rk-stage); color: rgba(255, 255, 255, 0.85); }
+#app.playing .top .icon { display: none; }
+
+.top {
+  display: flex; align-items: center; gap: 8px;
+  height: var(--bar, 44px);
+  padding: 0 10px 0 calc(var(--lights, 0px) + 14px);
+  flex: none;
+  min-width: 0;
+}
+.top .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top .mark { width: 18px; height: 18px; color: var(--rk-gold); }
+.top .title { font-weight: 600; font-size: 14px; }
+.grow { flex: 1; }
+.icon {
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 7px;
+  background: transparent;
+  color: var(--rk-muted);
+}
+.icon:hover { background: var(--rk-hover); color: CanvasText; }
+
+.screen { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.screen[hidden] { display: none; }
+.label { font-size: 11px; font-weight: 600; color: var(--rk-muted); letter-spacing: 0.02em; margin: 4px 2px 0; }
+.meta { color: var(--rk-muted); font-size: 12px; }
+
+/* ---------- home ---------- */
+
+#home { padding: 2px 14px 12px; gap: 8px; }
+
+.cover {
+  position: relative;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--c, #888);
+  flex: none;
+  display: grid; place-items: center;
+}
+.cover.big { width: 52px; height: 52px; border-radius: 12px; }
+.cover svg { width: 60%; height: 60%; }
+
+.daily {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+  background: color-mix(in srgb, var(--c) 14%, Canvas);
+  text-align: left;
+}
+.daily.on { box-shadow: 0 0 0 2px var(--rk-accent); }
+.daily-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.eyebrow { font-size: 11px; font-weight: 600; color: color-mix(in srgb, var(--c) 70%, CanvasText); }
+.daily-name { font-size: 16px; font-weight: 700; }
+.streak { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.streak b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.streak span { font-size: 10.5px; color: var(--rk-muted); }
+
+.tracks { list-style: none; margin: 0; padding: 0; overflow: auto; flex: 1; min-height: 0; }
+.tracks li {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.tracks li:hover { background: var(--rk-hover); }
+.tracks li.on { background: color-mix(in srgb, var(--rk-accent) 16%, transparent); }
+.t-name { font-weight: 600; font-size: 13.5px; }
+.grade-badge {
+  min-width: 30px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 12px;
+  text-align: center;
+  color: var(--g, var(--rk-muted));
+  background: color-mix(in srgb, var(--g, transparent) 14%, transparent);
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 2px; gap: 2px;
+  border-radius: 8px;
+  background: var(--rk-card);
+  border: 1px solid var(--rk-line);
+}
+.segmented.wide { display: flex; }
+.segmented.wide button { flex: 1; }
+.segmented button {
+  border: 0;
+  background: transparent;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.segmented button b { margin-left: 4px; font-size: 11px; color: var(--d, var(--rk-muted)); }
+.segmented button[aria-checked="true"] {
+  background: var(--rk-raised);
+  box-shadow: 0 0 0 0.5px var(--rk-line), 0 1px 2px rgba(0, 0, 0, 0.14);
+  font-weight: 600;
+}
+
+.primary {
+  border: 0;
+  border-radius: 9px;
+  padding: 8px 14px;
+  background: var(--rk-accent);
+  color: #fff;
+  font-weight: 600;
+}
+.primary:disabled { opacity: 0.45; cursor: default; }
+.primary kbd { color: rgba(255, 255, 255, 0.85); border-color: rgba(255, 255, 255, 0.4); }
+#play { height: 42px; font-size: 14px; }
+#play-meta { font-weight: 400; opacity: 0.8; margin-left: 6px; font-size: 12px; }
+.hints { text-align: center; font-size: 11px; color: var(--rk-muted); }
+
+/* ---------- the library ---------- */
+
+.chips { display: flex; gap: 6px; overflow-x: auto; flex: none; padding: 1px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--rk-line);
+  background: transparent;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.chip[aria-selected="true"] { background: CanvasText; color: Canvas; border-color: transparent; font-weight: 600; }
+.chip .n { opacity: 0.6; font-variant-numeric: tabular-nums; }
+.chip .x { opacity: 0.7; margin-left: 2px; }
+.chip input { width: 110px; border: 0; outline: 0; background: transparent; font: inherit; color: inherit; padding: 0; }
+.chips.small .chip { font-size: 11.5px; padding: 3px 9px; }
+
+.field {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--rk-line);
+  background: var(--rk-card);
+  font: inherit;
+  color: inherit;
+  outline: none;
+}
+.field:focus { border-color: var(--rk-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--rk-accent) 22%, transparent); }
+.field-row { display: flex; gap: 8px; }
+.field-row .field { flex: 1; }
+
+.tracks li .more {
+  width: 26px; height: 26px; border: 0; border-radius: 6px; background: transparent; color: var(--rk-muted);
+  display: grid; place-items: center;
+}
+.tracks li .more:hover { background: var(--rk-hover); color: CanvasText; }
+.tracks li.song { grid-template-columns: 40px 1fr auto auto; }
+.tracks li .t-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tracks li .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tracks li > span:nth-child(2) { min-width: 0; }
+.cover .initial { color: #fff; font-weight: 800; font-size: 15px; }
+.star { color: var(--rk-gold); font-size: 12px; margin-left: 4px; }
+.bar-in { height: 3px; border-radius: 2px; background: var(--rk-line); margin-top: 5px; overflow: hidden; }
+.bar-in i { display: block; height: 100%; background: var(--rk-accent); width: 0; transition: width 0.15s; }
+.bar-in.busy i { width: 35% !important; animation: busy 1.1s ease-in-out infinite; }
+@keyframes busy { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+
+.empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 0 24px; }
+.empty[hidden] { display: none; }
+.empty-title { font-size: 16px; font-weight: 700; }
+.empty .primary, .empty .plain { width: 220px; }
+.plain { border: 1px solid var(--rk-line); background: var(--rk-card); border-radius: 9px; padding: 8px 12px; }
+.danger { border: 1px solid color-mix(in srgb, var(--denied, #b3261e) 45%, transparent); background: transparent; color: var(--denied, #b3261e); border-radius: 9px; padding: 8px 12px; font-weight: 600; }
+.danger.sure { background: var(--denied, #b3261e); color: #fff; }
+
+/* ---------- listening ---------- */
+
+.tracks li.result { grid-template-columns: 28px minmax(0, 1fr) auto; }
+.pv {
+  width: 28px; height: 28px; padding: 0;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--rk-line);
+  background: var(--rk-card);
+  color: var(--rk-muted);
+}
+.pv:hover { color: CanvasText; border-color: var(--rk-accent); }
+.pv.playing {
+  color: CanvasText;
+  border-color: transparent;
+  background:
+    radial-gradient(circle, Canvas 58%, transparent 60%),
+    conic-gradient(var(--rk-accent) calc(var(--p, 0) * 360deg), var(--rk-line) 0);
+}
+.pv.loading { color: var(--rk-accent); animation: listen-wait 0.9s ease-in-out infinite; }
+.pv.error { color: var(--denied, #b3261e); border-color: color-mix(in srgb, var(--denied, #b3261e) 45%, transparent); }
+@keyframes listen-wait { 50% { opacity: 0.4; } }
+
+.cover .eq { display: none; position: absolute; inset: 0; align-items: flex-end; justify-content: center; gap: 3px; padding-bottom: 11px; }
+.cover.big .eq { padding-bottom: 15px; }
+.cover .eq i { width: 4px; height: 16px; border-radius: 2px; background: #fff; transform-origin: bottom; animation: eq 0.9s ease-in-out infinite; }
+.cover .eq i:nth-child(2) { animation-delay: -0.3s; }
+.cover .eq i:nth-child(3) { animation-delay: -0.6s; }
+@keyframes eq { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+.playing > .cover .initial, .daily.playing .cover .initial { display: none; }
+.playing > .cover .eq, .daily.playing .cover .eq { display: flex; }
+.tracks li.song.loading .cover { animation: listen-wait 0.9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .cover .eq i { animation: none; transform: scaleY(0.7); } }
+
+/* ---------- sheets ---------- */
+
+/* A sheet starts under the band, never over it: in Lumi the band is the
+   title bar, with macOS's traffic lights over its left end, and it has to
+   stay the window's handle while a sheet is up. */
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; top: var(--bar, 44px);
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 14px 14px;
+  background: Canvas;
+  z-index: 5;
+  animation: rise 0.18s ease-out;
+}
+.sheet[hidden] { display: none; }
+@keyframes rise { from { transform: translateY(14px); opacity: 0; } }
+.sheet-head { display: flex; align-items: center; min-height: 28px; font-size: 15px; }
+.sheet-head b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pane { display: flex; flex-direction: column; gap: 8px; min-height: 0; flex: 1; }
+.pane[hidden] { display: none; }
+.note { font-size: 11.5px; color: var(--rk-muted); line-height: 1.45; }
+.tracks li .add { border: 1px solid var(--rk-line); background: var(--rk-card); border-radius: 7px; padding: 4px 10px; font-size: 12px; font-weight: 600; min-width: 64px; }
+.tracks li .add.done { color: var(--granted, #1a7f37); border-color: transparent; background: transparent; }
+.tracks li.result > span { min-width: 0; }
+.lic { font-size: 10.5px; font-weight: 700; padding: 0 5px; border-radius: 4px; border: 1px solid var(--rk-line); color: var(--rk-muted); margin-left: 4px; white-space: nowrap; }
+.drop {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  border: 1.5px dashed var(--rk-line);
+  border-radius: 14px;
+  color: var(--rk-muted);
+  text-align: center;
+}
+.drop b { color: CanvasText; font-size: 14px; }
+.drop.over { border-color: var(--rk-accent); background: color-mix(in srgb, var(--rk-accent) 8%, transparent); }
+.drop .primary { margin-top: 6px; }
+.jobs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; flex: none; max-height: 150px; overflow: auto; }
+.jobs:empty { display: none; }
+.jobs li { padding: 7px 10px; border-radius: 9px; background: var(--rk-card); border: 1px solid var(--rk-line); font-size: 12px; }
+.jobs li .row-top { display: flex; justify-content: space-between; gap: 8px; }
+.jobs li .err { color: var(--denied, #b3261e); }
+.facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.facts div { padding: 6px 8px; border-radius: 9px; background: var(--rk-card); border: 1px solid var(--rk-line); }
+.facts span { display: block; font-size: 10.5px; color: var(--rk-muted); }
+.facts b { font-size: 13px; font-variant-numeric: tabular-nums; }
+.stepper { display: inline-flex; align-items: center; gap: 6px; }
+.stepper button { width: 26px; height: 24px; border-radius: 6px; border: 1px solid var(--rk-line); background: var(--rk-card); }
+.stepper output { min-width: 58px; text-align: center; font-variant-numeric: tabular-nums; color: var(--rk-muted); font-size: 12px; }
+.check-row { display: flex; align-items: center; gap: 8px; min-height: 34px; }
+.check-row + .check-row { border-top: 1px solid var(--rk-line); }
+.room { height: 6px; border-radius: 3px; background: var(--rk-line); overflow: hidden; margin-bottom: 8px; }
+.room i { display: block; height: 100%; background: var(--rk-accent); }
+.credit { font-size: 11px; }
+.result-text { min-width: 0; }
+.r-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- playing ---------- */
+
+#play-screen { position: relative; background: var(--rk-stage); color: #fff; }
+#stage { flex: 1; width: 100%; min-height: 0; display: block; }
+.hud {
+  position: absolute; left: 0; right: 0; top: 0;
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr;
+  align-items: start;
+  padding: 10px 14px;
+  pointer-events: none;
+  z-index: 1;
+}
+.hud .right { text-align: right; }
+.hud-label { font-size: 10.5px; color: rgba(255, 255, 255, 0.5); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.hud-num { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.hud-mid { text-align: center; padding-top: 2px; }
+.now-title { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.progress { height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); margin: 6px 6px 4px; overflow: hidden; }
+.progress i { display: block; height: 100%; width: 0; background: var(--rk-gold); }
+.hud-hint kbd { color: rgba(255, 255, 255, 0.45); border-color: rgba(255, 255, 255, 0.2); }
+.hud-hint { font-size: 10.5px; color: rgba(255, 255, 255, 0.4); }
+
+.overlay {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  background: rgba(8, 10, 16, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 2;
+}
+.overlay[hidden] { display: none; }
+.card {
+  display: flex; flex-direction: column; gap: 8px;
+  width: 220px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #1b1f2a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.card-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+.card button { border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: #fff; border-radius: 9px; padding: 8px; }
+.card button.primary { background: var(--rk-accent); border-color: transparent; }
+.card kbd { color: rgba(255, 255, 255, 0.6); border-color: rgba(255, 255, 255, 0.25); margin-left: 4px; }
+
+/* ---------- results ---------- */
+
+#results { padding: 6px 16px 14px; gap: 10px; }
+.result-head { display: flex; align-items: center; gap: 14px; }
+.grade {
+  width: 84px; height: 84px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 22px;
+  font-size: 40px; font-weight: 900;
+  color: var(--g);
+  background: color-mix(in srgb, var(--g) 15%, transparent);
+  border: 2px solid color-mix(in srgb, var(--g) 50%, transparent);
+}
+.r-title { font-size: 17px; font-weight: 700; }
+.pills { display: flex; gap: 6px; margin-top: 6px; }
+.pill { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+.pill[hidden] { display: none; }
+.pill.best { background: color-mix(in srgb, var(--rk-gold) 22%, transparent); color: color-mix(in srgb, var(--rk-gold) 75%, CanvasText); }
+.pill.fc { background: color-mix(in srgb, #5fd38d 20%, transparent); color: color-mix(in srgb, #5fd38d 70%, CanvasText); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stats > div { padding: 8px 10px; border-radius: 10px; background: var(--rk-card); border: 1px solid var(--rk-line); }
+.stat-label { display: block; font-size: 11px; color: var(--rk-muted); }
+.stats b { font-size: 16px; font-variant-numeric: tabular-nums; }
+.counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.counts div { text-align: center; padding: 6px 4px; border-radius: 9px; background: color-mix(in srgb, var(--j) 12%, transparent); }
+.counts b { display: block; font-size: 15px; font-variant-numeric: tabular-nums; }
+.counts span { font-size: 11px; color: color-mix(in srgb, var(--j) 75%, CanvasText); font-weight: 600; }
+.timing { padding: 10px; border-radius: 10px; background: var(--rk-card); border: 1px solid var(--rk-line); }
+.histo { display: flex; align-items: flex-end; gap: 2px; height: 56px; }
+.histo i { flex: 1; border-radius: 2px 2px 0 0; background: var(--rk-accent); min-height: 2px; opacity: 0.85; }
+.histo i.mid { background: var(--rk-gold); }
+.histo-axis { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--rk-muted); margin-top: 4px; }
+.timing-line { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.row-buttons { display: flex; gap: 8px; justify-content: flex-end; }
+.row-buttons button:not(.primary) {
+  border: 1px solid var(--rk-line);
+  background: var(--rk-card);
+  border-radius: 9px;
+  padding: 8px 12px;
+}
+.link { border: 0; background: none; color: var(--rk-accent); padding: 0; font-weight: 600; }
+.link[hidden] { display: none; }
+
+/* ---------- settings ---------- */
+
+#settings { padding: 0 14px 14px; gap: 10px; }
+.scroll { flex: 1; overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; }
+.group { border-radius: 10px; background: var(--rk-card); border: 1px solid var(--rk-line); padding: 2px 12px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 38px; }
+.row + .row, .caps + .row { border-top: 1px solid var(--rk-line); }
+.row.small { min-height: 32px; }
+/* A setting's row is a <label> so its words toggle it. Lumi's page sheet
+   draws a bare label as a form's caption, small, faded and spaced
+   (`:where(label)` in lumi.css): a row is none of those. */
+label.row { margin: 0; opacity: 1; font-size: inherit; }
+/* A setting that means nothing right now: dimmed whole, its value kept. */
+.row.off { opacity: 0.5; }
+.row .link { flex: none; }
+.slider { display: flex; align-items: center; gap: 8px; }
+.slider input { width: 130px; }
+.slider output { width: 52px; text-align: right; font-variant-numeric: tabular-nums; color: var(--rk-muted); font-size: 12px; }
+.caps { display: flex; gap: 6px; justify-content: center; padding: 10px 0 12px; }
+.caps button {
+  min-width: 40px; height: 40px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--rk-line);
+  border-bottom-width: 3px;
+  background: var(--rk-raised);
+  font-weight: 700;
+  color: var(--l);
+}
+.caps button.wait { border-color: var(--rk-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--rk-accent) 30%, transparent); color: var(--rk-muted); }
+
+input.switch {
+  appearance: none; -webkit-appearance: none;
+  width: 32px; height: 19px;
+  border-radius: 99px;
+  background: var(--rk-line);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin: 0;
+}
+input.switch::after {
+  content: "";
+  position: absolute; top: 2px; left: 2px;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s;
+}
+input.switch:checked { background: var(--rk-accent); }
+input.switch:checked::after { transform: translateX(13px); }
+
+/* ---------- calibrate ---------- */
+
+#calibrate { padding: 0 14px 14px; }
+.cal { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; }
+.cal-text { font-size: 15px; font-weight: 600; }
+.cal-dot {
+  width: 96px; height: 96px; border-radius: 50%;
+  background: color-mix(in srgb, var(--rk-gold) 25%, transparent);
+  border: 2px solid var(--rk-gold);
+  transition: transform 0.08s ease-out;
+}
+.cal-dot.beat { transform: scale(1.18); background: color-mix(in srgb, var(--rk-gold) 55%, transparent); }
+.cal-result { font-size: 22px; font-weight: 800; min-height: 30px; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cal-dot { transition: none; }
+}

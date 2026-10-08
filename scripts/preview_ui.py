@@ -12,6 +12,20 @@ photographed for the store's `screenshots` without a Lumi build:
   POST /__lumi__/call       what scripts/preview/<id>.json answers for the
                             request's `kind`, else {} — there is no wasm
   GET  /__lumi__/shortcuts  no rows, shortcuts on
+  POST /__lumi__/download   {"url"}: one GET of a public http(s) URL, kept
+                            for this run as a blob — {"blob", "type", "size",
+                            "url"}, as Lumi answers it (the page has no
+                            network of its own, and a download is not held
+                            to the other site's CORS). "most" takes only the
+                            first that many bytes (cut, not refused;
+                            "partial" says so), and "keep": false answers the
+                            bytes themselves, at most 8 MB, instead of a blob
+                            — Lumi 1.44.0's rules, `download_ask`'s
+  GET  /__lumi__/blob/<id>  a blob downloaded or kept here, as opaque bytes
+  PUT  /__lumi__/blob       the body kept as a blob: {"blob"}
+                            Blobs are files under the system's temp folder,
+                            one folder per extension, so what a page keeps
+                            outlives a restart, as Lumi's storage does
   GET  /__preview__/?page=about.html&theme=light
                             a page Lumi draws inside a pane (About, Settings,
                             a [[page]] tab), framed with the pane's inset and
@@ -46,15 +60,32 @@ so this public one holds nothing of it: `--promo <its file>`.
 
 import argparse
 import http.server
+import ipaddress
 import json
+import secrets
+import re
+import socket
+import ssl
+import tempfile
 import tomllib
 import urllib.error
+import urllib.parse
 import urllib.request
 from functools import partial
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_LUMI_CSS = ROOT.parent / "lumi" / "src-tauri" / "src" / "ext" / "lumi.css"
+
+# Python from python.org ships without CA certificates until its "Install
+# Certificates" step is run; macOS keeps its own bundle, so a download
+# verifies against that rather than failing every https site.
+_paths = ssl.get_default_verify_paths()
+TLS = ssl.create_default_context(
+    cafile="/etc/ssl/cert.pem"
+    if not (_paths.cafile or Path(_paths.openssl_cafile).is_file()) and Path("/etc/ssl/cert.pem").is_file()
+    else None
+)
 
 
 # A pane page in Lumi sits inside the Settings window's content inset, on
@@ -254,8 +285,24 @@ def handler_for(
     name: str,
     icon: bytes,
     proxy: str,
+    blob_dir: Path,
 ):
+    # Blobs, by id: a file each in `blob_dir`. An id is this server's own
+    # hex, so a path never comes from the page.
+    blob_id = re.compile(r"^[0-9a-f]{32}$")
+
+    def keep_blob(data: bytes) -> str:
+        blob = secrets.token_hex(16)
+        (blob_dir / blob).write_bytes(data)
+        return blob
+
     class Bridge(http.server.SimpleHTTPRequestHandler):
+        def end_headers(self):
+            # A preview is for files being edited: always ask again, so an
+            # edit shows on the next load rather than after the cache gives up.
+            self.send_header("Cache-Control", "no-cache")
+            super().end_headers()
+
         def _json(self, body, status=200):
             data = json.dumps(body).encode()
             self.send_response(status)
@@ -283,6 +330,18 @@ def handler_for(
                 self._json(settings)
             elif path == "/__lumi__/shortcuts":
                 self._json({"on": True, "commands": [], "ess": []})
+            elif path.startswith("/__lumi__/blob/"):
+                blob = path[len("/__lumi__/blob/"):]
+                if not blob_id.match(blob) or not (blob_dir / blob).is_file():
+                    self.send_error(404)
+                    return
+                data = (blob_dir / blob).read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
             elif path == "/__icon__":
                 self.send_response(200)
                 self.send_header("Content-Type", "image/svg+xml")
@@ -373,6 +432,50 @@ def handler_for(
             self.end_headers()
             self.wfile.write(data)
 
+        def _download(self, url: str, most: int | None = None, keep: bool = True):
+            """Lumi's `POST /__lumi__/download`, near enough: public http(s)
+            only — never this Mac or its network, the way Lumi refuses them
+            unless Settings allows — at most a blob's 160 MB, and given up
+            after 15 seconds without a byte, as Lumi gives up on one."""
+            parsed = urllib.parse.urlparse(url)
+            if parsed.scheme not in ("http", "https") or not parsed.hostname:
+                self.send_error(400, 'a download is {"url": "https://..."}')
+                return
+            try:
+                addresses = {info[4][0] for info in socket.getaddrinfo(parsed.hostname, None)}
+            except socket.gaierror:
+                self.send_error(502, f"{parsed.hostname} was not found")
+                return
+            if any(not ipaddress.ip_address(a.split("%")[0]).is_global for a in addresses):
+                self.send_error(403, "a download reaches the internet, not this Mac's own network")
+                return
+            limit = 160 * 1024 * 1024 if keep else 8 * 1024 * 1024
+            try:
+                with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Lumi"}), timeout=15, context=TLS) as upstream:
+                    # One byte past what is wanted — `most`, or the ceiling —
+                    # says whether there was more; read no further, and hang up.
+                    data = upstream.read((most or limit) + 1)
+                    final = upstream.geturl()
+            except (urllib.error.URLError, TimeoutError) as err:
+                self.send_error(502, f"{url} did not answer: {getattr(err, 'reason', err)}")
+                return
+            partial = bool(most) and len(data) > most
+            if most:
+                data = data[:most]  # a head is cut, not refused
+            elif len(data) > limit:
+                self.send_error(502, f"That response is more than {limit} bytes")
+                return
+            if not keep:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            blob = keep_blob(data)
+            self._json({"blob": blob, "type": "application/octet-stream", "size": len(data), "url": final, "partial": partial}, 201)
+
         def _raw(self) -> bytes:
             return self.rfile.read(int(self.headers.get("Content-Length") or 0))
 
@@ -380,6 +483,12 @@ def handler_for(
             if self.path.split("?", 1)[0] == "/__lumi__/settings":
                 settings.update(self._body())
                 self._json(settings)
+            elif self.path.split("?", 1)[0] == "/__lumi__/blob":
+                length = int(self.headers.get("Content-Length") or 0)
+                if not 0 < length <= 160 * 1024 * 1024:
+                    self.send_error(400, "a blob is some bytes, at most 160 MB")
+                    return
+                self._json({"blob": keep_blob(self.rfile.read(length))}, 201)
             elif proxy:
                 self._forward("PUT", self._raw())
             else:
@@ -388,6 +497,17 @@ def handler_for(
         def do_POST(self):
             if self.path.split("?", 1)[0] == "/__lumi__/call":
                 self._json(calls.get(str(self._body().get("kind", "")), {}))
+            elif self.path.split("?", 1)[0] == "/__lumi__/download":
+                asked = self._body()
+                keep = asked.get("keep", True)
+                most = asked.get("most")
+                ceiling = 160 * 1024 * 1024 if keep else 8 * 1024 * 1024
+                if not isinstance(keep, bool):
+                    self.send_error(400, '"keep" is true or false')
+                elif most is not None and (isinstance(most, bool) or not isinstance(most, int) or not 0 < most <= ceiling):
+                    self.send_error(400, f'"most" is a number of bytes, more than none and at most {ceiling}')
+                else:
+                    self._download(str(asked.get("url", "")), most, keep)
             elif proxy:
                 self._forward("POST", self._raw())
             else:
@@ -437,8 +557,11 @@ def main():
     if not lumi_css:
         print(f"note: no lumi.css at {args.lumi_css}; pages draw without Lumi's look")
 
+    blob_dir = Path(tempfile.gettempdir()) / "lumi-preview-blobs" / (extension_id or "extension")
+    blob_dir.mkdir(parents=True, exist_ok=True)
     server = http.server.ThreadingHTTPServer(
-        ("127.0.0.1", args.port), handler_for(crate / "ui", lumi_css, settings, calls, promo, name, icon, args.proxy.rstrip("/"))
+        ("127.0.0.1", args.port),
+        handler_for(crate / "ui", lumi_css, settings, calls, promo, name, icon, args.proxy.rstrip("/"), blob_dir),
     )
     print(f"serving {crate / 'ui'} at http://127.0.0.1:{args.port}/")
     server.serve_forever()
