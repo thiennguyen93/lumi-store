@@ -1,4 +1,4 @@
-A rhythm game for the keys under your fingers. Notes fall to the beat of a song you chose; press D F J K as they cross the line. It plays in a window of its own, opened from Lumi's menu or a shortcut.
+A rhythm game for the keys under your fingers. Notes fall to the beat of a song you chose; press D F J K as they cross the line. It plays in a window of its own, opened from **Play Rhythm Keys** in Lumi's menu bar menu.
 
 ## Your songs, your library
 

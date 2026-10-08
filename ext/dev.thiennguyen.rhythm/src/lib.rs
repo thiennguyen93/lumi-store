@@ -16,13 +16,14 @@
 //!   arriving as a blob the page then reads.
 //! - **A song's own page**, opened for a press on its licence.
 //!
-//! And the ways in: the `play` command, a row in Lumi's menu bar menu, and
-//! the window itself opening once, right after install.
+//! And the ways in: a row in Lumi's menu bar menu, and the window itself
+//! opening once, right after install. No command: the game is not a
+//! shortcut action.
 
 use lumi_extension_api as lumi;
 use lumi_extension_api::storage::{self, PutError};
 
-/// The one window, and the manifest name the command opens.
+/// The one window, by its manifest name.
 const WINDOW: &str = "game";
 
 /// What the page may keep, and nothing else: the library, and the player's
@@ -42,14 +43,9 @@ const AUDIO: [&str; 1] = ["public.audio"];
 struct RhythmKeys;
 
 impl lumi::Guest for RhythmKeys {
+    /// Rhythm Keys declares no command, so this is never called.
     fn run_command(name: String, _params: String) -> Result<String, String> {
-        match name.as_str() {
-            "play" => {
-                lumi::open_window(WINDOW)?;
-                Ok(String::new())
-            }
-            _ => Err(format!("Rhythm Keys has no {name} command")),
-        }
+        Err(format!("Rhythm Keys has no {name} command"))
     }
 
     fn run_node(name: String, _params: String, _items: String) -> Result<String, String> {

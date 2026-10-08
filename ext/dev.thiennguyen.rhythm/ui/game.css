@@ -287,8 +287,11 @@ kbd {
 
 /* ---------- sheets ---------- */
 
+/* A sheet starts under the band, never over it: in Lumi the band is the
+   title bar, with macOS's traffic lights over its left end, and it has to
+   stay the window's handle while a sheet is up. */
 .sheet {
-  position: absolute; inset: 0;
+  position: absolute; left: 0; right: 0; bottom: 0; top: var(--bar, 44px);
   display: flex; flex-direction: column; gap: 10px;
   padding: 12px 14px 14px;
   background: Canvas;

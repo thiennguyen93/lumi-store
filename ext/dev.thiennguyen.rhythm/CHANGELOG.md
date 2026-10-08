@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.1] - 2026-10-08
+
+### Changed
+
+- Rhythm Keys opens from Play Rhythm Keys in Lumi's menu bar menu. It is no longer offered as an action for a shortcut.
+
+### Fixed
+
+- Add music and a song's info open below the window's title bar, so the window's buttons no longer sit over them.
+
 ## [0.1.0] - 2026-10-08
 
 ### Added

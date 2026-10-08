@@ -1,9 +1,10 @@
-# Rhythm Keys' manifest: one window to play in, a command and a menu bar
-# row that open it, and the reach the free music search needs.
+# Rhythm Keys' manifest: one window to play in, a menu bar row that opens
+# it, and the reach the free music search needs. No shortcut action: the
+# game is opened from the menu bar, not bound to a key.
 [extension]
 id = "dev.thiennguyen.rhythm"
 name = "Rhythm Keys"
-version = "0.1.0"
+version = "0.1.1"
 description = "A rhythm game for the keys under your fingers: notes fall to the beat of your own songs, you press D F J K."
 author = "Thien Nguyen"
 summary = "A rhythm game in a window of its own. Add the songs you want to play, free music found through Openverse, files from your Mac, or a link, and Rhythm Keys reads each one on your Mac and writes its charts, Easy to Expert, for 4, 6 or 7 keys. Taps and holds are judged to the millisecond, with a daily song, collections, and listening before you add a song. Songs stay on your Mac; the internet is reached only for the free music search and the downloads you ask for."
@@ -16,16 +17,6 @@ min-lumi-version = "1.44.0"
 # come in through the page's download. `menu`: the Play row in Lumi's menu
 # bar menu.
 capabilities = ["network", "menu"]
-
-[[command]]
-name = "play"
-label = "Play Rhythm Keys"
-icon = "music"
-
-# Offered at install; Lumi arms it only if nothing else holds the keys.
-[[shortcut]]
-command = "play"
-key = "ctrl+alt+cmd+r"
 
 # The game. A window, not a panel: it stays while the person plays, comes
 # and goes with ⌘-Tab, and keeps the keyboard. Its page draws its own title

@@ -129,7 +129,12 @@
   // ---------- screens ----------
   let screen = 'home';
   function show(name) {
-    if (name !== 'home') RKPreview.stop();
+    if (name !== 'home') {
+      RKPreview.stop();
+      // A sheet belongs to the library; leaving it puts the sheet away.
+      $('#add').hidden = true;
+      $('#info').hidden = true;
+    }
     screen = name;
     for (const id of ['home', 'play-screen', 'results', 'settings', 'calibrate']) $('#' + id).hidden = id !== (name === 'play' ? 'play-screen' : name);
     $('#app').classList.toggle('playing', name === 'play');
@@ -418,6 +423,7 @@
   let addTab = 'free', results = [], searching = false, searchError = '', searched = false;
   function openAdd(tab) {
     RKPreview.stop();
+    $('#info').hidden = true;
     addTab = tab || addTab;
     $('#add').hidden = false;
     renderAdd();
