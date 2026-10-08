@@ -156,6 +156,19 @@
         "5194"
       ],
       "port": 5194
+    },
+    {
+      "name": "rhythm-promo",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "scripts/preview_ui.py",
+        "ext/dev.thiennguyen.rhythm",
+        "--promo",
+        "ext/dev.thiennguyen.rhythm/shots/promo.json",
+        "--port",
+        "5196"
+      ],
+      "port": 5196
     }
   ]
 }
