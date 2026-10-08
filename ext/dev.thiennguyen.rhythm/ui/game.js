@@ -420,7 +420,7 @@
   };
 
   // ---------- add music ----------
-  let addTab = 'free', results = [], searching = false, searchError = '', searched = false;
+  let addTab = 'free', results = [], searching = false, searchError = '', searched = false, asked = 0;
   function openAdd(tab) {
     RKPreview.stop();
     $('#info').hidden = true;
@@ -487,8 +487,14 @@
   async function search(q) {
     if (!q.trim()) return;
     $('#free-q').value = q;
+    const ask = ++asked;
     searching = true; searchError = ''; renderAdd();
-    try { results = await RKCatalog.search(q.trim()); searchError = ''; } catch (e) { results = []; searchError = e instanceof Error ? e.message : 'Search failed.'; }
+    let found = [], error = '';
+    try { found = await RKCatalog.search(q.trim()); } catch (e) { error = e instanceof Error ? e.message : 'Search failed.'; }
+    // Asked again while this one was out — a genre over the first search, a
+    // word typed fast: the newest answers, whichever comes back last.
+    if (ask !== asked) return;
+    results = found; searchError = error;
     searching = false; searched = true;
     renderAdd();
   }

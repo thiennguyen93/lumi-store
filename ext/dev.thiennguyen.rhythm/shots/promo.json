@@ -1,0 +1,81 @@
+{
+  "color": "#6d55f0",
+  "shots": [
+    {
+      "headline": "Play the songs you love",
+      "sub": "Notes fall to the beat of your own music. Press D F J K.",
+      "frame": "unified",
+      "band": 40,
+      "page": "game.html",
+      "theme": "dark",
+      "inset": "0",
+      "width": 460,
+      "height": 620,
+      "zoom": 0.9,
+      "top": 236,
+      "callout": {
+        "title": "Rhythm Keys",
+        "label": "4, 6 or 7 keys",
+        "body": "Taps and holds, judged <b>to the millisecond</b>.",
+        "side": "left"
+      }
+    },
+    {
+      "headline": "Every song charted on your Mac",
+      "sub": "Rhythm Keys reads each song you add and writes its charts.",
+      "frame": "unified",
+      "band": 40,
+      "page": "game.html",
+      "theme": "light",
+      "inset": "0",
+      "width": 460,
+      "height": 620,
+      "zoom": 0.9,
+      "top": 236,
+      "callout": {
+        "title": "Rhythm Keys",
+        "label": "Easy, Normal, Hard, Expert",
+        "body": "Collections, favourites, and <b>a daily song</b> with a streak to keep.",
+        "side": "left"
+      }
+    },
+    {
+      "headline": "Free music, one search away",
+      "sub": "Openly licensed songs through Openverse, or files from your Mac.",
+      "frame": "unified",
+      "band": 40,
+      "page": "game.html",
+      "theme": "light",
+      "inset": "0",
+      "width": 460,
+      "height": 620,
+      "zoom": 0.9,
+      "top": 236,
+      "callout": {
+        "title": "Rhythm Keys",
+        "label": "Listen first",
+        "body": "Hear a song before you add it. Each keeps its <b>licence and credit</b>.",
+        "side": "left"
+      }
+    },
+    {
+      "headline": "See how you played",
+      "sub": "Grade, accuracy, combo, and which way your timing leans.",
+      "frame": "unified",
+      "band": 40,
+      "page": "game.html",
+      "theme": "dark",
+      "inset": "0",
+      "width": 460,
+      "height": 620,
+      "zoom": 0.9,
+      "top": 236,
+      "callout": {
+        "title": "Rhythm Keys",
+        "label": "Late on average?",
+        "body": "Set your audio offset from the results, <b>in one click</b>.",
+        "side": "left"
+      }
+    }
+  ]
+}

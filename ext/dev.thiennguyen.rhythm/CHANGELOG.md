@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.3] - 2026-10-08
+
+### Fixed
+
+- Free music shows the songs for the newest search. A genre chosen while the first search was still out could show that search's songs under the genre's name.
+
 ## [0.1.2] - 2026-10-08
 
 ### Added
