@@ -4,22 +4,24 @@
 [extension]
 id = "dev.thiennguyen.rhythm"
 name = "Rhythm Keys"
-version = "0.1.3"
+version = "0.2.0"
 description = "A rhythm game for the keys under your fingers: notes fall to the beat of your own songs, you press D F J K."
 author = "Thien Nguyen"
 summary = "A rhythm game in a window of its own. Add the songs you want to play, free music found through Openverse, files from your Mac, or a link, and Rhythm Keys reads each one on your Mac and writes its charts, Easy to Expert, for 4, 6 or 7 keys. Taps and holds are judged to the millisecond, with a daily song, collections, and listening before you add a song. Songs stay on your Mac; the internet is reached only for the free music search and the downloads you ask for."
 homepage = "https://lumikeys.app/docs/extensions"
-# 1.44.0: a page's download paced by its body rather than one 15-second
-# deadline (songs of several megabytes from slow file servers), `most` /
-# `keep: false` for listening to a song's start before downloading it, and
-# `menu.shown` / `ui.open-permissions` / `menu-shown` for the row's switches.
-min-lumi-version = "1.44.0"
+# 1.45.0: `menu.set-shown`, which the Settings switch over the menu bar row
+# moves — one switch with the Menu bar switch on Rhythm Keys' Permissions
+# sheet. Before it, 1.44.0: a page's download paced by its body rather than
+# one 15-second deadline (songs of several megabytes from slow file servers),
+# `most` / `keep: false` for listening to a song's start before downloading
+# it, and `menu.shown` / `menu-shown`.
+min-lumi-version = "1.45.0"
 # `network`: the free music search goes out from the component, and songs
 # come in through the page's download. `menu`: the Play row in Lumi's menu
 # bar menu.
 capabilities = ["network", "menu"]
-# Lumi's switch over the menu bar row moving, so an open window's Settings
-# says at once whether Lumi is hiding the row.
+# The menu bar row's switch moved on Rhythm Keys' Permissions sheet, so an
+# open window's Settings switch follows at once.
 events = ["menu-shown"]
 # The store page's pictures, 1280 × 800, published beside the package —
 # Lumi's installer ignores the key. Taken in the preview from the spec and

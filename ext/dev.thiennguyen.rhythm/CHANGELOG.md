@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0] - 2026-10-09
+
+### Changed
+
+- **Play Rhythm Keys in Lumi's menu bar menu** in Settings and the **Menu bar** switch on Rhythm Keys' Permissions sheet in Lumi are now the same switch. Turn the row on or off in either place and the other follows. If you had hidden the row in Rhythm Keys' Settings, it stays hidden.
+- Needs Lumi 1.45.0 or later.
+
 ## [0.1.3] - 2026-10-08
 
 ### Fixed
