@@ -89,5 +89,49 @@ class RememberFrame(unittest.TestCase):
         self.assertIn("not true or false", refusal('remember-frame = "yes"'))
 
 
+
+class KeepAlive(unittest.TestCase):
+    def test_a_panels_alone_and_one_page(self):
+        check('kind = "panel"\nkeep-alive = true')
+        self.assertIn("only a panel has", refusal("keep-alive = true"))
+        self.assertIn("not true or false", refusal('kind = "panel"\nkeep-alive = "yes"'))
+        self.assertIn("leave copies out", refusal('kind = "panel"\ncopies = 3\nkeep-alive = true'))
+
+
+class Preload(unittest.TestCase):
+    GRANTED = BASE.replace('version = "1.0.0"', 'version = "1.0.0"\ncapabilities = ["preload"]')
+
+    def granted(self, fields: str) -> None:
+        publish.check_manifest("dev.you.thing", tomllib.loads(self.GRANTED.format(fields=fields)))
+
+    def test_a_kept_panels_with_its_permission(self):
+        self.granted('kind = "panel"\nkeep-alive = true\npreload = true')
+        check('kind = "panel"\npreload = false')
+        self.assertIn("only a panel has", refusal("preload = true"))
+        self.assertIn("needs keep-alive", refusal('kind = "panel"\npreload = true'))
+        self.assertIn("needs the preload capability", refusal('kind = "panel"\nkeep-alive = true\npreload = true'))
+
+    def test_its_event_needs_the_permission(self):
+        heard = BASE.replace('version = "1.0.0"', 'version = "1.0.0"\nevents = ["preload-enabled"]')
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", tomllib.loads(heard.format(fields="")))
+        self.assertIn("needs the preload capability", str(caught.exception.code))
+        both = heard.replace("events =", 'capabilities = ["preload"]\nevents =')
+        publish.check_manifest("dev.you.thing", tomllib.loads(both.format(fields="")))
+
+    def test_where_the_switch_starts_needs_the_permission(self):
+        starts = lambda capabilities, line: tomllib.loads(
+            BASE.replace('version = "1.0.0"', f'version = "1.0.0"\ncapabilities = [{capabilities}]\n{line}').format(fields="")
+        )
+        publish.check_manifest("dev.you.thing", starts('"preload"', "preload-default = false"))
+        publish.check_manifest("dev.you.thing", starts('"preload"', "preload-default = true"))
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", starts("", "preload-default = false"))
+        self.assertIn("needs the preload capability", str(caught.exception.code))
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", starts('"preload"', 'preload-default = "off"'))
+        self.assertIn("is not true or false", str(caught.exception.code))
+
+
 if __name__ == "__main__":
     unittest.main()

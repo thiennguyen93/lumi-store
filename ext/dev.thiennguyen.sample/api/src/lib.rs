@@ -321,7 +321,8 @@ pub fn window_state(name: &str) -> Result<Presence, String> {
 
 /// Take one of your own windows off screen without closing it, by its
 /// manifest `name`: its page keeps running and keeps everything in it, where
-/// [`close_window`] ends a window's page and blanks a panel's. `true` when it
+/// [`close_window`] ends a window's page and blanks a panel's (unless the
+/// panel declares `keep-alive`, whose page is only hidden). `true` when it
 /// was on screen and is off it now; one already off screen, closed or never
 /// opened answers `false` and is left as it is — and so does one in full
 /// screen, which has a Space of its own: taken away, it would leave the person
@@ -366,12 +367,37 @@ pub fn open_settings() -> Result<(), String> {
 }
 
 /// Bring up Lumi's Settings on your extension with its Permissions sheet
-/// open — where the person's own switches over it stand, the menu bar
-/// switch among them. For a "Show in Lumi's settings" beside what you say
-/// when [`menu::shown`] answers `false`. Only for a press. Needs Lumi
-/// 1.44.0 or later.
+/// open — what it may reach, and the switches Lumi keeps over it: its
+/// folders, its menu bar rows, loading its panels ahead. Only for a press.
+/// Needs Lumi 1.44.0 or later.
 pub fn open_permissions() -> Result<(), String> {
     lumi::ext::ui::open_permissions()
+}
+
+/// Whether Lumi loads your panels ahead — those whose `[[window]]` says
+/// `preload = true` — as your extension is loaded: at launch, once installed
+/// or updated, when switched on. One switch, kept by Lumi — on from install
+/// unless the manifest says `preload-default = false`, then where it was
+/// left — that your own settings move with [`set_preload_enabled`] and
+/// the person moves with the Preload switch on your Permissions sheet.
+/// Off, such a panel loads at its first opening instead, and keeps its page
+/// from then on (`keep-alive`). Works from [`Guest::on_event`] too. Declare
+/// `events = ["preload-enabled"]` to be told when the person moves it on the
+/// sheet, with `{"v":1, "enabled":bool, "at":<ms since the Unix epoch>}`.
+/// Needs the `preload` capability, and is refused for an extension none of
+/// whose panels says `preload`. Needs Lumi 1.45.0 or later — say so with
+/// `min-lumi-version`.
+pub fn preload_enabled() -> Result<bool, String> {
+    lumi::ext::ui::preload_enabled()
+}
+
+/// Turn loading ahead on or off — the switch [`preload_enabled`] reads, for a
+/// "Load when Lumi starts" in your own settings. On, your panels are loaded
+/// ahead now; off, a page loaded ahead and not opened yet is let go. From any
+/// run but an uninstall. Needs the `preload` capability, and is refused for an
+/// extension none of whose panels says `preload`. Needs Lumi 1.45.0 or later.
+pub fn set_preload_enabled(on: bool) -> Result<(), String> {
+    lumi::ext::ui::set_preload_enabled(on)
 }
 
 /// Choose the glass one of your panels opens on from now on — "popover",
@@ -444,7 +470,8 @@ pub use lumi::ext::ui::Size;
 /// Send `message` (JSON text) to one of your own windows or pages — a
 /// window by its manifest `name`, or `":about"`, `":settings"`,
 /// `":page:<name>"`. The page hears it as a `lumi:message` event whose
-/// `detail` is the JSON. `Ok(false)`: not on screen, nothing sent. Works
+/// `detail` is the JSON. `Ok(false)`: not on screen, nothing sent — but a
+/// panel put away that keeps its page (`keep-alive`, Lumi 1.45) is told. Works
 /// from [`Guest::on_event`], and reaches a page even while Lumi is behind
 /// another app — the way to keep an open page current.
 pub fn post(window: &str, message: &str) -> Result<bool, String> {
@@ -1298,21 +1325,25 @@ pub mod menu {
         wit::clear()
     }
 
-    /// Whether Lumi lets your rows show in its menu bar menu. Two switches
-    /// decide what is drawn: yours, which is [`set`] and [`clear`], and the
-    /// person's, the Menu bar switch Lumi keeps on your Permissions sheet.
-    /// Rows show only while both are on, and theirs outranks yours: [`set`]
-    /// goes on keeping your tree while it is hidden, and the tree comes back
-    /// as you left it when they show it again. Nothing in the SDK turns
-    /// theirs. When your own setting says show and this answers `false`, say
-    /// so where that setting is, and offer
-    /// [`open_permissions`](crate::open_permissions) to take the person to
-    /// the switch. Declare `events = ["menu-shown"]` to be told in
-    /// [`Guest::on_event`](crate::Guest::on_event) when it changes, with
-    /// `{"v":1, "shown":bool, "at":<ms since the Unix epoch>}`. Needs `menu`
-    /// and Lumi 1.44.0.
+    /// Whether your rows show in Lumi's menu bar menu: one switch, kept by
+    /// Lumi, that your own settings move with [`set_shown`] and the person
+    /// moves with the Menu bar switch on your Permissions sheet. Off, [`set`]
+    /// goes on keeping your tree, and it comes back as you left it when the
+    /// switch is on again. Declare `events = ["menu-shown"]` to be told in
+    /// [`Guest::on_event`](crate::Guest::on_event) when the person moves it
+    /// on the sheet, with `{"v":1, "shown":bool, "at":<ms since the Unix
+    /// epoch>}`. Needs `menu` and Lumi 1.44.0.
     pub fn shown() -> Result<bool, String> {
         wit::shown()
+    }
+
+    /// Show or hide your rows — the switch [`shown`] reads and the person's
+    /// Menu bar switch on your Permissions sheet moves, for a "Show in the
+    /// menu bar" in your own settings. Your tree is kept either way. From any
+    /// run but an uninstall. Needs `menu` and Lumi 1.45.0 — say so with
+    /// `min-lumi-version`.
+    pub fn set_shown(shown: bool) -> Result<(), String> {
+        wit::set_shown(shown)
     }
 
     /// The id of the row pressed, when `run_ui` was called for a press on
