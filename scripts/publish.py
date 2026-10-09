@@ -111,6 +111,9 @@ CAPABILITIES = {
     # Lumi 1.38: a page's `/__lumi__/input-hold` (hold every key, and the
     # pointer if asked, for a while).
     "input-hold",
+    # Lumi 1.45: a kept panel loaded ahead, out of sight, from launch
+    # (`[[window]] preload`, `ui.preload-enabled`).
+    "preload",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -125,9 +128,12 @@ EVENTS = {
     # Lumi 1.37: one of the extension's own windows leaving the screen for
     # good. Only about its own window, so no capability.
     "window-closed": None,
-    # Lumi 1.44: the person showing or hiding the extension's rows in Lumi's
-    # menu bar menu, with Lumi's own switch over them.
+    # Lumi 1.44: the extension's rows in Lumi's menu bar menu shown or hidden
+    # on its Permissions sheet — the one switch the extension moves too.
     "menu-shown": "menu",
+    # Lumi 1.45: loading the extension's panels ahead turned on or off on its
+    # Permissions sheet.
+    "preload-enabled": "preload",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -372,6 +378,14 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"hearing {name!r} needs the {EVENTS[name]} capability — add it to capabilities")
     if "clipboard-ocr" in ext.get("events", []) and "clipboard" not in ext.get("events", []):
         fail(entry_id, 'hearing "clipboard-ocr" needs "clipboard" too — the text names a copy the extension has to have heard')
+    # `manifest.rs`'s `preload-default`: where the preload switch starts, so
+    # only beside the permission that has the switch.
+    if "preload-default" in ext or "preload_default" in ext:
+        start = ext.get("preload-default", ext.get("preload_default"))
+        if not isinstance(start, bool):
+            fail(entry_id, f"preload-default = {start!r} is not true or false")
+        if "preload" not in ext.get("capabilities", []):
+            fail(entry_id, "preload-default says where the preload switch starts, which needs the preload capability — add it to capabilities")
     seen = set()
     for command in manifest.get("command", []):
         name = command.get("name", "")
@@ -446,6 +460,25 @@ def check_manifest(entry_id: str, manifest: dict):
         # `manifest.rs`'s listed rule: every kind's, and a boolean.
         if "listed" in window and not isinstance(window["listed"], bool):
             fail(entry_id, f"the window {name}'s listed = {window['listed']!r} is not true or false")
+        # `manifest.rs`'s keep-alive and preload rules, same sentences: a
+        # panel's alone, one page per declaration, and loaded ahead only
+        # when kept (Lumi 1.45).
+        if "keep-alive" in window:
+            if kind == "window":
+                fail(entry_id, f"the window {name} sets keep-alive, which only a panel has — a window's page lives until it is closed")
+            if not isinstance(window["keep-alive"], bool):
+                fail(entry_id, f"the panel {name}'s keep-alive = {window['keep-alive']!r} is not true or false")
+            if window["keep-alive"] is True and "copies" in window:
+                fail(entry_id, f"the panel {name} has copies and says keep-alive = true; a kept page is one panel's — leave copies out")
+        if "preload" in window:
+            if kind == "window":
+                fail(entry_id, f"the window {name} sets preload, which only a panel has — a window's page loads when it is opened")
+            if not isinstance(window["preload"], bool):
+                fail(entry_id, f"the panel {name}'s preload = {window['preload']!r} is not true or false")
+            if window["preload"] is True and window.get("keep-alive") is not True:
+                fail(entry_id, f"the panel {name} asks to be loaded ahead, which needs keep-alive = true — a page loaded ahead is a page kept")
+            if window["preload"] is True and "preload" not in ext.get("capabilities", []):
+                fail(entry_id, f"the panel {name} asks to be loaded ahead, which needs the preload capability — add it to capabilities")
         # `manifest.rs`'s copies rule, same sentences: 2 to 32, never listed.
         if "copies" in window:
             copies = window["copies"]
