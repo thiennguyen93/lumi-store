@@ -2,9 +2,15 @@ import { useState } from "react";
 import { appIconUrl } from "./bridge";
 
 /** Applications whose icon did not come — not installed any more, or a
- *  Lumi without the route. Asked once a page; every row after that goes
+ *  Lumi without the route. Asked once an opening; every row after that goes
  *  straight to the name. */
 const missing = new Set<string>();
+
+/** The panel was put away: the next opening asks again, as a page loaded
+ *  afresh did — an application may have come back meanwhile. */
+export function forgetIcons() {
+  missing.clear();
+}
 
 /** Where a copy came from: the application's icon, its name on hover, or
  *  the name itself when there is no icon to show. */

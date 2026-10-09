@@ -1,10 +1,10 @@
-import { type CSSProperties, useLayoutEffect, useRef, useState } from "react";
+import { type CSSProperties, memo, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { blobUrl, call } from "./bridge";
 import { useItemDrag } from "./itemDrag";
 import { FileGlyph, KindGlyph, PinGlyph } from "./icons";
 import { fileFamily } from "./fileType";
 import { AppMark } from "./AppMark";
-import { cut, type Found, keptInSight, nextSkip, since, skipped, type Span } from "./search";
+import { cut, found as foundIn, type Found, keptInSight, nextSkip, since, skipped, type Span, type Used } from "./search";
 import type { Entry } from "./types";
 
 /** A colour row's title as something to paint: one of the forms the
@@ -141,13 +141,17 @@ function useFitted(found: Found) {
     setEnd(null);
   }, [found.text, width]);
 
+  // Watched only while something in it is marked — what is fitted. A whole
+  // history drawn as the panel opens, nothing searched yet, is not a
+  // thousand observers, each answering once as it starts.
+  const marked = found.marks.length > 0;
   useLayoutEffect(() => {
     const box = title.current;
-    if (!box) return;
+    if (!box || !marked) return;
     const watch = new ResizeObserver(() => setWidth(box.clientWidth));
     watch.observe(box);
     return () => watch.disconnect();
-  }, []);
+  }, [marked]);
 
   const lead = skipped(found, skip);
   const shown = end === null ? lead : cut(lead, end);
@@ -173,28 +177,32 @@ function useFitted(found: Found) {
   return { title, shown };
 }
 
-export function Row({
-  row,
-  index,
-  selected,
-  shortcut,
-  found,
-  popped,
-  onPick,
-  onPaste,
-}: {
+type RowProps = {
   row: Entry;
   index: number;
   selected: boolean;
   shortcut: string | undefined;
-  /** The title as the search shows it: from near the match when the
-   *  match is far in, what to mark, and where it was when not in sight. */
-  found: Found;
+  /** The search, and how it was read: the title as the search shows it —
+   *  from near the match when the match is far in, what to mark, and
+   *  where it was when not in sight (`found`). */
+  query: string;
+  used: Used;
+  /** When the row's age is counted from. */
+  now: number;
   /** Just pinned: its pin pops in. */
   popped: boolean;
   onPick: (index: number) => void;
-  onPaste: (plain: boolean) => void;
-}) {
+  onPaste: (plain: boolean, row: Entry) => void;
+};
+
+/** One row of the list. Drawn again only when what it shows changed: its
+ *  row (`reconcile` keeps an unchanged one's object), its place, whether it
+ *  is selected, its key, the search, or its age as it reads ("3m") — not
+ *  every time the moment ages are counted from moves, which would draw a
+ *  whole history again each time the panel is shown. The two callbacks are
+ *  the panel's, made once. */
+export const Row = memo(function Row({ row, index, selected, shortcut, query, used, now, popped, onPick, onPaste }: RowProps) {
+  const found = useMemo(() => foundIn(row, query, used), [row, query, used]);
   // Pulled out of the panel, the row goes where it is dropped. Picked as it
   // goes, so the preview shows what is being dragged. A refusal — the button
   // already up — is nothing to tell anyone.
@@ -214,7 +222,7 @@ export function Row({
       // send the next letter typed nowhere.
       onMouseDown={(event) => event.preventDefault()}
       onClick={() => onPick(index)}
-      onDoubleClick={(event) => onPaste(event.altKey)}
+      onDoubleClick={(event) => onPaste(event.altKey, row)}
       {...drag}
     >
       {/* The row's key: ⌘ + this pastes it. A pin's is amber, as Lumi's
@@ -252,8 +260,15 @@ export function Row({
           <PinGlyph />
         </span>
       ) : (
-        <span className="when">{since(row.last)}</span>
+        <span className="when">{since(row.last, now)}</span>
       )}
     </div>
   );
+}, sameRowProps);
+
+function sameRowProps(before: RowProps, after: RowProps): boolean {
+  for (const key of Object.keys(after) as (keyof RowProps)[]) {
+    if (key !== "now" && before[key] !== after[key]) return false;
+  }
+  return since(before.row.last, before.now) === since(after.row.last, after.now);
 }

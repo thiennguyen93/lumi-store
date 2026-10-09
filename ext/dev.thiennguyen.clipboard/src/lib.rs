@@ -313,6 +313,13 @@ pub fn on_event(host: &impl Host, name: &str, payload: &str) -> Result<(), Strin
         "clipboard-ocr" => on_ocr(host, payload)?,
         // Nothing in the history changed: nobody to tell.
         "window-closed" => return on_window_closed(host, payload),
+        // A switch Lumi keeps over this extension moved on its Permissions
+        // sheet: the Settings tab's own switches follow. A tab not on screen
+        // asks when it is shown.
+        "menu-shown" | "preload-enabled" => {
+            let _ = host.post(SETTINGS, SWITCHES_CHANGED);
+            return Ok(());
+        }
         // Events this build does not know are Lumi being newer than the
         // component, not something wrong with the copy.
         _ => return Ok(()),
@@ -378,6 +385,12 @@ fn private(host: &impl Host) -> bool {
 /// What the panel and the Settings tab are told when privacy mode is
 /// turned on or off from somewhere else: read it again.
 pub const PRIVACY_CHANGED: &str = r#"{"kind":"privacy"}"#;
+
+/// What the Settings tab is told when one of the switches Lumi keeps over
+/// this extension — its menu bar rows, loading the panel ahead — is moved
+/// on its Permissions sheet (`menu-shown`, `preload-enabled`), so the tab's
+/// own switches follow.
+pub const SWITCHES_CHANGED: &str = r#"{"kind":"switches"}"#;
 
 /// The panel closed (Lumi 1.37): what it showed in privacy mode lasts
 /// "Cover again after panel closes" from now, and an unlocked history
@@ -526,7 +539,9 @@ pub const HISTORY_CHANGED: &str = r#"{"kind":"history"}"#;
 
 /// Tell the panel, if it is up — pinned or not — that the history changed,
 /// so a copy made while it is open shows up in it. Best effort: Lumi
-/// answers `false` and sends nothing when the panel is put away.
+/// answers `false` and sends nothing when the panel is put away — except a
+/// Lumi that keeps the panel's page between openings (`keep-alive`, 1.45),
+/// which tells that page, so it is current when it is shown again.
 fn tell_panel(host: &impl Host) {
     let _ = host.post(PANEL, HISTORY_CHANGED);
 }
@@ -539,17 +554,14 @@ pub const SUMMONED: &str = r#"{"kind":"summoned"}"#;
 /// One of the manifest's `[[command]]`s: the panel shown, hidden or
 /// toggled, or privacy mode switched. Lumi's `open-window` never puts a
 /// window away, so which of them closes the panel is decided here, from
-/// where it stands.
+/// where it stands. Show is Toggle while "Press shortcut again to hide" is
+/// on — its key, and any row of the person's that runs it.
 fn command(host: &impl Host, name: &str) -> Result<(), String> {
     match name {
+        "open" if prefs(host).show_toggles => toggle_panel(host),
         "open" => show_panel(host),
         "hide" => host.close_window(PANEL),
-        // On screen, put away — pinned behind another app or not; off
-        // screen, shown as Show shows it.
-        "toggle" => match host.window_state(PANEL)? {
-            Presence::Hidden => open_panel(host),
-            Presence::Up | Presence::Focused => host.close_window(PANEL),
-        },
+        "toggle" => toggle_panel(host),
         // Before a screen is shared, from anywhere: the panel need not be
         // opened — showing the newest copy — to turn it on.
         "privacy" => set_private(host, !private(host)).map(|_| ()),
@@ -557,8 +569,17 @@ fn command(host: &impl Host, name: &str) -> Result<(), String> {
     }
 }
 
+/// On screen, put away — pinned behind another app or not; off screen,
+/// shown as Show shows it.
+fn toggle_panel(host: &impl Host) -> Result<(), String> {
+    match host.window_state(PANEL)? {
+        Presence::Hidden => open_panel(host),
+        Presence::Up | Presence::Focused => host.close_window(PANEL),
+    }
+}
+
 /// Show only ever brings the panel up — Escape, Hide and Toggle put it
-/// away. Already up, it is told so (`SUMMONED`), and a pinned panel the
+/// away, and Show itself while "Press shortcut again to hide" is on. Already up, it is told so (`SUMMONED`), and a pinned panel the
 /// person left takes the keyboard back first, where it stands. One that
 /// holds the keyboard is not opened again: Lumi would bring it to the
 /// pointer, and it is where the person put it.
@@ -601,6 +622,9 @@ struct Prefs {
     /// "Close the panel after dragging an item out"; off, so several items
     /// can be dragged out one after another.
     close_after_drag: bool,
+    /// "Press shortcut again to hide": Show puts the panel away when it is
+    /// up, as Toggle does. Off, Show only ever brings it up.
+    show_toggles: bool,
     /// "Search text in images": Lumi reads text in copied images, and the
     /// preview shows what it read.
     ocr: bool,
@@ -694,6 +718,7 @@ fn prefs(host: &impl Host) -> Prefs {
             Value::String(t) => t == "true",
             _ => false,
         },
+        show_toggles: on("showToggles"),
         ocr: match &s["ocr"] {
             Value::Bool(b) => *b,
             Value::String(t) => t != "false",
@@ -1105,13 +1130,24 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
             let opening = request["opening"].as_bool() == Some(true);
             // The panel's first list since it opened tidies the history as it
             // reads it (`open_history`); a list asked again — after a copy, a
-            // pin, a delete — only reads it.
+            // pin, a delete, or news while it is put away and kept — only
+            // reads it. A page kept between openings asks its opening list
+            // when it is shown again, not when it loaded.
             let index = if opening {
                 open_history(host, &prefs)?
             } else {
                 read_index(host)?.0
             };
-            let mut items = history::sorted(&index, prefs.order);
+            // Asked once: on opening, it settles whether an unlock from
+            // before still holds (`lock_held`).
+            let unlocked = prefs.lock_history && lock_held(host, opening);
+            // A locked history is handed to no page — whatever that page
+            // holds or does, it has no rows until the owner unlocks it.
+            let mut items = if prefs.lock_history && !unlocked {
+                Vec::new()
+            } else {
+                history::sorted(&index, prefs.order)
+            };
             for entry in &mut items {
                 // Its own field (`ocrSearch`), so the panel can say a row
                 // was found by the words in its image.
@@ -1149,7 +1185,7 @@ fn ui(host: &impl Host, request: &Value) -> Result<Value, String> {
                 // runs from then. The page shows nothing while locked.
                 "lock": {
                     "on": prefs.lock_history,
-                    "unlocked": prefs.lock_history && lock_held(host, opening),
+                    "unlocked": unlocked,
                 },
                 // The menu bar asked for Delete All Unpinned… and opened
                 // the panel to do it; taken on the opening list only.
@@ -1706,6 +1742,19 @@ fn settings(host: &impl Host, request: &Value) -> Result<Value, String> {
             Ok(json!({}))
         }
         "privacy" => Ok(json!({ "privacy": private(host) })),
+        // The two switches Lumi keeps over this extension, which this tab
+        // and the Permissions sheet both move: one switch each.
+        "switches" => switches(host),
+        "setMenuShown" => {
+            let on = request["on"].as_bool().ok_or("the menu bar rows are not on or off")?;
+            host.set_menu_shown(on)?;
+            switches(host)
+        }
+        "setPreload" => {
+            let on = request["on"].as_bool().ok_or("preload is not on or off")?;
+            host.set_preload_enabled(on)?;
+            switches(host)
+        }
         // How it stands after, which a no to "Is it you?" leaves on.
         "setPrivacy" => {
             let on = request["on"].as_bool().ok_or("privacy mode is not on or off")?;
@@ -1721,6 +1770,13 @@ fn settings(host: &impl Host, request: &Value) -> Result<Value, String> {
         }
         other => Err(format!("the Settings tab has no {other} request")),
     }
+}
+
+/// The switches Lumi keeps over this extension, as the Settings tab draws
+/// them: whether its rows show in the menu bar menu, and whether the panel
+/// is loaded ahead as Lumi starts.
+fn switches(host: &impl Host) -> Result<Value, String> {
+    Ok(json!({ "menuShown": host.menu_shown()?, "preloadEnabled": host.preload_enabled()? }))
 }
 
 /// The apps copies in the history came from, most recent first, one each:
@@ -2168,6 +2224,31 @@ mod tests {
         assert!(settings(&host, &json!({"kind": "setPrivacy"})).is_err(), "neither on nor off");
     }
 
+    /// The Settings tab's two switches are the ones Lumi keeps — the menu bar
+    /// rows, loading the panel ahead — read and moved here, and an open tab
+    /// is told when the Permissions sheet moves them.
+    #[test]
+    fn the_settings_tab_moves_the_switches_lumi_keeps() {
+        let host = Memory::default();
+        let all = json!({"menuShown": true, "preloadEnabled": true});
+        assert_eq!(settings(&host, &json!({"kind": "switches"})).unwrap(), all);
+        assert_eq!(
+            settings(&host, &json!({"kind": "setMenuShown", "on": false})).unwrap(),
+            json!({"menuShown": false, "preloadEnabled": true})
+        );
+        assert_eq!(
+            settings(&host, &json!({"kind": "setPreload", "on": false})).unwrap(),
+            json!({"menuShown": false, "preloadEnabled": false})
+        );
+        assert!(settings(&host, &json!({"kind": "setPreload"})).is_err(), "neither on nor off");
+        assert!(host.menu_hidden.get() && host.preload_off.get());
+
+        on_event(&host, "menu-shown", r#"{"v":1,"shown":true,"at":1}"#).unwrap();
+        on_event(&host, "preload-enabled", r#"{"v":1,"enabled":true,"at":1}"#).unwrap();
+        let told = host.posts.borrow().iter().filter(|(w, m)| w == SETTINGS && m == SWITCHES_CHANGED).count();
+        assert_eq!(told, 2, "an open Settings tab follows the sheet");
+    }
+
     /// With "Confirm it's you before showing", turning privacy mode off asks
     /// "Is it you?" first — from the menu bar, the command and the Settings
     /// tab alike — and a no, or a dialog that cannot be had, leaves it on
@@ -2361,6 +2442,30 @@ mod tests {
         assert_eq!(lock_of(&host, true), json!({"on": false, "unlocked": false}), "off: no lock, whatever was kept");
     }
 
+    /// A locked history is handed to no page: the list is empty until the
+    /// owner unlocks it, and whole again once they have — the opening that
+    /// unlocked, and an opening within "Lock again after panel closes".
+    #[test]
+    fn a_locked_history_lists_no_rows_until_unlocked() {
+        let host = Memory::default();
+        on_event(&host, "clipboard", &event("h1", 1, "hello")).unwrap();
+        let rows = |host: &Memory, opening: bool| {
+            ui(host, &json!({"kind": "list", "opening": opening})).unwrap()["items"].as_array().unwrap().len()
+        };
+        assert_eq!(rows(&host, true), 1, "no lock");
+
+        *host.settings.borrow_mut() = json!({"lockHistory": "true", "lockAfter": "5m"});
+        assert_eq!(rows(&host, true), 0, "locked as it opens");
+        assert_eq!(rows(&host, false), 0, "read again: still locked");
+        ui(&host, &json!({"kind": "unlocked"})).unwrap();
+        assert_eq!(rows(&host, false), 1, "unlocked in this opening");
+        closed(&host, PANEL, 1_000);
+        host.now.set(60_000);
+        assert_eq!(rows(&host, true), 1, "an opening within Lock again after");
+        ui(&host, &json!({"kind": "lock"})).unwrap();
+        assert_eq!(rows(&host, false), 0, "Lock history now");
+    }
+
     #[test]
     fn the_panel_is_told_to_confirm_before_showing_only_when_asked_to() {
         let host = Memory::default();
@@ -2475,6 +2580,29 @@ mod tests {
         assert_eq!(host.closed.get(), 1);
         command(&host, "open").unwrap();
         assert_eq!((opens(), told()), (3, 3), "opened again");
+    }
+
+    /// "Press shortcut again to hide" makes Show a toggle: up — in front or
+    /// pinned behind another app — it is put away, and nothing is told.
+    #[test]
+    fn show_toggles_when_the_person_asks() {
+        let host = Memory::default();
+        *host.settings.borrow_mut() = json!({ "showToggles": "true" });
+        let opens = || host.opened.borrow().iter().filter(|o| o.starts_with("open-window")).count();
+        command(&host, "open").unwrap();
+        assert_eq!((opens(), host.closed.get()), (1, 0), "hidden: shown");
+        command(&host, "open").unwrap();
+        assert_eq!((opens(), host.closed.get()), (1, 1), "up: put away");
+        command(&host, "open").unwrap();
+        host.away.set(true);
+        command(&host, "open").unwrap();
+        assert_eq!((opens(), host.closed.get()), (2, 2), "pinned behind another app: put away too");
+        assert!(host.posts.borrow().iter().all(|(_, m)| m != SUMMONED), "a toggle tells the page nothing");
+        // Off again: Show only ever brings it up.
+        *host.settings.borrow_mut() = json!({ "showToggles": "false" });
+        command(&host, "open").unwrap();
+        command(&host, "open").unwrap();
+        assert_eq!((opens(), host.closed.get()), (3, 2));
     }
 
     #[test]

@@ -190,6 +190,11 @@ export type Request =
   | { kind: "privacy"; on?: boolean }
   /** The Settings tab's view of the same switch. */
   | { kind: "setPrivacy"; on: boolean }
+  /** The Settings tab's switches Lumi keeps over this extension — its menu
+   *  bar rows, loading the panel ahead — read, and moved (Lumi 1.45). */
+  | { kind: "switches" }
+  | { kind: "setMenuShown"; on: boolean }
+  | { kind: "setPreload"; on: boolean }
   /** History lock: "Is it you?" said yes; and Lock history now. */
   | { kind: "unlocked" }
   /** What the panel shows in privacy mode, each time it changes. */

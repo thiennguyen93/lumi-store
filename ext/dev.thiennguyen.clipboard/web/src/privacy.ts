@@ -152,6 +152,26 @@ export const LOCK_OFF: Lock = { on: false, here: false, known: true };
  *  lock card as it opens. */
 export const LOCK_UNKNOWN: Lock = { on: true, here: false, known: false };
 
+/** The lock as a list answer leaves it — `told`, the answer's `lock`:
+ *  - the opening list decides it alone: an unlock from an opening before
+ *    never carries over, whatever the page still holds;
+ *  - a list read again while the panel is up keeps an unlock this opening
+ *    made, and takes one the extension says holds;
+ *  - a list read while the panel is put away and kept (`keep-alive`) leaves
+ *    it locked and not yet known, as a panel opens: what an opening shows of
+ *    a locked history is the opening list's to say, and "Is it you?" is
+ *    asked only once it has. */
+export function lockAfter(
+  lock: Lock,
+  told: { on: boolean; unlocked: boolean } | undefined,
+  how: { opening: boolean; hidden: boolean },
+): Lock {
+  const on = told?.on ?? false;
+  if (how.hidden) return on ? LOCK_UNKNOWN : LOCK_OFF;
+  const unlocked = told?.unlocked === true;
+  return { on, here: how.opening ? unlocked : lock.here || unlocked, known: true };
+}
+
 export function isLocked(lock: Lock): boolean {
   return lock.on && !lock.here;
 }

@@ -12,6 +12,7 @@ import {
   isCovered,
   isLocked,
   isUnlocked,
+  lockAfter,
   restore,
   shownOf,
   LOCK_OFF,
@@ -159,4 +160,28 @@ test("before its first list a panel is locked, but shows neither the lock nor th
   assert.equal(showsLock(lock), true, "known locked: the lock card");
   assert.equal(showsLock({ ...lock, here: true }), false, "unlocked");
   assert.equal(showsLock(LOCK_OFF), false, "off");
+});
+
+test("the opening list alone says whether an opening is unlocked", () => {
+  const unlockedBefore = { on: true, here: true, known: true };
+  const opening = { opening: true, hidden: false };
+  assert.deepEqual(lockAfter(unlockedBefore, { on: true, unlocked: false }, opening), { on: true, here: false, known: true }, "an unlock from before does not carry over");
+  assert.deepEqual(lockAfter(LOCK_UNKNOWN, { on: true, unlocked: true }, opening), { on: true, here: true, known: true }, "within Lock again after");
+  assert.deepEqual(lockAfter(LOCK_UNKNOWN, { on: false, unlocked: false }, opening), LOCK_OFF);
+});
+
+test("a list read again while the panel is up keeps this opening's unlock", () => {
+  const up = { opening: false, hidden: false };
+  const here = { on: true, here: true, known: true };
+  assert.deepEqual(lockAfter(here, { on: true, unlocked: false }, up), here);
+  assert.deepEqual(lockAfter({ ...here, here: false }, { on: true, unlocked: true }, up), here, "unlocked from elsewhere");
+  assert.deepEqual(lockAfter(here, { on: false, unlocked: false }, up), { on: false, here: true, known: true }, "turned off");
+});
+
+test("a list read while the panel is put away leaves a locked history unknown until it opens", () => {
+  const hidden = { opening: false, hidden: true };
+  assert.equal(lockAfter({ on: true, here: true, known: true }, { on: true, unlocked: true }, hidden), LOCK_UNKNOWN);
+  assert.equal(lockAfter(LOCK_OFF, { on: true, unlocked: false }, hidden), LOCK_UNKNOWN, "turned on while away");
+  assert.equal(lockAfter(LOCK_UNKNOWN, { on: false, unlocked: false }, hidden), LOCK_OFF);
+  assert.equal(lockAfter(LOCK_UNKNOWN, undefined, hidden), LOCK_OFF, "an extension that says nothing of a lock");
 });

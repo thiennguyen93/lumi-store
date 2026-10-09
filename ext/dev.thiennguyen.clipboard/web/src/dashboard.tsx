@@ -104,7 +104,7 @@ function Tiles({ stats }: { stats: Stats | null }) {
 
 function Welcome() {
   // The extension's own key, as the install left it: the second step names
-  // it when it is armed, and sends people to the Shortcuts tab when not.
+  // it when it is armed, and sends people to the Settings tab when not.
   const [key, setKey] = useState<string | null | undefined>(undefined);
   useEffect(() => {
     shortcuts()
@@ -126,7 +126,7 @@ function Welcome() {
               </>
             ) : (
               <>
-                Give <strong>Show clipboard history</strong> a key on the Shortcuts tab, then press it
+                Give <strong>Show clipboard history</strong> a key on the Settings tab, then press it
               </>
             )}
           </li>

@@ -93,6 +93,9 @@ type Answers = {
   /** `privacy` asks or sets it; the answer is how it stands now. */
   privacy: { privacy: boolean };
   setPrivacy: { privacy: boolean };
+  switches: { menuShown: boolean; preloadEnabled: boolean };
+  setMenuShown: { menuShown: boolean; preloadEnabled: boolean };
+  setPreload: { menuShown: boolean; preloadEnabled: boolean };
   stats: Stats;
   previewWidth: Record<string, never>;
   previewSplit: Record<string, never>;
@@ -230,6 +233,23 @@ export async function setShortcut(command: string, key: string | null, replace =
   }
   if (!answer.ok) throw new Error(body || `Lumi answered ${answer.status}`);
   return JSON.parse(body) as ExtensionShortcut;
+}
+
+/** Ask Lumi to let go of every global shortcut while this page records one
+ *  of the extension's own (`POST /__lumi__/shortcut-recording`, Lumi 1.45),
+ *  so the combination pressed reaches the page instead of running what it
+ *  is bound to. `null` when it did, or when this Lumi has no such ask (404:
+ *  the page records as before); the sentence when Lumi refused. */
+export async function beginRecording(): Promise<string | null> {
+  const answer = await fetch("/__lumi__/shortcut-recording", { method: "POST" });
+  if (answer.ok || answer.status === 404) return null;
+  return (await answer.text()) || `Lumi answered ${answer.status}`;
+}
+
+/** Done recording: Lumi binds its shortcuts again. Safe to call twice, or
+ *  after Lumi ended the recording itself. */
+export async function endRecording(): Promise<void> {
+  await fetch("/__lumi__/shortcut-recording", { method: "DELETE" });
 }
 
 /** Where an image blob is served. Swappable so the dev mock can hand back

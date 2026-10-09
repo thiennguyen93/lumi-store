@@ -19,6 +19,7 @@ import { ago, type Used } from "./search";
 import { usePreviewMarks } from "./previewMarks";
 import type { SplitGrip } from "./PreviewSplit";
 import type { Entry, Layout } from "./types";
+import { currentGeneration } from "./visibility";
 
 /** How long the selection must rest on a row before its full text is
  *  asked for. Arrow keys held down walk many rows a second, and each ask
@@ -47,14 +48,23 @@ type Full = {
 };
 
 /** Previews already asked for, by row — and by whether the row has read
- *  text yet, since OCR lands after the copy. The page is thrown away each
- *  time the panel closes, so this lives exactly as long as one browse. */
+ *  text yet, since OCR lands after the copy. For one browse: a page loaded
+ *  afresh at each opening starts without it, and one Lumi keeps between
+ *  openings (`keep-alive`) forgets it as the panel goes (`forgetPreviews`). */
 const seen = new Map<string, Full>();
 const SEEN_MAX = 64;
 const seenKey = (row: Entry) => `${row.id}:${row.ocr ? 1 : 0}`;
 
 /** Layouts asked for by row, for the life of one browse, as `seen` is. */
 const layouts = new Map<string, Layout>();
+
+/** The panel was put away: what was asked for in it is forgotten, as the
+ *  page used to be, and an answer still on its way for it is not kept
+ *  (`currentGeneration`). */
+export function forgetPreviews() {
+  seen.clear();
+  layouts.clear();
+}
 
 /** Whether a row can have the whole panel: every one can — text read at
  *  full width, a picture, a film, a PDF, a file's tile or a list of files,
@@ -166,6 +176,7 @@ export function Preview({
       if (!known.snippets?.some((one) => one.dynamic)) return;
     }
     let live = true;
+    const opening = currentGeneration();
     const hold = setTimeout(() => live && setGaveUp(row.id), HOLD_MS);
     const timer = setTimeout(async () => {
       try {
@@ -178,9 +189,11 @@ export function Preview({
           return;
         }
         const answer = { id: row.id, text, html, ocr, fileSize, fileToken, files, fileCount, links, linkCount, snippets, layout, math };
-        seen.delete(key);
-        seen.set(key, answer);
-        if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
+        if (opening === currentGeneration()) {
+          seen.delete(key);
+          seen.set(key, answer);
+          if (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value!);
+        }
         if (live) setFull(answer);
       } catch (err) {
         // The title stays in the pane; a preview is not worth an error. A
@@ -221,12 +234,15 @@ export function Preview({
     // has changed again — the extension is asked about the row being looked
     // at and not about every row passed on the way.
     let live = true;
+    const opening = currentGeneration();
     const timer = setTimeout(() => {
       callLatest({ kind: "layout", id: row.id })
         .then(({ layout }) => {
           if (!layout) return;
-          layouts.set(row.id, layout);
-          if (layouts.size > SEEN_MAX) layouts.delete(layouts.keys().next().value!);
+          if (opening === currentGeneration()) {
+            layouts.set(row.id, layout);
+            if (layouts.size > SEEN_MAX) layouts.delete(layouts.keys().next().value!);
+          }
           if (live) setLayout({ id: row.id, layout });
         })
         .catch(() => {});

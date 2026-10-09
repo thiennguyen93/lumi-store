@@ -13,7 +13,7 @@
 
 import { type ReactNode, StrictMode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { call, canAuthenticate, Held, message, setShortcut, shortcuts } from "./bridge";
+import { call, canAuthenticate, message } from "./bridge";
 import {
   ClipboardGlyph,
   CloudOffGlyph,
@@ -28,10 +28,12 @@ import {
   SearchGlyph,
   ShieldGlyph,
 } from "./icons";
-import { acceleratorGlyphs, acceleratorOf, acceleratorRefusal, glyphs, panelKeys } from "./keys";
+import { acceleratorGlyphs, glyphs, panelKeys } from "./keys";
+import { holdersText } from "./ownKey";
+import { useOwnShortcut } from "./ownShortcut";
 import { fuzzyScore } from "./search";
 import type { FileFamily } from "./fileType";
-import type { ExtensionShortcut, Kind, ShortcutHolder } from "./types";
+import type { Kind } from "./types";
 import "./welcome.css";
 
 if (import.meta.env.DEV) {
@@ -956,70 +958,14 @@ function Caps({ glyphs, small }: { glyphs: string; small?: boolean }) {
  * is somebody's — comes back as the same offer.
  */
 function Shortcut({ onArmed }: { onArmed: (key: string | null) => void }) {
-  const [own, setOwn] = useState<ExtensionShortcut | null | undefined>(undefined);
-  const [recording, setRecording] = useState(false);
-  const [said, setSaid] = useState("");
-  const [held, setHeld] = useState<{ key: string; holders: ShortcutHolder[]; said: string } | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { own, recording, said, held, busy, write, keepTheirs, record: toggle } = useOwnShortcut(COMMAND);
   const [later, setLater] = useState(false);
-
-  useEffect(() => {
-    shortcuts()
-      .then((all) => setOwn(all.ess?.find((one) => one.command === COMMAND) ?? null))
-      .catch(() => setOwn(null));
-  }, []);
 
   useEffect(() => onArmed(own?.key ?? null), [own, onArmed]);
 
-  const write = useCallback(async (key: string, replace: boolean) => {
-    setBusy(true);
-    setSaid("");
-    try {
-      setOwn(await setShortcut(COMMAND, key, replace));
-      setHeld(null);
-    } catch (err) {
-      // Another extension's key comes back as a holder too, and is not
-      // offered: Lumi would refuse the replace, and its own tab is where
-      // that key changes.
-      if (err instanceof Held && err.holders.length && err.holders.every((h) => h.kind !== "extension")) {
-        setHeld({ key, holders: err.holders, said: err.message });
-      } else {
-        setHeld(null);
-        setSaid(message(err));
-      }
-    } finally {
-      setBusy(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!recording) return;
-    const take = (event: KeyboardEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (event.key === "Escape") {
-        setRecording(false);
-        return;
-      }
-      const got = acceleratorOf(event);
-      if (!got) return; // a modifier on its own, still being held
-      const why = acceleratorRefusal(got);
-      if (why) {
-        setSaid(`${acceleratorGlyphs(got)}: ${why}`);
-        return;
-      }
-      setRecording(false);
-      void write(got, false);
-    };
-    window.addEventListener("keydown", take, true);
-    return () => window.removeEventListener("keydown", take, true);
-  }, [recording, write]);
-
   const record = () => {
-    setSaid("");
-    setHeld(null);
     setLater(false);
-    setRecording(true);
+    if (!recording) toggle();
   };
 
   if (own === undefined) return <p className="dim">Looking up your shortcut…</p>;
@@ -1063,7 +1009,7 @@ function Shortcut({ onArmed }: { onArmed: (key: string | null) => void }) {
   } else if (later) {
     body = (
       <p className="dim">
-        No key for now. Lumi's Extensions → Clipboard Manager → Shortcuts has the same control.{" "}
+        No key for now. Clipboard Manager's Settings tab, under Extensions in Lumi, has the same control.{" "}
         <button type="button" className="link" onClick={record}>Record one now</button>
       </p>
     );
@@ -1110,7 +1056,7 @@ function Shortcut({ onArmed }: { onArmed: (key: string | null) => void }) {
           {held.said} Take {acceleratorGlyphs(held.key)} anyway? It comes off {holdersText(held.holders)}.
           <div className="row">
             <span className="sp" />
-            <button type="button" disabled={busy} onClick={() => setHeld(null)}>
+            <button type="button" disabled={busy} onClick={keepTheirs}>
               Keep theirs
             </button>
             <button type="button" className="primary" disabled={busy} onClick={() => void write(held.key, true)}>
@@ -1121,19 +1067,6 @@ function Shortcut({ onArmed }: { onArmed: (key: string | null) => void }) {
       )}
     </>
   );
-}
-
-function holdersText(holders: ShortcutHolder[]): string {
-  const names = holders.map((holder) =>
-    holder.kind === "shortcut"
-      ? holder.name
-        ? `“${holder.name}” in the ${holder.profileName} profile`
-        : `a shortcut in the ${holder.profileName} profile`
-      : holder.kind === "app"
-        ? `Lumi's own ${holder.label}`
-        : `${holder.extensionName}'s ${holder.commandLabel}`,
-  );
-  return names.length <= 1 ? (names[0] ?? "") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
 const root = document.getElementById("root");

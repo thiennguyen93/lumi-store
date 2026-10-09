@@ -26,8 +26,9 @@ const MAX_PIXELS = 16_000_000;
 
 /** pdf.js and its worker, loaded the first time a PDF is shown and never
  *  before: the panel opens on a shortcut and does not pay for them. One
- *  worker serves every document for as long as the page lives — the page
- *  is thrown away when the panel closes.
+ *  worker serves every document for as long as the page lives — until the
+ *  panel closes, or, kept between openings (`keep-alive`), for as long as
+ *  Lumi keeps the page.
  *
  *  The worker is Vite's `?worker`, not `?url`: a `?url` file is copied as
  *  is, while `?worker` is bundled and lowered to the build's target like

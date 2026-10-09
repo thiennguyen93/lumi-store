@@ -66,6 +66,7 @@ import {
   isLocked,
   isUnlocked,
   type Lock,
+  lockAfter,
   LOCK_UNKNOWN,
   needsConfirm,
   restore,
@@ -77,8 +78,10 @@ import {
   type Veil,
   VEIL_OFF,
 } from "./privacy";
-import { badPattern, FILTER_LABELS, FILTERS, type Filter, found, inFilter, search, searchWith, type SearchMode, shortcuts } from "./search";
+import { badPattern, FILTER_LABELS, FILTERS, type Filter, inFilter, search, searchWith, type SearchMode, shortcuts } from "./search";
 import type { Entry, ListAnswer } from "./types";
+import { reconcile } from "./rows";
+import { currentGeneration, isHidden, whenShown } from "./visibility";
 
 export function App() {
   const [rows, setRows] = useState<Entry[] | null>(null);
@@ -98,6 +101,9 @@ export function App() {
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState(0);
   const [notice, setNotice] = useState("");
+  // The moment the rows' ages are counted from ("3m"): when the list was
+  // last read on screen, and when the panel is shown again.
+  const [now, setNow] = useState(() => Date.now());
   // Pinned in the title bar: up while the person works elsewhere, and a
   // paste, a copy or a link opened leaves it up. Every open starts
   // unpinned — Lumi takes the pin off when the panel goes.
@@ -118,8 +124,11 @@ export function App() {
   const lockShown = showsLock(lock);
   // What is shown in privacy mode, told to the extension as it changes: it
   // keeps it for "Cover again after panel closes", timed from the closing.
+  // Not while the panel is put away and kept (`keep-alive`): what it covers
+  // then is the reset for the next opening, not something the person did,
+  // and telling it would end what "Cover again" keeps from the closing.
   useEffect(() => {
-    if (!veil.on) return;
+    if (!veil.on || isHidden()) return;
     void call({ kind: "shown", ...shownOf(veil) }).catch(() => {});
   }, [veil]);
   // Whether "Is it you?" can be asked here at all; asked once.
@@ -151,9 +160,10 @@ export function App() {
   const [popped, setPopped] = useState<string | null>(null);
   // A delete is folding: a second ⌘⌥⌫ waits for it rather than racing it.
   const folding = useRef(false);
-  // Everything done since the panel opened, newest last, for ⌘Z. The page
-  // is blanked when the panel goes, and the extension empties its trash
-  // when the next one opens, so the two forget together.
+  // Everything done since the panel opened, newest last, for ⌘Z. The panel
+  // starts over when it goes — the page blanked, or, kept between openings,
+  // mounted afresh (`main.tsx`) — and the extension empties its trash when
+  // the next one opens, so the two forget together.
   const undos = useRef<Undo[]>([]);
   // What ⌘Z took back, for ⌘⇧Z to do again; anything new done clears it.
   const redos = useRef<Undo[]>([]);
@@ -174,9 +184,17 @@ export function App() {
     if (zoom && !canZoom(current)) setZoom(false);
   }, [zoom, current]);
 
-  const reload = useCallback(async (keepId: string | null, opening = false) => {
-    const answer = await call({ kind: "list", opening });
-    setRows(answer.items);
+  // What a list answer says, taken in: as it is read, and — remounted while
+  // the panel is put away and kept — from the last one read (`kept`). A row
+  // that did not change keeps its object (`reconcile`), so a list read again
+  // draws only what changed. Put away, a locked history is held nowhere: no
+  // rows, and the lock not known until the opening list says (`lockAfter`).
+  const adoptAnswer = useCallback((answer: ListAnswer, keepId: string | null, opening: boolean) => {
+    const hidden = isHidden();
+    const lockOn = answer.lock?.on ?? false;
+    kept = lockOn ? { ...answer, items: [] } : answer;
+    setRows((rows) => (hidden && lockOn ? null : reconcile(rows, answer.items)));
+    if (!hidden) setNow(Date.now());
     if (opening && answer.clear) setClearAsked(true);
     adoptWidth(answer.previewWidth);
     adoptSplit(answer.previewSplit);
@@ -195,7 +213,7 @@ export function App() {
     // "Cover again after panel closes" has not run out.
     setVeil((veil) => restore(adopt(veil, answer.privacy ?? false), answer.shown));
     setPrivacyConfirm(answer.privacyConfirm ?? false);
-    setLock((lock) => ({ on: answer.lock?.on ?? false, here: lock.here || answer.lock?.unlocked === true, known: true }));
+    setLock((lock) => lockAfter(lock, answer.lock, { opening, hidden }));
     if (keepId) {
       const at = search(
         answer.items.filter((row) => inFilter(row, filterRef.current)),
@@ -206,13 +224,48 @@ export function App() {
     }
   }, [adoptWidth, adoptSplit]);
 
+  // The list read again — or, `opening`, the panel's first list since it
+  // opened, which the extension tidies the history on and which alone says
+  // whether this opening is unlocked. `asked`: that list, asked already
+  // (`openEarly`). An answer to an opening that is over — the panel put away
+  // while it was on its way — is not taken.
+  const reload = useCallback(
+    async (keepId: string | null, opening = false, asked: Promise<ListAnswer> | null = null) => {
+      const generation = currentGeneration();
+      const answer = await (asked ?? call({ kind: "list", opening }));
+      if (generation === currentGeneration()) adoptAnswer(answer, keepId, opening);
+    },
+    [adoptAnswer],
+  );
+
+  // Remounted while the panel is put away and kept (`main.tsx`): drawn
+  // straight away from the last list, before anybody sees it, so the next
+  // opening shows rows on its first frame. A page loaded afresh has none.
+  useLayoutEffect(() => {
+    if (isHidden() && kept) adoptAnswer(kept, null, false);
+  }, [adoptAnswer]);
+
+  // The opening: the opening list — asked as the page loads (`openEarly`),
+  // else now — once the panel is on screen. On a page Lumi keeps between
+  // openings, that is when `lumi:shown` says so, not when the page mounted
+  // as it was put away or loaded ahead. The search has the keys from the
+  // start, so a letter typed the moment the panel shows lands in it.
   useEffect(() => {
-    reload(null, true)
-      .catch((err) => setNotice(message(err)))
-      .finally(() => {
-        input.current?.focus();
-        readUnread();
-      });
+    input.current?.focus();
+    // Loaded hidden — ahead of its first opening (Lumi 1.45 loads a kept
+    // panel's page as the extension loads), or put away before it finished
+    // loading: the rows read now, as any list read again, so the opening
+    // shows them on its first frame.
+    if (isHidden() && !kept) void reload(null).catch(() => {});
+    return whenShown(() => {
+      setNow(Date.now());
+      reload(null, true, takeEarly())
+        .catch((err) => setNotice(message(err)))
+        .finally(() => {
+          input.current?.focus();
+          readUnread();
+        });
+    });
   }, [reload]);
 
   // The row a reread of the list keeps chosen: the one the person is on,
@@ -230,6 +283,15 @@ export function App() {
   // privacy switch. One read at a time; news during one
   // asks for one more after it. A failed read leaves the list as it was —
   // nobody asked for it, so it is no notice either.
+  // Put away and kept (`keep-alive`), news is still heard, so the panel is
+  // current the moment it is shown again — read at once, as on screen: a
+  // timer would wait, since WebKit holds a hidden page's timers back (measured:
+  // a copy 0.8 s before the shortcut was not in the list on the first frame),
+  // and a burst of copies is already one read and one more (`again`). Not at
+  // all while the history is locked: nothing of it is held then, and the
+  // opening list reads it.
+  const lockOn = useRef(lock.on);
+  lockOn.current = lock.on;
   useEffect(() => {
     let reading = false;
     let again = false;
@@ -250,7 +312,9 @@ export function App() {
     };
     const told = (event: Event) => {
       const detail = (event as CustomEvent<unknown>).detail;
-      if (isNews(detail, "history") || isNews(detail, "privacy")) void reread();
+      if (!isNews(detail, "history") && !isNews(detail, "privacy")) return;
+      if (isHidden() && lockOn.current) return;
+      void reread();
     };
     // Reading images may have just been turned on: the ones never read
     // are read now, not at the next opening.
@@ -318,6 +382,18 @@ export function App() {
     [act, current, pinned],
   );
 
+  // A row's own two callbacks, made once: a row whose props did not change
+  // is not drawn again (`Row`'s memo), so a press of an arrow key draws the
+  // two rows it moves between, not every row in the history.
+  const pick = useCallback((at: number) => {
+    setSelected(at);
+    // Back from the preview, the next letter is the search's.
+    input.current?.focus();
+  }, []);
+  const pasteNow = useRef(paste);
+  pasteNow.current = paste;
+  const pasteRow = useCallback((plain: boolean, row: Entry) => pasteNow.current(plain, row), []);
+
   const togglePinned = useCallback(() => {
     const next = !pinned;
     void act(async () => {
@@ -382,12 +458,18 @@ export function App() {
    *  closes — the extension is told, for "Lock again after panel closes".
    *  The yes counts for showing too. */
   const unlock = useCallback(async () => {
+    const generation = currentGeneration();
     if (!(await isItYou("open your clipboard history"))) return;
+    // A yes for an opening that is over unlocks nothing.
+    if (generation !== currentGeneration()) return;
     setVeil(confirm);
     setLock((lock) => ({ ...lock, here: true }));
-    // Not kept: unlocked for this opening all the same, locked when it closes.
-    void call({ kind: "unlocked" }).catch(() => {});
-  }, [isItYou]);
+    // Not kept: unlocked for this opening all the same, locked when it
+    // closes. The extension hands a locked panel no rows, so the list is
+    // read once it knows.
+    await call({ kind: "unlocked" }).catch(() => {});
+    await reload(following.current).catch(() => {});
+  }, [isItYou, reload]);
 
   /** ⌘K's Lock history now: locked, previews covered, the next unlock asks. */
   const lockNow = useCallback(() => {
@@ -399,14 +481,14 @@ export function App() {
   // Whether "Is it you?" can be asked at all — the lock card says so when
   // it cannot, rather than asking for nothing.
   useEffect(() => {
-    void canAuthenticate().then(setCanAsk);
+    void (canAsk_ ??= canAuthenticate()).then(setCanAsk);
   }, []);
 
   // A locked history asks as soon as the panel is up: ⇧⌘C, Touch ID, the
   // list. Once per opening — Cancel leaves the lock card and its Unlock.
   const askedOnOpen = useRef(false);
   useEffect(() => {
-    if (!lockShown || rows === null || canAsk !== true || askedOnOpen.current) return;
+    if (!lockShown || rows === null || canAsk !== true || askedOnOpen.current || isHidden()) return;
     askedOnOpen.current = true;
     void unlock();
   }, [lockShown, rows, canAsk, unlock]);
@@ -988,14 +1070,12 @@ export function App() {
               index={index}
               selected={index === selected}
               shortcut={keys.get(row.id)}
-              found={found(row, query, used)}
+              query={query}
+              used={used}
+              now={now}
               popped={popped === row.id}
-              onPick={(at) => {
-                setSelected(at);
-                // Back from the preview, the next letter is the search's.
-                input.current?.focus();
-              }}
-              onPaste={(plain) => paste(plain, row)}
+              onPick={pick}
+              onPaste={pasteRow}
             />,
           ])}
         </div>
@@ -1100,12 +1180,32 @@ function LockCard({ canAsk, onUnlock, onSettings }: { canAsk: boolean | null; on
   );
 }
 
-/** The extension's `{"kind": …}` news: `history`, the history changed under
- *  the panel; `summoned`, the panel was asked for again; `clear`, the menu
- *  bar's Delete All Unpinned… pressed while the panel is up; `privacy`,
- *  privacy mode flipped somewhere else. A post is the
- *  extension's own JSON; checked anyway, so news of another shape — a later
- *  version's — is ignored. */
+/** The last list read, for a panel mounted afresh while it is put away and
+ *  kept (`keep-alive`) to draw before it is shown: its rows left out while
+ *  the history is locked. */
+let kept: ListAnswer | null = null;
+
+/** The opening list asked as the page loads, before React and the panel are
+ *  (`openEarly`), for the first opening to take. */
+let early: Promise<ListAnswer> | null = null;
+
+/** Ask the opening list now — `main.tsx`, first thing, with the panel on
+ *  screen — so its answer is on its way while the page is still being
+ *  drawn. A failure is the first opening's to say. */
+export function openEarly() {
+  early = call({ kind: "list", opening: true });
+  early.catch(() => {});
+}
+
+function takeEarly(): Promise<ListAnswer> | null {
+  const asked = early;
+  early = null;
+  return asked;
+}
+
+/** Whether "Is it you?" can be shown here: asked once a page. */
+let canAsk_: Promise<boolean> | null = null;
+
 /** Whether the images Lumi's reader never reached are being read. */
 let readingImages = false;
 
@@ -1114,15 +1214,16 @@ let readingImages = false;
  *  extension's runs, so the panel's other requests go on beside it. The
  *  extension tells the panel when rows changed (`history` news), and the
  *  list is read again from that. Stops when nothing is left, on a refusal,
- *  and with the page — the panel is thrown away when it closes. */
+ *  and when the panel goes — the page thrown away, or put away and kept,
+ *  which starts again at the next opening. */
 function readUnread() {
-  if (readingImages) return;
+  if (readingImages || isHidden()) return;
   readingImages = true;
   void (async () => {
     try {
       // A bound, not a schedule: three images an ask, a full history of
       // images is a few hundred asks at most.
-      for (let ask = 0; ask < 400; ask++) {
+      for (let ask = 0; ask < 400 && !isHidden(); ask++) {
         const { more } = await callBackground({ kind: "readImages" });
         if (!more) break;
       }
@@ -1134,6 +1235,12 @@ function readUnread() {
   })();
 }
 
+/** The extension's `{"kind": …}` news: `history`, the history changed under
+ *  the panel; `summoned`, the panel was asked for again; `clear`, the menu
+ *  bar's Delete All Unpinned… pressed while the panel is up; `privacy`,
+ *  privacy mode flipped somewhere else. A post is the
+ *  extension's own JSON; checked anyway, so news of another shape — a later
+ *  version's — is ignored. */
 function isNews(detail: unknown, kind: "history" | "summoned" | "clear" | "privacy"): boolean {
   return typeof detail === "object" && detail !== null && (detail as { kind?: unknown }).kind === kind;
 }

@@ -109,6 +109,15 @@ pub trait Host {
     fn confirm_owner(&self, reason: &str) -> Result<bool, String>;
     /// This extension's rows in Lumi's menu bar menu, the whole tree.
     fn set_menu(&self, entries: &[lumi_extension_api::menu::Entry]) -> Result<(), String>;
+    /// Whether those rows show: one switch, kept by Lumi, that the Settings
+    /// tab and the Menu bar switch on the Permissions sheet both move.
+    fn menu_shown(&self) -> Result<bool, String>;
+    fn set_menu_shown(&self, shown: bool) -> Result<(), String>;
+    /// Whether Lumi loads the panel ahead as it starts (`preload`): one
+    /// switch, kept by Lumi, that the Settings tab and Preload on the
+    /// Permissions sheet both move.
+    fn preload_enabled(&self) -> Result<bool, String>;
+    fn set_preload_enabled(&self, on: bool) -> Result<(), String>;
     fn settings(&self) -> serde_json::Value;
     /// Now, in ms since the epoch — the clock Lumi stamps copies with.
     fn now(&self) -> i64;
@@ -286,6 +295,24 @@ impl Host for Lumi {
         lumi_extension_api::menu::set_rows(entries)
     }
 
+    fn menu_shown(&self) -> Result<bool, String> {
+        // Lumi 1.44.
+        lumi_extension_api::menu::shown()
+    }
+
+    fn set_menu_shown(&self, shown: bool) -> Result<(), String> {
+        // Lumi 1.45 — the manifest's floor.
+        lumi_extension_api::menu::set_shown(shown)
+    }
+
+    fn preload_enabled(&self) -> Result<bool, String> {
+        lumi_extension_api::preload_enabled()
+    }
+
+    fn set_preload_enabled(&self, on: bool) -> Result<(), String> {
+        lumi_extension_api::set_preload_enabled(on)
+    }
+
     fn settings(&self) -> serde_json::Value {
         lumi_extension_api::settings()
     }
@@ -426,6 +453,10 @@ pub mod memory {
         pub expanded: RefCell<Vec<String>>,
         /// The menu bar tree last set.
         pub menu: RefCell<Vec<lumi_extension_api::menu::Entry>>,
+        /// The menu bar switch turned off — Lumi's default is on.
+        pub menu_hidden: Cell<bool>,
+        /// The preload switch turned off — Lumi's default is on.
+        pub preload_off: Cell<bool>,
         /// What reading each image blob finds; a blob not here is not a
         /// picture.
         pub images: RefCell<BTreeMap<String, Layout>>,
@@ -595,6 +626,24 @@ pub mod memory {
 
         fn set_menu(&self, entries: &[lumi_extension_api::menu::Entry]) -> Result<(), String> {
             *self.menu.borrow_mut() = entries.to_vec();
+            Ok(())
+        }
+
+        fn menu_shown(&self) -> Result<bool, String> {
+            Ok(!self.menu_hidden.get())
+        }
+
+        fn set_menu_shown(&self, shown: bool) -> Result<(), String> {
+            self.menu_hidden.set(!shown);
+            Ok(())
+        }
+
+        fn preload_enabled(&self) -> Result<bool, String> {
+            Ok(!self.preload_off.get())
+        }
+
+        fn set_preload_enabled(&self, on: bool) -> Result<(), String> {
+            self.preload_off.set(!on);
             Ok(())
         }
 

@@ -26,8 +26,9 @@ import {
   type TakenKey,
 } from "./keys";
 import { authenticate, canAuthenticate } from "./bridge";
-import { shortcuts } from "./bridge";
-import { KEEP_LABELS, type OwnShortcuts, type Stats } from "./types";
+import { holdersText, ownKeyHint } from "./ownKey";
+import { useOwnShortcut } from "./ownShortcut";
+import { KEEP_LABELS, type Stats } from "./types";
 import { type Book, countedPicks, LookIn, type Scope, SCOPES } from "./LookIn";
 import "./settings.css";
 
@@ -43,6 +44,13 @@ type Order = "last" | "first" | "used";
 type Idle = "30s" | "1m" | "5m" | "never";
 type LockAfter = "close" | "1m" | "5m" | "15m";
 
+/** The switches Lumi keeps over this extension, as the extension answers
+ *  `switches`: one each, also on its Permissions sheet in Lumi. */
+interface Switches {
+  menuShown: boolean;
+  preloadEnabled: boolean;
+}
+
 interface Values {
   keep: Keep;
   theme: Theme;
@@ -56,6 +64,8 @@ interface Values {
   lockKey: string;
   pasteOnSelect: boolean;
   closeAfterDrag: boolean;
+  /** "Press shortcut again to hide": Show puts the panel away when it is up. */
+  showToggles: boolean;
   ocr: boolean;
   sort: Order;
   appearance: Glass;
@@ -191,6 +201,7 @@ function read(raw: Record<string, unknown>): Values {
     lockKey: own.lock ? comboText(own.lock) : "",
     pasteOnSelect: text(raw.pasteOnSelect, "true") !== "false",
     closeAfterDrag: text(raw.closeAfterDrag, "false") === "true",
+    showToggles: text(raw.showToggles, "false") === "true",
     ocr: text(raw.ocr, "true") !== "false",
     sort: (["last", "first", "used"].includes(text(raw.sort, "")) ? raw.sort : "last") as Order,
     appearance: (["popover", "hud", "sidebar"].includes(text(raw.appearance, "")) ? raw.appearance : "popover") as Glass,
@@ -227,6 +238,7 @@ function written(v: Values): Record<string, string> {
     lockKey: v.lockKey,
     pasteOnSelect: String(v.pasteOnSelect),
     closeAfterDrag: String(v.closeAfterDrag),
+    showToggles: String(v.showToggles),
     ocr: String(v.ocr),
     sort: v.sort,
     appearance: v.appearance,
@@ -258,6 +270,23 @@ function Settings() {
   // the menu bar row and a key flip it too — so it is asked for and set
   // through the extension, and read again when it says it changed.
   const [privacy, setPrivacy] = useState<boolean | null>(null);
+  // The two switches Lumi keeps over this extension — its menu bar rows,
+  // loading the panel ahead — which the Permissions sheet in Lumi moves
+  // too: one switch each, read from the extension until it says.
+  const [switches, setSwitches] = useState<Switches | null>(null);
+  const [switchFailed, setSwitchFailed] = useState("");
+  // One of them moved here: at once on screen, and back with the reason if
+  // the extension could not move it.
+  const move = (kind: "setMenuShown" | "setPreload", key: keyof Switches, on: boolean) => {
+    const was = switches;
+    if (!was) return;
+    setSwitches({ ...was, [key]: on });
+    setSwitchFailed("");
+    ask<Switches>({ kind, on }).then(setSwitches, (err: unknown) => {
+      setSwitches(was);
+      setSwitchFailed(err instanceof Error ? err.message : "Could not change it");
+    });
+  };
   // Whether "Is it you?" can be asked on this Mac: it has a password.
   const [canAsk, setCanAsk] = useState<boolean | null>(null);
   useEffect(() => {
@@ -301,9 +330,14 @@ function Settings() {
     window.addEventListener("lumi:profiles", switched);
     const askPrivacy = () => ask<{ privacy: boolean }>({ kind: "privacy" }).then((a) => setPrivacy(a.privacy), () => {});
     askPrivacy();
+    const askSwitches = () => ask<Switches>({ kind: "switches" }).then(setSwitches, () => {});
+    askSwitches();
     const told = (event: Event) => {
       const detail = (event as CustomEvent<unknown>).detail;
-      if (typeof detail === "object" && detail !== null && (detail as { kind?: unknown }).kind === "privacy") askPrivacy();
+      const kind = typeof detail === "object" && detail !== null ? (detail as { kind?: unknown }).kind : null;
+      if (kind === "privacy") askPrivacy();
+      // Moved on the Permissions sheet: the same switches, so these follow.
+      if (kind === "switches") askSwitches();
     };
     window.addEventListener("lumi:message", told);
     // Asked again each time the tab comes back into view: Lumi answers a
@@ -315,6 +349,7 @@ function Settings() {
       ask<Book>({ kind: "profiles" }).then(setBook, () => {});
       ask<Stats>({ kind: "stats" }).then(setStats, () => {});
       askPrivacy();
+      askSwitches();
     };
     document.addEventListener("visibilitychange", shown);
     // Lumi drops the page when its tab is left: what is still waiting to
@@ -449,7 +484,14 @@ function Settings() {
       <section>
         <h3>Shortcuts</h3>
         <div className="group">
-          <GlobalShortcut command="open" />
+          <OwnShortcutRow command="open" />
+          <Row label="Press shortcut again to hide" hint="Off: pressing it again leaves the panel up">
+            <Toggle
+              on={values.showToggles}
+              label="Press shortcut again to hide"
+              onChange={(showToggles) => change({ showToggles }, true)}
+            />
+          </Row>
           <Row label="Pin" hint="While the panel is up; pins or unpins the selected item">
             <Recorder
               value={values.pinKey}
@@ -502,6 +544,38 @@ function Settings() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section>
+        <h3>Menu bar &amp; startup</h3>
+        <div className="group">
+          <Row
+            label="Show in Lumi's menu bar menu"
+            hint={
+              switchFailed ||
+              "Show Clipboard History, Pause Recording, privacy mode and Delete All Unpinned…, also switched on the Permissions sheet in Lumi"
+            }
+            bad={!!switchFailed}
+          >
+            <Toggle
+              on={switches?.menuShown ?? true}
+              label="Show in Lumi's menu bar menu"
+              disabled={!switches}
+              onChange={(on) => move("setMenuShown", "menuShown", on)}
+            />
+          </Row>
+          <Row
+            label="Load the panel when Lumi starts"
+            hint="The panel opens at once, the first time too, and waits out of sight until then"
+          >
+            <Toggle
+              on={switches?.preloadEnabled ?? true}
+              label="Load the panel when Lumi starts"
+              disabled={!switches}
+              onChange={(on) => move("setPreload", "preloadEnabled", on)}
+            />
+          </Row>
         </div>
       </section>
 
@@ -783,66 +857,76 @@ function Segmented<T extends string>({
   );
 }
 
-/** One of the extension's commands and the keys that run it. Two kinds,
- *  drawn apart because they are owned apart: the extension's own
- *  `[[shortcut]]` (`ess`), armed by Lumi at install in every profile and
- *  changed on the Shortcuts tab of this extension's page; and the person's
- *  rows from Lumi's Shortcuts pane, with a button that goes there. Neither
- *  is recorded here — one place sets each, so two cannot disagree. */
-function GlobalShortcut({ command }: { command: string }) {
-  const [own, setOwn] = useState<OwnShortcuts | null>(null);
-  const [failed, setFailed] = useState("");
-
-  useEffect(() => {
-    shortcuts()
-      .then(setOwn)
-      .catch(() => setOwn(null));
-  }, []);
-
-  const mine = own?.commands.find((c) => c.name === command);
-  const ess = own?.ess?.find((one) => one.command === command);
-  const keys = (mine?.rows ?? []).filter((row) => row.trigger);
-  const live = keys.filter((row) => row.enabled && own?.on);
-  const hint = !own
-    ? "Global — set in Lumi's Shortcuts"
-    : ess?.key
-      ? keys.length
-        ? "Its own key, in every profile · and your rows"
-        : "Its own key, in every profile — change it on the Shortcuts tab"
-      : ess && (ess.state === "taken" || ess.state === "invalid") && ess.reason
-        ? ess.reason
-        : !own.on
-          ? "Shortcuts are switched off in Lumi"
-          : keys.length === 0
-            ? "No key yet — the Shortcuts tab of this extension, or Lumi's Shortcuts"
-            : live.length < keys.length
-              ? "Global · a switched-off row is dimmed"
-              : "Global — works from any app";
-
+/** The extension's own global key — its `[[shortcut]]` on `command`, which
+ *  Lumi arms at install in every profile — recorded and changed right here:
+ *  this row is the one place it is set, so Lumi's own Shortcuts tab for the
+ *  extension is hidden (`[tabs.shortcuts]` in the manifest). A row the
+ *  person makes in Lumi's Shortcuts pane on the same command is theirs, and
+ *  not this one. */
+function OwnShortcutRow({ command }: { command: string }) {
+  const key = useOwnShortcut(command);
+  const { own, recording, held, busy } = key;
+  const label = own?.label ?? "Show clipboard history";
+  if (own === undefined) {
+    return (
+      <Row label={label}>
+        <span className="keycap unset">…</span>
+      </Row>
+    );
+  }
+  if (own === null) {
+    // A Lumi that keeps no key of this extension's: Shortcuts is where one goes.
+    return (
+      <Row label={label} hint="Give it a key in Lumi's Shortcuts">
+        <span className="keycap unset">None</span>
+      </Row>
+    );
+  }
+  const declared = acceleratorGlyphs(own.declared);
+  const hint = ownKeyHint(own, key.on, declared);
+  const line = recording ? (
+    "Press the new shortcut · Esc to cancel"
+  ) : held ? (
+    <>
+      {held.said} Take {acceleratorGlyphs(held.key)} anyway? It comes off {holdersText(held.holders)}.{" "}
+      <button type="button" className="add" disabled={busy} onClick={key.keepTheirs}>
+        Keep theirs
+      </button>
+      <button type="button" className="add" disabled={busy} onClick={() => void key.write(held.key, true)}>
+        Use it here
+      </button>
+    </>
+  ) : (
+    key.said || hint.text
+  );
   return (
-    <Row label={mine?.label ?? ess?.label ?? "Show clipboard history"} hint={failed || hint}>
+    <Row label={label} hint={line} bad={!recording && !held && (Boolean(key.said) || hint.bad)}>
       <div className="recorder">
-        {ess?.key && <span className="keycap">{acceleratorGlyphs(ess.key)}</span>}
-        {!ess?.key && keys.length === 0 ? (
-          <span className="keycap unset">Not set</span>
-        ) : (
-          keys.map((row, at) => (
-            <span key={at} className={row.enabled && own?.on ? "keycap" : "keycap off"}>
-              {acceleratorGlyphs(row.trigger)}
-            </span>
-          ))
-        )}
         <button
           type="button"
-          className="add"
-          onClick={() =>
-            fetch("/__lumi__/show-shortcuts", { method: "POST", body: JSON.stringify({ command }) })
-              .then(async (r) => setFailed(r.ok ? "" : (await r.text()) || "Could not open Shortcuts"))
-              .catch(() => setFailed("Could not open Shortcuts"))
+          disabled={busy}
+          className={recording ? "keycap recording" : own.key ? "keycap" : "keycap unset"}
+          aria-label={
+            recording
+              ? "Press the new shortcut, or Esc"
+              : own.key
+                ? `Shortcut ${acceleratorGlyphs(own.key)}, click to change`
+                : "No shortcut, click to record one"
           }
+          onClick={key.record}
         >
-          Edit in Shortcuts…
+          {recording ? "Press keys…" : own.key ? acceleratorGlyphs(own.key) : "None"}
         </button>
+        {!recording && own.key !== own.declared && (
+          <button type="button" className="add" disabled={busy} onClick={() => void key.write(own.declared)}>
+            Use {declared}
+          </button>
+        )}
+        {!recording && own.key && (
+          <button type="button" className="add" disabled={busy} onClick={() => void key.write(null)}>
+            Clear
+          </button>
+        )}
       </div>
     </Row>
   );

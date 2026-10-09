@@ -1,5 +1,64 @@
 # Changelog
 
+## [0.87.0] - 2026-10-09
+
+### Added
+
+- Settings → Shortcuts has a new option, "Press shortcut again to hide". Turn it on and the Show clipboard history shortcut also closes the panel when it is already open, even when the panel is pinned behind another app. It is off by default, so the shortcut only opens the panel, as before.
+
+## [0.86.0] - 2026-10-09
+
+### Changed
+
+- The Show clipboard history shortcut is set on the Settings tab now. Click the key and press a new one; Clear removes it, and a button puts the default ⇧⌘C back. It is the same key as before and works in every profile. Clipboard Manager's separate Shortcuts tab in Lumi is gone.
+- While you record a new key, Lumi's other shortcuts stay quiet. Pressing ⇧⌘C, or a combination something else already uses, records it instead of opening the panel or running that shortcut. This needs a newer Lumi; on an older one, recording works as before.
+- If the key you pick belongs to one of your shortcuts in Lumi, the row says which one and offers to take it over.
+
+## [0.85.3] - 2026-10-09
+
+### Changed
+
+- Loading the panel when Lumi starts is on when you first install Clipboard Manager. An update leaves it as you set it.
+
+## [0.85.2] - 2026-10-09
+
+### Changed
+
+- Loading the panel ahead is now a permission Clipboard Manager asks for, listed with the others before you install or update: it keeps its panel loaded out of sight from when Lumi starts.
+
+## [0.85.1] - 2026-10-09
+
+### Changed
+
+- The switch on Clipboard Manager's Permissions sheet in Lumi that matches **Load the panel when Lumi starts** is now called **Preload**.
+
+## [0.85.0] - 2026-10-09
+
+### Added
+
+- **Menu bar & startup** in Settings: **Show in Lumi's menu bar menu** and **Load the panel when Lumi starts**. They are the same switches as **Menu bar** and **Preload** on Clipboard Manager's Permissions sheet in Lumi, so you can turn them on or off in either place.
+- Needs Lumi 1.45.0 or later.
+
+## [0.84.0] - 2026-10-09
+
+### Changed
+
+- Loading the panel ahead is now yours to allow. Clipboard Manager asks Lumi to load it as Lumi starts, and you decide with **Preload** on Clipboard Manager's Permissions sheet in Lumi. With it off, the panel loads the first time you open it and opens at once every time after that.
+
+## [0.83.0] - 2026-10-09
+
+### Changed
+
+- The first **⇧⌘C** after Lumi starts is as quick as every one after it. On Lumi 1.45.0 or later, Lumi loads the panel ahead, out of sight, as it starts, and once Clipboard Manager is installed, updated or switched on, so your history is already drawn the first time you open it.
+
+## [0.82.0] - 2026-10-09
+
+### Changed
+
+- **⇧⌘C** opens the panel with your history already in it, instead of an empty sheet of glass that fills in a moment later. On Lumi 1.45.0 or later the panel keeps its page while it is put away, so it is shown again at once, with what you copied meanwhile on top. Each opening still starts fresh: the search is empty, the first item is selected, and privacy mode covers what you showed. On an older Lumi the panel opens as before, a little sooner.
+- A long history scrolls and moves under the arrow keys more smoothly.
+- While **Lock history** is on, the panel is not given your history at all until you unlock it.
+
 ## [0.81.0] - 2026-10-05
 
 ### Added

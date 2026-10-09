@@ -282,6 +282,15 @@ Object.assign(window, {
   },
 });
 
+// `mockRecordingEnded("left")` in the console: Lumi ending a shortcut
+// recording by itself — the page lost the keyboard, 30 seconds passed
+// ("timeout"), or Lumi's own recorder started ("lumi").
+Object.assign(window, {
+  mockRecordingEnded(reason: "left" | "timeout" | "lumi" = "left") {
+    window.dispatchEvent(new CustomEvent("lumi:shortcut-recording-ended", { detail: { reason } }));
+  },
+});
+
 // `mockSwitch("p_home")` in the console: the person switches profile, as
 // Lumi tells every page on screen (`lumi:profiles`).
 Object.assign(window, {
@@ -316,12 +325,55 @@ Object.assign(window, {
   mockPreviews: previewed,
 });
 
+// `mockHide()` / `mockShow()` in the console: the panel put away and shown
+// again by a Lumi that keeps its page (`keep-alive`, Lumi 1.45) — the
+// closing `mockClosed()` stands for, then `lumi:keyboard` and `lumi:hidden`,
+// and `lumi:shown`. `?many=1000` on the address: that many more rows, for a
+// long history.
+Object.assign(window, {
+  mockHide() {
+    (window as unknown as { mockClosed: () => void }).mockClosed();
+    window.dispatchEvent(new CustomEvent("lumi:keyboard", { detail: { held: false } }));
+    window.dispatchEvent(new CustomEvent("lumi:hidden", { detail: {} }));
+  },
+  mockShow() {
+    window.dispatchEvent(new CustomEvent("lumi:shown", { detail: {} }));
+  },
+});
+{
+  const many = Number(new URLSearchParams(location.search).get("many") ?? 0);
+  const apps = ["Notes", "Terminal", "Safari", "Chrome", "Slack", "Mail"];
+  for (let n = 0; n < many; n++) {
+    rows.push(
+      entry({
+        id: `many-${n}`,
+        kind: "text",
+        title: `${n} ${LOREM}`.slice(0, 200),
+        search: `${n} ${LOREM}`,
+        appName: apps[n % apps.length],
+        last: now - (n + 300) * min,
+      }),
+    );
+  }
+}
+
 // `mockSummon()` in the console: the shortcut pressed again, as the extension
 // tells the panel each time it is asked for (`{"kind":"summoned"}`). Pinned,
 // what the keys work on hails.
 Object.assign(window, {
   mockSummon() {
     window.dispatchEvent(new CustomEvent("lumi:message", { detail: { kind: "summoned" } }));
+  },
+});
+
+/** The switches Lumi keeps over the extension (`switches`). `mockSheet()`
+ *  in the console stands for the person moving the menu bar one on the
+ *  Permissions sheet, as Lumi tells the extension and it the tab. */
+const switches = { menuShown: true, preloadEnabled: true };
+Object.assign(window, {
+  mockSheet(menuShown: boolean) {
+    switches.menuShown = menuShown;
+    window.dispatchEvent(new CustomEvent("lumi:message", { detail: { kind: "switches" } }));
   },
 });
 
@@ -344,10 +396,14 @@ function answer(request: Request): unknown {
     case "openPanel":
       say("would open the panel");
       return {};
-    case "list":
+    case "list": {
       if (request.opening) trash = [];
+      // As src/lib.rs: a locked history is handed to nobody — no rows until
+      // it is unlocked.
+      const lockOn = settings.lockHistory === "true";
+      const unlocked = lockOn && unlockedNow(request.opening === true);
       return {
-        items: sorted(),
+        items: lockOn && !unlocked ? [] : sorted(),
         pasteOnSelect: true,
         previewWidth,
         previewSplit,
@@ -360,9 +416,10 @@ function answer(request: Request): unknown {
         appearance: (new URLSearchParams(location.search).get("appearance") ?? "popover") as "popover" | "hud" | "sidebar",
         privacy,
         privacyConfirm: settings.privacyConfirm === "true" && settings.lockHistory !== "true",
-        lock: { on: settings.lockHistory === "true", unlocked: settings.lockHistory === "true" && unlockedNow(request.opening === true) },
+        lock: { on: lockOn, unlocked },
         shown: request.opening === true ? shownOnOpening() : null,
       };
+    }
     case "unlocked":
       lockOpen = true;
       keep();
@@ -380,6 +437,18 @@ function answer(request: Request): unknown {
       shownUntil = null;
       keep();
       return {};
+    // The switches Lumi keeps over the extension, as the Settings tab moves
+    // them: kept here for the page's life.
+    case "setMenuShown":
+      switches.menuShown = request.on;
+      say(`would ${request.on ? "show" : "hide"} the menu bar rows`);
+      return { ...switches };
+    case "setPreload":
+      switches.preloadEnabled = request.on;
+      say(`would ${request.on ? "load the panel ahead from now on" : "stop loading the panel ahead"}`);
+      return { ...switches };
+    case "switches":
+      return { ...switches };
     case "privacy":
     case "setPrivacy":
       if (request.on !== undefined) {
@@ -621,7 +690,7 @@ window.fetch = async (input, init) => {
       const holders = holdersOf(asked.key);
       if (holders.length && (!asked.replace || holders.some((h) => h.kind === "extension"))) {
         const said = holders[0]!.kind === "extension"
-          ? "⇧⌘C belongs to the extension Window Snap (Snap left). Change it under Extensions, on that extension's Shortcuts tab, or pick another key."
+          ? "⇧⌘C belongs to the extension Window Snap (Snap left). Change it under Extensions, on that extension's page, or pick another key."
           : `⇧⌘C is already the shortcut \u201c${(holders[0] as { name: string }).name}\u201d in the Work profile.`;
         return new Response(JSON.stringify({ said, holders }), { status: 409 });
       }
@@ -652,9 +721,12 @@ window.fetch = async (input, init) => {
     };
     return new Response(JSON.stringify(body), { status: 200 });
   }
-  if (url.endsWith("/__lumi__/show-shortcuts")) {
-    say("would open Lumi's Shortcuts, searched for Show clipboard history");
-    return new Response(null, { status: 204 });
+  if (url.endsWith("/__lumi__/shortcut-recording")) {
+    // Lumi letting go of its shortcuts while the page records, and binding
+    // them again; `mockRecordingEnded("left")` is Lumi ending it.
+    say(init?.method === "DELETE" ? "would bind Lumi's shortcuts again" : "would let go of Lumi's shortcuts while recording");
+    const body = init?.method === "DELETE" ? { recording: false, was: true } : { recording: true, seconds: 30 };
+    return new Response(JSON.stringify(body), { status: 200 });
   }
   if (url.endsWith("/__lumi__/authenticate")) {
     if (init?.method !== "POST") {
