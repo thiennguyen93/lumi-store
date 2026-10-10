@@ -1,4 +1,236 @@
 {
+  "0.1.26": {
+    "notesSha256": "698ab323ca3abb0aed554f954d2bf9e5e31a68385daed1e2fc4ff0043eacc65f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Custom colours and five fonts",
+          "items": [
+            "Pick any colour for a note from a new Custom option in the colour menu",
+            "The colour picker shows a square for shade, a strip for hue, and a field to type hex codes",
+            "Notes update their paper, ink, and top edge as you drag in the picker, in both light and dark mode",
+            "Choose from System, Rounded, Serif, Mono, and Handwriting fonts in the format bar",
+            "Mix fonts within a single note by selecting text and changing its font"
+          ]
+        },
+        "vi": {
+          "headline": "Màu tùy chỉnh và năm phông chữ",
+          "items": [
+            "Chọn bất kỳ màu nào cho ghi chú từ tùy chọn Tùy chỉnh mới trong menu màu",
+            "Bộ chọn màu hiển thị ô vuông cho độ đậm nhạt, thanh cho sắc độ và ô nhập mã hex",
+            "Ghi chú cập nhật giấy, mực và viền trên khi bạn kéo trong bộ chọn màu, cả chế độ sáng và tối",
+            "Chọn từ phông System, Rounded, Serif, Mono và Handwriting trong thanh định dạng",
+            "Trộn nhiều phông trong một ghi chú bằng cách chọn văn bản và đổi phông của nó"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.25": {
+    "notesSha256": "d4ee5e73a5eb9a73407f2b495ab80374fff4b005d9f16d54e0ff60c9190bfbf0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clear look, top edge colour, link cards, and a settings tab",
+          "items": [
+            "Clear look: macOS glass with no colour wash, just the dot and optional top edge",
+            "Top edge: a strip or title bar in the note's colour along the top",
+            "Click a link to see its card with the address and options to open, edit, or remove",
+            "Link dialog now asks for both the text and address, like Slack does",
+            "Settings tab lets you pick the look, top edge, and other options with live previews",
+            "To-do boxes now align properly with text at any zoom level"
+          ]
+        },
+        "vi": {
+          "headline": "Giao diện Clear, viền màu trên cùng, thẻ liên kết và tab cài đặt",
+          "items": [
+            "Giao diện Clear: kính mờ macOS không pha màu, chỉ có chấm tròn và viền trên tùy chọn",
+            "Viền trên: dải màu hoặc thanh tiêu đề theo màu ghi chú dọc theo đỉnh",
+            "Nhấp vào liên kết để xem thẻ với địa chỉ và tùy chọn mở, sửa hoặc xóa",
+            "Hộp thoại liên kết giờ hỏi cả văn bản và địa chỉ, giống Slack",
+            "Tab cài đặt cho phép chọn giao diện, viền trên và tùy chọn khác với xem trước trực tiếp",
+            "Ô đánh dấu công việc giờ căn chỉnh đúng với văn bản ở mọi mức thu phóng"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.24": {
+    "notesSha256": "3f24679ead72b9bb5dcf8034643b8add116ad4e8c8e3014322cd388c48db281e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Pin notes with a clearer menu item",
+          "items": [
+            "Pin note now shows a struck-through pin icon and reads Unpin note when a note is already pinned"
+          ]
+        },
+        "vi": {
+          "headline": "Ghim ghi chú với mục menu rõ ràng hơn",
+          "items": [
+            "Pin note giờ hiển thị biểu tượng ghim gạch ngang và đổi thành Unpin note khi ghi chú đã được ghim"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.23": {
+    "notesSha256": "ed03dd4778fa1040bc2d3fc0b2ecdf2b89caf5a942237e886b188ab4ec31fe85",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Rename notes from more places, menus no longer cut off",
+          "items": [
+            "You can now rename a note from Actions, its menu, or by right-clicking it in Browse",
+            "Renaming a note in Browse updates its name in the list immediately",
+            "Desktop notes show their new name right away after you rename them",
+            "Menus that would not fit on screen now shift up to stay whole instead of being cut off"
+          ]
+        },
+        "vi": {
+          "headline": "Đổi tên ghi chú ở nhiều nơi hơn, menu không còn bị cắt",
+          "items": [
+            "Giờ bạn có thể đổi tên ghi chú từ Actions, menu của nó, hoặc nhấp phải vào nó trong Browse",
+            "Đổi tên ghi chú trong Browse cập nhật tên trong danh sách ngay lập tức",
+            "Ghi chú trên desktop hiển thị tên mới ngay sau khi bạn đổi tên",
+            "Menu không vừa màn hình giờ sẽ dịch lên để hiện toàn bộ thay vì bị cắt"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.22": {
+    "notesSha256": "94ba6200b5b5e84f86f805bc69a95fb0ac32870f4f6ef6942a53c67b7c74bfd6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Name your notes and see titles without broken emoji",
+          "items": [
+            "Double-click a note's title to give it a name that stays even when the first line changes",
+            "Named notes appear by that name in Browse and can still be found by their first line",
+            "Clear a note's name to use the first line as the title again",
+            "Locked notes keep their name until unlocked",
+            "Titles no longer cut emoji in half when they reach 80 characters"
+          ]
+        },
+        "vi": {
+          "headline": "Đặt tên ghi chú và tiêu đề không còn bị cắt emoji",
+          "items": [
+            "Nhấp đúp vào tiêu đề để đặt tên cho ghi chú, tên sẽ giữ nguyên khi dòng đầu thay đổi",
+            "Ghi chú có tên sẽ hiện tên đó trong Browse và vẫn tìm được bằng dòng đầu",
+            "Xóa tên để dùng lại dòng đầu làm tiêu đề",
+            "Ghi chú đã khóa giữ nguyên tên cho đến khi mở khóa",
+            "Tiêu đề không còn cắt ngang emoji khi đạt 80 ký tự"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.21": {
+    "notesSha256": "0b43c90c5600f06087cc04c947924b9f2a9ecd4421e530b3c8ea02c36a646e9b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Requires Lumi 1.42.0 for edge resizing and note restoration",
+          "items": [
+            "Requires Lumi 1.42.0, which lets you resize notes from any edge or corner",
+            "Notes now reopen automatically when Lumi restarts"
+          ]
+        },
+        "vi": {
+          "headline": "Yêu cầu Lumi 1.42.0 để thay đổi kích thước và khôi phục ghi chú",
+          "items": [
+            "Yêu cầu Lumi 1.42.0, cho phép thay đổi kích thước ghi chú từ mọi cạnh và góc",
+            "Ghi chú tự động mở lại khi Lumi khởi động lại"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.20": {
+    "notesSha256": "fa39ee4335e1979eee02158143354ba04783dda1c8f4f241781b7ee95e2e8cde",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Resize notes from any edge, right-click menu in Browse",
+          "items": [
+            "Resize any note by dragging any edge or corner, not just the bottom-right",
+            "Right-click a note in Browse to change its colour, pin it, lock it, or delete it",
+            "Browse keeps your selected note in view when you change it from the menu"
+          ]
+        },
+        "vi": {
+          "headline": "Thay đổi kích thước từ mọi cạnh, menu chuột phải trong Browse",
+          "items": [
+            "Thay đổi kích thước ghi chú bằng cách kéo bất kỳ cạnh hoặc góc nào",
+            "Nhấp chuột phải vào ghi chú trong Browse để đổi màu, ghim, khóa hoặc xóa",
+            "Browse giữ ghi chú đã chọn trong tầm nhìn khi bạn thay đổi nó từ menu"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.19": {
+    "notesSha256": "565388721f300d43474c1d6c6d6b4190133adda7740307bd54102d0467f69323",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Lock notes, orange colour, and pinned notes stay when you restart",
+          "items": [
+            "Orange joins the five note colours in the Actions menu and Settings",
+            "Lock a note to read and copy it without changing it by accident",
+            "Your notes return when Lumi restarts, right where you left them",
+            "Updating Sticky Notes now brings your notes back as soon as it finishes",
+            "Navigate menus with arrow keys and Return, just like other Mac menus",
+            "Browse shows Create first when a search finds nothing"
+          ]
+        },
+        "vi": {
+          "headline": "Khóa ghi chú, màu cam và ghi chú ghim vẫn giữ khi khởi động lại",
+          "items": [
+            "Màu cam xuất hiện cùng năm màu ghi chú trong menu Hành động và Cài đặt",
+            "Khóa ghi chú để đọc và sao chép mà không vô tình thay đổi nội dung",
+            "Ghi chú trở lại đúng vị trí khi khởi động lại Lumi",
+            "Cập nhật Sticky Notes giờ đây khôi phục ghi chú ngay khi hoàn tất",
+            "Điều hướng menu bằng phím mũi tên và Return như menu Mac khác",
+            "Duyệt hiển thị Tạo mới trước khi tìm kiếm không có kết quả"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.18": {
+    "notesSha256": "a6ffcaa974970a29147f975aba91e7e0bc1170e30245e1b6d619d493aef40ad6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Find any note from anywhere with ⌃⌥⌘F",
+          "items": [
+            "Press ⌃⌥⌘F from any app to search across all your notes",
+            "The shortcut can be changed or removed on the Shortcuts tab",
+            "If another app uses ⌃⌥⌘F, the shortcut stays unset and the Shortcuts tab shows the conflict"
+          ]
+        },
+        "vi": {
+          "headline": "Tìm ghi chú bất kỳ từ đâu với ⌃⌥⌘F",
+          "items": [
+            "Nhấn ⌃⌥⌘F từ ứng dụng nào cũng được để tìm trong tất cả ghi chú",
+            "Phím tắt này có thể đổi hoặc xóa ở thẻ Phím tắt",
+            "Nếu ứng dụng khác đang dùng ⌃⌥⌘F thì phím tắt không được đặt và thẻ Phím tắt sẽ báo xung đột"
+          ]
+        }
+      }
+    }
+  },
   "0.1.17": {
     "notesSha256": "0bd3a62c7bbd6d28cfaaeae91a6fe509e620353d143108cf8f25478f0be84729",
     "summary": {
@@ -228,170 +460,6 @@
           "headline": "Sửa vị trí con trỏ khi mở ghi chú kết thúc bằng hình ảnh",
           "items": [
             "Ghi chú kết thúc bằng hình ảnh giờ mở với con trỏ ở dưới, không còn xóa hình khi gõ phím"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.6": {
-    "notesSha256": "635594d61c46da5ae79a3d435fe33539107f3f7f9903b57fca23f5ebc3002055",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Pictures pasted with text now stay in your notes",
-          "items": [
-            "Pictures pasted with text now show and stay in the note, from apps or web pages",
-            "Pictures are downloaded once and kept with the note",
-            "If a picture cannot be downloaded, it becomes a link to its source",
-            "Sticky Notes now asks for network access to download pasted pictures"
-          ]
-        },
-        "vi": {
-          "headline": "Hình ảnh dán kèm văn bản giờ được lưu trong ghi chú",
-          "items": [
-            "Hình ảnh dán kèm văn bản giờ hiển thị và lưu trong ghi chú, từ ứng dụng hoặc trang web",
-            "Hình ảnh được tải về một lần và lưu cùng ghi chú",
-            "Nếu không tải được hình ảnh, nó sẽ trở thành liên kết đến nguồn",
-            "Sticky Notes giờ yêu cầu quyền truy cập mạng để tải hình ảnh được dán"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.5": {
-    "notesSha256": "f638e7e98004b7c2ddf6e79644f914b079a57ebc20677c8887a3b95cd0754ff5",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "More notes on screen, better placement",
-          "items": [
-            "You can now have up to 16 notes on the desktop at once, up from 6",
-            "New notes open slightly below the previous one instead of stacking on top"
-          ]
-        },
-        "vi": {
-          "headline": "Nhiều ghi chú hơn, sắp xếp tốt hơn",
-          "items": [
-            "Giờ bạn có thể mở tới 16 ghi chú trên màn hình cùng lúc, tăng từ 6",
-            "Ghi chú mới mở ở vị trí thấp hơn một chút so với ghi chú trước thay vì chồng lên nhau"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.4": {
-    "notesSha256": "ab49c1cd65e6fd934c6d8f2a110d121a0e35e0831beb7388ec7ab4e695552cd0",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Fixed the Extensions settings page",
-          "items": [
-            "The Extensions settings page now shows two windows to open instead of six buttons that opened empty notes"
-          ]
-        },
-        "vi": {
-          "headline": "Sửa trang cài đặt Extensions",
-          "items": [
-            "Trang cài đặt Extensions giờ hiển thị hai cửa sổ để mở thay vì sáu nút mở ghi chú trống"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.3": {
-    "notesSha256": "4869413692255dc3f51bec87518d8fb8cb383e5f5d975e49626279fe421c6332",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Menus no longer get cut off by small notes",
-          "items": [
-            "Menus now extend past the note's edge and open upward when near the screen bottom"
-          ]
-        },
-        "vi": {
-          "headline": "Menu không còn bị cắt bởi ghi chú nhỏ",
-          "items": [
-            "Menu giờ mở rộng ra ngoài viền ghi chú và mở lên trên khi gần đáy màn hình"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.2": {
-    "notesSha256": "6fb400659878705c175003db5740ae3a5f35fa34d58dbeb91cadb2734c5abbd4",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Browse works better with the note you came from",
-          "items": [
-            "Pressing ⌘P hides the format bar and shows Browse shortcuts instead of word count",
-            "Pressing Esc from Browse returns you to the note where you can keep typing",
-            "Pressing ⇧⌘I from Browse takes you back to the note so you see the picture appear"
-          ]
-        },
-        "vi": {
-          "headline": "Browse hoạt động tốt hơn với ghi chú bạn đang dùng",
-          "items": [
-            "Nhấn ⌘P sẽ ẩn thanh định dạng và hiện phím tắt Browse thay vì số từ",
-            "Nhấn Esc từ Browse đưa bạn về ghi chú để tiếp tục gõ",
-            "Nhấn ⇧⌘I từ Browse đưa bạn về ghi chú để thấy hình ảnh xuất hiện"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.1": {
-    "notesSha256": "85cdc729b8017677a51d783628bae556097a9828aade89a99197b73c55c37a97",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Requires Lumi 1.40.0 to restore notes where you left them",
-          "items": [
-            "Requires Lumi 1.40.0, which remembers where each note was on your desktop",
-            "Older Lumi versions now prompt you to update before installing Sticky Notes"
-          ]
-        },
-        "vi": {
-          "headline": "Yêu cầu Lumi 1.40.0 để khôi phục ghi chú đúng vị trí",
-          "items": [
-            "Yêu cầu Lumi 1.40.0, phiên bản ghi nhớ vị trí từng ghi chú trên màn hình",
-            "Phiên bản Lumi cũ hơn sẽ yêu cầu cập nhật trước khi cài Sticky Notes"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.0": {
-    "notesSha256": "1a06c97af8ca23bd9f03e957280fbe6bcc42b7e9dcdf60473fef17494b7b766f",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "The first release: notes that float above every app",
-          "items": [
-            "Press ⌃⌥⌘N to start a note, ⌃⌥⌘S to bring it back or put it away",
-            "Press ⌘D to leave a note on the desktop, up to six at once, each where you left it",
-            "Format text with headings, to-dos, lists, quotes, code and lines as you type or from the menu",
-            "Add pictures by pasting a screenshot, dropping a file or pressing ⇧⌘I",
-            "Press ⌘P to find any note by what it says, pin notes and open them with ⌘1 through ⌘9",
-            "Recently Deleted keeps deleted notes for 30 days before removing them"
-          ]
-        },
-        "vi": {
-          "headline": "Phiên bản đầu tiên: ghi chú nổi trên mọi ứng dụng",
-          "items": [
-            "Nhấn ⌃⌥⌘N để tạo ghi chú, ⌃⌥⌘S để mở lại hoặc cất đi",
-            "Nhấn ⌘D để để ghi chú trên màn hình, tối đa sáu cùng lúc, mỗi cái ở vị trí bạn để",
-            "Định dạng văn bản với tiêu đề, việc cần làm, danh sách, trích dẫn, mã và đường kẻ",
-            "Thêm hình ảnh bằng cách dán ảnh chụp màn hình, kéo tệp vào hoặc nhấn ⇧⌘I",
-            "Nhấn ⌘P để tìm ghi chú theo nội dung, ghim ghi chú và mở bằng ⌘1 đến ⌘9",
-            "Đã xóa gần đây giữ ghi chú đã xóa trong 30 ngày trước khi xóa hẳn"
           ]
         }
       }
