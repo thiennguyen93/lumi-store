@@ -1,4 +1,212 @@
 {
+  "0.87.0": {
+    "notesSha256": "380e087d1bbeee9d3475f3927fc8d0ae61af290da74b118d7c0a25148f0c361e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Show clipboard history shortcut can now also hide the panel",
+          "items": [
+            "The Show clipboard history shortcut can now close the panel when it is already open",
+            "Find the new option in Settings → Shortcuts: Press shortcut again to hide",
+            "The option is off by default, so the shortcut only opens the panel as before",
+            "When turned on, the shortcut closes the panel even if it is pinned behind another app"
+          ]
+        },
+        "vi": {
+          "headline": "Phím tắt hiện lịch sử giờ đây cũng có thể ẩn bảng điều khiển",
+          "items": [
+            "Phím tắt Hiện lịch sử clipboard giờ có thể đóng bảng điều khiển khi đang mở",
+            "Tìm tùy chọn mới trong Cài đặt → Phím tắt: Nhấn phím tắt lần nữa để ẩn",
+            "Tùy chọn này tắt theo mặc định nên phím tắt chỉ mở bảng điều khiển như trước",
+            "Khi bật, phím tắt sẽ đóng bảng điều khiển ngay cả khi nó được ghim sau ứng dụng khác"
+          ]
+        }
+      }
+    }
+  },
+  "0.86.0": {
+    "notesSha256": "276e4777e00c921bb0e74f9c8c9575305381593eac1842857f11f344b696460c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Shortcut settings moved and improved",
+          "items": [
+            "The Show clipboard history shortcut is now set on the Settings tab",
+            "Click the key field and press a new combination to change it",
+            "Clear removes the shortcut; a button restores the default",
+            "While recording a new key, other shortcuts do not trigger",
+            "If you pick a key already used by another shortcut, Lumi shows which one and offers to reassign it"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện cài đặt phím tắt",
+          "items": [
+            "Phím tắt Hiện lịch sử clipboard giờ được đặt trong tab Cài đặt",
+            "Nhấn vào ô phím và bấm tổ hợp mới để thay đổi",
+            "Nút Xóa gỡ phím tắt; nút khác khôi phục mặc định",
+            "Khi đang ghi phím mới, các phím tắt khác không kích hoạt",
+            "Nếu chọn phím đã dùng cho phím tắt khác, Lumi hiện phím tắt đó và đề nghị chuyển sang"
+          ]
+        }
+      }
+    }
+  },
+  "0.85.3": {
+    "notesSha256": "73f26274e1e0f69343cd00d2f113b517b07b2596d3a32631b9b4d24e0fd54379",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Panel loads when Lumi starts by default for new installs",
+          "items": [
+            "Panel loads when Lumi starts by default for new installs"
+          ]
+        },
+        "vi": {
+          "headline": "Bảng tự động tải khi Lumi khởi động cho cài đặt mới",
+          "items": [
+            "Bảng tự động tải khi Lumi khởi động cho cài đặt mới"
+          ]
+        }
+      }
+    }
+  },
+  "0.85.2": {
+    "notesSha256": "16a380fb5f0fcebbd7a3f75ce5ade64f3111f935371050e4c4aded677d88c03c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Permission update for keeping the panel ready",
+          "items": [
+            "Clipboard Manager now asks for permission to keep its panel loaded in the background"
+          ]
+        },
+        "vi": {
+          "headline": "Cập nhật quyền để giữ bảng điều khiển sẵn sàng",
+          "items": [
+            "Clipboard Manager giờ yêu cầu quyền để giữ bảng điều khiển luôn sẵn sàng ở chế độ nền"
+          ]
+        }
+      }
+    }
+  },
+  "0.85.1": {
+    "notesSha256": "057fd1de246616624146ef6686886578e0d9f30507b14c26ff9484746bc84ad3",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clearer permission labels",
+          "items": [
+            "The permission switch is now called Preload instead of Load the panel when Lumi starts"
+          ]
+        },
+        "vi": {
+          "headline": "Nhãn quyền rõ ràng hơn",
+          "items": [
+            "Công tắc quyền giờ được gọi là Tải trước thay vì Tải bảng khi Lumi khởi động"
+          ]
+        }
+      }
+    }
+  },
+  "0.85.0": {
+    "notesSha256": "a57926631c0f39f75583418ec02d4b47c8f508a00d8469c3c9afd2566ade209f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Settings for menu bar and startup",
+          "items": [
+            "You can now show or hide Clipboard Manager in Lumi's menu bar menu from Settings",
+            "You can now choose whether the panel loads when Lumi starts from Settings",
+            "These settings match the switches on the Permissions sheet in Lumi",
+            "Requires Lumi 1.45.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Cài đặt thanh menu và khởi động",
+          "items": [
+            "Giờ bạn có thể hiện hoặc ẩn Clipboard Manager trong menu thanh menu của Lumi từ Cài đặt",
+            "Giờ bạn có thể chọn panel có tải khi Lumi khởi động hay không từ Cài đặt",
+            "Các cài đặt này giống với các công tắc trên bảng Quyền trong Lumi",
+            "Yêu cầu Lumi 1.45.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.84.0": {
+    "notesSha256": "6583fe74d6193d0e084115df9c2fda6a836eb2b615c24aa2d9ed18f98dfc0be5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Choose whether the panel loads at startup or when first opened",
+          "items": [
+            "You can now decide when the panel loads using the Preload setting in Permissions",
+            "With Preload off, the panel loads only when you first open it, then opens instantly after that",
+            "With Preload on, the panel loads as Lumi starts so it opens instantly from the beginning"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn thời điểm tải bảng điều khiển: khi khởi động hay khi mở lần đầu",
+          "items": [
+            "Giờ bạn có thể quyết định khi nào tải bảng điều khiển bằng cài đặt Tải trước trong Quyền",
+            "Khi tắt Tải trước, bảng điều khiển chỉ tải khi bạn mở lần đầu, sau đó mở ngay lập tức",
+            "Khi bật Tải trước, bảng điều khiển tải cùng Lumi khởi động nên mở ngay từ đầu"
+          ]
+        }
+      }
+    }
+  },
+  "0.83.0": {
+    "notesSha256": "7b7fd9dbb8d737742316b87f161fa583b18c502fdf44f2be00a8ee29b604f4b6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Faster first open",
+          "items": [
+            "Opening the panel for the first time is now as fast as every time after"
+          ]
+        },
+        "vi": {
+          "headline": "Mở nhanh hơn ngay lần đầu",
+          "items": [
+            "Mở bảng lần đầu giờ cũng nhanh như những lần sau"
+          ]
+        }
+      }
+    }
+  },
+  "0.82.0": {
+    "notesSha256": "3d958bf42a4d785e0bf1e7243e2631d0aced6dd665cec09971de36409b8ddd4c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Faster panel opening and smoother scrolling",
+          "items": [
+            "The panel now opens instantly with your history already visible",
+            "History scrolls more smoothly when navigating with arrow keys",
+            "Locked history stays hidden from the panel until you unlock it"
+          ]
+        },
+        "vi": {
+          "headline": "Mở bảng nhanh hơn và cuộn mượt hơn",
+          "items": [
+            "Bảng giờ mở ngay với lịch sử đã hiển thị sẵn",
+            "Lịch sử cuộn mượt hơn khi dùng phím mũi tên",
+            "Lịch sử đã khóa được giữ kín cho đến khi bạn mở khóa"
+          ]
+        }
+      }
+    }
+  },
   "0.81.0": {
     "notesSha256": "ec359efa4c2f53f8252abe4d45f6077cfe031da5ce2b8f516f1f60c64f91bfe7",
     "summary": {
@@ -250,222 +458,6 @@
           "headline": "Sửa bố cục trong phần Toán học",
           "items": [
             "Nút sao chép tất cả trong phần Toán học giờ căn chỉnh đúng với các thẻ bên dưới"
-          ]
-        }
-      }
-    }
-  },
-  "0.77.1": {
-    "notesSha256": "99a84067b974e1f185b5e4d579fec82dba19325931db0ad2ab29a16edf094f02",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Math formulas in rich text now appear correctly",
-          "items": [
-            "Rich text copied in version 0.76.0 now shows its math formulas when previewed",
-            "Items that were missing math are recalculated the first time you view them"
-          ]
-        },
-        "vi": {
-          "headline": "Công thức toán trong văn bản định dạng hiện hiển thị đúng",
-          "items": [
-            "Văn bản định dạng đã sao chép ở phiên bản 0.76.0 giờ hiển thị công thức toán khi xem trước",
-            "Các mục thiếu công thức toán sẽ được tính lại khi bạn xem lần đầu"
-          ]
-        }
-      }
-    }
-  },
-  "0.77.0": {
-    "notesSha256": "2fcc5e04f10503571b13f2d8aa68234255b53e5a36f526cc16a8f42294ed4c93",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Math detection now works with rich text",
-          "items": [
-            "Math formulas in rich text are detected and calculated, even across bold, italic, or colored text",
-            "The answer appears in the list row, just like it does for plain text"
-          ]
-        },
-        "vi": {
-          "headline": "Nhận diện toán học giờ hoạt động với văn bản định dạng",
-          "items": [
-            "Công thức toán trong văn bản định dạng giờ được nhận diện và tính, cả khi trải qua chữ đậm, nghiêng hay màu",
-            "Kết quả hiện trong hàng danh sách, giống như với văn bản thường"
-          ]
-        }
-      }
-    }
-  },
-  "0.76.0": {
-    "notesSha256": "32438b9ecd012a9abb0a18e735017ec955f3dba070a21e88dbbeb2aca91a0bf2",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Math in copied text is now calculated automatically",
-          "items": [
-            "Copied text with math shows results below: sums, equations solved, percentages calculated",
-            "Click any result to copy it, or use Copy all to copy every answer at once",
-            "Each result appears typeset and shows where it came from in the original text",
-            "The list shows the answer or how many calculations were found in that item",
-            "Dates, times, phone numbers, version numbers and ranges are not treated as math"
-          ]
-        },
-        "vi": {
-          "headline": "Tự động tính toán trong văn bản đã sao chép",
-          "items": [
-            "Văn bản có phép tính hiển thị kết quả bên dưới: tổng, phương trình giải, phần trăm",
-            "Nhấn vào kết quả để sao chép, hoặc dùng Sao chép tất cả để lấy mọi đáp án",
-            "Mỗi kết quả được trình bày rõ ràng và đánh dấu vị trí trong văn bản gốc",
-            "Danh sách hiển thị đáp án hoặc số lượng phép tính tìm thấy trong mục đó",
-            "Ngày tháng, giờ, số điện thoại, số phiên bản và khoảng không bị coi là phép tính"
-          ]
-        }
-      }
-    }
-  },
-  "0.75.3": {
-    "notesSha256": "d663eb8c4b2e5434d093453b48bacd51e9e715aca7470b766f62084bfd8a4ce5",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Pinned panel no longer locks history when switching apps",
-          "items": [
-            "A pinned panel in the background no longer locks your history when you switch to another app",
-            "With Lock again set to When the panel closes, history stays unlocked until you close the pinned panel",
-            "Privacy mode still covers previews when switching away without asking Is it you again"
-          ]
-        },
-        "vi": {
-          "headline": "Bảng ghim không còn khóa lịch sử khi chuyển ứng dụng",
-          "items": [
-            "Bảng ghim ở chế độ nền không còn khóa lịch sử khi bạn chuyển sang ứng dụng khác",
-            "Với Khóa lại đặt là Khi đóng bảng, lịch sử giữ nguyên mở khóa cho đến khi bạn đóng bảng ghim",
-            "Chế độ riêng tư vẫn che xem trước khi chuyển đi mà không hỏi Có phải bạn không lần nữa"
-          ]
-        }
-      }
-    }
-  },
-  "0.75.2": {
-    "notesSha256": "5105edf019eb2aab3697bf789592c2601e771868fbfc9aed8f1e7d804d8b13d0",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Smoother lock screen when opening the panel",
-          "items": [
-            "The panel no longer briefly shows the search box and filters before displaying the lock screen"
-          ]
-        },
-        "vi": {
-          "headline": "Màn hình khóa mượt mà hơn khi mở bảng điều khiển",
-          "items": [
-            "Bảng điều khiển không còn hiển thị thoáng qua ô tìm kiếm và bộ lọc trước khi hiện màn hình khóa"
-          ]
-        }
-      }
-    }
-  },
-  "0.75.1": {
-    "notesSha256": "48f201534d63ebf05b9a31c6f194b1d85acf4ac3a12f5ad63bf5cee34e3180e6",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Lock history stays unlocked after you confirm it's you",
-          "items": [
-            "Lock history no longer locks itself again right after you confirm your identity",
-            "Items shown after authentication no longer cover themselves a moment later",
-            "Pinned panels still lock when you switch to another app as expected"
-          ]
-        },
-        "vi": {
-          "headline": "Lịch sử khóa không tự khóa lại sau khi bạn xác nhận",
-          "items": [
-            "Lịch sử khóa không tự động khóa lại ngay sau khi bạn xác nhận danh tính",
-            "Các mục hiển thị sau xác thực không tự che phủ lại sau vài giây",
-            "Bảng ghim vẫn tự khóa khi bạn chuyển sang ứng dụng khác như bình thường"
-          ]
-        }
-      }
-    }
-  },
-  "0.75.0": {
-    "notesSha256": "6dd59b82a958c779b71e7ee9f7edc9deeb3bc4e032bbc320972d6d0999ef8db7",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Welcome tour now shows how Touch ID protects your history",
-          "items": [
-            "The Welcome tour includes a Touch ID step that demonstrates locking your history",
-            "The panel opens locked and macOS asks for authentication before showing your clips",
-            "Buttons in the step turn on locking your history or asking before showing, straight away",
-            "On older versions of Lumi the step explains what is needed to use this feature"
-          ]
-        },
-        "vi": {
-          "headline": "Hướng dẫn chào mừng giờ có bước về Touch ID bảo vệ lịch sử",
-          "items": [
-            "Hướng dẫn chào mừng có thêm bước Touch ID để trình diễn cách khóa lịch sử",
-            "Bảng điều khiển mở ở trạng thái khóa và macOS yêu cầu xác thực trước khi hiện nội dung",
-            "Các nút trong bước này bật ngay việc khóa lịch sử hoặc hỏi trước khi hiện nội dung",
-            "Trên phiên bản Lumi cũ hơn, bước này giải thích yêu cầu để dùng tính năng"
-          ]
-        }
-      }
-    }
-  },
-  "0.74.0": {
-    "notesSha256": "e87cda2cce89979b3307ad044a3c1d0d49fcf7a1d0726e831439f9b5740010ca",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Welcome tour now includes privacy mode",
-          "items": [
-            "The Welcome tour shows how privacy mode works and lets you turn it on"
-          ]
-        },
-        "vi": {
-          "headline": "Hướng dẫn chào mừng giờ có chế độ riêng tư",
-          "items": [
-            "Hướng dẫn chào mừng giờ trình bày cách chế độ riêng tư hoạt động và cho phép bật nó"
-          ]
-        }
-      }
-    }
-  },
-  "0.73.0": {
-    "notesSha256": "aabced8830dcf0bd7ff8947c867bcb3d05b9a6be1201eff3495d3c53d54f9233",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Privacy mode and locked history",
-          "items": [
-            "Privacy mode can ask for Touch ID, Apple Watch or password before the first item is shown",
-            "Lock history keeps the panel empty until you confirm it's you",
-            "Choose when to lock again: every time the panel closes or after a delay",
-            "Lock history immediately from the command palette",
-            "Turning either of them off in Settings asks for authentication first",
-            "Both features require Lumi 1.36 or later"
-          ]
-        },
-        "vi": {
-          "headline": "Chế độ riêng tư và khóa lịch sử",
-          "items": [
-            "Chế độ riêng tư có thể yêu cầu Touch ID, Apple Watch hoặc mật khẩu trước khi hiện mục đầu tiên",
-            "Khóa lịch sử giữ bảng trống cho đến khi bạn xác nhận danh tính",
-            "Chọn khi nào khóa lại: mỗi lần đóng bảng hoặc sau một khoảng thời gian",
-            "Khóa lịch sử ngay lập tức từ bảng lệnh",
-            "Tắt một trong hai tính năng này trong Cài đặt sẽ yêu cầu xác thực trước",
-            "Cả hai tính năng yêu cầu Lumi 1.36 trở lên"
           ]
         }
       }

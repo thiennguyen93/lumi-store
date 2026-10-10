@@ -1,0 +1,122 @@
+{
+  "0.2.0": {
+    "notesSha256": "6be312cedb247cc4fbe4cf8335c90586eadbe3bc0f643983b59ed2a437d0d52c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Unified menu bar control",
+          "items": [
+            "The menu bar switch in Lumi Settings and Rhythm Keys Permissions now control the same thing",
+            "Turning the switch on or off in one place updates it in the other",
+            "Requires Lumi 1.45.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Điều khiển thanh menu thống nhất",
+          "items": [
+            "Công tắc thanh menu trong Cài đặt Lumi và Quyền của Rhythm Keys giờ điều khiển cùng một thứ",
+            "Bật hoặc tắt công tắc ở một nơi sẽ cập nhật ở nơi kia",
+            "Yêu cầu Lumi 1.45.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.3": {
+    "notesSha256": "9aae786f56f21561321b13bb839ba6f884b1d8cc41f164540e071118ba233656",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed free music search showing wrong songs",
+          "items": [
+            "Free music now shows the songs for your newest search instead of an older one"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa tìm nhạc miễn phí hiện sai bài",
+          "items": [
+            "Nhạc miễn phí giờ hiện bài hát cho tìm kiếm mới nhất thay vì tìm kiếm cũ"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.2": {
+    "notesSha256": "120724d1294b04782899156ba8151c423dc3ed4d9e08e1b67ce146b3656afbf3",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Menu bar visibility control and settings display fixes",
+          "items": [
+            "You can now show or hide Play Rhythm Keys in Lumi's menu bar menu",
+            "Settings tells you when Lumi is hiding the menu bar row and opens Lumi's settings",
+            "Settings rows no longer appear faded and small in Lumi"
+          ]
+        },
+        "vi": {
+          "headline": "Điều khiển hiển thị thanh menu và sửa lỗi hiển thị cài đặt",
+          "items": [
+            "Giờ bạn có thể hiện hoặc ẩn Play Rhythm Keys trong menu thanh menu của Lumi",
+            "Cài đặt sẽ báo khi Lumi đang ẩn dòng menu và mở cài đặt của Lumi",
+            "Các dòng cài đặt không còn hiển thị mờ và nhỏ trong Lumi nữa"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.1": {
+    "notesSha256": "8227ca87571e3586d173e0695afec1fdbb1a885300ab96ea8f08161e059a6d4d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Rhythm Keys now opens from Lumi's menu",
+          "items": [
+            "Rhythm Keys opens from Play Rhythm Keys in Lumi's menu bar menu",
+            "The window's close and minimize buttons no longer cover the add music and song info areas"
+          ]
+        },
+        "vi": {
+          "headline": "Rhythm Keys giờ mở từ menu của Lumi",
+          "items": [
+            "Rhythm Keys mở từ mục Play Rhythm Keys trong menu thanh trình đơn của Lumi",
+            "Các nút đóng và thu nhỏ cửa sổ không còn che khu vực thêm nhạc và thông tin bài hát"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "9b0dd8d72d6f6d3b5e2d40c9d6e364f972e77eba7cfbb0bcfe5ecaf1b3a51f79",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Rhythm Keys arrives: a rhythm game for the keys under your fingers",
+          "items": [
+            "Play a rhythm game in its own window with notes falling to the beat",
+            "Add songs from free music, your own files, or a link, charted across four difficulties",
+            "Listen to previews before adding and hear the liveliest part when choosing",
+            "Organize with collections, mark favourites, and keep a streak with the daily song",
+            "See your results with a timing histogram after each play",
+            "Adjust keys, scroll speed, volumes, and audio offset with tap-along calibration"
+          ]
+        },
+        "vi": {
+          "headline": "Rhythm Keys ra mắt: trò chơi nhịp điệu cho phím dưới ngón tay",
+          "items": [
+            "Chơi trò chơi nhịp điệu trong cửa sổ riêng với các nốt rơi theo nhịp",
+            "Thêm bài hát từ nhạc miễn phí, tệp của bạn hoặc liên kết, được phân bố qua bốn độ khó",
+            "Nghe thử trước khi thêm và nghe phần sôi động nhất khi chọn bài",
+            "Sắp xếp bằng bộ sưu tập, đánh dấu yêu thích và giữ chuỗi với bài hát hàng ngày",
+            "Xem kết quả với biểu đồ thời gian sau mỗi lần chơi",
+            "Điều chỉnh phím, tốc độ cuộn, âm lượng và độ lệch âm thanh với hiệu chuẩn gõ theo nhịp"
+          ]
+        }
+      }
+    }
+  }
+}
