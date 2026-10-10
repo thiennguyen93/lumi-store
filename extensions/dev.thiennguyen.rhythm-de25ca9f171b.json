@@ -1,0 +1,37 @@
+[
+ {
+  "version": "0.2.0",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- **Play Rhythm Keys in Lumi's menu bar menu** in Settings and the **Menu bar** switch on Rhythm Keys' Permissions sheet in Lumi are now the same switch. Turn the row on or off in either place and the other follows. If you had hidden the row in Rhythm Keys' Settings, it stays hidden.\n- Needs Lumi 1.45.0 or later.",
+  "notesSha256": "6be312cedb247cc4fbe4cf8335c90586eadbe3bc0f643983b59ed2a437d0d52c",
+  "summary": null
+ },
+ {
+  "version": "0.1.3",
+  "date": "2026-10-08",
+  "notes": "### Fixed\n\n- Free music shows the songs for the newest search. A genre chosen while the first search was still out could show that search's songs under the genre's name.",
+  "notesSha256": "9aae786f56f21561321b13bb839ba6f884b1d8cc41f164540e071118ba233656",
+  "summary": null
+ },
+ {
+  "version": "0.1.2",
+  "date": "2026-10-08",
+  "notes": "### Added\n\n- Settings › Menu bar: show or hide Play Rhythm Keys in Lumi's menu bar menu. Without it, open Rhythm Keys from Extensions in Lumi's settings.\n- When Lumi is hiding the row, Settings says so and opens Lumi's settings, where its own Menu bar switch for Rhythm Keys is.\n\n### Fixed\n\n- Settings rows are no longer drawn faded and small in Lumi.",
+  "notesSha256": "120724d1294b04782899156ba8151c423dc3ed4d9e08e1b67ce146b3656afbf3",
+  "summary": null
+ },
+ {
+  "version": "0.1.1",
+  "date": "2026-10-08",
+  "notes": "### Changed\n\n- Rhythm Keys opens from Play Rhythm Keys in Lumi's menu bar menu. It is no longer offered as an action for a shortcut.\n\n### Fixed\n\n- Add music and a song's info open below the window's title bar, so the window's buttons no longer sit over them.",
+  "notesSha256": "8227ca87571e3586d173e0695afec1fdbb1a885300ab96ea8f08161e059a6d4d",
+  "summary": null
+ },
+ {
+  "version": "0.1.0",
+  "date": "2026-10-08",
+  "notes": "### Added\n\n- Rhythm Keys: a rhythm game in its own window. Notes fall to the beat; press D F J K, or play with 6 or 7 keys.\n- A library of your own songs: free music found through Openverse, files from your Mac, or a link. Each song is read on your Mac and charted for Easy, Normal, Hard and Expert.\n- Listen before you add a song, and hear a song's liveliest part when you choose it.\n- Collections, favourites, a daily song with a streak, and results with a timing histogram.\n- Settings for keys, scroll speed, volumes and audio offset, with a tap-along calibration.",
+  "notesSha256": "9b0dd8d72d6f6d3b5e2d40c9d6e364f972e77eba7cfbb0bcfe5ecaf1b3a51f79",
+  "summary": null
+ }
+]

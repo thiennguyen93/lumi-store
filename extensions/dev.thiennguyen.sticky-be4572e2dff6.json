@@ -1,0 +1,332 @@
+[
+ {
+  "version": "0.1.26",
+  "date": "2026-10-10",
+  "notes": "### Added\n\n- Custom colour, after No colour wherever a note's colour is picked: a note's menu, a row's menu in Browse, a note on the desktop. Its swatch, ringed in every hue, opens a picker in the menu: a square for the shade, a strip for the hue, and the hex to type. The note takes the colour as you drag, and its paper, its ink and its top edge are drawn from it, in light and dark. Custom keeps the colour picked last for the next note, and on the Settings tab it is an eighth tile with the same picker: choose it, and new notes start in that colour.\n- Font, at the start of the format bar: Aa, drawn in the font where the caret is, opens System, Rounded, Serif, Mono and Handwriting, all macOS's own. Like Bold, it changes what you have chosen, or with nothing chosen what you type next, so one note can be in several fonts. Notes on the desktop show them too. Copy as Markdown writes a font as `<span data-font=\"serif\">…</span>`, which other Markdown apps show as the words alone.",
+  "notesSha256": "698ab323ca3abb0aed554f954d2bf9e5e31a68385daed1e2fc4ff0043eacc65f",
+  "summary": null
+ },
+ {
+  "version": "0.1.25",
+  "date": "2026-10-10",
+  "notes": "### Added\n\n- Clear, a third look beside Glass and Paper: macOS's glass with no colour washed over it, the note's colour left to the dot by its title and to the top edge. A note drawn on paper stays on paper.\n- Top edge, on the Settings tab: a strip of the note's colour along its top, or the title bar in that colour, on the main note and on the notes on the desktop alike. A note with no colour gets a grey one. None, the way notes were, stays the default.\n- A click on a link brings up its card, pointing at it: the link's words and where it leads, which opens it in your browser or Mail, with Edit and Remove beside them. ⌘-click opens a link at once. In a locked note the card only opens it.\n- Link (⌘L, or the format bar) asks for the words as well as the address, as Slack does. What you have chosen comes in as the words; in a link, its words and address are both there to change, with Remove link beside Save. A bare address gets `https://` and an email address `mailto:`; only web and mail links are taken.\n- The Settings tab, under Settings → Extensions → Sticky Notes, is drawn by Sticky Notes. The colour a new note starts in is picked from the notes themselves, drawn small in the look your notes have. Glass, Paper and Clear, and the three top edges, are cards, each a note in that colour, and Float above other apps, Grow with what you write and Format bar are switches. It follows Lumi's light or dark theme, and when the window is too short for it, the scroll bar keeps to its own lane on the right instead of lying over the cards.\n\n### Changed\n\n- Paper look is no longer in Actions (⌘K). The look is picked on the Settings tab, now that there are three.\n\n### Fixed\n\n- A to-do's box sits in the middle of its first line, at any zoom, instead of a few points above the words.\n- Float on Top turned on or off on the Settings tab reaches the note that is up at once, instead of the next time it is opened.",
+  "notesSha256": "d4ee5e73a5eb9a73407f2b495ab80374fff4b005d9f16d54e0ff60c9190bfbf0",
+  "summary": null
+ },
+ {
+  "version": "0.1.24",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- Pin note in a note's menu and in the menu a right-click on a note in Browse opens shows a pin, and says Unpin note, with the pin struck through, on a note already pinned — the way Lock note and Unlock note read — instead of a tick.",
+  "notesSha256": "3f24679ead72b9bb5dcf8034643b8add116ad4e8c8e3014322cd388c48db281e",
+  "summary": null
+ },
+ {
+  "version": "0.1.23",
+  "date": "2026-10-08",
+  "notes": "### Added\n\n- Rename note, in Actions (⌘K), a desktop note's menu and the menu a right-click on a note in Browse opens, does what a double click on the title does. In Browse the note is named in its row — any note in the list, not only the one open — and a note on the desktop shows its new name at once. Off for a locked note.\n\n### Fixed\n\n- A menu with no room to open below or above where you clicked — a note's menu in Browse, Actions (⌘K), a desktop note's menu — now opens whole, moved up just enough to fit, instead of squeezed in with its colours scrolled out of sight at the top. One that fits below still opens below.",
+  "notesSha256": "ed03dd4778fa1040bc2d3fc0b2ecdf2b89caf5a942237e886b188ab4ec31fe85",
+  "summary": null
+ },
+ {
+  "version": "0.1.22",
+  "date": "2026-10-08",
+  "notes": "### Added\n\n- Name a note: double-click its title, on the main note or one on the desktop, and type what it should be called. Return or a click elsewhere keeps the name, Escape leaves it as it was. The name stays whatever the first line says, and Browse lists the note by it — a search still finds the first line too. Clear the name and the first line is the title again. A locked note keeps its name until it is unlocked.\n\n### Fixed\n\n- A title cut at 80 characters no longer ends in half an emoji.",
+  "notesSha256": "94ba6200b5b5e84f86f805bc69a95fb0ac32870f4f6ef6942a53c67b7c74bfd6",
+  "summary": null
+ },
+ {
+  "version": "0.1.21",
+  "date": "2026-10-08",
+  "notes": "### Changed\n\n- Sticky Notes needs Lumi 1.42.0, which resizes a note by every edge and corner and opens your notes again when it restarts. On an older Lumi, update Lumi first.",
+  "notesSha256": "0b43c90c5600f06087cc04c947924b9f2a9ecd4421e530b3c8ea02c36a646e9b",
+  "summary": null
+ },
+ {
+  "version": "0.1.20",
+  "date": "2026-10-08",
+  "notes": "### Added\n\n- Every note — the main one and the ones on the desktop — resizes by any of its edges and corners, as a Mac window does: the edge you pull follows the pointer and the one across from it stays put, with the Mac's resize cursor on each. Pulling the top or the bottom of the main note sets its height by hand, as the corner did; pulling a side leaves Fit height on. Needs Lumi 1.42.0; on an older Lumi the bottom-right corner sizes it as before.\n- A right-click on a note in Browse opens a menu for it: its colour, Open, Put on the desktop (or Show on the desktop, for one already there), Pin note, Lock or Unlock note, Copy as Markdown and Delete note — for any note in the list, not only the one open. A note in Recently Deleted offers Restore. The arrow keys and Return work the menu; Escape puts it away and leaves Browse open.\n\n### Changed\n\n- Browse keeps the note you had chosen when the list changes under it — pinned, coloured or locked from the menu — wherever it moves to.",
+  "notesSha256": "fa39ee4335e1979eee02158143354ba04783dda1c8f4f241781b7ee95e2e8cde",
+  "summary": null
+ },
+ {
+  "version": "0.1.19",
+  "date": "2026-10-07",
+  "notes": "### Added\n\n- Orange, a sixth colour for a note, beside the others in the Actions menu and in Settings. No colour stays last.\n- Lock note, in the Actions menu and a note's menu on the desktop: a locked note can be read, chosen and copied, but not changed — no typing, no format bar, no pictures, no ticking a to-do — so a stray key or click cannot change it. The footer says Locked, a padlock sits beside its title on the desktop and in Browse, and Unlock note gives it back.\n\n### Changed\n\n- A search in Browse that matches no note leads with Create, without a line saying nothing matched.\n- Pinned, Recent and Recently Deleted in Browse are headings with their counts that fold open and shut, and stay as you left them. Recently Deleted starts folded, and is named once where it was named twice: over the deleted notes and again on the button under them. A search shows every match, whatever is folded.\n- A pinned note's ⌘1–⌘9 in Browse sits last on its line, against the edge, so the keys stand in one column whatever is written before them — On desktop, Open or a time.\n- Empty sits beside Recently Deleted while it is open and asks once more — Delete 2 forever — before it deletes for good.\n\n### Fixed\n\n- Your notes come back when Lumi restarts: the ones on the desktop where they were, and the main note if it was open (Lumi 1.42.0; on an older Lumi, Show brings them back).\n- Updating Sticky Notes brings the notes back as it lands: the ones on the desktop where they were, and the main note — open or not — for you to see. A small Sticky Notes window says the update landed while it does, then goes. An update used to leave every note off screen until Show.\n- The Actions menu (⌘K) and a desktop note's menu are walked with ↑ and ↓ and chosen with Return, as a Mac menu is. The arrows used to move the caret in the note behind the menu instead.\n- A message at the bottom of a narrow note no longer breaks onto a second line when it fits on one.",
+  "notesSha256": "565388721f300d43474c1d6c6d6b4190133adda7740307bd54102d0467f69323",
+  "summary": null
+ },
+ {
+  "version": "0.1.18",
+  "date": "2026-10-07",
+  "notes": "### Added\n\n- Find a Sticky Note has a key of its own, `⌃⌥⌘F`: from any app it opens the search over every note that `⌘P` opens inside one. Change or clear it on the Shortcuts tab. Updating tries the key once; if one of your shortcuts or another extension already holds it, nothing is taken and the Shortcuts tab says who.",
+  "notesSha256": "a6ffcaa974970a29147f975aba91e7e0bc1170e30245e1b6d619d493aef40ad6",
+  "summary": null
+ },
+ {
+  "version": "0.1.17",
+  "date": "2026-10-07",
+  "notes": "### Changed\n\n- Keep on top is now Float on Top, the name macOS's Stickies gives it, and its toolbar button shows a window floating over another instead of a pin. Pin note, which keeps a note at the top of Browse with ⌘1–⌘9, is the only pin left, so the two no longer read as one.",
+  "notesSha256": "0bd3a62c7bbd6d28cfaaeae91a6fe509e620353d143108cf8f25478f0be84729",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Clearer names for keeping notes visible",
+     "items": [
+      "Keep on top renamed to Float on Top to match macOS Stickies",
+      "Float on Top toolbar button now shows a window floating over another instead of a pin",
+      "Pin note remains for keeping a note at the top of Browse with ⌘1–⌘9"
+     ]
+    },
+    "vi": {
+     "headline": "Tên gọi rõ ràng hơn cho tính năng giữ ghi chú hiển thị",
+     "items": [
+      "Keep on top đổi tên thành Float on Top để khớp với Stickies của macOS",
+      "Nút Float on Top trên thanh công cụ giờ hiển thị cửa sổ nổi thay vì ghim",
+      "Pin note vẫn giữ nguyên để giữ ghi chú ở đầu Browse bằng ⌘1–⌘9"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.16",
+  "date": "2026-10-07",
+  "notes": "### Changed\n\n- Sticky Notes behaves as a Mac window, not a web page: the title bar, the footer, the toolbar and the menus can no longer be selected as text, and a right-click opens no browser menu (Reload, AutoFill, Inspect Element). A right-click on words in a note still opens the Mac's menu for text — Copy, Look Up, Translate and the spelling.",
+  "notesSha256": "c030b43ad229c9b1ef197142eb575d21b2b792a0d339c5591dbc9bcef08971f5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Notes now feel like native Mac windows",
+     "items": [
+      "Title bar, footer, toolbar and menus no longer act like web text you can select",
+      "Right-clicking the interface no longer shows browser options like Reload or Inspect",
+      "Right-clicking text in a note still shows Copy, Look Up, Translate and spelling"
+     ]
+    },
+    "vi": {
+     "headline": "Ghi chú giờ hoạt động như cửa sổ Mac thực sự",
+     "items": [
+      "Thanh tiêu đề, chân trang, thanh công cụ và menu không còn bị chọn như văn bản web",
+      "Nhấp chuột phải giao diện không còn hiện tùy chọn trình duyệt như Reload hay Inspect",
+      "Nhấp chuột phải văn bản trong ghi chú vẫn hiện Copy, Tra cứu, Dịch và chính tả"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.15",
+  "date": "2026-10-07",
+  "notes": "### Fixed\n\n- The `/` menu lights one row at a time: the pointer chooses a row as the arrow keys do, instead of lighting a second one beside theirs. A list scrolling under a pointer that is not moving keeps the row the keys chose.\n- The `/` menu's labels start in one column, headings included, and the row the keys reach scrolls into sight.",
+  "notesSha256": "4f5576013f79286bb9916b7b728d133b5f3ef985290b060f0bbdd24fa3f0161c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Slash menu keyboard and pointer navigation improvements",
+     "items": [
+      "The slash menu highlights only one row at a time when using both keyboard and pointer",
+      "Scrolling the slash menu with arrow keys keeps the selected row visible",
+      "Labels and headings in the slash menu now align in a single column"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện điều hướng bàn phím và con trỏ trong menu gạch chéo",
+     "items": [
+      "Menu gạch chéo chỉ tô sáng một hàng tại một thời điểm khi dùng cả bàn phím và con trỏ",
+      "Cuộn menu gạch chéo bằng phím mũi tên giữ hàng đã chọn luôn hiển thị",
+      "Nhãn và tiêu đề trong menu gạch chéo giờ căn thẳng trong một cột"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.14",
+  "date": "2026-10-07",
+  "notes": "### Changed\n\n- Notes on the desktop stay in front of the main panel: pressing it, showing it or giving it the keyboard no longer brings it over them while Keep on top is on. Without Keep on top the main panel is above every window while it is up, notes included.",
+  "notesSha256": "88d66ae1ba15aa221f6c60963a3aee770a720ffc88233d701efa099076253e27",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Notes stay on top when the main panel opens",
+     "items": [
+      "Notes with Keep on top enabled now stay in front when you open the main panel"
+     ]
+    },
+    "vi": {
+     "headline": "Ghi chú vẫn ở trên khi mở bảng điều khiển",
+     "items": [
+      "Ghi chú có bật Luôn ở trên giờ vẫn nằm phía trước khi bạn mở bảng điều khiển chính"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.13",
+  "date": "2026-10-07",
+  "notes": "### Changed\n\n- New Sticky Note has an icon in Lumi's menu bar menu and the action picker, and Show Sticky Notes has its own: two notes, not the layers Lumi's Profile menu wears.\n- A note on the desktop carries Lumi's mark at the left of its title bar.",
+  "notesSha256": "e1302c50fa13fe54bb87916e43a857a8d3772eb547988165d59470cdb74251eb",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "New icons for Sticky Notes",
+     "items": [
+      "New Sticky Note and Show Sticky Notes now have their own icons in menus",
+      "Notes on the desktop show Lumi's mark in the title bar"
+     ]
+    },
+    "vi": {
+     "headline": "Biểu tượng mới cho Sticky Notes",
+     "items": [
+      "New Sticky Note và Show Sticky Notes giờ có biểu tượng riêng trong menu",
+      "Ghi chú trên màn hình hiển thị logo Lumi trên thanh tiêu đề"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.12",
+  "date": "2026-10-07",
+  "notes": "### Changed\n\n- Putting a note back from the desktop opens Sticky Notes on it when the main panel is closed, so the note stays in sight.",
+  "notesSha256": "0092d1714b1897fd31ae5dd486cde1309ac06fc65b704bac656eac3bc9086a76",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Notes stay visible when moved back from desktop",
+     "items": [
+      "Putting a note back from the desktop opens Sticky Notes on it when the main panel is closed"
+     ]
+    },
+    "vi": {
+     "headline": "Ghi chú vẫn hiển thị khi chuyển về từ desktop",
+     "items": [
+      "Chuyển ghi chú về từ desktop sẽ mở Sticky Notes trên desktop đó khi bảng chính đang đóng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.11",
+  "date": "2026-10-07",
+  "notes": "### Changed\n\n- Close is the last item in the Actions menu, set apart from Delete note.",
+  "notesSha256": "9bed2627e99d6a106abe075c78f94e327140e0b9985bddbe9675a6b42b89e554",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Menu refinements",
+     "items": [
+      "Close is now the last item in the Actions menu, separated from Delete note"
+     ]
+    },
+    "vi": {
+     "headline": "Cải tiến menu",
+     "items": [
+      "Đóng giờ là mục cuối cùng trong menu Thao tác, tách biệt khỏi Xóa ghi chú"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.10",
+  "date": "2026-10-07",
+  "notes": "### Added\n\n- Close in the note's Actions menu, and `⌘W` to close the note, as Esc does.",
+  "notesSha256": "727d17467ee73a007580091ad78747fb044ad3d3b14e743ef9fe4efd4e7f0fa4",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Close notes with Command-W",
+     "items": [
+      "You can now close a note with ⌘W or from its Actions menu, just like Esc"
+     ]
+    },
+    "vi": {
+     "headline": "Đóng ghi chú bằng Command-W",
+     "items": [
+      "Giờ bạn có thể đóng ghi chú bằng ⌘W hoặc từ menu Hành động, giống như phím Esc"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.9",
+  "date": "2026-10-07",
+  "notes": "### Fixed\n\n- A note dragged to the top of the screen now goes right up to the menu bar, on every display. It used to stop well short of it on a display with nothing above. Needs Lumi 1.41.0.",
+  "notesSha256": "243605c7a1a786ccd484e321d2410865f35dd562afc8085ced021adf2592771b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Notes now reach the menu bar on every display",
+     "items": [
+      "A note dragged to the top of the screen now goes right up to the menu bar, on every display"
+     ]
+    },
+    "vi": {
+     "headline": "Ghi chú giờ chạm được thanh menu trên mọi màn hình",
+     "items": [
+      "Ghi chú kéo lên đầu màn hình giờ chạm sát thanh menu trên mọi màn hình"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.8",
+  "date": "2026-10-07",
+  "notes": "### Changed\n\n- The note's footer now carries Lumi's mark, so it's clear where Sticky Notes lives.",
+  "notesSha256": "835a7b8c84a265deb44a279f069876c31cfe6022d58dbd52b9e8bf7a7442c9bd",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Footer now shows Lumi branding",
+     "items": [
+      "The note's footer now carries Lumi's mark, so it's clear where Sticky Notes lives"
+     ]
+    },
+    "vi": {
+     "headline": "Chân trang hiển thị thương hiệu Lumi",
+     "items": [
+      "Chân trang ghi chú giờ có logo Lumi, cho thấy rõ Sticky Notes chạy trong Lumi"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.7",
+  "date": "2026-10-07",
+  "notes": "### Fixed\n\n- A note that ends in a picture opens with the caret on the line under it, not with the picture selected — so the first key you press no longer replaces it.",
+  "notesSha256": "01782f4f9078a301c15e4eda398eccde89449c8a0a01dafe44e6772b8b8e1f31",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed caret position when opening notes that end with pictures",
+     "items": [
+      "Notes ending with a picture now open with the caret below it, so typing no longer replaces the picture"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa vị trí con trỏ khi mở ghi chú kết thúc bằng hình ảnh",
+     "items": [
+      "Ghi chú kết thúc bằng hình ảnh giờ mở với con trỏ ở dưới, không còn xóa hình khi gõ phím"
+     ]
+    }
+   }
+  }
+ }
+]

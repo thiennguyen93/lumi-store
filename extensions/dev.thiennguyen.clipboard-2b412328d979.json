@@ -1,0 +1,354 @@
+[
+ {
+  "version": "0.87.0",
+  "date": "2026-10-09",
+  "notes": "### Added\n\n- Settings → Shortcuts has a new option, \"Press shortcut again to hide\". Turn it on and the Show clipboard history shortcut also closes the panel when it is already open, even when the panel is pinned behind another app. It is off by default, so the shortcut only opens the panel, as before.",
+  "notesSha256": "380e087d1bbeee9d3475f3927fc8d0ae61af290da74b118d7c0a25148f0c361e",
+  "summary": null
+ },
+ {
+  "version": "0.86.0",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- The Show clipboard history shortcut is set on the Settings tab now. Click the key and press a new one; Clear removes it, and a button puts the default ⇧⌘C back. It is the same key as before and works in every profile. Clipboard Manager's separate Shortcuts tab in Lumi is gone.\n- While you record a new key, Lumi's other shortcuts stay quiet. Pressing ⇧⌘C, or a combination something else already uses, records it instead of opening the panel or running that shortcut. This needs a newer Lumi; on an older one, recording works as before.\n- If the key you pick belongs to one of your shortcuts in Lumi, the row says which one and offers to take it over.",
+  "notesSha256": "276e4777e00c921bb0e74f9c8c9575305381593eac1842857f11f344b696460c",
+  "summary": null
+ },
+ {
+  "version": "0.85.3",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- Loading the panel when Lumi starts is on when you first install Clipboard Manager. An update leaves it as you set it.",
+  "notesSha256": "73f26274e1e0f69343cd00d2f113b517b07b2596d3a32631b9b4d24e0fd54379",
+  "summary": null
+ },
+ {
+  "version": "0.85.2",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- Loading the panel ahead is now a permission Clipboard Manager asks for, listed with the others before you install or update: it keeps its panel loaded out of sight from when Lumi starts.",
+  "notesSha256": "16a380fb5f0fcebbd7a3f75ce5ade64f3111f935371050e4c4aded677d88c03c",
+  "summary": null
+ },
+ {
+  "version": "0.85.1",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- The switch on Clipboard Manager's Permissions sheet in Lumi that matches **Load the panel when Lumi starts** is now called **Preload**.",
+  "notesSha256": "057fd1de246616624146ef6686886578e0d9f30507b14c26ff9484746bc84ad3",
+  "summary": null
+ },
+ {
+  "version": "0.85.0",
+  "date": "2026-10-09",
+  "notes": "### Added\n\n- **Menu bar & startup** in Settings: **Show in Lumi's menu bar menu** and **Load the panel when Lumi starts**. They are the same switches as **Menu bar** and **Preload** on Clipboard Manager's Permissions sheet in Lumi, so you can turn them on or off in either place.\n- Needs Lumi 1.45.0 or later.",
+  "notesSha256": "a57926631c0f39f75583418ec02d4b47c8f508a00d8469c3c9afd2566ade209f",
+  "summary": null
+ },
+ {
+  "version": "0.84.0",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- Loading the panel ahead is now yours to allow. Clipboard Manager asks Lumi to load it as Lumi starts, and you decide with **Preload** on Clipboard Manager's Permissions sheet in Lumi. With it off, the panel loads the first time you open it and opens at once every time after that.",
+  "notesSha256": "6583fe74d6193d0e084115df9c2fda6a836eb2b615c24aa2d9ed18f98dfc0be5",
+  "summary": null
+ },
+ {
+  "version": "0.83.0",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- The first **⇧⌘C** after Lumi starts is as quick as every one after it. On Lumi 1.45.0 or later, Lumi loads the panel ahead, out of sight, as it starts, and once Clipboard Manager is installed, updated or switched on, so your history is already drawn the first time you open it.",
+  "notesSha256": "7b7fd9dbb8d737742316b87f161fa583b18c502fdf44f2be00a8ee29b604f4b6",
+  "summary": null
+ },
+ {
+  "version": "0.82.0",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- **⇧⌘C** opens the panel with your history already in it, instead of an empty sheet of glass that fills in a moment later. On Lumi 1.45.0 or later the panel keeps its page while it is put away, so it is shown again at once, with what you copied meanwhile on top. Each opening still starts fresh: the search is empty, the first item is selected, and privacy mode covers what you showed. On an older Lumi the panel opens as before, a little sooner.\n- A long history scrolls and moves under the arrow keys more smoothly.\n- While **Lock history** is on, the panel is not given your history at all until you unlock it.",
+  "notesSha256": "3d958bf42a4d785e0bf1e7243e2631d0aced6dd665cec09971de36409b8ddd4c",
+  "summary": null
+ },
+ {
+  "version": "0.81.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- Lock your history at once from the panel with **⇧⌘L**, the same as **Lock history now** in **⌘K**: every preview is covered, and the panel asks \"Is it you?\" before it shows your history again. The key works while **Lock history** is on, and **⌘K** shows it beside the action.\n- Choose your own key for it in Settings, under **Lock again after panel closes**, the way you choose Pin's. A key another of the panel's shortcuts already uses is refused, with what that shortcut does.",
+  "notesSha256": "ec359efa4c2f53f8252abe4d45f6077cfe031da5ce2b8f516f1f60c64f91bfe7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Lock your history from the panel with a keyboard shortcut",
+     "items": [
+      "Press Shift-Command-L in the panel to lock your history immediately",
+      "The panel asks for confirmation before showing your history again after you lock it",
+      "Choose your own keyboard shortcut for locking in Settings under Lock again after panel closes",
+      "The panel prevents you from picking a shortcut already used by another panel action"
+     ]
+    },
+    "vi": {
+     "headline": "Khóa lịch sử từ bảng điều khiển bằng phím tắt",
+     "items": [
+      "Nhấn Shift-Command-L trong bảng điều khiển để khóa lịch sử ngay lập tức",
+      "Bảng điều khiển yêu cầu xác nhận trước khi hiển thị lại lịch sử sau khi bạn khóa",
+      "Chọn phím tắt riêng để khóa trong Cài đặt mục Khóa lại sau khi đóng bảng điều khiển",
+      "Bảng điều khiển ngăn bạn chọn phím tắt đã được dùng cho hành động khác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.5",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- In the Welcome tour, the buttons on the privacy mode step and the Touch ID step sit at the same height, just above Back and Continue, so they no longer jump when you go from one step to the other.",
+  "notesSha256": "7969fbdd0088b47fedd754bf70a553cc5c46d1faf07c3d8a7197b0f8c09b750a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour polish",
+     "items": [
+      "Buttons in the Welcome tour no longer jump between the privacy mode and Touch ID steps"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện hướng dẫn chào mừng",
+     "items": [
+      "Các nút trong hướng dẫn chào mừng không còn nhảy khi chuyển giữa bước chế độ riêng tư và Touch ID"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.4",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- In the Welcome tour, **Turn on privacy mode**, **Lock my history** and **Ask before showing** no longer jump when pressed. Each now says it is done in its own place, at the same size, instead of turning into a smaller line that moved the button next to it.\n- **Ask before showing** stays in the Touch ID step once your history is locked, dimmed as it is in Settings, instead of disappearing.",
+  "notesSha256": "95156700c25f19c70013d9167093ee44f5a74a1552dba62f40e718feb82dd517",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour buttons no longer jump when pressed",
+     "items": [
+      "Welcome tour buttons now stay in place when pressed instead of shrinking and moving",
+      "Ask before showing option remains visible but dimmed in the Touch ID step when history is locked"
+     ]
+    },
+    "vi": {
+     "headline": "Các nút trong hướng dẫn không còn nhảy khi nhấn",
+     "items": [
+      "Các nút trong hướng dẫn giờ đây giữ nguyên vị trí khi nhấn thay vì thu nhỏ và di chuyển",
+      "Tùy chọn hỏi trước khi hiển thị vẫn hiện nhưng mờ đi trong bước Touch ID khi lịch sử đã khóa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.3",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- The eye in the panel's title bar is gone. It only showed that privacy mode was on, but looked like a button beside the pin. The covered previews already show it.",
+  "notesSha256": "1d7a982b55b4eb7e9c17b21546eb008288e86acf21b4a2c954fca45e8a1ac0dd",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Privacy mode indicator removed from title bar",
+     "items": [
+      "The eye icon in the title bar has been removed to avoid confusion with the pin button"
+     ]
+    },
+    "vi": {
+     "headline": "Đã xóa biểu tượng chế độ riêng tư khỏi thanh tiêu đề",
+     "items": [
+      "Biểu tượng con mắt trên thanh tiêu đề đã được xóa để tránh nhầm lẫn với nút ghim"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.2",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- In Settings, a setting that only works while another is on is now dimmed as a whole row: its name, its description and its control. The \"Works while…\" and \"Lock history already asks…\" lines are gone, since the setting it waits on is right above it. Its value is kept as before.\n- **Look in**, under **Match snippets**, stays in view and is dimmed while Match snippets is off, instead of disappearing.\n- **Theme** is dimmed the same way while **Dark glass** is chosen.\n- Where \"Is it you?\" cannot be asked, the Settings tab, the Welcome tour and the locked panel now say it needs a password on this Mac, without naming an old Lumi version.",
+  "notesSha256": "ce4f11a691c5be2b2a702a12d9d8dfe83f289f3e03e6955f9ce4312487682de5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings that depend on others now dim instead of hiding",
+     "items": [
+      "Settings that only work when another is on now dim as a whole row instead of hiding",
+      "Look in stays visible and dims when Match snippets is off",
+      "Theme dims when Dark glass is chosen",
+      "Where biometric unlock is unavailable, the app now says it needs a password on this Mac"
+     ]
+    },
+    "vi": {
+     "headline": "Các cài đặt phụ thuộc giờ mờ đi thay vì ẩn",
+     "items": [
+      "Các cài đặt chỉ hoạt động khi cài đặt khác bật giờ mờ toàn bộ hàng thay vì ẩn",
+      "Tìm trong vẫn hiển thị và mờ đi khi Khớp đoạn mã tắt tắt",
+      "Giao diện mờ đi khi chọn Kính tối",
+      "Ở nơi không thể dùng sinh trắc học, ứng dụng giờ nói cần mật khẩu trên Mac này"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.1",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- In Settings, **Confirm it's you before showing** is greyed out while **Lock history** is on, and says \"Lock history already asks before anything is shown\". A locked history already asks \"Is it you?\" before you see anything, and that answer covers showing items too, so the setting did nothing alongside it. Its value is kept, and it works again once Lock history is off. It now sits under **Lock again after panel closes**.\n- With **Lock history** on, turning privacy mode off no longer asks \"Is it you?\": the panel itself still asks before it shows anything.\n- The Welcome tour's Touch ID step no longer offers **Ask before showing** once your history is locked.",
+  "notesSha256": "03ccac536408f60110844a0e5feb6f4f2a11dab422a2cd922a14ea82dd965f66",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Clearer privacy settings when history is locked",
+     "items": [
+      "Confirm it's you before showing is now disabled while Lock history is on",
+      "Turning off privacy mode no longer asks for authentication when history is locked",
+      "The Welcome tour no longer offers Ask before showing if history is already locked"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt bảo mật rõ ràng hơn khi lịch sử đã khóa",
+     "items": [
+      "Xác nhận danh tính trước khi hiển thị giờ bị vô hiệu hóa khi Khóa lịch sử đang bật",
+      "Tắt chế độ riêng tư không còn yêu cầu xác thực khi lịch sử đã được khóa",
+      "Hướng dẫn chào mừng không còn đề xuất Hỏi trước khi hiển thị nếu lịch sử đã khóa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.0",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- With **Confirm it's you before showing** on, turning privacy mode off asks \"Is it you?\" first, from Settings, from Lumi's menu bar or with the **Toggle privacy mode** key. Someone at your Mac can no longer switch it off to see your previews. If you cancel, privacy mode stays on. Turning it on never asks.",
+  "notesSha256": "b4d03451da1108225d71d1bf41f4de55ccb58271b8f7437871320ed42c632df0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Privacy mode now asks for confirmation before turning off",
+     "items": [
+      "Turning off privacy mode now asks for confirmation, whether from Settings, menu bar, or keyboard shortcut",
+      "Someone at your Mac can no longer disable privacy mode to see your clipboard without confirming identity",
+      "Turning privacy mode on still works instantly without asking"
+     ]
+    },
+    "vi": {
+     "headline": "Chế độ riêng tư giờ yêu cầu xác nhận trước khi tắt",
+     "items": [
+      "Tắt chế độ riêng tư giờ yêu cầu xác nhận trước, dù từ Cài đặt, thanh menu hay phím tắt",
+      "Người khác không thể tắt chế độ riêng tư để xem nội dung clipboard mà không xác nhận danh tính",
+      "Bật chế độ riêng tư vẫn hoạt động ngay lập tức mà không cần hỏi"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.79.0",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- **Cover again after panel closes** (was **Cover again after**) now counts from when the panel closes. Reopen the panel within that time and what you showed is still shown. While the panel is open, nothing is covered again by itself, and a pinned panel stays as it is when you switch to another app. The choices are **Immediately** (the new default), 30 seconds, 1 minute and 5 minutes.\n- **Lock again after panel closes** (was **Lock again**) now counts from when the panel closes, not from when you unlocked. While the panel is open, it stays unlocked. The choices are **Immediately**, 1 minute, 5 minutes and 15 minutes.\n- **Lock again after panel closes** is greyed out while **Lock history** is off.\n- Needs Lumi 1.37.0 or later, which tells the extension when the panel closes.",
+  "notesSha256": "6dfd5337ec7826d333d593929a02aae860cdbc0e9f387a8fa9d617a12fb2f0d7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Cover and lock timers now count from when the panel closes",
+     "items": [
+      "Cover again after panel closes now counts from when you close the panel, not from when you showed an item",
+      "Reopen the panel within the timer and what you showed is still shown",
+      "Lock again after panel closes now counts from when you close the panel, not from when you unlocked",
+      "While the panel is open, nothing is covered or locked by itself",
+      "Requires Lumi 1.37.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Bộ đếm che và khóa giờ tính từ khi đóng bảng điều khiển",
+     "items": [
+      "Che lại sau khi đóng bảng điều khiển giờ tính từ khi bạn đóng bảng, không phải từ khi hiển thị mục",
+      "Mở lại bảng điều khiển trong thời gian đếm và nội dung đã hiển thị vẫn còn đó",
+      "Khóa lại sau khi đóng bảng điều khiển giờ tính từ khi bạn đóng bảng, không phải từ khi mở khóa",
+      "Khi bảng điều khiển đang mở, không có gì tự động bị che hoặc khóa",
+      "Yêu cầu Lumi 1.37.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.78.1",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- In Settings, the settings that only act on covered previews (**Show or hide content**, **Show or hide all**, **Cover again after** and **Confirm it's you before showing**) are greyed out while privacy mode is off, and say \"Works while privacy mode is on\". They keep their values, and become available again when privacy mode is turned on.",
+  "notesSha256": "71ce351adbe6b7c3ac2bea53603b0d68d16105005bec6e5faefd0ce6bc2edf0d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings now show when privacy features are available",
+     "items": [
+      "Privacy settings are greyed out when privacy mode is off and show when they work",
+      "Settings keep their values and become available again when privacy mode is on"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt hiện rõ khi nào tính năng riêng tư hoạt động",
+     "items": [
+      "Các cài đặt riêng tư bị mờ khi chế độ riêng tư tắt và hiển thị khi nào chúng hoạt động",
+      "Cài đặt giữ nguyên giá trị và khả dụng trở lại khi bật chế độ riêng tư"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.78.0",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- Privacy mode can no longer be turned on or off from the panel. The eye in the panel's title bar now only shows that privacy mode is on, and **⌘K** no longer offers **Turn on privacy mode** or **Turn off privacy mode**. Turn it on or off in the extension's Settings tab, from Lumi's menu bar, or with the **Toggle privacy mode** key. Showing covered content in the panel works as before.",
+  "notesSha256": "4baaf47dcfcd594ffb68af490679155de342cafabf899a83ff7fe1d2ec9fbcd0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Privacy mode is now controlled from Settings",
+     "items": [
+      "Privacy mode can only be toggled from Settings or with a keyboard shortcut",
+      "The eye icon in the panel now only shows when privacy mode is on",
+      "Command-K no longer offers to turn privacy mode on or off"
+     ]
+    },
+    "vi": {
+     "headline": "Chế độ riêng tư giờ chỉ điều khiển từ Cài đặt",
+     "items": [
+      "Chế độ riêng tư chỉ có thể bật tắt từ Cài đặt hoặc bằng phím tắt",
+      "Biểu tượng con mắt trong bảng giờ chỉ hiện khi chế độ riêng tư đang bật",
+      "Command-K không còn tùy chọn bật tắt chế độ riêng tư"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.77.2",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- **Copy all** in the Math section has its copy icon and lines up with the cards under it, instead of running into the preview's right edge.",
+  "notesSha256": "874490a9a9b55390523fb556ce62440ba016b53252cb67d31c7a7fd06f8a7ea2",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed layout in Math section",
+     "items": [
+      "Copy all button in Math section now aligns properly with cards below it"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa bố cục trong phần Toán học",
+     "items": [
+      "Nút sao chép tất cả trong phần Toán học giờ căn chỉnh đúng với các thẻ bên dưới"
+     ]
+    }
+   }
+  }
+ }
+]

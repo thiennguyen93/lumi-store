@@ -1,0 +1,421 @@
+[
+ {
+  "version": "0.7.1",
+  "date": "2026-10-08",
+  "notes": "### Added\n\n- A short demo video on Screenshot's page in the Extension Store and on lumikeys.app — capturing, marking up and copying text — to watch before you install.",
+  "notesSha256": "1b90e8e38ff05975f8562c4c8445e61917f42168faf3ba21d9a1ea327c9ad154",
+  "summary": null
+ },
+ {
+  "version": "0.7.0",
+  "date": "2026-10-06",
+  "notes": "### Added\n\n- Double-click a preview card's title to enlarge it, and again to put it back — what Space does.",
+  "notesSha256": "2351d0df5435abea63e9828fc82506a5d3e95292bfcd72b3bb9946b1521d86df",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Double-click to enlarge previews",
+     "items": [
+      "Double-click a preview card's title to enlarge it, and again to shrink it back"
+     ]
+    },
+    "vi": {
+     "headline": "Nhấp đúp để phóng to bản xem trước",
+     "items": [
+      "Nhấp đúp vào tiêu đề thẻ xem trước để phóng to, nhấp lại để thu nhỏ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.9",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- Hide the editor while capturing, on by default (Settings › Editor): while you drag out an area or point at a window, the editor and the previews step out of the way, and come back where they were, with your marks, once you have chosen. It covers Screenshot's own captures, Recognize Text and Lumi's Copy Text from Screen.\n- Lumi's Copy Text from Screen reads past the editor: the editor is never in the picture it reads, a whole-screen read included.\n- An editor in full screen stays where it is and is captured as it is, since nothing is behind it.\n- Select text (E): the picture's own text, read on the Mac. Drag across it a letter at a time, double-click a word, triple-click a line, ⌘A for all; ⌘C copies it. Copy All, Pixelate what is chosen, or every email address and phone number at once — in the status bar or on a right-click.\n\n### Changed\n\n- Capture on the editor's empty page keeps the window, rather than closing and opening it again.\n- Settings: Preview is now Preview cards, and is never greyed out — it sets the cards Recognize Text and Recent Captures show as well.\n- Welcome: the first scene starts on a bright desktop, shows a shortcut pressed, and only then dims for the capture. Two new steps show the editor: marking a capture up, and pixelating every email address and phone number in it with Select text.\n- An editor in full screen starts its toolbar at the window's left edge, where the traffic lights no longer are.\n- Needs Lumi 1.36.0, for stepping the editor aside and keeping it out of Lumi's own captures.",
+  "notesSha256": "950263eac6441fe0de8a1f674dbe3c45835c8ee6ed371fe8ff11a6accbab2aa7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Select text in screenshots and hide the editor while capturing",
+     "items": [
+      "The editor hides while you capture and returns with your marks afterward",
+      "Select and copy text from screenshots, pixelate emails and phone numbers",
+      "Copy Text from Screen now reads past the editor window",
+      "Capturing on the editor's empty page keeps the window open",
+      "Preview settings now apply to Recognize Text and Recent Captures cards"
+     ]
+    },
+    "vi": {
+     "headline": "Chọn văn bản trong ảnh chụp và ẩn trình chỉnh sửa khi chụp",
+     "items": [
+      "Trình chỉnh sửa tự ẩn khi bạn chụp và hiện lại cùng các đánh dấu sau đó",
+      "Chọn và sao chép văn bản từ ảnh chụp, làm mờ email và số điện thoại",
+      "Sao chép văn bản từ màn hình bỏ qua cửa sổ trình chỉnh sửa",
+      "Chụp trên trang trống của trình chỉnh sửa giữ nguyên cửa sổ",
+      "Cài đặt xem trước áp dụng cho thẻ Nhận dạng văn bản và Ảnh chụp gần đây"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.8",
+  "date": "2026-10-04",
+  "notes": "### Added\n\n- Marker (M): a highlighter drawn by hand — wide, see-through ink that leaves the words under it dark, in any colour, with Shift for a straight stroke along a line of text. A stroke drawn nearly straight lands straight, and level when it was nearly level; a wave drawn on purpose stays. Round or chisel tip, from Colour and stroke or ⌘↩.\n- Open File and Open From Clipboard: a picture from a file picked in Lumi's Open panel, or whatever picture is on the clipboard, straight into the editor — from the menu bar menu, any Lumi shortcut bound to them, ⌘O and ⇧⌘V in the editor, and the editor's empty page (⌘V there too).\n- Paste a picture onto the one being edited with ⌘V, or drop picture files onto it: each lands at its own size — smaller only when it would not fit — selected, to move, resize (it keeps its shape), delete or undo like any mark, and turns with the picture when that is rotated or flipped.\n- Several pictures open in the editor at once, as tabs along the bottom: a capture, a file, a paste or a preview's Edit opens its own tab and never takes the place of one being marked up. Each keeps its marks, crop and undo; a dot shows the ones not yet copied or saved. ⌘1–⌘9 and ⌘⇧[ ⌘⇧] move between them, ⌘W or a tab's ✕ closes one; with marks not yet copied or saved it asks first: Save (Return) saves and then closes, Don't Save (⌘⌫) closes, Cancel (Esc) keeps it. Up to six: past that the oldest finished tab closes, and with none finished the new picture goes to the preview stack.\n- Rotate and flip the picture, from the toolbar's Rotate and flip menu, or ⌘L and ⌘R as in Preview. Marks and the crop turn with it, as one step of undo; text and step numbers stay upright.\n- Filled rectangles and ellipses: a Fill row in Colour and stroke, in a colour of its own — a solid box edged in another, or a block over something to hide.\n- Pick colour (I): a loupe shows the pixels and hex under the pointer. Click or Tab copies it, a drag an area's average, ⇧Tab the darkest pixel nearby (text). ⌥ draws in it.\n- Callout (K): a speech bubble with a tail. Drag from what it points at to where the bubble goes, then type; ⇧↩ for a new line. Drag the tail's tip to repoint it, a corner to resize it.\n- Marks can cross the picture's edge: the canvas grows and shrinks to hold them, clear in a PNG. Off in Settings.\n\n### Changed\n\n- Highlight is now Highlight area, and Pixelate has an icon that shows what it does.\n- A narrow editor window gives up tools before anything else: the ones without room move behind a ⋯ button — which wears the tool in use when it is one of them — then Save and Copy lose their words and the drag-out button goes. Undo, Redo, Save and Copy always stay. The status bar drops its hint, then the scale, the same way. The window stops narrowing at 480 × 360 points.\n- The stroke slider reaches more than twice as thick as before.\n- Needs Lumi 1.36.0, for reading a file and the clipboard's picture, and for a Save through the Save panel to say whether it was saved.\n- A Save through the Save panel waits for the answer: a cancelled panel no longer counts as saved, in the editor or on a preview, and Save All on the preview stack goes on to the next picture once one is saved.\n- The background's padding is a slider, from a thin border to a wide one, in place of three fixed sizes.\n- Esc no longer closes the editor: it backs out one step a press — a stroke being drawn, then the selected mark, then the crop, then the tool in hand, back to Select. ⌘W closes a tab — the window with its last — and the red button closes the window. With pictures not yet copied or saved, the red button asks about each first, the way ⌘W asks about one.\n- A press on the tool already in hand puts it down, as in Preview: back to Select, or from Crop to the tool before it. A tool's key only picks it.\n\n### Fixed\n\n- The note after a Copy shows the picture's thumbnail beside its size; Lumi's page policy refused the way it was loaded, and it showed an empty frame.\n- Crops are as sharp as the capture.",
+  "notesSha256": "b87a6ee862526260f72cb37d00428ce9238025685bc5aa0814aff627ce49cda9",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Marker, open files, tabs, rotate and flip, filled shapes, callouts",
+     "items": [
+      "Marker draws wide see-through highlighter strokes in any color",
+      "Open files or paste images from clipboard to edit them",
+      "Multiple pictures open as tabs, each keeping its own marks and undo",
+      "Rotate and flip pictures with marks and crop turning along",
+      "Filled rectangles and ellipses to cover parts of the picture",
+      "Callout adds speech bubbles with draggable tails to point at things"
+     ]
+    },
+    "vi": {
+     "headline": "Bút dạ quang, mở tệp, tab, xoay và lật, hình đầy, chú thích",
+     "items": [
+      "Bút dạ quang vẽ nét trong suốt rộng bằng bất kỳ màu nào",
+      "Mở tệp hoặc dán ảnh từ clipboard để chỉnh sửa",
+      "Nhiều ảnh mở thành tab, mỗi tab giữ nét vẽ và hoàn tác riêng",
+      "Xoay và lật ảnh cùng với các nét vẽ và vùng cắt",
+      "Hình chữ nhật và hình elip đầy để che phần ảnh",
+      "Chú thích thêm bong bóng hội thoại có đuôi kéo được để chỉ vào vật"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.7",
+  "date": "2026-10-04",
+  "notes": "### Added\n\n- Open Screenshot Editor, from the menu bar menu, its own key (⌘⇧8) or any Lumi shortcut bound to it: the editor on the last picture it had, or — before the first capture — a page that takes one straight into it.\n- New tools in the editor: Line (L), Ellipse (O), Pen (P) for drawing by hand, and Spotlight (S), which dims everything outside the boxes drawn — several at once, overlaps left lit.\n- The stroke is a slider, from a hairline to thick, rather than three sizes; dragged with a mark selected it restyles the mark, as one step of undo.\n- Text can sit on a pill of its colour instead of being outlined: Colour and stroke → Text.\n- A background for the picture: six gradients and flat colours, three paddings, the picture rounded and shadowed on it — in the editor, the copy, the file and the drag alike.\n- Drag the edited picture straight into another app from the toolbar, as a PNG named the way Save would name it.\n- The crop keeps its handles while the crop tool is out: drag a corner or a side, move it whole, see its size and thirds. Free, 1:1, 4:3, 16:9 and Original shapes; Return or Esc goes back to the tool before, and the editor then shows the picture as cropped — the crop tool brings the rest back to adjust it.\n- Pinch or ⌘-scroll zooms about the pointer, and Space-drag pans.\n- A mark is edited where it is: Colour and stroke change the selected mark, double-click a text — or click it with the text tool — to rewrite it, ⌘D duplicates, the arrow keys nudge (⇧ for ten), and Shift keeps an arrow or line to 45°, a box square and a move straight.\n\n### Changed\n\n- Deleting a numbered step renumbers the ones after it.\n- Esc over marks not yet copied or saved asks for a second Esc before the editor closes.",
+  "notesSha256": "c032b5c0f1ed7b39fe34c33c40e8b34289d6f94d8e4d4a70e291321c8cb06f09",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "New drawing tools, backgrounds, improved cropping and zoom",
+     "items": [
+      "Open the editor from the menu bar or with ⌘⇧8 to see your last capture",
+      "New tools: draw lines, ellipses and freehand shapes, or spotlight areas by dimming everything else",
+      "Stroke width is now a slider, and dragging it with a mark selected changes that mark in one undo step",
+      "Add gradient or solid backgrounds with padding and rounded corners to your screenshots",
+      "Crop tool now shows handles while active, with preset ratios and live size display",
+      "Pinch or ⌘-scroll to zoom around the pointer, and Space-drag to pan around the canvas"
+     ]
+    },
+    "vi": {
+     "headline": "Công cụ vẽ mới, nền ảnh, cắt và phóng to cải tiến",
+     "items": [
+      "Mở trình chỉnh sửa từ thanh menu hoặc bằng ⌘⇧8 để xem ảnh chụp gần nhất",
+      "Công cụ mới: vẽ đường thẳng, hình elip, vẽ tự do và làm nổi bật vùng bằng cách làm tối phần còn lại",
+      "Độ dày nét vẽ giờ là thanh trượt, kéo khi đã chọn nét để thay đổi trong một bước hoàn tác",
+      "Thêm nền gradient hoặc màu đơn với đệm và góc bo tròn cho ảnh chụp màn hình",
+      "Công cụ cắt giờ hiển thị điểm kéo khi đang dùng, với tỉ lệ sẵn có và hiển thị kích thước trực tiếp",
+      "Chụm hoặc ⌘-cuộn để phóng to quanh con trỏ, và Space-kéo để di chuyển khung vẽ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.5",
+  "date": "2026-10-04",
+  "notes": "### Added\n\n- A Welcome tour when Screenshot is installed or updated: allow Screen Recording (the tour waits for it), check each capture's key — and take one back from whatever holds it — choose what a capture leads to, and meet Recognize Text. Reopen it from Screenshot's About page in Lumi.",
+  "notesSha256": "2b8f95a68e1c389c075e5c63e736d99c508cc306a0ceecdf9dd06525c656dee1",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour and easier setup",
+     "items": [
+      "A welcome tour guides you through setup and key features when first installed",
+      "The tour waits for Screen Recording permission before continuing",
+      "Each capture shortcut is checked and reclaimed if another app took it",
+      "You can choose what happens after each capture during setup",
+      "The tour introduces the Recognize Text feature"
+     ]
+    },
+    "vi": {
+     "headline": "Hướng dẫn chào mừng và thiết lập dễ hơn",
+     "items": [
+      "Hướng dẫn chào mừng giúp bạn thiết lập và làm quen với tính năng khi cài đặt",
+      "Hướng dẫn chờ bạn cấp quyền Ghi màn hình trước khi tiếp tục",
+      "Mỗi phím tắt chụp được kiểm tra và lấy lại nếu ứng dụng khác đã chiếm",
+      "Bạn có thể chọn hành động sau mỗi lần chụp trong quá trình thiết lập",
+      "Hướng dẫn giới thiệu tính năng Nhận diện văn bản"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.3",
+  "date": "2026-10-04",
+  "notes": "### Added\n\n- ↑ and ↓ walk the preview stack the way it stands on screen: they choose the card the keys act on — Space then enlarges it — and, while a card is enlarged, switch to the next one, the frame changing size and the pictures crossing as it does.\n- A picture on a preview card sits on a backdrop — one of ten, picked at random for each capture and kept for it — inset with a corner and a shadow, rather than between grey bands where its shape is not the card's. Settings → Preview → Backdrop turns it off.\n- An enlarged capture has a Recognize Text switch: the first press reads the picture, with the sweep a Recognize Text capture has, and boxes its lines on it — chosen in orange, copied with a double-click or ⌘C, and all at once with Copy, which copies the text while the lines show; after that it switches between the lines and the picture as taken. The text is kept with the card, and nothing goes on the clipboard until asked.\n\n### Changed\n\n- A window's card says it is a window first, then whose: \"Window · Safari · 14:32\" rather than \"Safari · 14:32\", which stood where \"Area\" stands and read as another way of capturing.\n- A picture dragged out of a preview card is named the way the file-name setting names a saved one, such as \"Safari Screenshot 2026-10-04 at 14.32.05.png\", rather than \"Image …\".\n- A card's time always has two digits for the hour, \"01:59\" rather than \"1:59\", which beside a picture read like an aspect ratio.\n\n### Fixed\n\n- A picture dragged out of a preview card drops into apps built on a browser engine — Claude, Slack, a browser's upload field — and not only into Finder. Needs Lumi 1.34.",
+  "notesSha256": "ec1cfe2210ae1d68c2d55e45b68c8fe8420f55dfb627129ae8ca42bf5dec1dab",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Navigate previews with arrow keys and recognize text in captures",
+     "items": [
+      "Arrow keys up and down move between preview cards and switch between enlarged captures",
+      "Each preview card now shows its capture on a random backdrop with rounded corners",
+      "Enlarged captures can recognize and copy text with a new Recognize Text switch",
+      "Window captures are now labeled as Window first, then the app name",
+      "Dragged images work in web-based apps like Slack and Claude, not just Finder",
+      "Times on cards always show two-digit hours to avoid looking like aspect ratios"
+     ]
+    },
+    "vi": {
+     "headline": "Điều hướng xem trước bằng phím mũi tên và nhận dạng văn bản",
+     "items": [
+      "Phím mũi tên lên xuống di chuyển giữa các thẻ xem trước và chuyển ảnh đã phóng to",
+      "Mỗi thẻ xem trước hiển thị ảnh chụp trên nền ngẫu nhiên với góc bo tròn",
+      "Ảnh phóng to có thể nhận dạng và sao chép văn bản bằng công tắc Nhận dạng văn bản",
+      "Ảnh chụp cửa sổ giờ ghi nhãn Cửa sổ trước, sau đó mới đến tên ứng dụng",
+      "Kéo thả ảnh hoạt động trong ứng dụng web như Slack và Claude, không chỉ Finder",
+      "Giờ trên thẻ luôn hiển thị hai chữ số để tránh nhầm với tỷ lệ khung hình"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.2",
+  "date": "2026-10-04",
+  "notes": "### Added\n\n- Swipe a preview card away with two fingers on the trackpad, towards the edge the cards stand against — as a flick does with the pointer.\n- `{app}` and `{title}` in the file name: the app a window belongs to and the window's title, such as \"Safari - Start Page 2026-10-04 at 14.32.05.png\". An area or the whole screen is nobody's window, and not every window has a title, so a token with nothing to say is left out, with the space or dash beside it.\n- Drag a picture into another app by the icon at the left of its card's title.\n- Enlarge a capture's card to look at it — its magnifier, or Space — as a Recognize Text card already could. The picture grows to the size it had on screen, made smaller only to fit; Space, Esc or the button puts it back. A card further up the stack slides down to the corner before it grows, and back to its own place after.\n\n### Changed\n\n- A window's card is titled with the app it belongs to, such as \"Safari · 14:32\", rather than \"Window\".",
+  "notesSha256": "f9ea9675ba7fd349282085c943c1806571c61871eb0d06f2379901848b70d89c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Swipe cards away, drag pictures out, and enlarge them to look closer",
+     "items": [
+      "Swipe a preview card away with two fingers on the trackpad, towards the edge it stands against",
+      "Use {app} and {title} in file names to include the app and window title, like Safari - Start Page",
+      "Drag a picture into another app by the icon at the left of its card's title",
+      "Enlarge a capture's card to see it at the size it had on screen by pressing Space or the magnifier",
+      "Window cards now show the app name instead of just saying Window"
+     ]
+    },
+    "vi": {
+     "headline": "Vuốt thẻ, kéo ảnh ra ngoài và phóng to để xem rõ hơn",
+     "items": [
+      "Vuốt thẻ xem trước bằng hai ngón trên trackpad về phía cạnh mà thẻ đứng",
+      "Dùng {app} và {title} trong tên tập tin để thêm tên ứng dụng và tiêu đề cửa sổ",
+      "Kéo ảnh vào ứng dụng khác bằng biểu tượng bên trái tiêu đề thẻ",
+      "Phóng to thẻ chụp để xem ở kích thước gốc bằng cách nhấn Space hoặc kính lúp",
+      "Thẻ cửa sổ giờ hiển thị tên ứng dụng thay vì chỉ ghi Cửa sổ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.1",
+  "date": "2026-10-04",
+  "notes": "### Added\n\n- A Save button on a Recognize Text card, and ⌘S, to keep the picture the text was read from. Recognize Text never copies or saves the picture by itself — the text is what it is for.\n\n### Changed\n\n- Every preview card has a title of its own — what was captured and when, such as \"Area · 14:32\" — with Keep and Close beside it, so nothing is drawn over the picture or the first line of text any more.\n- On a Recognize Text card, double-click a line to copy it, as on the enlarged picture; a single click says so instead of copying.\n- Copy and Save on a preview card keep their own icon once done and gain a small green check, so it is clear which one happened.\n\n### Fixed\n\n- The ring marking the card your keys act on shows only while the preview has the keyboard, not whenever the pointer passes over it.",
+  "notesSha256": "3842b2903fd56a4f38dfcf90fe66d0fadd1256f7339dcd6497cdb20e1c23670e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Clearer preview cards and a way to save recognized text",
+     "items": [
+      "Preview cards now show a title with what was captured and when, keeping buttons off the picture",
+      "You can save the image text was recognized from with a Save button or ⌘S",
+      "Double-click a line of recognized text to copy it; single-click shows a hint",
+      "Copy and Save buttons keep their icon and add a green check when done",
+      "The ring around the active card only appears when the preview has keyboard focus"
+     ]
+    },
+    "vi": {
+     "headline": "Thẻ xem trước rõ ràng hơn và lưu được ảnh đã nhận dạng chữ",
+     "items": [
+      "Thẻ xem trước hiện tiêu đề cho biết đã chụp gì và lúc mấy giờ, các nút không che ảnh nữa",
+      "Có thể lưu ảnh đã dùng để nhận dạng chữ bằng nút Save hoặc ⌘S",
+      "Nhấp đúp vào dòng chữ đã nhận dạng để sao chép; nhấp đơn hiện gợi ý",
+      "Nút Copy và Save giữ biểu tượng và thêm dấu tích xanh khi hoàn tất",
+      "Vòng tròn quanh thẻ đang dùng chỉ hiện khi cửa sổ xem trước đang nhận phím"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.0",
+  "date": "2026-10-03",
+  "notes": "### Added\n\n- A Settings page of its own. Choose what a capture leads to — open the editor, copy, save, or any of them together — and one of them always stays on.\n- Copy and Save can happen straight after a capture, with or without the editor.\n- A preview instead of the editor: each capture lands as a card in a corner of the screen while you keep typing — Copy, Save, Edit, drag it into another app, or flick it away. Several captures pile up in the corner and fan out under the pointer, with Copy all, Save all and Close all for the whole pile. Each card closes by itself after a few seconds (or never), saving first if you like — pin one to keep it. Closed a card too soon? ⌘⇧0 shows the last few again, and hides them; bind Recent captures to a key of your own to show, hide or toggle them.\n- Save pictures as PNG or JPEG, at full resolution or at screen size.\n- Save straight into your Pictures folder, or one you choose, without the Save panel each time. ⌥⌘S in the editor still asks where.\n- Name saved files the way you like, with the date and time filled in.\n- Choose whether a window is captured with its shadow.\n- Every capture, and the Settings page, from Lumi's menu bar menu.\n- A shortcut for every capture: ⌘⇧2 an area, ⌥⌘⇧2 a window you pick, ⌘⇧1 the whole screen, ⌥⌘⇧1 the window in front.\n- Recognize Text, on ⌘⇧9 and in the menu bar menu: drag over any text on screen and it goes straight to the clipboard, Vietnamese included. A card in the corner shows the lines it read — click one to copy just that line — and its magnifier (or Space) opens the picture large enough to read, every line boxed. There, choose lines the way you choose files — click, ⌘- or ⇧-click, drag across them, ⌘A — and ⌘C copies exactly those; double-click a line to copy it alone. An area with no text leaves the clipboard as it was.\n\n### Changed\n\n- Copy says only what it copied — the picture's size and how big the file is — without the timings it used to show beside them.\n- Needs Lumi 1.34.0 or later.\n\n### Fixed\n\n- Copying many times in one editor no longer leaves each copied picture held in memory until the editor closes.",
+  "notesSha256": "b11ce516b3a5ba3563686184d56d147973cde783dcfcc5fa0b47b9e4a544e5d4",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Capture, preview, copy or save — all without opening the editor",
+     "items": [
+      "Settings page to choose what happens after a capture: open the editor, copy, save, or any combination",
+      "Preview cards appear in a corner after each capture, letting you copy, save, edit, or dismiss them",
+      "Save images as PNG or JPEG, at full or screen resolution, directly to a folder you choose",
+      "Name saved files with custom patterns that include date and time",
+      "Recognize Text extracts text from any part of the screen to your clipboard, Vietnamese included",
+      "Copy now shows only the image size and file size, without timing details"
+     ]
+    },
+    "vi": {
+     "headline": "Chụp, xem trước, sao chép hoặc lưu — không cần mở trình chỉnh sửa",
+     "items": [
+      "Trang Cài đặt để chọn hành động sau khi chụp: mở trình chỉnh sửa, sao chép, lưu hoặc kết hợp",
+      "Thẻ xem trước xuất hiện ở góc màn hình sau mỗi lần chụp, cho phép sao chép, lưu, chỉnh sửa hoặc đóng",
+      "Lưu ảnh dưới dạng PNG hoặc JPEG, độ phân giải đầy đủ hoặc theo màn hình, thẳng vào thư mục bạn chọn",
+      "Đặt tên tệp đã lưu theo mẫu tùy chỉnh có ngày và giờ",
+      "Nhận dạng văn bản trích xuất chữ từ bất kỳ vùng nào trên màn hình vào clipboard, bao gồm tiếng Việt",
+      "Sao chép giờ chỉ hiện kích thước ảnh và dung lượng tệp, không còn thông tin thời gian"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.5.0",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- A window is captured with its shadow too: the shadow button in the editor shows it or leaves it out, at any point, without losing a mark.\n\n### Fixed\n\n- A window's rounded corners are transparent in the editor, as they are in the picture, rather than looking white: the editor's own shadow follows the picture's shape instead of a rectangle round it.",
+  "notesSha256": "ddef922767d9a7e6614f0b65d8d32d37bf4518a05ddbbf1e906290c24e1cb36d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Window shadows can be toggled on and off after capture",
+     "items": [
+      "Captured windows include their shadow, which you can show or hide without losing annotations",
+      "Window corners are now properly transparent in the editor instead of appearing white",
+      "The editor's drop shadow follows the actual shape of the captured window"
+     ]
+    },
+    "vi": {
+     "headline": "Có thể bật tắt bóng cửa sổ sau khi chụp",
+     "items": [
+      "Cửa sổ được chụp bao gồm cả bóng đổ, bạn có thể hiện hoặc ẩn mà không mất chú thích",
+      "Góc cửa sổ giờ đây trong suốt đúng cách trong trình chỉnh sửa thay vì hiện màu trắng",
+      "Bóng đổ của trình chỉnh sửa bám theo hình dạng thực của cửa sổ đã chụp"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.4.0",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- Capture a window by pointing at it: the window under the pointer lights up, and a click takes it.\n\n### Changed\n\n- Capturing the window in front, with no picking, is now \"Capture the front window\".",
+  "notesSha256": "c900aaea680fd661cbdb5b6d9ad204fc3683295553a3083df1fd3522ae1e1ef4",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Point and click to capture any window",
+     "items": [
+      "Point at a window to highlight it, then click to capture it",
+      "The command for capturing the frontmost window is now called Capture the front window"
+     ]
+    },
+    "vi": {
+     "headline": "Chỉ và nhấp để chụp bất kỳ cửa sổ nào",
+     "items": [
+      "Chỉ chuột vào cửa sổ để làm nổi bật, sau đó nhấp để chụp",
+      "Lệnh chụp cửa sổ phía trước giờ có tên là Capture the front window"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.0",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- Capture an area you drag, the window in front, or the whole screen, and edit it straight away.\n- ⌘⇧2 captures an area.\n- Copy puts the edited picture on the clipboard; Save offers it as a file.",
+  "notesSha256": "e91b093cc58b2b8cd04a0d3ea36806a357448826b2bb213e02c9ef10a0c0ef3b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Capture, mark up, and save or copy screenshots",
+     "items": [
+      "Capture an area you drag, the window in front, or the whole screen",
+      "Press ⌘⇧2 to capture an area",
+      "Edit your screenshot before copying or saving it",
+      "Copy puts the edited picture on the clipboard",
+      "Save offers the edited picture as a file"
+     ]
+    },
+    "vi": {
+     "headline": "Chụp, đánh dấu và lưu hoặc sao chép ảnh màn hình",
+     "items": [
+      "Chụp vùng bạn kéo, cửa sổ phía trước hoặc toàn bộ màn hình",
+      "Nhấn ⌘⇧2 để chụp một vùng",
+      "Chỉnh sửa ảnh chụp màn hình trước khi sao chép hoặc lưu",
+      "Copy đưa ảnh đã chỉnh sửa vào clipboard",
+      "Save lưu ảnh đã chỉnh sửa thành tệp"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.0",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- The editor: crop, arrows, boxes, highlights, pixelation, text and numbered steps, with undo, zoom, and copy or save of the result.\n- The editor's toolbar is its title bar.",
+  "notesSha256": "0ff6a8daedc6e664e6cb10a2cac172764a9a519096d7052f860d1f3160c7413b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Introducing the editor",
+     "items": [
+      "Crop, draw arrows, add boxes, highlight areas, pixelate sensitive parts, add text and numbered steps",
+      "Undo changes, zoom in and out, then copy or save your edited screenshot",
+      "The toolbar sits in the title bar to save space"
+     ]
+    },
+    "vi": {
+     "headline": "Ra mắt trình chỉnh sửa",
+     "items": [
+      "Cắt ảnh, vẽ mũi tên, thêm hộp, làm nổi bật vùng, làm mờ phần nhạy cảm, thêm chữ và đánh số bước",
+      "Hoàn tác thay đổi, phóng to thu nhỏ, rồi sao chép hoặc lưu ảnh chụp đã chỉnh sửa",
+      "Thanh công cụ nằm trên thanh tiêu đề để tiết kiệm không gian"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.0",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- The extension's frame: a command that opens the editor window.",
+  "notesSha256": "52b7f8b7ed4bc061409782b0f065323ebbe341c8d42c3afbc9a1d896057ac4c9",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "New editor window",
+     "items": [
+      "Added a command to open the editor window"
+     ]
+    },
+    "vi": {
+     "headline": "Cửa sổ chỉnh sửa mới",
+     "items": [
+      "Thêm lệnh để mở cửa sổ chỉnh sửa"
+     ]
+    }
+   }
+  }
+ }
+]

@@ -1,0 +1,344 @@
+[
+  {
+    "id": "dev.thiennguyen.sample",
+    "name": "Sample",
+    "version": "0.17.0",
+    "minLumiVersion": "1.38.0",
+    "description": "The reference extension: reads the selection, answers through the alert.",
+    "author": "Thien Nguyen",
+    "capabilities": [
+      "accessibility",
+      "applications",
+      "clipboard",
+      "input-hold",
+      "menu",
+      "network",
+      "screen"
+    ],
+    "windows": [
+      "Sample settings",
+      "Unified title bar",
+      "Unified title bar, 72 points",
+      "Welcome to Sample",
+      "Background card",
+      "Hold input",
+      "Hold input"
+    ],
+    "icon": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-ae93123e6589.svg",
+    "category": "Developer",
+    "featured": false,
+    "screenshots": [
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-ef981483beee.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-238ea6c1a612.png"
+    ],
+    "video": null,
+    "details": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-59164d76ec60.md",
+    "changelog": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-c9236142de53.json",
+    "discussion": {
+      "number": 14,
+      "url": "https://github.com/thiennguyen93/lumi-store/discussions/14"
+    },
+    "size": 145112,
+    "commands": [
+      "Translate selection",
+      "Show a background card",
+      "Hold input from a window",
+      "Hold input from a panel",
+      "Open sample settings",
+      "Confirm it's you",
+      "Spin forever (limit test)",
+      "Grow until refused (limit test)"
+    ],
+    "shortcuts": [],
+    "pages": [],
+    "package": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-0.17.0.tar.gz",
+    "signature": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sample-0.17.0.tar.gz.sig",
+    "sha256": "a9dc1749480d32f88091ebd693bd8752131b252c7aa8dcec6e9f596aae262cbf",
+    "sourcesSha256": "67c4009afc6246229a04d493a1dc8e96a9a5fbf406405a1ec3272e376ef0530a"
+  },
+  {
+    "id": "dev.thiennguyen.keytest",
+    "name": "Keyboard Cleaner",
+    "version": "0.6.1",
+    "minLumiVersion": "1.38.0",
+    "description": "Lock your MacBook keyboard while you wipe it, then check every key and catch keys that double-type.",
+    "author": "Thien Nguyen",
+    "capabilities": [
+      "input-hold"
+    ],
+    "windows": [],
+    "icon": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-100e6bec00ae.svg",
+    "category": "Utilities",
+    "featured": false,
+    "screenshots": [
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-ca44f9936687.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-39c6d3893afe.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-e9bbf55e3363.png"
+    ],
+    "video": null,
+    "details": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-d17a7c22e0d9.md",
+    "changelog": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-71d6a969ea07.json",
+    "discussion": {
+      "number": 15,
+      "url": "https://github.com/thiennguyen93/lumi-store/discussions/15"
+    },
+    "size": 90389,
+    "commands": [],
+    "shortcuts": [],
+    "pages": [
+      "Keyboard"
+    ],
+    "package": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-0.6.1.tar.gz",
+    "signature": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.keytest-0.6.1.tar.gz.sig",
+    "sha256": "a5428796591b4bbab841b17ef74ee49a3c28af4cac99b24dd76b22481dfd385c",
+    "sourcesSha256": "4d24528fbbf335b0e710670ba6ac153f4c90065c9ba657a72d669e57cd5eecde"
+  },
+  {
+    "id": "dev.thiennguyen.rhythm",
+    "name": "Rhythm Keys",
+    "version": "0.2.0",
+    "minLumiVersion": "1.45.0",
+    "description": "A rhythm game for the keys under your fingers: notes fall to the beat of your own songs, you press D F J K.",
+    "author": "Thien Nguyen",
+    "capabilities": [
+      "network",
+      "menu"
+    ],
+    "windows": [
+      "Rhythm Keys"
+    ],
+    "icon": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.rhythm-2468817fe451.svg",
+    "category": "Utilities",
+    "featured": false,
+    "screenshots": [
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.rhythm-e083fb781379.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.rhythm-a2428d623b40.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.rhythm-fd38bdcd8bb6.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.rhythm-1fd3eb11df8f.png"
+    ],
+    "video": null,
+    "details": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.rhythm-7b1fb92a456a.md",
+    "changelog": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.rhythm-de25ca9f171b.json",
+    "discussion": {
+      "number": 39,
+      "url": "https://github.com/thiennguyen93/lumi-store/discussions/39"
+    },
+    "size": 118451,
+    "commands": [],
+    "shortcuts": [],
+    "pages": [],
+    "package": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.rhythm-0.2.0.tar.gz",
+    "signature": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.rhythm-0.2.0.tar.gz.sig",
+    "sha256": "489756ce4dc7ea5b5c9c774f9a9274074b6feebe6776e7c11b270c063231721a",
+    "sourcesSha256": "70ee079fb6ee26c4186398bf00527c37337e73fa31b17d1c4181891c8916bbad"
+  },
+  {
+    "id": "dev.thiennguyen.screenshot",
+    "name": "Screenshot",
+    "version": "0.7.1",
+    "minLumiVersion": "1.36.0",
+    "description": "Capture part of the screen, mark it up, and copy or save it.",
+    "author": "Thien Nguyen",
+    "capabilities": [
+      "screen",
+      "clipboard",
+      "menu"
+    ],
+    "windows": [
+      "Screenshot preview",
+      "Screenshot",
+      "Welcome to Lumi Screenshot"
+    ],
+    "icon": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-1006a16ae070.svg",
+    "category": "Utilities",
+    "featured": true,
+    "screenshots": [
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-bb36996749ad.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-792d1ce74c19.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-ee0fc00a62a5.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-7455a4072c48.png"
+    ],
+    "video": {
+      "youtube": "3xeg8odiBO8",
+      "poster": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-01bccd07dcb7.jpg"
+    },
+    "details": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-4c9a2eb617d1.md",
+    "changelog": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-1cf6ac205a6c.json",
+    "discussion": {
+      "number": 20,
+      "url": "https://github.com/thiennguyen93/lumi-store/discussions/20"
+    },
+    "size": 283572,
+    "commands": [
+      "Capture an area",
+      "Capture a window",
+      "Capture the front window",
+      "Capture the whole screen",
+      "Recognize text",
+      "Recent captures",
+      "Open Screenshot Editor",
+      "Open File in Screenshot Editor",
+      "Open Clipboard in Screenshot Editor"
+    ],
+    "shortcuts": [
+      {
+        "command": "capture-area",
+        "label": "Capture an area",
+        "key": "cmd+shift+2"
+      },
+      {
+        "command": "capture-window",
+        "label": "Capture a window",
+        "key": "cmd+alt+shift+2"
+      },
+      {
+        "command": "capture-screen",
+        "label": "Capture the whole screen",
+        "key": "cmd+shift+1"
+      },
+      {
+        "command": "capture-front-window",
+        "label": "Capture the front window",
+        "key": "cmd+alt+shift+1"
+      },
+      {
+        "command": "recognize-text",
+        "label": "Recognize text",
+        "key": "cmd+shift+9"
+      },
+      {
+        "command": "recent-captures",
+        "label": "Recent captures",
+        "key": "cmd+shift+0"
+      },
+      {
+        "command": "open-editor",
+        "label": "Open Screenshot Editor",
+        "key": "cmd+shift+8"
+      }
+    ],
+    "pages": [],
+    "package": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-0.7.1.tar.gz",
+    "signature": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.screenshot-0.7.1.tar.gz.sig",
+    "sha256": "4ee699a434ab417564fd97f90ba8c1b1a262eb5ab4a53b507c3138a0114c054a",
+    "sourcesSha256": "d2fa5554d2921d1704365f77164cb66e8d73af996132b5ae1575157fb15f34f2"
+  },
+  {
+    "id": "dev.thiennguyen.clipboard",
+    "name": "Clipboard Manager",
+    "version": "0.87.0",
+    "minLumiVersion": "1.45.0",
+    "description": "Keep what you copy \u2014 text, links, images and files \u2014 and paste it back from a panel.",
+    "author": "Thien Nguyen",
+    "capabilities": [
+      "clipboard",
+      "clipboard-history",
+      "input",
+      "accessibility",
+      "snippets",
+      "menu",
+      "preload"
+    ],
+    "windows": [
+      "Welcome to Clipboard Manager",
+      "Clipboard Manager"
+    ],
+    "icon": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-d7f1b7de3cdf.svg",
+    "category": "Productivity",
+    "featured": true,
+    "screenshots": [
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-a269424e737e.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-e74ba58bab75.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-3b3fbc6dd3b2.png"
+    ],
+    "video": null,
+    "details": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-ef8557fbe247.md",
+    "changelog": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-2b412328d979.json",
+    "discussion": {
+      "number": 16,
+      "url": "https://github.com/thiennguyen93/lumi-store/discussions/16"
+    },
+    "size": 1963472,
+    "commands": [
+      "Show clipboard history",
+      "Hide clipboard history",
+      "Toggle clipboard history",
+      "Toggle privacy mode"
+    ],
+    "shortcuts": [
+      {
+        "command": "open",
+        "label": "Show clipboard history",
+        "key": "cmd+shift+c"
+      }
+    ],
+    "pages": [
+      "Dashboard"
+    ],
+    "package": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-0.87.0.tar.gz",
+    "signature": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.clipboard-0.87.0.tar.gz.sig",
+    "sha256": "aad9e05e447a88de0d0515bd767f300868278880f15d64602fe350135368b15e",
+    "sourcesSha256": "f6fd2d516126701d10151b7100b046da6d4e5960fff0be13fa2ef136249d1a46"
+  },
+  {
+    "id": "dev.thiennguyen.sticky",
+    "name": "Sticky Notes",
+    "version": "0.1.26",
+    "minLumiVersion": "1.42.0",
+    "description": "Notes that float above every app: format them, add pictures, find them with \u2318P.",
+    "author": "Thien Nguyen",
+    "capabilities": [
+      "clipboard",
+      "menu",
+      "network"
+    ],
+    "windows": [
+      "Sticky Notes",
+      "Welcome to Sticky Notes"
+    ],
+    "icon": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sticky-d1fa291ebd9a.svg",
+    "category": "Productivity",
+    "featured": false,
+    "screenshots": [
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sticky-bb7ae9af6a14.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sticky-4f023a72d800.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sticky-e151f0c67dfb.png",
+      "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sticky-a0feb30b137f.png"
+    ],
+    "video": null,
+    "details": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sticky-4b432bf18974.md",
+    "changelog": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sticky-be4572e2dff6.json",
+    "discussion": {
+      "number": 25,
+      "url": "https://github.com/thiennguyen93/lumi-store/discussions/25"
+    },
+    "size": 395262,
+    "commands": [
+      "New Sticky Note",
+      "Show Sticky Note",
+      "Find a Sticky Note"
+    ],
+    "shortcuts": [
+      {
+        "command": "new",
+        "label": "New Sticky Note",
+        "key": "ctrl+alt+cmd+n"
+      },
+      {
+        "command": "show",
+        "label": "Show Sticky Note",
+        "key": "ctrl+alt+cmd+s"
+      },
+      {
+        "command": "find",
+        "label": "Find a Sticky Note",
+        "key": "ctrl+alt+cmd+f"
+      }
+    ],
+    "pages": [],
+    "package": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sticky-0.1.26.tar.gz",
+    "signature": "https://thiennguyen.dev/lumi-store/extensions/dev.thiennguyen.sticky-0.1.26.tar.gz.sig",
+    "sha256": "f34171ae76c6ce1ee14c37c2b2c00f1e70993157936d69981455dae6b9339f41",
+    "sourcesSha256": "4de0d0751261a8330a5db05bcc773d1fdfbbb605c9f400d5da0b95ddc3b6b580"
+  }
+]
