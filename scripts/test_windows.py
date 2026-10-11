@@ -98,6 +98,29 @@ class KeepAlive(unittest.TestCase):
         self.assertIn("leave copies out", refusal('kind = "panel"\ncopies = 3\nkeep-alive = true'))
 
 
+class SelectionWatch(unittest.TestCase):
+    def manifest(self, capabilities: str, line: str):
+        return tomllib.loads(
+            BASE.replace('version = "1.0.0"', f'version = "1.0.0"\ncapabilities = [{capabilities}]\n{line}').format(fields="")
+        )
+
+    def test_hearing_selections_needs_the_permission(self):
+        for event in ("selection", "selection-watching"):
+            with self.assertRaises(SystemExit) as caught:
+                publish.check_manifest("dev.you.thing", self.manifest('"accessibility"', f'events = ["{event}"]'))
+            self.assertIn("needs the selection-watch capability", str(caught.exception.code))
+            publish.check_manifest("dev.you.thing", self.manifest('"selection-watch"', f'events = ["{event}"]'))
+
+    def test_where_the_switch_starts_needs_the_permission(self):
+        publish.check_manifest("dev.you.thing", self.manifest('"selection-watch"', "selection-watch-default = false"))
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", self.manifest("", "selection-watch-default = false"))
+        self.assertIn("needs the selection-watch capability", str(caught.exception.code))
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", self.manifest('"selection-watch"', 'selection-watch-default = "off"'))
+        self.assertIn("is not true or false", str(caught.exception.code))
+
+
 class Preload(unittest.TestCase):
     GRANTED = BASE.replace('version = "1.0.0"', 'version = "1.0.0"\ncapabilities = ["preload"]')
 
@@ -135,3 +158,43 @@ class Preload(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class BesideTheSelection(unittest.TestCase):
+    """`position = "selection"` (Lumi 1.47): a panel's word, with no place of
+    its own — `manifest.rs`'s refusals, same sentence."""
+
+    def test_a_panel_may_open_beside_the_selection(self):
+        check('kind = "panel"\nposition = "selection"')
+        check('kind = "panel"\nposition = "selection"\nfocus = false')
+
+    def test_a_window_may_not(self):
+        self.assertIn("only a panel has", refusal('position = "selection"'))
+
+    def test_it_says_where_beside_it_in_words(self):
+        check('kind = "panel"\nposition = "selection"\nanchor = { at = "end", side = "below" }')
+        check('kind = "panel"\nposition = "selection"\nanchor = {}')
+        self.assertIn("stands at", refusal('kind = "panel"\nposition = "selection"\nanchor = { at = "middle" }'))
+        self.assertIn('"above" or "below"', refusal('kind = "panel"\nposition = "selection"\nanchor = { side = "left" }'))
+        self.assertIn("a table of at and side", refusal('kind = "panel"\nposition = "selection"\nanchor = { gap = 4 }'))
+        self.assertIn('only a panel at position = "selection"', refusal('kind = "panel"\nposition = "top-right"\nanchor = { at = "end" }'))
+
+    def test_it_has_no_place_of_its_own(self):
+        for key in ("remember-frame = true", "restore = true", "copies = 4"):
+            refused = refusal(f'kind = "panel"\nposition = "selection"\n{key}')
+            self.assertIn("opens beside the selection", refused)
+
+
+class PanelFloor(unittest.TestCase):
+    """A panel's floor is a panel's (`PANEL_*_MIN`, Lumi 1.47): a one-row
+    panel may say how small it can be made; a window keeps its own floor."""
+
+    def test_a_panel_may_be_one_row_tall(self):
+        check('kind = "panel"\nwidth = 200\nheight = 36\nmin-height = 32')
+
+    def test_each_kind_is_held_to_its_own_floor(self):
+        # A panel 36 tall may not say it can be made 40: 40 is its floor now.
+        refused = refusal('kind = "panel"\nwidth = 200\nheight = 36\nmin-height = 40')
+        self.assertIn("more than its height", refused)
+        # A window holds both up to 180, where neither is more than the other.
+        check('width = 200\nheight = 36\nmin-height = 40')
