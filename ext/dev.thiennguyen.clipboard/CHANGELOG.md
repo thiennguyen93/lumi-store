@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.87.1] - 2026-10-11
+
+### Fixed
+
+- Scrolling the history fast with a trackpad no longer leaves part of the list empty for a moment. The rows ahead of the scroll now show as they come into view, at any speed.
+
 ## [0.87.0] - 2026-10-09
 
 ### Added
