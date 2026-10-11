@@ -151,6 +151,83 @@ pub fn selection() -> Result<Found, String> {
     lumi::ext::selection::read()
 }
 
+/// Whether the selection in the frontmost application can be written over,
+/// as Accessibility says: `Some(false)` for text nobody can edit there — a
+/// web page, a terminal's scrollback — where [`replace_selection`] is
+/// refused; `Some(true)` for a field or a document; `None` when the app says
+/// neither, where [`replace_selection`] still types or pastes. Ask it before
+/// offering to replace. Needs `accessibility` and Lumi 1.47.0.
+pub fn selection_editable() -> Result<Option<bool>, String> {
+    lumi::ext::selection::editable()
+}
+
+/// Put `replacement` where `expected` is selected in the frontmost
+/// application — `expected` being the text [`selection`] answered, so a
+/// selection the person has changed since is never written over. Answers
+/// how it went in: `"accessibility"`, `"typed"` or `"pasted"`.
+///
+/// Through Accessibility where the app takes it; else typed when it is
+/// short; else pasted, the board put back after — only when you also
+/// declare `clipboard`. Refused, with nothing typed, where
+/// [`selection_editable`] answers `Some(false)`. Your panels close first.
+///
+/// Needs `accessibility` and `input`, and answers only something the person
+/// did: a command, or a request from one of your windows. Needs Lumi 1.47.0.
+pub fn replace_selection(expected: &str, replacement: &str) -> Result<String, String> {
+    lumi::ext::selection::replace(expected, replacement)
+}
+
+/// Whether you are told of the selections the person makes with the mouse —
+/// the `selection` event — now: the switch on your Permissions sheet, which
+/// the person and you both move. Needs `selection-watch` and Lumi 1.47.0.
+pub fn selection_watching() -> Result<bool, String> {
+    lumi::ext::selection::watching()
+}
+
+/// Move that switch, for a setting of your own. The person moving it is
+/// told to you as `selection-watching`; this call is not. Needs
+/// `selection-watch` and Lumi 1.47.0.
+pub fn set_selection_watching(on: bool) -> Result<(), String> {
+    lumi::ext::selection::set_watching(on)
+}
+
+/// The names of the other extensions told of the person's selections now.
+/// Lumi does not choose between you — each opens its own panel — so you can
+/// say so, or offer to step aside. Needs `selection-watch` and Lumi 1.47.0.
+pub fn selection_watchers() -> Result<Vec<String>, String> {
+    lumi::ext::selection::watchers()
+}
+
+/// Lumi's own text transforms — UPPERCASE, Sort lines, Pretty-print JSON:
+/// what a Transform selection shortcut offers — by name. Pure, so no
+/// capability. Needs Lumi 1.47.0.
+///
+/// ```ignore
+/// use lumi_extension_api::{selection, replace_selection, transforms};
+///
+/// let found = selection()?;
+/// let shouted = transforms::apply("upper", &found.text)?;
+/// replace_selection(&found.text, &shouted)?;
+/// ```
+pub mod transforms {
+    use super::lumi::ext::transforms as wit;
+
+    pub use wit::Transform;
+
+    /// Every built-in transform, in the order Lumi lists them: its `id`,
+    /// its `label` and its `group` (`"case"`, `"lines"` or `"encode"`).
+    pub fn all() -> Result<Vec<Transform>, String> {
+        wit::all()
+    }
+
+    /// `text` through the transform `id` names. Refused for an id [`all`]
+    /// does not list and for text over 1 MiB; a transform that cannot do
+    /// what it says — JSON that does not parse — answers why instead.
+    pub fn apply(id: &str, text: &str) -> Result<String, String> {
+        wit::apply(id, text)
+    }
+}
+
 /// Draw a line of text over the frontmost application, in Lumi's own
 /// alert style. The way an extension talks to the person at the keyboard.
 pub fn alert(text: &str) -> Result<(), String> {
@@ -417,6 +494,18 @@ pub fn set_position(name: &str, position: &str) -> Result<(), String> {
     lumi::ext::ui::set_position(name, position)
 }
 
+/// Choose where beside the selection one of your panels declared
+/// `position = "selection"` stands from its next opening — `at` one of
+/// `"start"`, `"end"`, `"center"` or `"pointer"`, `side` `"above"` or
+/// `"below"`, the manifest's `anchor` words — for a setting that lets the
+/// person choose. Call it before `open_window`. Words only: Lumi measures the
+/// selection and places the panel against the part of it named. A panel at
+/// any other position is refused. Needs Lumi 1.47.0 or later — say so with
+/// `min-lumi-version`.
+pub fn set_anchor(name: &str, at: &str, side: &str) -> Result<(), String> {
+    lumi::ext::ui::set_anchor(name, at, side)
+}
+
 /// Choose light or dark for one of your panels — "light", "dark" or
 /// "system" — for a theme setting. Applies at once if the panel is up.
 pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
@@ -455,10 +544,12 @@ pub fn set_titlebar_height(name: &str, height: f64) -> Result<f64, String> {
 
 /// Give one of your open windows or panels a new content size, in points —
 /// to fit a list that grew, a stack of cards. Clamped to 240–1600 by
-/// 180–1200, as the manifest's `width` and `height` are; answers the size it
-/// became. A panel at a corner keeps that corner and grows away from it;
-/// anything else keeps its top-left. The next open starts at the manifest's
-/// size again. A page can do the same itself with `POST /__lumi__/size`.
+/// 180–1200 for a window and 120–1600 by 32–1200 for a panel (Lumi 1.47.0),
+/// as the manifest's `width` and `height` are; answers the size it became.
+/// A panel at a corner keeps that corner and grows away from it; a panel
+/// beside the selection keeps the edge facing it; anything else keeps its
+/// top-left. The next open starts at the manifest's size again. A page can
+/// do the same itself with `POST /__lumi__/size`.
 /// Needs Lumi 1.34.0 or later — say so with `min-lumi-version`.
 pub fn set_size(name: &str, width: f64, height: f64) -> Result<Size, String> {
     lumi::ext::ui::set_size(name, width, height)

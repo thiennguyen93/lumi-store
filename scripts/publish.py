@@ -114,6 +114,9 @@ CAPABILITIES = {
     # Lumi 1.45: a kept panel loaded ahead, out of sight, from launch
     # (`[[window]] preload`, `ui.preload-enabled`).
     "preload",
+    # Lumi 1.47: the text the person selects with the mouse in any app, as
+    # they select it (the `selection` event), and one panel beside it.
+    "selection-watch",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -134,6 +137,10 @@ EVENTS = {
     # Lumi 1.45: loading the extension's panels ahead turned on or off on its
     # Permissions sheet.
     "preload-enabled": "preload",
+    # Lumi 1.47: a selection made with the mouse in any app, and the switch
+    # over hearing them turned on or off on the Permissions sheet.
+    "selection": "selection-watch",
+    "selection-watching": "selection-watch",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -193,7 +200,7 @@ MAX_PAGE_LABEL = 24
 MAX_SHEETS = 4
 # `ext::manifest`'s MAX_FOLDERS, MAX_FOLDER_NAME and MAX_FOLDER_LABEL.
 # `ext::manifest::PanelPosition::parse`'s words.
-PANEL_POSITIONS = ("", "cursor", "center", "top-left", "top-right", "bottom-left", "bottom-right")
+PANEL_POSITIONS = ("", "cursor", "center", "top-left", "top-right", "bottom-left", "bottom-right", "selection")
 MAX_FOLDERS = 8
 MAX_FOLDER_NAME = 64
 MAX_FOLDER_LABEL = 60
@@ -386,6 +393,14 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"preload-default = {start!r} is not true or false")
         if "preload" not in ext.get("capabilities", []):
             fail(entry_id, "preload-default says where the preload switch starts, which needs the preload capability — add it to capabilities")
+    # And `selection-watch-default`, the same way for the selection-watch
+    # switch.
+    if "selection-watch-default" in ext or "selection_watch_default" in ext:
+        start = ext.get("selection-watch-default", ext.get("selection_watch_default"))
+        if not isinstance(start, bool):
+            fail(entry_id, f"selection-watch-default = {start!r} is not true or false")
+        if "selection-watch" not in ext.get("capabilities", []):
+            fail(entry_id, "selection-watch-default says where the selection-watch switch starts, which needs the selection-watch capability — add it to capabilities")
     seen = set()
     for command in manifest.get("command", []):
         name = command.get("name", "")
@@ -433,8 +448,33 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(
                 entry_id,
                 f'the panel {name} asks for position {position!r}; a panel opens at "cursor", "center", '
-                '"top-left", "top-right", "bottom-left" or "bottom-right"',
+                '"top-left", "top-right", "bottom-left", "bottom-right" or "selection"',
             )
+        # `manifest.rs`'s anchor rule (Lumi 1.47): a panel beside the
+        # selection's alone, its words or nothing, same sentences.
+        if "anchor" in window:
+            anchor = window["anchor"]
+            if position != "selection" or kind != "panel":
+                fail(entry_id, f'the window {name} sets an anchor, which only a panel at position = "selection" has')
+            if not isinstance(anchor, dict) or not set(anchor) <= {"at", "side"}:
+                fail(entry_id, f"the panel {name}'s anchor is a table of at and side")
+            at = str(anchor.get("at", "")).strip()
+            if at not in ("", "start", "end", "center", "pointer"):
+                fail(entry_id, f'the panel {name} asks for anchor at {at!r}; a panel beside the selection stands at "start", "end", "center" or "pointer"')
+            side = str(anchor.get("side", "")).strip()
+            if side not in ("", "above", "below"):
+                fail(entry_id, f'the panel {name} asks for anchor side {side!r}; a panel beside the selection goes "above" or "below"')
+        # `manifest.rs`'s rule for a panel beside the selection (Lumi 1.47):
+        # it has no place of its own, so no key about one, same sentence.
+        if position == "selection" and kind == "panel":
+            for key in ("remember-frame", "restore", "copies"):
+                if key in window and window[key] not in (False, None):
+                    fail(
+                        entry_id,
+                        f"the panel {name} opens beside the selection and sets {key}; a panel placed by the "
+                        "selection has no place of its own to remember, bring back or step copies from",
+                    )
+                    break
         # `manifest.rs`'s focus rule: a panel's alone, and a boolean.
         if "focus" in window:
             if kind == "window":
@@ -511,7 +551,9 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"the window {name} sets a titlebar-height, which only a unified title bar has")
         # `manifest.rs`'s min_size rule: a floor clamped as the size is, and
         # never above the size the window opens at, same sentences.
-        for side, default, least, most in (("width", 480.0, 240.0, 1600.0), ("height", 360.0, 180.0, 1200.0)):
+        # A panel's floor is lower than a window's (`PANEL_*_MIN`, Lumi 1.47).
+        floors = (120.0, 32.0) if kind == "panel" else (240.0, 180.0)
+        for side, default, least, most in (("width", 480.0, floors[0], 1600.0), ("height", 360.0, floors[1], 1200.0)):
             key = f"min-{side}"
             if key not in window:
                 continue
