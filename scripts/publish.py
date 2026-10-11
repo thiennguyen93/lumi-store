@@ -450,8 +450,9 @@ def check_manifest(entry_id: str, manifest: dict):
                 f'the panel {name} asks for position {position!r}; a panel opens at "cursor", "center", '
                 '"top-left", "top-right", "bottom-left", "bottom-right" or "selection"',
             )
-        # `manifest.rs`'s anchor rule (Lumi 1.47): a panel beside the
-        # selection's alone, its words or nothing, same sentences.
+        # `manifest.rs`'s anchor rule (Lumi 1.47; side "pointer" 1.48): a
+        # panel beside the selection's alone, its words or nothing, same
+        # sentences.
         if "anchor" in window:
             anchor = window["anchor"]
             if position != "selection" or kind != "panel":
@@ -462,8 +463,8 @@ def check_manifest(entry_id: str, manifest: dict):
             if at not in ("", "start", "end", "center", "pointer"):
                 fail(entry_id, f'the panel {name} asks for anchor at {at!r}; a panel beside the selection stands at "start", "end", "center" or "pointer"')
             side = str(anchor.get("side", "")).strip()
-            if side not in ("", "above", "below"):
-                fail(entry_id, f'the panel {name} asks for anchor side {side!r}; a panel beside the selection goes "above" or "below"')
+            if side not in ("", "above", "below", "pointer"):
+                fail(entry_id, f'the panel {name} asks for anchor side {side!r}; a panel beside the selection goes "above", "below" or "pointer"')
         # `manifest.rs`'s rule for a panel beside the selection (Lumi 1.47):
         # it has no place of its own, so no key about one, same sentence.
         if position == "selection" and kind == "panel":

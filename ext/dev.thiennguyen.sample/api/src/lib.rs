@@ -125,7 +125,7 @@ pub use lumi::ext::app::{Edition, Info as About};
 pub use lumi::ext::clipboard::{Data, Image, Rep};
 pub use lumi::ext::net::{Request, Response};
 pub use lumi::ext::profiles::{Book as Profiles, Profile};
-pub use lumi::ext::selection::Found;
+pub use lumi::ext::selection::{Found, Replaced};
 /// Where one of your windows stands — what [`window_state`] answers.
 pub use lumi::ext::ui::Presence;
 
@@ -175,6 +175,21 @@ pub fn selection_editable() -> Result<Option<bool>, String> {
 /// did: a command, or a request from one of your windows. Needs Lumi 1.47.0.
 pub fn replace_selection(expected: &str, replacement: &str) -> Result<String, String> {
     lumi::ext::selection::replace(expected, replacement)
+}
+
+/// [`replace_selection`], every rule of it, then the text written selected
+/// again where it was written — whatever its length: "I love you" written
+/// over as "tôi yêu em nhiều" is selected as those sixteen characters.
+/// `Replaced::how` is [`replace_selection`]'s answer; `Replaced::selected`
+/// is whether the text is selected now — false where the app gives no
+/// place for a selection or rewrote the text on its way in, and the caret
+/// is then where the write left it. Unlike [`replace_selection`], your panels
+/// stay up — only one holding the keyboard gives it back first — so open
+/// your panel beside the selection again after this, and it moves beside
+/// the new one without blinking. Needs Lumi 1.48.0 — say so with
+/// `min-lumi-version`.
+pub fn replace_selection_and_select(expected: &str, replacement: &str) -> Result<Replaced, String> {
+    lumi::ext::selection::replace_and_select(expected, replacement)
 }
 
 /// Whether you are told of the selections the person makes with the mouse —
@@ -496,8 +511,9 @@ pub fn set_position(name: &str, position: &str) -> Result<(), String> {
 
 /// Choose where beside the selection one of your panels declared
 /// `position = "selection"` stands from its next opening — `at` one of
-/// `"start"`, `"end"`, `"center"` or `"pointer"`, `side` `"above"` or
-/// `"below"`, the manifest's `anchor` words — for a setting that lets the
+/// `"start"`, `"end"`, `"center"` or `"pointer"`, `side` `"above"`,
+/// `"below"` or `"pointer"` (the side of the selection the pointer is at,
+/// Lumi 1.48.0), the manifest's `anchor` words — for a setting that lets the
 /// person choose. Call it before `open_window`. Words only: Lumi measures the
 /// selection and places the panel against the part of it named. A panel at
 /// any other position is refused. Needs Lumi 1.47.0 or later — say so with

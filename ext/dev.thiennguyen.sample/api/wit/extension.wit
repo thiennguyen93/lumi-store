@@ -70,6 +70,28 @@ interface selection {
     /// Needs Lumi 1.47.0.
     replace: func(expected: string, replacement: string) -> result<string, string>;
 
+    /// What `replace-and-select` did: `how` as `replace` answers it, and
+    /// whether the text written is selected now.
+    record replaced {
+        how: string,
+        selected: bool,
+    }
+
+    /// `replace`, every rule of it, then the text written selected again
+    /// where it was written — so the person sees what changed, and the next
+    /// action works on it — whatever its length: "I love you" written over
+    /// as "tôi yêu em nhiều" is selected as those sixteen characters. Lumi
+    /// selects it only once it can read it there exactly; `selected` is
+    /// false where the app gives no place for a selection, or rewrote the
+    /// text on its way in, and the caret is left where the write left it.
+    /// Unlike `replace`, your panels stay up: only one holding the keyboard
+    /// gives it back first — a panel beside the selection staying up
+    /// without it, any other closed — so a panel beside the text never
+    /// blinks out and in around the write. To keep it with the text, open it
+    /// again after this answers: Lumi moves it beside the new selection.
+    /// Needs Lumi 1.48.0.
+    replace-and-select: func(expected: string, replacement: string) -> result<replaced, string>;
+
     /// Whether this extension is told of the selections the person makes
     /// with the mouse — the `selection` event — now: the switch on its
     /// Permissions sheet, which the person and the extension both move.
@@ -547,10 +569,11 @@ interface ui {
     /// `position = "selection"` stands from its next opening: `at` is
     /// "start", "end", "center" or "pointer" — the point of the selection
     /// to stand against — and `side` "above" or "below", the side to try
-    /// first; the manifest's own `anchor` words, for a setting that lets the
-    /// person choose. Words only: Lumi still measures the selection and
-    /// places the panel. A panel at any other position is refused. Added in
-    /// Lumi 1.47.
+    /// first, or "pointer" (Lumi 1.48): the side of the selection the
+    /// pointer is at, below after a drag down and above otherwise; the
+    /// manifest's own `anchor` words, for a setting that lets the person
+    /// choose. Words only: Lumi still measures the selection and places the
+    /// panel. A panel at any other position is refused. Added in Lumi 1.47.
     set-anchor: func(name: string, at: string, side: string) -> result<_, string>;
 
     /// Choose light or dark for one of your panels: "light", "dark", or

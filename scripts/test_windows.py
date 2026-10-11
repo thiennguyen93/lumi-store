@@ -173,9 +173,10 @@ class BesideTheSelection(unittest.TestCase):
 
     def test_it_says_where_beside_it_in_words(self):
         check('kind = "panel"\nposition = "selection"\nanchor = { at = "end", side = "below" }')
+        check('kind = "panel"\nposition = "selection"\nanchor = { side = "pointer" }')
         check('kind = "panel"\nposition = "selection"\nanchor = {}')
         self.assertIn("stands at", refusal('kind = "panel"\nposition = "selection"\nanchor = { at = "middle" }'))
-        self.assertIn('"above" or "below"', refusal('kind = "panel"\nposition = "selection"\nanchor = { side = "left" }'))
+        self.assertIn('"above", "below" or "pointer"', refusal('kind = "panel"\nposition = "selection"\nanchor = { side = "left" }'))
         self.assertIn("a table of at and side", refusal('kind = "panel"\nposition = "selection"\nanchor = { gap = 4 }'))
         self.assertIn('only a panel at position = "selection"', refusal('kind = "panel"\nposition = "top-right"\nanchor = { at = "end" }'))
 
