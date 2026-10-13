@@ -192,9 +192,10 @@ pub fn replace_selection_and_select(expected: &str, replacement: &str) -> Result
     lumi::ext::selection::replace_and_select(expected, replacement)
 }
 
-/// Whether you are told of the selections the person makes with the mouse —
-/// the `selection` event — now: the switch on your Permissions sheet, which
-/// the person and you both move. Needs `selection-watch` and Lumi 1.47.0.
+/// Whether you are told of the selections the person makes — the
+/// `selection` event, and `keyboard-selection` (Lumi 1.50.0) — now: the
+/// switch on your Permissions sheet, which the person and you both move.
+/// Needs `selection-watch` and Lumi 1.47.0.
 pub fn selection_watching() -> Result<bool, String> {
     lumi::ext::selection::watching()
 }
@@ -377,6 +378,18 @@ pub fn fetch(request: &Request) -> Result<Response, String> {
 /// press on a panel that held the keyboard closed it instead.
 pub fn open_window(name: &str) -> Result<(), String> {
     lumi::ext::ui::open_window(name)
+}
+
+/// [`open_window`], `after_ms` milliseconds from now — from the run of a
+/// `selection` or `keyboard-selection` event only, as its one opening of
+/// the panel beside that selection. Answers at once; the panel opens when
+/// the time is up unless the person has pressed, typed or scrolled since,
+/// or the selection is two seconds old. For a panel that waits for the
+/// person to finish: a double-click may yet become a triple-click, within
+/// the event's `clickInterval`. At most 1000; 0 is [`open_window`]. Needs
+/// Lumi 1.50.0.
+pub fn open_window_after(name: &str, after_ms: u32) -> Result<(), String> {
+    lumi::ext::ui::open_window_after(name, after_ms)
 }
 
 /// Close one of your own windows by its manifest `name` — a panel's Esc.
