@@ -105,7 +105,7 @@ class SelectionWatch(unittest.TestCase):
         )
 
     def test_hearing_selections_needs_the_permission(self):
-        for event in ("selection", "selection-watching"):
+        for event in ("selection", "keyboard-selection", "selection-watching"):
             with self.assertRaises(SystemExit) as caught:
                 publish.check_manifest("dev.you.thing", self.manifest('"accessibility"', f'events = ["{event}"]'))
             self.assertIn("needs the selection-watch capability", str(caught.exception.code))

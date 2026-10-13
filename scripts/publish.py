@@ -141,6 +141,8 @@ EVENTS = {
     # over hearing them turned on or off on the Permissions sheet.
     "selection": "selection-watch",
     "selection-watching": "selection-watch",
+    # Lumi 1.50: a selection made with the keyboard, once it rests.
+    "keyboard-selection": "selection-watch",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
