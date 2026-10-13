@@ -9,6 +9,6 @@ The reference extension for anyone building on Lumi: one of everything an extens
 
 ## Who it is for
 
-Install it to see how an extension looks and behaves inside Lumi, then read its source next to the docs. It asks for the clipboard, the selection, the apps you have open and the network, so the review sheet has something to show.
+Install it to see how an extension looks and behaves inside Lumi, then read its source next to the docs. It asks for the clipboard, the selection, your snippets, the apps you have open and the network, so the review sheet has something to show.
 
 Build your own: [the extension guide](https://lumikeys.app/docs/extensions).

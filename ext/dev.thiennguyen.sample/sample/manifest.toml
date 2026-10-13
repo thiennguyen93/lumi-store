@@ -6,16 +6,20 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.17.0"
-# 1.38.0: the floor is the newest thing this manifest names. The component
-# calls nothing past 1.34 — WIT 0.3 grew `screen` in 1.30, `snippets` in
-# 1.31, `permissions` and `menu` in 1.33, and `ui.set-size` and
-# `menu.set-rows` in 1.34 without a new world version, and the component
-# imports what it calls — but `input-hold` below is a capability an older
-# Lumi does not know, and it would refuse the manifest for it. ([tabs]
-# below is the other direction: an older Lumi ignores the table and draws
-# its own tabs, so it sets no floor.)
-min-lumi-version = "1.38.0"
+version = "0.25.0"
+# 1.48.0: the floor is the newest thing this manifest names or the component
+# calls — the peek panel's `side = "pointer"`, which an older Lumi refuses as
+# a word it does not know, its search field's `POST /__lumi__/keyboard`, and
+# its buttons' `selection.replace-and-select`. Before it, 1.47.0: its `position = "selection"`
+# and its buttons' `transforms`, `selection.editable` and `selection.replace`. WIT 0.3 grew `screen` in 1.30, `snippets` in 1.31, `permissions` and
+# `menu` in 1.33, `ui.set-size` and `menu.set-rows` in 1.34, and
+# `ui.preload-allowed` in 1.45 without a new world version, and the component
+# imports what it calls — the card asks `ui.preload-enabled` and sets
+# `ui.set-preload-enabled`, and the `preload-enabled` event below is a name an
+# older Lumi refuses. (Before it,
+# `input-hold` set the floor at 1.38. [tabs] below is the other direction: an
+# older Lumi ignores the table and draws its own tabs, so it sets no floor.)
+min-lumi-version = "1.48.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
@@ -53,7 +57,23 @@ menu = "auto"
 # `input-hold` for the Hold input window and panel, which ask Lumi to hold
 # the keyboard from their page (`ui/hold.js`) — no code of the component's
 # is involved.
-capabilities = ["accessibility", "applications", "clipboard", "input-hold", "menu", "network", "screen"]
+# `preload` for the background card, loaded ahead as Lumi starts (Lumi 1.45).
+# `input` for the peek panel's buttons, which replace the selection with a
+# transform of it — typed in when the app will not take it through
+# Accessibility (Lumi 1.47).
+# `selection-watch` for the peek panel coming up by itself beside text you
+# select with the mouse — the `selection` event below (Lumi 1.47).
+# `snippets` for the peek panel asking whether the selection is one of the
+# person's own triggers, and what it expands to (`snippet_of` in src/lib.rs)
+# — Lumi answers with text, and the sample decides that a web address is a
+# link to open (Lumi 1.31, under the floor already set).
+capabilities = ["accessibility", "applications", "clipboard", "input", "input-hold", "menu", "network", "preload", "screen", "selection-watch", "snippets"]
+# `preload-enabled`: the Preload switch moved on the sample's
+# Permissions sheet, which the background card's own switch follows (Lumi
+# 1.45.0 — the floor above).
+# `selection`: a selection made with the mouse in any app, which opens the
+# peek panel beside it — the one window an event may open (Lumi 1.47.0).
+events = ["preload-enabled", "selection"]
 
 # Pictures for this extension's page in Lumi's Extension Store: its About
 # page and its Settings page. The store publishes them beside the package;
@@ -252,11 +272,96 @@ width = 280
 height = 200
 # Back where it was dragged to, at the size it was left at (Lumi 1.40.0).
 remember-frame = true
+# The page stays loaded while the card is put away, and comes back as it went:
+# Taller stays taller, and the page counts its openings by `lumi:shown`
+# (Lumi 1.45.0). An older Lumi loads the page afresh at every opening.
+keep-alive = true
+# And loaded ahead, when Lumi starts, so the first opening is as quick. One
+# switch over it, kept by Lumi: the card's own "Load ahead when Lumi starts"
+# (`ui.set-preload-enabled`) and Preload on the sample's Permissions
+# sheet are the same switch.
+preload = true
 
 [[command]]
 name = "card"
 label = "Show a background card"
 icon = "panel-bottom"
+
+# A panel beside the selection (Lumi 1.47.0): placed by Lumi next to the text
+# the person selected — above it, or below with no room above — measured
+# through Accessibility as it opens; no call can say where. `focus = false`
+# makes it transient: a click on it leaves the app in front with its
+# selection, and Lumi puts it away at the next press, key or scroll
+# elsewhere. It takes the keyboard only when its search field asks, on the
+# press that lands in it (Lumi 1.48.0). Kept and loaded ahead, so the selection posted to
+# it before it opens is on the page from the first frame, and the page hears
+# where it went (`lumi:placed`).
+[[window]]
+name = "peek"
+title = "Selection peek"
+path = "peek.html"
+kind = "panel"
+position = "selection"
+# Where beside the selection: centred on the pointer while it is over the
+# text, else at the end; on the side the pointer is at — below after a drag
+# down, above after a drag up or on one line (Lumi 1.48.0). The peek
+# command's own fields below choose again per shortcut, through
+# `set_anchor` — words only; Lumi still measures the selection (Lumi 1.47.0).
+anchor = { at = "pointer", side = "pointer" }
+focus = false
+material = "hud"
+width = 360
+height = 104
+keep-alive = true
+preload = true
+
+[[command]]
+name = "peek"
+label = "Peek at the selection"
+icon = "highlighter"
+
+# Where beside the selection this shortcut's peek stands — `set_anchor`
+# before `open_window`, so each binding of the command can stand its panel
+# somewhere else. The defaults are the manifest's `anchor` above.
+[[command.params]]
+name = "at"
+label = "Stand at"
+kind = "select"
+default = "pointer"
+
+[[command.params.options]]
+value = "pointer"
+label = "The pointer"
+
+[[command.params.options]]
+value = "start"
+label = "The start"
+
+[[command.params.options]]
+value = "end"
+label = "The end"
+
+[[command.params.options]]
+value = "center"
+label = "The middle"
+
+[[command.params]]
+name = "side"
+label = "Side"
+kind = "segmented"
+default = "pointer"
+
+[[command.params.options]]
+value = "pointer"
+label = "Pointer's side"
+
+[[command.params.options]]
+value = "above"
+label = "Above"
+
+[[command.params.options]]
+value = "below"
+label = "Below"
 
 # Holding the keyboard — every key on the Mac kept from every app for ten
 # seconds — asked for by a page, from two kinds of webview: an ordinary
