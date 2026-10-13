@@ -1,8 +1,9 @@
 <!doctype html>
 <!-- The sample's background card: a panel declared `focus = false` at
      `position = "bottom-right"`. It opens over the app in front without
-     taking its keyboard, sizes itself with `POST /__lumi__/size`, and asks
-     macOS's "is it you?" dialog with `POST /__lumi__/authenticate`. -->
+     taking its keyboard, sizes itself with `POST /__lumi__/size`, asks
+     macOS's "is it you?" dialog with `POST /__lumi__/authenticate`, and keeps
+     its page between openings (`keep-alive`, `lumi:shown`). -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -30,6 +31,8 @@
       <button type="button" id="close">Close</button>
     </div>
     <p id="said"></p>
+    <p id="shown"></p>
+    <label><input type="checkbox" id="ahead"> Load ahead when Lumi starts</label>
   </main>
   <script src="card.js"></script>
 </body>

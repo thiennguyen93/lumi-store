@@ -1038,8 +1038,9 @@ interface ocr {
 ///
 /// A snippet counts when it is switched on and has a trigger. Where and when
 /// it would fire while typing — its applications, the profile's own
-/// Snippets switch, on a space or at once — is not asked: nothing is being
-/// typed, and what the component does with the answer is its own.
+/// Snippets switch, on a space or at once, or never from the keyboard at
+/// all — is not asked: nothing is being typed, and what the component does
+/// with the answer is its own.
 ///
 /// Added to 0.3 in Lumi 1.31 without a new world version: an existing
 /// component imports nothing new and is unaffected, and one that calls this

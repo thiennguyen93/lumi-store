@@ -32,6 +32,10 @@ impl lumi::Guest for Sample {
                 lumi::open_window("card")?;
                 Ok("{}".to_string())
             }
+            // A panel beside the selection, placed by Lumi: what is selected
+            // is posted to its kept page first, so it is on the page in the
+            // panel's first frame, then the panel opens next to it.
+            "peek" => peek(&params),
             // The page does the rest: the hold is asked for over the bridge,
             // and nothing of it reaches this component.
             "hold" | "hold-panel" => {
@@ -107,7 +111,10 @@ impl lumi::Guest for Sample {
         // And its Welcome window, which asks for the same `about` and
         // `open-settings` the settings page does — and the two unified
         // windows, whose band buttons ask for `titlebar-height`.
-        // And the background card, whose Close asks for `close-card`.
+        // And the background card, whose Close asks for `close-card`, and
+        // whose "Load ahead when Lumi starts" reads and sets the switch Lumi
+        // keeps over loading it ahead (`preload`, `set-preload`) — the one
+        // the sample's Permissions sheet shows too.
         if window == "card" {
             return match serde_json::from_str::<serde_json::Value>(&request)
                 .ok()
@@ -115,7 +122,29 @@ impl lumi::Guest for Sample {
                 .as_deref()
             {
                 Some("close-card") => lumi::close_window("card").map(|()| "{}".to_string()),
-                _ => Err("the card asks only for close-card".to_string()),
+                Some("preload") => preload_state(),
+                Some("set-preload") => {
+                    let on = serde_json::from_str::<serde_json::Value>(&request)
+                        .ok()
+                        .and_then(|parsed| parsed.get("on").and_then(|on| on.as_bool()))
+                        .ok_or_else(|| "set-preload needs on, true or false".to_string())?;
+                    lumi::set_preload_enabled(on)?;
+                    preload_state()
+                }
+                _ => Err("the card asks for close-card, preload or set-preload".to_string()),
+            };
+        }
+        // The peek panel's buttons — each a transform's id, or the one for
+        // the snippet the selection is a trigger of — and its search field.
+        if window == "peek" {
+            let parsed: serde_json::Value =
+                serde_json::from_str(&request).map_err(|err| format!("request: {err}"))?;
+            let id = parsed.get("id").and_then(|id| id.as_str());
+            return match (parsed.get("kind").and_then(|k| k.as_str()), id) {
+                (Some("apply"), Some(id)) => peek_apply(id),
+                (Some("snippet"), _) => peek_snippet(),
+                (Some("search"), _) => peek_search(parsed.get("query").and_then(|q| q.as_str()).unwrap_or("")),
+                _ => Err("the peek panel asks for apply, with a transform's id, snippet, or search".to_string()),
             };
         }
         if !["settings", ":settings", "welcome", "unified", "unified-tall"].contains(&window.as_str()) {
@@ -125,6 +154,48 @@ impl lumi::Guest for Sample {
             serde_json::from_str(&request).map_err(|err| format!("request: {err}"))?;
         match parsed.get("kind").and_then(|k| k.as_str()) {
             Some("profile") => return profiles(),
+            // Lumi's transforms and the selection's write half, one call each,
+            // for the tests to drive: the list, one transform by id, whether
+            // the selection can be written over, and a replacement of it.
+            Some("transforms") => {
+                let all: Vec<serde_json::Value> = lumi::transforms::all()?
+                    .into_iter()
+                    .map(|t| serde_json::json!({ "id": t.id, "label": t.label, "group": t.group }))
+                    .collect();
+                return Ok(serde_json::Value::Array(all).to_string());
+            }
+            Some("transform") => {
+                let id = parsed.get("id").and_then(|i| i.as_str()).unwrap_or("");
+                let text = parsed.get("text").and_then(|t| t.as_str()).unwrap_or("");
+                return Ok(serde_json::json!({ "text": lumi::transforms::apply(id, text)? }).to_string());
+            }
+            // The selection-watch switch, read, moved and shared — for the
+            // tests to see what each costs.
+            Some("watching") => {
+                return Ok(serde_json::json!({ "watching": lumi::selection_watching()? }).to_string());
+            }
+            Some("set-watching") => {
+                let on = parsed.get("on").and_then(|on| on.as_bool()).unwrap_or(true);
+                lumi::set_selection_watching(on)?;
+                return Ok("{}".to_string());
+            }
+            Some("watchers") => {
+                return Ok(serde_json::json!({ "watchers": lumi::selection_watchers()? }).to_string());
+            }
+            Some("editable") => {
+                return Ok(serde_json::json!({ "editable": lumi::selection_editable()? }).to_string());
+            }
+            Some("replace") => {
+                let expected = parsed.get("expected").and_then(|e| e.as_str()).unwrap_or("");
+                let replacement = parsed.get("replacement").and_then(|r| r.as_str()).unwrap_or("");
+                return Ok(serde_json::json!({ "how": lumi::replace_selection(expected, replacement)? }).to_string());
+            }
+            Some("replace-and-select") => {
+                let expected = parsed.get("expected").and_then(|e| e.as_str()).unwrap_or("");
+                let replacement = parsed.get("replacement").and_then(|r| r.as_str()).unwrap_or("");
+                let done = lumi::replace_selection_and_select(expected, replacement)?;
+                return Ok(serde_json::json!({ "how": done.how, "selected": done.selected }).to_string());
+            }
             Some("about") => return about(),
             // The one piece of the person's setup that needs no capability.
             Some("hyper") => {
@@ -443,6 +514,15 @@ impl lumi::Guest for Sample {
     /// Lumi's own tests, which hand it one and read back what it kept, and
     /// try a paste from here to watch it refused.
     fn on_event(name: String, payload: String) -> Result<(), String> {
+        // The person moved the Preload switch on the Permissions
+        // sheet: the card is told, kept and loaded ahead or not, so its own
+        // switch follows.
+        if name == "preload-enabled" {
+            return lumi::post("card", &preload_state()?).map(|_| ());
+        }
+        if name == "selection" {
+            return peek_beside(&payload);
+        }
         if name == "paste" {
             return lumi::paste(&[vec![text_rep(&payload)]]);
         }
@@ -468,6 +548,12 @@ impl lumi::Guest for Sample {
             .map(|_| ())
             .map_err(lumi::storage::PutError::into_message)
     }
+}
+
+/// The switch over loading the card ahead, as the card draws it — `kind` so
+/// the same object arrives as a `lumi:message`.
+fn preload_state() -> Result<String, String> {
+    Ok(serde_json::json!({ "kind": "preload", "on": lumi::preload_enabled()? }).to_string())
 }
 
 /// `ocr.read`'s options from a page's request: every field the page
@@ -532,9 +618,24 @@ fn draw_menu() -> Result<(), String> {
     // check rows draw their ticks.
     let mut entries = vec![
         Entry::item("translate", "Translate Selection").icon("speech"),
+        // A press on a menu bar row leaves the app in front where it is, its
+        // selection with it — so the peek panel opens beside that selection
+        // from here too, and from a dev build, where shortcuts never fire:
+        // one row per place it can stand, for trying each.
+        Entry::submenu("peek", "Peek at the Selection").icon("highlighter"),
+    ];
+    for side in ["above", "below"] {
+        for (at, label) in [("pointer", "By the Pointer"), ("start", "At the Start"), ("end", "At the End"), ("center", "In the Middle")] {
+            entries.push(Entry::item(&format!("peek.{at}.{side}"), &format!("{label}, {}", if side == "above" { "Above" } else { "Below" })).under("peek"));
+        }
+        if side == "above" {
+            entries.push(Entry::separator("peek.s").under("peek"));
+        }
+    }
+    entries.extend([
         Entry::separator("s1"),
         Entry::submenu("to", "Translate To").icon("globe"),
-    ];
+    ]);
     for (code, name) in MENU_TARGETS {
         entries.push(Entry::check(&format!("to.{code}"), name, *code == target).under("to"));
     }
@@ -549,6 +650,12 @@ fn menu_pressed(id: &str) -> Result<(), String> {
             let params = serde_json::json!({ "target": menu_target() }).to_string();
             translate(&params).map(|_| ())
         }
+        _ if id.starts_with("peek.") => {
+            // `peek.<at>.<side>`: the row's own place, as a binding's fields.
+            let mut parts = id.split('.').skip(1);
+            let (at, side) = (parts.next().unwrap_or("pointer"), parts.next().unwrap_or("above"));
+            peek(&serde_json::json!({ "at": at, "side": side }).to_string()).map(|_| ())
+        }
         "settings" => lumi::open_window("settings"),
         _ => {
             let Some(code) = id.strip_prefix("to.") else {
@@ -559,6 +666,185 @@ fn menu_pressed(id: &str) -> Result<(), String> {
             draw_menu()
         }
     }
+}
+
+/// The `peek` command: the selection, told to the peek panel's page and
+/// shown beside it. The page sees the first few dozen characters and the
+/// count — a sample has no use for more of somebody's text than it shows.
+/// Where it stands is said first, with `set_anchor`: the binding's fields,
+/// or — from the menu bar, which has none — the manifest's own `anchor`.
+fn peek(params: &str) -> Result<String, String> {
+    let at = param(params, "at").unwrap_or_else(|| "pointer".to_string());
+    let side = param(params, "side").unwrap_or_else(|| "pointer".to_string());
+    lumi::set_anchor("peek", &at, &side)?;
+    let found = lumi::selection()?;
+    // Whether the buttons can do anything here: text on a web page cannot be
+    // written over, and the panel says so rather than offering them.
+    let editable = lumi::selection_editable()?;
+    lumi::post("peek", &peek_message(&found.text, &found.how, editable)?)?;
+    lumi::open_window("peek")?;
+    Ok(format!("peeked at {} chars", found.text.chars().count()))
+}
+
+/// What the peek panel shows: the first words of `text`, how many
+/// characters, whether it can be edited, Lumi's case transforms — as Lumi
+/// names them — for its buttons, and what the person's own snippets make of
+/// the text, when it is one of their triggers. One shape for the command and
+/// for a selection the panel comes up beside by itself.
+fn peek_message(text: &str, how: &str, editable: Option<bool>) -> Result<String, String> {
+    let buttons: Vec<serde_json::Value> = lumi::transforms::all()?
+        .into_iter()
+        .filter(|transform| transform.group == "case")
+        .take(4)
+        .map(|transform| serde_json::json!({ "id": transform.id, "label": transform.label }))
+        .collect();
+    // The page is told what the button will say, not what it will do: the
+    // press reads the selection and looks it up again (`peek_snippet`), so
+    // nothing the page holds is ever opened or typed.
+    let snippet = snippet_of(text).map(|expanded| match as_link(&expanded) {
+        Some(link) => serde_json::json!({
+            "link": true,
+            "label": link.split_once("://").map_or(link, |(_, rest)| rest).chars().take(60).collect::<String>(),
+        }),
+        None => serde_json::json!({
+            "link": false,
+            "label": expanded.chars().take(60).collect::<String>(),
+        }),
+    });
+    Ok(serde_json::json!({
+        "text": text.chars().take(60).collect::<String>(),
+        "chars": text.chars().count(),
+        "how": how,
+        "editable": editable,
+        "transforms": buttons,
+        "snippet": snippet,
+    })
+    .to_string())
+}
+
+/// What the person's own snippets make of `selected`, when its trimmed text
+/// is one of their triggers in the live profile: the first match that
+/// expands to something worth showing. `None` for everything else, which is
+/// nearly every selection, and for a lookup Lumi refused — the panel is
+/// about the selection first, and a snippet is a bonus on it.
+///
+/// Any snippet counts, whatever its expand mode: one the person set to
+/// **Never from typing** is kept for exactly this, and Lumi answers it like
+/// any other — `find` does not ask how a snippet fires.
+///
+/// A **sealed** expansion is skipped rather than shown. It holds something
+/// read from the clipboard, and this panel is drawn over whatever app is in
+/// front, so it is not where somebody's one-time code should appear. The
+/// sample declares `clipboard`, so Lumi does answer it — what to do with it
+/// is the extension's call, and this is the sample's.
+fn snippet_of(selected: &str) -> Option<String> {
+    let trigger = selected.trim();
+    if trigger.is_empty() {
+        return None;
+    }
+    lumi::snippets::find(trigger, lumi::snippets::Within::Active)
+        .ok()?
+        .into_iter()
+        .find_map(|hit| {
+            let expansion = lumi::snippets::expand(&hit.profile, &hit.snippet, trigger).ok()?;
+            (!expansion.sealed && !expansion.text.trim().is_empty()).then_some(expansion.text)
+        })
+}
+
+/// Whether an expansion is an address to open — the sample's own reading of
+/// it. Lumi hands back text and knows nothing about what it is: the same
+/// snippet is a link to this extension and a sentence to another, and which
+/// is the extension's to decide. Web addresses only, one word, so a snippet
+/// that expands to a sentence mentioning one is still a sentence.
+fn as_link(text: &str) -> Option<&str> {
+    let text = text.trim();
+    let rest = text.strip_prefix("https://").or_else(|| text.strip_prefix("http://"))?;
+    (!rest.is_empty() && !text.chars().any(char::is_whitespace)).then_some(text)
+}
+
+/// A selection made with the mouse, told by Lumi as it is made: the peek
+/// panel comes up beside it — the one window this event's run may open,
+/// once, without the keyboard. The anchor is the manifest's (by the
+/// pointer, above), which at a release is the hand that just selected.
+fn peek_beside(payload: &str) -> Result<(), String> {
+    let parsed: serde_json::Value = serde_json::from_str(payload).map_err(|err| format!("selection: {err}"))?;
+    let text = parsed.get("text").and_then(|t| t.as_str()).unwrap_or("");
+    let editable = parsed.get("editable").and_then(|e| e.as_bool());
+    lumi::post("peek", &peek_message(text, "accessibility", editable)?)?;
+    lumi::open_window("peek")
+}
+
+/// A button on the peek panel: the selection as it is now, through the
+/// transform pressed, written back over it and selected again — see
+/// [`write_over`] for what the panel does after.
+fn peek_apply(id: &str) -> Result<String, String> {
+    let found = lumi::selection()?;
+    if found.text.is_empty() {
+        lumi::alert("Nothing is selected any more")?;
+        return Ok(serde_json::json!({ "how": "nothing" }).to_string());
+    }
+    let changed = lumi::transforms::apply(id, &found.text)?;
+    write_over(&found.text, &changed)
+}
+
+/// The peek panel's snippet button: the selection read again as it is now,
+/// looked up again, and acted on by what it expands to — a link opened in
+/// the browser, any other text written over the selection in its place.
+/// Looked up again rather than taken from the page, so what is opened or
+/// typed is always what the person's own snippet says at the press.
+fn peek_snippet() -> Result<String, String> {
+    let found = lumi::selection()?;
+    let Some(expanded) = snippet_of(&found.text) else {
+        lumi::alert("The selection is not one of your snippets any more")?;
+        return Ok(serde_json::json!({ "how": "nothing" }).to_string());
+    };
+    if let Some(link) = as_link(&expanded) {
+        lumi::open_url(link)?;
+        return Ok(serde_json::json!({ "how": "opened" }).to_string());
+    }
+    // The trigger was matched trimmed, so the spaces around it in the
+    // selection stay where they were and only the trigger is replaced.
+    let text = &found.text;
+    let lead = text.len() - text.trim_start().len();
+    let tail = text.trim_end().len();
+    let replacement = format!("{}{expanded}{}", &text[..lead], &text[tail..]);
+    write_over(text, &replacement)
+}
+
+/// Write `changed` over the selection that read `expected`, and keep the
+/// panel with it: with the new text selected it is shown it and asked for
+/// again, which moves it beside the new selection — Lumi measures it,
+/// whatever its length now — for the next button. Not selected, the panel is
+/// about nothing any more and goes. A refusal is said in an alert, where the
+/// person can read it.
+fn write_over(expected: &str, changed: &str) -> Result<String, String> {
+    match lumi::replace_selection_and_select(expected, changed) {
+        Ok(done) => {
+            if done.selected {
+                lumi::post("peek", &peek_message(changed, "accessibility", Some(true))?)?;
+                lumi::open_window("peek")?;
+            } else {
+                lumi::close_window("peek")?;
+            }
+            Ok(serde_json::json!({ "how": done.how, "selected": done.selected }).to_string())
+        }
+        Err(refused) => {
+            let _ = lumi::alert(&refused);
+            Err(refused)
+        }
+    }
+}
+
+/// The peek panel's search field, typed in once its page asked for the
+/// keyboard: the words, searched for on the web. The browser coming forward
+/// takes the keyboard from the panel, which goes with it.
+fn peek_search(query: &str) -> Result<String, String> {
+    let query = query.trim();
+    if query.is_empty() {
+        return Err("type something to search for".to_string());
+    }
+    lumi::open_url(&format!("https://duckduckgo.com/?q={}", utf8_percent_encode(query, NON_ALPHANUMERIC)))?;
+    Ok(serde_json::json!({ "searched": query.chars().count() }).to_string())
 }
 
 fn translate(params: &str) -> Result<String, String> {

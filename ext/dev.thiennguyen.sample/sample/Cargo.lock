@@ -181,7 +181,7 @@ dependencies = [
 
 [[package]]
 name = "lumi-sample-ext"
-version = "0.17.0"
+version = "0.25.0"
 dependencies = [
  "lumi-extension-api",
  "percent-encoding",

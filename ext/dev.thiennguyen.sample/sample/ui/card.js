@@ -1,6 +1,7 @@
 // The background card: grow and shrink with `POST /__lumi__/size`, ask the
 // owner to confirm with `POST /__lumi__/authenticate`, close through the
-// sample's own `run_ui`. Built with textContent throughout.
+// sample's own `run_ui`, and keep the page between openings (`keep-alive`).
+// Built with textContent throughout.
 
 const card = document.getElementById("card");
 const said = document.getElementById("said");
@@ -48,4 +49,44 @@ confirm.addEventListener("click", async () => {
     return;
   }
   said.textContent = JSON.parse(body).authenticated ? "Confirmed — it is you." : "Not confirmed.";
+});
+
+// Kept between openings (`keep-alive`, Lumi 1.45.0): put away, the page is
+// only hidden, and Taller stays taller. What a reload used to clear is the
+// page's own to clear — here the last thing said — and `lumi:shown` marks
+// each opening the page was not loaded for. Loaded ahead (`preload`, while
+// the person allows it), the page loads hidden and has not been shown yet.
+// An older Lumi loads the page afresh each time, on screen, and the count
+// stays at one.
+const shown = document.getElementById("shown");
+let openings = document.visibilityState === "hidden" ? 0 : 1;
+const count = () => {
+  shown.textContent = openings === 1 ? "Shown once since it loaded." : `Shown ${openings} times since it loaded.`;
+};
+count();
+window.addEventListener("lumi:hidden", () => {
+  said.textContent = "";
+});
+window.addEventListener("lumi:shown", () => {
+  openings += 1;
+  count();
+});
+
+// Load ahead when Lumi starts: the switch Lumi keeps over loading the card
+// ahead, read and set through the component (`ui.preload-enabled`,
+// `ui.set-preload-enabled`) — the same switch as Preload on the
+// sample's Permissions sheet, whose moves arrive as a `lumi:message`.
+const ahead = document.getElementById("ahead");
+const sayAhead = (told) => {
+  ahead.checked = told.on;
+};
+const askAhead = (request) =>
+  fetch("/__lumi__/call", { method: "POST", body: JSON.stringify(request) })
+    .then((answer) => (answer.ok ? answer.json() : null))
+    .then((told) => told && sayAhead(told))
+    .catch(() => {});
+askAhead({ kind: "preload" });
+ahead.addEventListener("change", () => askAhead({ kind: "set-preload", on: ahead.checked }));
+window.addEventListener("lumi:message", (event) => {
+  if (event.detail?.kind === "preload") sayAhead(event.detail);
 });

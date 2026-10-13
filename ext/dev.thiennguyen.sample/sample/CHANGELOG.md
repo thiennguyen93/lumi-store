@@ -1,5 +1,68 @@
 # Changelog
 
+## [0.25.0] - 2026-10-12
+
+### Added
+
+- When the text you select is the trigger of one of your snippets, the peek panel shows what it expands to. A snippet that expands to a web address gets an **Open** button that opens it in your browser, even on text you can't edit. Any other snippet gets an **Expand** button that puts its text in place of what you selected.
+- Snippets set to **Never from typing** work here too, so you can keep a snippet only for this: `otr-(\d+)` returning a link to that ticket never expands while you type, and selecting `OTR-123` anywhere offers to open it.
+- The sample now asks for the **snippets** permission, to look up what you selected among your snippets.
+
+## [0.24.0] - 2026-10-12
+
+### Changed
+
+- After a button on the peek panel changes your text, the new text stays selected and the panel stays beside it, so you can press another button on it straight away. This works even when the text changes length.
+- Needs Lumi 1.48.0.
+
+## [0.23.0] - 2026-10-11
+
+### Added
+
+- The peek panel has a search field, filled in with the text you selected. Click it and press Return to search the web for it, or change the words first: what you type goes into the field, not over the text you selected. The panel stays up while you type, and goes when you click elsewhere.
+- Needs Lumi 1.48.0.
+
+## [0.22.0] - 2026-10-11
+
+### Changed
+
+- The peek panel goes on the side of your selection the pointer is at: below it after you drag down over several lines, above it after you drag up. On a single line it stays above.
+- Each shortcut for Peek at the selection can choose **Pointer's side** too, besides Above and Below. It is the new default.
+- Needs Lumi 1.48.0.
+
+## [0.21.0] - 2026-10-11
+
+### Added
+
+- The peek panel comes up by itself when you select text with the mouse in any app: drag across it, double-click a word or triple-click a line. It never takes the keyboard, and goes away when you click, type or scroll.
+- The sample now asks for the **selection-watch** permission. **See text you select in any app** on the sample's Permissions sheet turns it off; **Peek at the selection** still works from its shortcut and the menu bar.
+- Needs Lumi 1.47.0.
+
+## [0.20.0] - 2026-10-11
+
+### Added
+
+- The peek panel has buttons: UPPERCASE, lowercase, Title Case and Sentence case. Pressing one changes the text you selected, in the app you selected it in.
+- On text that can't be edited, such as a web page, the panel says so instead of showing the buttons.
+- The sample now asks for the **input** permission, which the buttons need to type the change in when an app won't take it otherwise.
+- Needs Lumi 1.47.0.
+
+## [0.19.0] - 2026-10-11
+
+### Added
+
+- **Peek at the selection** opens a small panel beside the text you selected, in whatever app holds it: above it, or below when there is no room above. It shows the first words and how many characters you selected, and an arrow pointing at the text. It never takes the keyboard — the app you are in keeps it and its selection — and goes away at your next click, key or scroll anywhere else. Also in the sample's menu bar menu, as **Peek at the Selection**, with a row for each place it can stand.
+- Each shortcut for Peek at the selection chooses where the panel stands: by the pointer, at the start, at the end or in the middle of what you selected, and above or below it. A small mark on the panel's edge points at the spot.
+- Needs Lumi 1.47.0.
+
+## [0.18.0] - 2026-10-09
+
+### Added
+
+- The background card keeps its page while it is put away: opened again, it is there at once, as you left it — still taller, if you made it so — and says how many times it has been shown since it loaded.
+- It is loaded ahead when Lumi starts, so the first opening is as quick — the new **preload** permission, which the sample now asks for. **Load ahead when Lumi starts** on the card turns that on or off — the same switch as **Preload** on the sample's Permissions sheet, and each follows the other.
+- Needs Lumi 1.45.0.
+
 ## [0.17.0] - 2026-10-07
 
 ### Added
