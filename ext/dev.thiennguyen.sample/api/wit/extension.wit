@@ -93,8 +93,9 @@ interface selection {
     replace-and-select: func(expected: string, replacement: string) -> result<replaced, string>;
 
     /// Whether this extension is told of the selections the person makes
-    /// with the mouse — the `selection` event — now: the switch on its
-    /// Permissions sheet, which the person and the extension both move.
+    /// — the `selection` event, and `keyboard-selection` (Lumi 1.50.0) — now:
+    /// the switch on its Permissions sheet, which the person and the
+    /// extension both move.
     /// Costs `selection-watch`. Needs Lumi 1.47.0.
     watching: func() -> result<bool, string>;
 
@@ -460,6 +461,16 @@ interface ui {
     /// and `close-window`. Until Lumi 1.31 a press on a panel that held the
     /// keyboard closed it instead.
     open-window: func(name: string) -> result<_, string>;
+
+    /// `open-window`, `after-ms` milliseconds from now: from the run of a
+    /// `selection` or `keyboard-selection` event only, as its one opening
+    /// of the panel beside that selection. Answers at once; the panel opens
+    /// when the time is up unless the person has pressed, typed or scrolled
+    /// since — then it never does — or the selection is two seconds old.
+    /// For a panel that waits for the person to finish: a double-click may
+    /// yet become a triple-click, within the event's `clickInterval`. At
+    /// most 1000; 0 is `open-window`. Needs Lumi 1.50.0.
+    open-window-after: func(name: string, after-ms: u32) -> result<_, string>;
 
     /// Close one declared window by its manifest `name`. One that is not
     /// open is not an error. Added in 0.3.
@@ -1475,9 +1486,10 @@ world extension {
     /// `clipboard.paste` is refused — both would be the extension acting
     /// on its own, and the person did not press anything. Added in 0.3.
     ///
-    /// One exception, `selection` (Lumi 1.47.0): the person's selection is
-    /// the moment, so its run may open one panel declared `position =
-    /// "selection"`, once, beside that selection, within two seconds and
+    /// One exception, `selection` (Lumi 1.47.0) and `keyboard-selection`
+    /// (Lumi 1.50.0): the person's selection is the moment, so its run may
+    /// open one panel declared `position = "selection"`, once, beside that
+    /// selection, within two seconds and
     /// only while it is still their latest — without the keyboard, whatever
     /// the panel's `focus` says. It may set that panel's size, material,
     /// theme and anchor; nothing else that needs a person — a paste, a
