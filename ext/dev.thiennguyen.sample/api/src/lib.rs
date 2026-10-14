@@ -301,6 +301,16 @@ pub mod translation {
     pub fn translate(request: &Request) -> Result<Translated, String> {
         wit::translate(request)
     }
+
+    /// macOS's own prompt to download what `source` → `target` needs, and
+    /// how ready the pair is once the person is done with it: still
+    /// `Downloadable` when they declined, or while macOS downloads in the
+    /// background — ask [`status`] again later. At the top of the screen,
+    /// one at a time, taken down after two minutes unanswered. Only from a
+    /// command or one of your windows.
+    pub fn prepare(source: &str, target: &str) -> Result<Readiness, String> {
+        wit::prepare(source, target)
+    }
 }
 
 /// Draw a line of text over the frontmost application, in Lumi's own
