@@ -244,6 +244,65 @@ pub mod transforms {
     }
 }
 
+/// Translation on this Mac, with the translator built into macOS — the one
+/// the Translate app uses. The text never leaves the Mac, so no capability.
+/// Languages are BCP 47 ids as the system names them (`"en"`, `"vi"`,
+/// `"zh-TW"`). Needs Lumi 1.51.0 and macOS 26; on an older macOS every
+/// function answers why.
+///
+/// ```ignore
+/// use lumi_extension_api::{selection, translation};
+///
+/// let found = selection()?;
+/// // No source: Lumi's guess when it is sure. No target: the person's own
+/// // first language that is not the text's.
+/// let done = translation::translate(&translation::Request {
+///     text: found.text,
+///     source: None,
+///     target: None,
+///     quality: translation::Quality::Fast,
+/// })?;
+/// ```
+pub mod translation {
+    use super::lumi::ext::translation as wit;
+
+    pub use wit::{Guess, Quality, Readiness, Request, Translated};
+
+    /// Every language this Mac translates.
+    pub fn languages() -> Result<Vec<String>, String> {
+        wit::languages()
+    }
+
+    /// The person's own languages this Mac translates: the Mac's preferred
+    /// languages in their order, then its region's language.
+    pub fn preferred() -> Result<Vec<String>, String> {
+        wit::preferred()
+    }
+
+    /// How ready this Mac is to translate `source` into `target`:
+    /// installed, downloadable (macOS downloads it once, for every app) or
+    /// unsupported.
+    pub fn status(source: &str, target: &str) -> Result<Readiness, String> {
+        wit::status(source, target)
+    }
+
+    /// Up to three guesses at the language of `text`, most likely first,
+    /// each with its confidence from 0 to 1. A sentence is told reliably, a
+    /// word or two often is not: weigh the confidence.
+    pub fn detect(text: &str) -> Result<Vec<Guess>, String> {
+        wit::detect(text)
+    }
+
+    /// `request.text` translated, line by line: blank lines, indents, and
+    /// web and email addresses come back as they were. An empty `source` is
+    /// Lumi's guess when it is at least 0.8 sure; an empty `target` is the
+    /// first of [`preferred`] that is not the source. Refused over 20,000
+    /// characters and for a pair that is not installed — each answers why.
+    pub fn translate(request: &Request) -> Result<Translated, String> {
+        wit::translate(request)
+    }
+}
+
 /// Draw a line of text over the frontmost application, in Lumi's own
 /// alert style. The way an extension talks to the person at the keyboard.
 pub fn alert(text: &str) -> Result<(), String> {
