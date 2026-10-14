@@ -207,6 +207,16 @@ interface translation {
     /// for a pair that is not `installed`, and for a source Lumi cannot tell
     /// — each answers why.
     translate: func(request: request) -> result<translated, string>;
+
+    /// macOS's own prompt to download what `source` → `target` needs, and
+    /// how ready the pair is once the person is done with it. The prompt
+    /// stands at the top of the screen the pointer is on, as macOS's own
+    /// sheets do, one at a time, and is taken down after two minutes
+    /// unanswered. A declined prompt is no error: the answer is
+    /// `downloadable`, as it stays while macOS downloads in the background —
+    /// ask `status` again later. Only from a command or one of your windows:
+    /// a prompt nobody asked for is one somebody answers blind.
+    prepare: func(source: string, target: string) -> result<readiness, string>;
 }
 
 /// The general pasteboard. Costs `clipboard`, both directions — and
