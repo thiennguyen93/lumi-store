@@ -134,6 +134,81 @@ interface transforms {
     apply: func(id: string, text: string) -> result<string, string>;
 }
 
+/// Translation on this Mac, with the translator built into macOS — the one
+/// the Translate app uses. The text is translated here and never leaves the
+/// Mac, so no capability is needed. Languages are BCP 47 ids, as the system
+/// names them: "en", "vi", "zh-TW". Needs Lumi 1.51.0 and macOS 26; on an
+/// older macOS every function answers why.
+interface translation {
+    /// How ready this Mac is to translate one pair of languages.
+    enum readiness {
+        /// Both languages are on this Mac: `translate` works now.
+        installed,
+        /// The system translates the pair once its languages are
+        /// downloaded, which macOS does once, for every app.
+        downloadable,
+        /// The system does not translate the pair.
+        unsupported,
+    }
+
+    /// What a translation asks for. `best` is Apple Intelligence's model,
+    /// on a Mac that has it with macOS 26.4: more fluent, many times slower.
+    /// Anywhere else it is the same as `fast`.
+    enum quality {
+        fast,
+        best,
+    }
+
+    /// One translation asked for.
+    record request {
+        text: string,
+        /// The text's language. None or empty: Lumi's top guess, when it is
+        /// at least 0.8 sure — `detect` hands over the guesses to choose
+        /// from yourself.
+        source: option<string>,
+        /// The language to translate into. None or empty: the first of the
+        /// person's languages (`preferred`) that is not the source.
+        target: option<string>,
+        quality: quality,
+    }
+
+    /// A translation, and the languages it was made between.
+    record translated {
+        text: string,
+        source: string,
+        target: string,
+    }
+
+    /// One guess at a text's language, and how sure it is, from 0 to 1.
+    record guess {
+        language: string,
+        confidence: f32,
+    }
+
+    /// Every language this Mac translates.
+    languages: func() -> result<list<string>, string>;
+
+    /// The person's own languages that this Mac translates: the Mac's
+    /// preferred languages in their order, then its region's language — a
+    /// Mac set to English in Vietnam answers "en", "vi".
+    preferred: func() -> result<list<string>, string>;
+
+    /// How ready this Mac is to translate `source` into `target`.
+    status: func(source: string, target: string) -> result<readiness, string>;
+
+    /// Up to three guesses at the language of `text`, most likely first;
+    /// empty when there is nothing to go on. A sentence is told reliably, a
+    /// word or two often is not — weigh the confidence.
+    detect: func(text: string) -> result<list<guess>, string>;
+
+    /// `request.text` translated. Line by line: blank lines, each line's
+    /// indent, and web and email addresses come back as they were; a line
+    /// with no words in it is left as it is. Refused over 20,000 characters,
+    /// for a pair that is not `installed`, and for a source Lumi cannot tell
+    /// — each answers why.
+    translate: func(request: request) -> result<translated, string>;
+}
+
 /// The general pasteboard. Costs `clipboard`, both directions — and
 /// `paste` costs more, because it presses a key in somebody else's app.
 interface clipboard {
@@ -1388,6 +1463,7 @@ interface menu {
 world extension {
     import selection;
     import transforms;
+    import translation;
     import clipboard;
     import alert;
     import open;
