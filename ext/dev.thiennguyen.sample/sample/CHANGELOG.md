@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.27.0] - 2026-10-14
+
+### Added
+
+- When the languages Translate needs aren't on your Mac yet, the peek panel says so and offers **Download…**. It opens macOS's own download prompt at the top of the screen; once the languages are on your Mac, the panel shows the translation. If you close the prompt without downloading, or macOS is still downloading, the panel says so and you can try again later.
+- Needs Lumi 1.51.0 and macOS 26.
+
+## [0.26.0] - 2026-10-14
+
+### Added
+
+- The peek panel has a **Translate** button. It translates the text you selected into your own language, or into your next one when the text is already in it, with the translator built into macOS. The text is translated on your Mac and never leaves it. The panel shows the start of the translation and the two languages.
+- Translate works on text you can't edit too, since a translation is only read.
+- Needs Lumi 1.51.0 and macOS 26. On an older Mac the panel offers no Translate button.
+
 ## [0.25.0] - 2026-10-12
 
 ### Added

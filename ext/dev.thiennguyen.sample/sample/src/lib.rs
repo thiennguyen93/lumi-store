@@ -144,7 +144,13 @@ impl lumi::Guest for Sample {
                 (Some("apply"), Some(id)) => peek_apply(id),
                 (Some("snippet"), _) => peek_snippet(),
                 (Some("search"), _) => peek_search(parsed.get("query").and_then(|q| q.as_str()).unwrap_or("")),
-                _ => Err("the peek panel asks for apply, with a transform's id, snippet, or search".to_string()),
+                (Some("translate"), _) => peek_translate(),
+                (Some("prepare"), _) => {
+                    let field = |name: &str| parsed.get(name).and_then(|v| v.as_str()).unwrap_or("").to_string();
+                    peek_prepare(&field("source"), &field("target"))
+                }
+                _ => Err("the peek panel asks for apply, with a transform's id, snippet, search, translate or prepare"
+                    .to_string()),
             };
         }
         if !["settings", ":settings", "welcome", "unified", "unified-tall"].contains(&window.as_str()) {
@@ -168,6 +174,41 @@ impl lumi::Guest for Sample {
                 let id = parsed.get("id").and_then(|i| i.as_str()).unwrap_or("");
                 let text = parsed.get("text").and_then(|t| t.as_str()).unwrap_or("");
                 return Ok(serde_json::json!({ "text": lumi::transforms::apply(id, text)? }).to_string());
+            }
+            // The translator, one call each, for the tests to drive.
+            Some("translation") => {
+                let ready = readiness_word;
+                let guesses: Vec<serde_json::Value> = lumi::translation::detect("Xin chào")?
+                    .into_iter()
+                    .map(|guess| serde_json::json!({ "language": guess.language, "confidence": guess.confidence }))
+                    .collect();
+                return Ok(serde_json::json!({
+                    "languages": lumi::translation::languages()?,
+                    "preferred": lumi::translation::preferred()?,
+                    "en-vi": ready(lumi::translation::status("en", "vi")?),
+                    "en-de": ready(lumi::translation::status("en", "de")?),
+                    "guesses": guesses,
+                })
+                .to_string());
+            }
+            Some("translate") => {
+                let field = |name: &str| parsed.get(name).and_then(|v| v.as_str()).map(str::to_string);
+                let done = lumi::translation::translate(&lumi::translation::Request {
+                    text: field("text").unwrap_or_default(),
+                    source: field("source"),
+                    target: field("target"),
+                    quality: if field("quality").as_deref() == Some("best") {
+                        lumi::translation::Quality::Best
+                    } else {
+                        lumi::translation::Quality::Fast
+                    },
+                })?;
+                return Ok(serde_json::json!({ "text": done.text, "source": done.source, "target": done.target }).to_string());
+            }
+            Some("prepare") => {
+                let field = |name: &str| parsed.get(name).and_then(|v| v.as_str()).unwrap_or("").to_string();
+                let readiness = lumi::translation::prepare(&field("source"), &field("target"))?;
+                return Ok(serde_json::json!({ "readiness": readiness_word(readiness) }).to_string());
             }
             // The selection-watch switch, read, moved and shared — for the
             // tests to see what each costs.
@@ -711,6 +752,9 @@ fn peek_message(text: &str, how: &str, editable: Option<bool>) -> Result<String,
             "label": expanded.chars().take(60).collect::<String>(),
         }),
     });
+    // Whether this Mac translates at all — macOS 26 — so the panel offers
+    // Translate only where pressing it can do something.
+    let translates = lumi::translation::languages().is_ok_and(|languages| !languages.is_empty());
     Ok(serde_json::json!({
         "text": text.chars().take(60).collect::<String>(),
         "chars": text.chars().count(),
@@ -718,6 +762,7 @@ fn peek_message(text: &str, how: &str, editable: Option<bool>) -> Result<String,
         "editable": editable,
         "transforms": buttons,
         "snippet": snippet,
+        "translates": translates,
     })
     .to_string())
 }
@@ -832,6 +877,106 @@ fn write_over(expected: &str, changed: &str) -> Result<String, String> {
             let _ = lumi::alert(&refused);
             Err(refused)
         }
+    }
+}
+
+/// The peek panel's Translate button: the selection as it is now, into the
+/// person's own language — or, when it is already in that one, into their
+/// next — by the translator built into macOS.
+///
+/// The direction is worked out here rather than left to Lumi, so that a pair
+/// not on this Mac yet can be offered for download before anything is
+/// translated: the source is Lumi's top guess when it is sure, the target the
+/// first of the person's languages that is not the source. The page is told
+/// the first words of the translation, as it is told the first words of the
+/// selection, and the languages; a refusal is said in an alert.
+fn peek_translate() -> Result<String, String> {
+    use lumi::translation::{self, Readiness};
+
+    let found = lumi::selection()?;
+    if found.text.trim().is_empty() {
+        lumi::alert("Nothing is selected any more")?;
+        return Ok(serde_json::json!({ "how": "nothing" }).to_string());
+    }
+    let Some(source) = translation::detect(&found.text)?
+        .into_iter()
+        .next()
+        .filter(|guess| guess.confidence >= 0.8)
+        .map(|guess| guess.language)
+    else {
+        lumi::alert("Couldn't tell what language that is")?;
+        return Ok(serde_json::json!({ "how": "unsure" }).to_string());
+    };
+    let Some(target) = translation::preferred()?.into_iter().find(|language| *language != source) else {
+        lumi::alert("That is already in your language")?;
+        return Ok(serde_json::json!({ "how": "same" }).to_string());
+    };
+    match translation::status(&source, &target)? {
+        Readiness::Installed => {}
+        // Asked about on the panel, never put up unasked: the person
+        // presses Download… and only then does macOS's prompt appear.
+        Readiness::Downloadable => {
+            lumi::post("peek", &serde_json::json!({ "download": true, "source": source, "target": target }).to_string())?;
+            return Ok(serde_json::json!({ "how": "download" }).to_string());
+        }
+        Readiness::Unsupported => {
+            lumi::alert(&format!("This Mac can't translate {source} into {target}"))?;
+            return Ok(serde_json::json!({ "how": "unsupported" }).to_string());
+        }
+    }
+    let request = translation::Request {
+        text: found.text,
+        source: Some(source),
+        target: Some(target),
+        quality: translation::Quality::Fast,
+    };
+    match translation::translate(&request) {
+        Ok(done) => {
+            lumi::post(
+                "peek",
+                &serde_json::json!({
+                    "translated": done.text.chars().take(60).collect::<String>(),
+                    "chars": done.text.chars().count(),
+                    "source": done.source,
+                    "target": done.target,
+                })
+                .to_string(),
+            )?;
+            Ok(serde_json::json!({ "source": done.source, "target": done.target }).to_string())
+        }
+        Err(refused) => {
+            let _ = lumi::alert(&refused);
+            Err(refused)
+        }
+    }
+}
+
+/// The peek panel's Download… button: macOS's own prompt for the pair the
+/// panel was told about, and — once the languages are on this Mac — the
+/// translation, the panel shown again beside the selection, since the prompt
+/// took the keyboard while it was up. Still downloading, or declined: the
+/// panel says so and stays as it is.
+fn peek_prepare(source: &str, target: &str) -> Result<String, String> {
+    let readiness = lumi::translation::prepare(source, target)?;
+    if readiness == lumi::translation::Readiness::Installed {
+        let answer = peek_translate()?;
+        lumi::open_window("peek")?;
+        return Ok(answer);
+    }
+    lumi::post(
+        "peek",
+        &serde_json::json!({ "download": true, "source": source, "target": target, "readiness": readiness_word(readiness) })
+            .to_string(),
+    )?;
+    Ok(serde_json::json!({ "readiness": readiness_word(readiness) }).to_string())
+}
+
+/// A pair's readiness as the page and the tests read it.
+fn readiness_word(readiness: lumi::translation::Readiness) -> &'static str {
+    match readiness {
+        lumi::translation::Readiness::Installed => "installed",
+        lumi::translation::Readiness::Downloadable => "downloadable",
+        lumi::translation::Readiness::Unsupported => "unsupported",
     }
 }
 

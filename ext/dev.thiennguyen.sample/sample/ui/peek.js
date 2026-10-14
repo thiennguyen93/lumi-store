@@ -22,8 +22,47 @@ ask.addEventListener("submit", (event) => {
   fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "search", query: query.value }) }).catch(() => {});
 });
 
+// The Translate button, offered wherever this Mac translates — on text
+// that can't be edited too, since a translation is read, not written. What
+// to translate, and into what, is worked out on the extension's side.
+function translateButton() {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Translate";
+  button.addEventListener("click", () => {
+    fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "translate" }) }).catch(() => {});
+  });
+  return button;
+}
+
 window.addEventListener("lumi:message", (event) => {
-  const { text: shown, chars, editable, transforms, snippet } = event.detail ?? {};
+  // A pair not on this Mac yet: said, with a button that asks macOS to
+  // download it — its own prompt, put up only by this press. After a prompt
+  // the person declined, or while macOS is still downloading, it stays.
+  if (event.detail?.download) {
+    const { source, target, readiness } = event.detail;
+    text.textContent = readiness
+      ? `${source} → ${target} isn't ready yet. macOS keeps downloading in the background.`
+      : `${source} → ${target} isn't on this Mac yet.`;
+    where.textContent = "";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Download…";
+    button.addEventListener("click", () => {
+      fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "prepare", source, target }) }).catch(() => {});
+    });
+    actions.replaceChildren(button);
+    return;
+  }
+  // A translation of the selection: its first words, in place of the
+  // selection's, with the languages it went between.
+  if (event.detail?.translated !== undefined) {
+    const { translated, chars, source, target } = event.detail;
+    text.textContent = `${source} → ${target}: “${translated}${chars > translated.length ? "…" : ""}”`;
+    where.textContent = "";
+    return;
+  }
+  const { text: shown, chars, editable, transforms, snippet, translates } = event.detail ?? {};
   text.textContent = chars > 0 ? `“${shown}${chars > shown.length ? "…" : ""}”` : "Nothing is selected.";
   where.textContent = chars > 0 ? `${chars} chars` : "";
   // What was selected, on one line, ready to search for as it is or to be
@@ -50,6 +89,7 @@ window.addEventListener("lumi:message", (event) => {
     return;
   }
   if (editable === false) {
+    if (translates) actions.append(translateButton());
     const note = document.createElement("span");
     note.className = "note";
     note.textContent = "This text can't be edited here.";
@@ -68,6 +108,7 @@ window.addEventListener("lumi:message", (event) => {
     });
     actions.append(button);
   }
+  if (translates) actions.append(translateButton());
 });
 
 window.addEventListener("lumi:placed", (event) => {
