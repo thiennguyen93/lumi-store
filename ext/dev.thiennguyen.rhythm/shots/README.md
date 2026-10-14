@@ -17,8 +17,12 @@ profile, so the scene builds what the picture needs from nothing:
   chart the game plays, a little late on average, with a note dropped now
   and then. The game judges them as it judges anybody.
 
-From lumi-store, with the promo server up (`rhythm-promo`, port 5196, in
-`.claude/launch.json`):
+From lumi-store, with the promo server up on port 5196:
+
+    python3 scripts/preview_ui.py ext/dev.thiennguyen.rhythm \
+      --promo ext/dev.thiennguyen.rhythm/shots/promo.json --port 5196
+
+then, in another terminal:
 
     while read -r n name; do
       node scripts/screenshot.mjs "http://127.0.0.1:5196/__promo__/?shot=$n" \
