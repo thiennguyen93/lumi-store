@@ -6,9 +6,11 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.25.0"
-# 1.48.0: the floor is the newest thing this manifest names or the component
-# calls — the peek panel's `side = "pointer"`, which an older Lumi refuses as
+version = "0.27.0"
+# 1.51.0: the floor is the newest thing this manifest names or the component
+# calls — the peek panel's Translate and Download… buttons and their
+# `translation` calls.
+# Before it, 1.48.0: the peek panel's `side = "pointer"`, which an older Lumi refuses as
 # a word it does not know, its search field's `POST /__lumi__/keyboard`, and
 # its buttons' `selection.replace-and-select`. Before it, 1.47.0: its `position = "selection"`
 # and its buttons' `transforms`, `selection.editable` and `selection.replace`. WIT 0.3 grew `screen` in 1.30, `snippets` in 1.31, `permissions` and
@@ -19,7 +21,7 @@ version = "0.25.0"
 # older Lumi refuses. (Before it,
 # `input-hold` set the floor at 1.38. [tabs] below is the other direction: an
 # older Lumi ignores the table and draws its own tabs, so it sets no floor.)
-min-lumi-version = "1.48.0"
+min-lumi-version = "1.51.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
