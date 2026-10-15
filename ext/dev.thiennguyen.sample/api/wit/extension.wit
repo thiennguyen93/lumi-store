@@ -219,6 +219,164 @@ interface translation {
     prepare: func(source: string, target: string) -> result<readiness, string>;
 }
 
+/// The AI the person set up in Lumi: Apple Intelligence and models running
+/// on this Mac, Claude Code on their own plan, and providers on their own
+/// keys. The person chooses the models in Settings › AI; an extension
+/// chooses among them for each of its features, and never sees a key.
+///
+/// Costs `ai`. The person can switch an extension's AI off in Settings ›
+/// AI: then `ready` is false, `models` is empty, and every call is refused.
+///
+/// **What a model is sent.** `system` as its instructions, and `input` as
+/// the text to work on — always as data: Lumi tells the model the text is
+/// something to work on and not instructions, whatever it says, so a
+/// selection that says "ignore your instructions" is just text. No tools,
+/// ever, and nothing else of the person's.
+///
+/// **Asked first.** Text that would leave this Mac waits on the person:
+/// Lumi asks, at the pointer, naming this extension and where the text
+/// would go — unless they told it not to ask again for this extension. They
+/// can send it, have a model on this Mac answer instead, or decline, which
+/// is a `declined` failure and nothing to show. Waiting on them is not
+/// counted as the model's silence.
+///
+/// **The person's limits and plan hold.** The longest input, the longest
+/// answer, the seconds of silence before giving up, and the calls one
+/// extension may have going at once. A model this copy of Lumi may not use
+/// now — switched off, gone, or on a plan the copy does not have — falls
+/// back to one it may, and the answer says so in `fell-back`, in a sentence
+/// for the person.
+///
+/// Added to 0.3 in Lumi 1.52.0.
+interface ai {
+    /// Where a model runs.
+    enum place {
+        /// On this Mac: the text never leaves it.
+        on-device,
+        /// On a provider's server, or Anthropic's through Claude Code.
+        online,
+    }
+
+    /// One model the person switched on that this copy of Lumi may use now.
+    record model {
+        /// `provider:model`, what `request.model` takes.
+        id: string,
+        /// Its name, as Settings › AI shows it.
+        name: string,
+        /// Its provider's name.
+        provider: string,
+        place: place,
+        /// Whether it can be asked to think before it answers.
+        thinks: bool,
+        /// The model the person chose to run when a request names none.
+        is-default: bool,
+    }
+
+    /// How hard the model thinks before it answers, where it can: held to
+    /// the person's most, and nothing for a model that does not think.
+    enum thinking {
+        off,
+        low,
+        medium,
+        high,
+    }
+
+    /// What the answer is written as.
+    enum format {
+        text,
+        /// JSON only, in the provider's JSON mode where it has one.
+        json,
+    }
+
+    /// One request.
+    record request {
+        /// The model's instructions: what to do with the input.
+        system: string,
+        /// The text to work on, sent as data.
+        input: string,
+        /// `provider:model` from `models`, or none for the person's default.
+        model: option<string>,
+        /// Fewer answer tokens than the person allows; never more.
+        max-tokens: option<u32>,
+        thinking: thinking,
+        /// "same" for the input's own language, which Lumi detects and
+        /// names to the model; a language id (`vi`, `en-GB`) for that one;
+        /// none to say nothing.
+        answer-language: option<string>,
+        format: format,
+    }
+
+    /// Tokens, where the provider reports them.
+    record usage {
+        input: option<u32>,
+        output: option<u32>,
+        thinking: option<u32>,
+    }
+
+    /// An answer, and what it took.
+    record answer {
+        text: string,
+        /// `provider:model` that answered.
+        model: string,
+        model-name: string,
+        place: place,
+        /// Why the model asked for did not run, and which one did, in a
+        /// sentence for the person. None when it ran as asked.
+        fell-back: option<string>,
+        /// Whether the model thought before answering.
+        thought: bool,
+        /// The answer limit cut it off.
+        cut-short: bool,
+        usage: usage,
+        /// How long the answer took, in milliseconds, from when the text was
+        /// sent.
+        ms: u64,
+    }
+
+    /// Why a call gave no answer, and what to do about it.
+    enum failure-kind {
+        /// The person chose not to send the text. Nothing to show.
+        declined,
+        /// Stopped by `cancel`. Nothing to show.
+        stopped,
+        /// Lumi did what it is set to do: the plan, a limit, nothing set up,
+        /// AI off, this extension's AI switched off. Show the sentence.
+        warning,
+        /// Something failed on the way: the provider, the network. Show the
+        /// sentence.
+        fault,
+    }
+
+    /// A call that gave no answer.
+    record failure {
+        /// A sentence for the person, in Lumi's words.
+        message: string,
+        kind: failure-kind,
+    }
+
+    /// Whether a model answers now. Asks the engines on this Mac.
+    ready: func() -> result<bool, string>;
+
+    /// The models this extension may ask for, the person's default first.
+    models: func() -> result<list<model>, string>;
+
+    /// Ask, and wait for the whole answer: for a command, which has no
+    /// window to stream into. Waits as long as the person takes to answer
+    /// whether the text may leave this Mac, and the model to answer. Only
+    /// from a press — a command, a menu row or one of your windows: nobody
+    /// asked for text sent from an event or a flow node.
+    complete: func(request: request) -> result<answer, failure>;
+
+    /// Ask, and have the answer streamed to this extension's own windows as
+    /// `lumi:ai` events, returning the call's id at once. Only from a press,
+    /// as `complete`.
+    start: func(request: request) -> result<u64, failure>;
+
+    /// Stop call `id` wherever it is: waiting on the person, on the model,
+    /// or answering. False when no call of yours has that id.
+    cancel: func(id: u64) -> result<bool, string>;
+}
+
 /// The general pasteboard. Costs `clipboard`, both directions — and
 /// `paste` costs more, because it presses a key in somebody else's app.
 interface clipboard {
@@ -1474,6 +1632,7 @@ world extension {
     import selection;
     import transforms;
     import translation;
+    import ai;
     import clipboard;
     import alert;
     import open;
