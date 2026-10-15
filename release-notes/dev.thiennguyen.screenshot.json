@@ -1,4 +1,24 @@
 {
+  "0.7.1": {
+    "notesSha256": "1b90e8e38ff05975f8562c4c8445e61917f42168faf3ba21d9a1ea327c9ad154",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Demo video added to the Extension Store",
+          "items": [
+            "A demo video now shows how to capture, mark up, and copy text before you install"
+          ]
+        },
+        "vi": {
+          "headline": "Thêm video demo vào Cửa hàng Tiện ích",
+          "items": [
+            "Video demo giờ hiển thị cách chụp, đánh dấu và sao chép văn bản trước khi cài đặt"
+          ]
+        }
+      }
+    }
+  },
   "0.7.0": {
     "notesSha256": "2351d0df5435abea63e9828fc82506a5d3e95292bfcd72b3bb9946b1521d86df",
     "summary": {

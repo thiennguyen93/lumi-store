@@ -1,4 +1,296 @@
 {
+  "0.28.0": {
+    "notesSha256": "15dcf8618dd391041e5a6cab18de247a13fbccb0de594f7163e2096aa7578512",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Summarize selected text with AI",
+          "items": [
+            "The peek panel now has a Summarize button that condenses your selection into a sentence or two",
+            "Summarize appears only when you have configured an AI model in Lumi settings",
+            "The summary streams in as it generates, and you can stop it mid-way",
+            "The panel automatically grows to fit its content without cutting off buttons or text",
+            "Requires Lumi 1.52.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Tóm tắt văn bản đã chọn bằng AI",
+          "items": [
+            "Bảng peek giờ có nút Tóm tắt để rút gọn đoạn văn bạn chọn thành một hai câu",
+            "Nút Tóm tắt chỉ xuất hiện khi bạn đã thiết lập mô hình AI trong cài đặt Lumi",
+            "Bản tóm tắt hiện dần trong khi AI đang tạo và bạn có thể dừng giữa chừng",
+            "Bảng tự động mở rộng để vừa nội dung mà không bị cắt nút hoặc chữ",
+            "Yêu cầu Lumi 1.52.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.27.0": {
+    "notesSha256": "a1c20d41b9b109cdddc068aa524537f9347efee48393d0c8302d96b3913904b9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Download missing languages right from the peek panel",
+          "items": [
+            "The peek panel now tells you when translation languages are missing and offers a Download button",
+            "Clicking Download opens the system prompt to add languages to your Mac",
+            "The panel shows your translation once the download finishes",
+            "If you close the prompt or the download is still running, the panel explains and lets you retry",
+            "Requires Lumi 1.51.0 and macOS 26"
+          ]
+        },
+        "vi": {
+          "headline": "Tải ngôn ngữ thiếu ngay từ bảng xem nhanh",
+          "items": [
+            "Bảng xem nhanh giờ báo khi thiếu ngôn ngữ dịch và hiện nút Tải xuống",
+            "Nhấn Tải xuống sẽ mở hộp thoại hệ thống để thêm ngôn ngữ vào máy",
+            "Bảng hiện bản dịch sau khi tải xong",
+            "Nếu đóng hộp thoại hoặc đang tải, bảng sẽ giải thích và cho thử lại",
+            "Yêu cầu Lumi 1.51.0 và macOS 26"
+          ]
+        }
+      }
+    }
+  },
+  "0.26.0": {
+    "notesSha256": "e295bb41c2c176105ad52faa6f802d38d9a501dfbb414179895b7274e78ac742",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Translate selected text without leaving your Mac",
+          "items": [
+            "The peek panel now has a Translate button that uses macOS translation",
+            "Translations happen on your Mac and never leave it",
+            "The panel shows the start of the translation and which languages it used",
+            "Translation works on text you cannot edit since you only read the result",
+            "Requires Lumi 1.51.0 and macOS 15 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Dịch văn bản đã chọn ngay trên máy",
+          "items": [
+            "Bảng xem nhanh giờ có nút Dịch sử dụng tính năng dịch của macOS",
+            "Văn bản được dịch ngay trên máy và không bao giờ rời khỏi máy",
+            "Bảng hiển thị phần đầu bản dịch và hai ngôn ngữ được dùng",
+            "Dịch hoạt động cả với văn bản không chỉnh sửa được vì chỉ cần đọc kết quả",
+            "Yêu cầu Lumi 1.51.0 và macOS 15 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.25.0": {
+    "notesSha256": "107415d1e493bdc04f7b263dab1d1bab2a66a973397991c0abed3978faeea0de",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Open snippet expansions from selected text",
+          "items": [
+            "Selecting a snippet trigger shows what it expands to in the peek panel",
+            "Snippets that expand to web addresses get an Open button to visit them",
+            "Other snippets get an Expand button to replace the selection with their text",
+            "Snippets set to never expand from typing still work when you select them"
+          ]
+        },
+        "vi": {
+          "headline": "Mở kết quả mở rộng của snippet từ văn bản đã chọn",
+          "items": [
+            "Chọn một trigger snippet sẽ hiện nội dung mở rộng trong bảng xem nhanh",
+            "Snippet mở rộng thành địa chỉ web có nút Mở để truy cập",
+            "Snippet khác có nút Mở rộng để thay thế văn bản đã chọn bằng nội dung snippet",
+            "Snippet đặt không bao giờ tự động mở rộng vẫn hoạt động khi bạn chọn chúng"
+          ]
+        }
+      }
+    }
+  },
+  "0.24.0": {
+    "notesSha256": "3defcf1174a6d615391b2ecbd9a80cecc2dffb5d54308d5a2ad65ef4dad9df1b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Peek panel stays with your selection after changes",
+          "items": [
+            "The peek panel now stays beside your selection after changing text, so you can press another button",
+            "This works even when the text changes length",
+            "Requires Lumi 1.48.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Bảng peek giữ nguyên vị trí sau khi thay đổi",
+          "items": [
+            "Bảng peek giờ ở nguyên bên cạnh văn bản sau khi thay đổi, để bạn có thể nhấn nút khác",
+            "Hoạt động ngay cả khi văn bản thay đổi độ dài",
+            "Yêu cầu Lumi 1.48.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.23.0": {
+    "notesSha256": "757455e5142d66665375d7143503d893c549802ad01fb4afc75bd8dde587e8ff",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Search the web from the peek panel",
+          "items": [
+            "The peek panel now has a search field prefilled with your selected text",
+            "Click the search field and press Return to search, or type to change the query first",
+            "The panel stays open while you type and closes when you click elsewhere",
+            "Requires Lumi 1.48.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Tìm kiếm web từ bảng xem nhanh",
+          "items": [
+            "Bảng xem nhanh giờ có ô tìm kiếm điền sẵn văn bản bạn chọn",
+            "Nhấp vào ô tìm kiếm và nhấn Return để tìm, hoặc gõ để thay đổi truy vấn trước",
+            "Bảng vẫn mở khi bạn gõ và đóng lại khi bạn nhấp ra ngoài",
+            "Yêu cầu Lumi 1.48.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.22.0": {
+    "notesSha256": "0cff76196ee523a32fc2a015c4aec81a602123cb9536d62105c86e19715c56ac",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Peek panel follows where you drag",
+          "items": [
+            "The peek panel appears on the side you drag toward: below when you drag down, above when you drag up",
+            "Each peek shortcut can now choose Pointer's side, Above, or Below",
+            "Requires Lumi 1.48.0"
+          ]
+        },
+        "vi": {
+          "headline": "Bảng xem nhanh theo hướng kéo chuột",
+          "items": [
+            "Bảng xem nhanh xuất hiện ở phía bạn kéo đến: bên dưới khi kéo xuống, bên trên khi kéo lên",
+            "Mỗi phím tắt xem nhanh giờ có thể chọn Phía con trỏ, Bên trên hoặc Bên dưới",
+            "Yêu cầu Lumi 1.48.0"
+          ]
+        }
+      }
+    }
+  },
+  "0.21.0": {
+    "notesSha256": "4036d28b467e8e473c6c57ea62f95d92435418d1fd5b58f180da2df4f1e079e9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Peek panel appears automatically when you select text",
+          "items": [
+            "The peek panel now shows up when you select text with the mouse in any app",
+            "It disappears when you click, type or scroll and never takes keyboard focus",
+            "A new permission lets you turn off automatic peeking while keeping the shortcut",
+            "Requires Lumi 1.47.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Bảng xem nhanh tự động hiện khi bạn chọn văn bản",
+          "items": [
+            "Bảng xem nhanh giờ hiện lên khi bạn chọn văn bản bằng chuột trong bất kỳ ứng dụng nào",
+            "Nó tự động biến mất khi bạn nhấp chuột, gõ phím hoặc cuộn trang và không chiếm bàn phím",
+            "Quyền mới cho phép tắt tự động xem nhanh nhưng vẫn giữ phím tắt",
+            "Yêu cầu Lumi phiên bản 1.47.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.20.0": {
+    "notesSha256": "59cdf4e2c3d85c44f022368c412917d6e51568d1b564c9f888364b01641880af",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Change the case of selected text with new panel buttons",
+          "items": [
+            "The peek panel now has buttons to change selected text to uppercase, lowercase, title case, or sentence case",
+            "When text cannot be edited, such as on a web page, the panel shows a message instead of the buttons",
+            "The extension now requests input permission to type changes when apps do not accept them directly",
+            "Requires Lumi 1.47.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Thay đổi kiểu chữ của văn bản đã chọn bằng nút mới",
+          "items": [
+            "Bảng xem nhanh có nút chuyển văn bản thành chữ hoa, chữ thường, viết hoa đầu từ hoặc đầu câu",
+            "Khi văn bản không thể chỉnh sửa như trên trang web, bảng hiển thị thông báo thay vì các nút",
+            "Tiện ích yêu cầu quyền nhập liệu để gõ thay đổi khi ứng dụng không chấp nhận trực tiếp",
+            "Yêu cầu Lumi 1.47.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.19.0": {
+    "notesSha256": "3cfd5bf60de19ddcc7a83c06676907356ca6cfbdd88582190ce4b2cd82786eed",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Peek at the selection without leaving your app",
+          "items": [
+            "A small panel now appears beside selected text showing word count and character count",
+            "The panel points to your selection and disappears when you click, type, or scroll",
+            "Choose where the panel appears: above, below, at start, end, or middle of selection",
+            "Your app keeps focus and the selection stays active while the panel is visible",
+            "Access peek positions from the menu bar menu"
+          ]
+        },
+        "vi": {
+          "headline": "Xem nhanh văn bản đã chọn mà không rời ứng dụng",
+          "items": [
+            "Bảng nhỏ hiện bên cạnh văn bản đã chọn, hiển thị số từ và số ký tự",
+            "Bảng chỉ vào vùng chọn và tự động biến mất khi bạn nhấp, gõ phím hoặc cuộn",
+            "Chọn vị trí hiển thị bảng: phía trên, dưới, đầu, cuối hoặc giữa vùng chọn",
+            "Ứng dụng của bạn vẫn giữ tiêu điểm và vùng chọn không bị mất",
+            "Truy cập các vị trí xem nhanh từ menu thanh trình đơn"
+          ]
+        }
+      }
+    }
+  },
+  "0.18.0": {
+    "notesSha256": "a4cecee61cd3c3f835e0a84938da214e25ecd5712a3d9a87c3a378ec7d5c56e4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The background card remembers its state and loads ahead at startup",
+          "items": [
+            "The background card keeps its page and size when put away and reopened",
+            "It shows how many times it has been displayed since it loaded",
+            "The card now loads ahead when Lumi starts so the first opening is instant",
+            "A new preload permission lets you control whether the card loads at startup",
+            "Requires Lumi 1.45.0"
+          ]
+        },
+        "vi": {
+          "headline": "Thẻ nền giữ trạng thái và tải trước khi khởi động",
+          "items": [
+            "Thẻ nền giữ nguyên trang và kích thước khi đóng rồi mở lại",
+            "Hiển thị số lần thẻ đã được mở kể từ khi tải",
+            "Thẻ giờ tải trước khi Lumi khởi động để mở ngay lập tức",
+            "Quyền tải trước mới cho phép bạn chọn có tải thẻ lúc khởi động hay không",
+            "Yêu cầu Lumi 1.45.0"
+          ]
+        }
+      }
+    }
+  },
   "0.17.0": {
     "notesSha256": "d9b9d5303901150895ab8be85d2062077a4d8ec1d780631268d06c274e4e3a97",
     "summary": {
@@ -184,226 +476,6 @@
           "headline": "Thêm ảnh chụp màn hình cho Cửa hàng Tiện ích",
           "items": [
             "Trang Giới thiệu và Cài đặt giờ có ảnh chụp màn hình trong Cửa hàng Tiện ích"
-          ]
-        }
-      }
-    }
-  },
-  "0.11.0": {
-    "notesSha256": "c94b70c6204ce9b6727c113b2923605da7a2af6a25f4f3d7cf89f9106badb6f5",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Compatibility update",
-          "items": [
-            "Updated for the latest version of Lumi while maintaining support for 1.22"
-          ]
-        },
-        "vi": {
-          "headline": "Cập nhật tương thích",
-          "items": [
-            "Cập nhật cho phiên bản Lumi mới nhất, vẫn hỗ trợ từ 1.22 trở lên"
-          ]
-        }
-      }
-    }
-  },
-  "0.10.0": {
-    "notesSha256": "3f319e648352209710de60b69bddb26049ece405d0694942d907e4ff7c51465b",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Welcome screen and update notifications",
-          "items": [
-            "A welcome window now appears when you first install the extension",
-            "You'll see a note when the extension updates to a new version",
-            "An installer page helps you get started with the extension",
-            "A page appears before uninstalling to confirm your choice"
-          ]
-        },
-        "vi": {
-          "headline": "Màn hình chào mừng và thông báo cập nhật",
-          "items": [
-            "Cửa sổ chào mừng xuất hiện khi bạn cài đặt tiện ích lần đầu",
-            "Bạn sẽ thấy thông báo khi tiện ích cập nhật lên phiên bản mới",
-            "Trang cài đặt giúp bạn bắt đầu sử dụng tiện ích",
-            "Một trang xác nhận xuất hiện trước khi gỡ cài đặt"
-          ]
-        }
-      }
-    }
-  },
-  "0.8.0": {
-    "notesSha256": "88571b88362197a7541df53d09aedcb74e98dd06cacda32e670e3a45e12cbbce",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Updated for the latest Lumi",
-          "items": [
-            "Updated to work with the latest version of Lumi"
-          ]
-        },
-        "vi": {
-          "headline": "Cập nhật cho phiên bản Lumi mới nhất",
-          "items": [
-            "Cập nhật để hoạt động với phiên bản Lumi mới nhất"
-          ]
-        }
-      }
-    }
-  },
-  "0.7.0": {
-    "notesSha256": "f95fbe172855444a30ba1fa6f49e87f3f10d074e4c907339691226b55fa845a2",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Translate now opens multiple languages at once",
-          "items": [
-            "Translate can open the same text in several languages at once",
-            "Each language you pick under Also open in gets its own tab",
-            "A short note now appears under each of Translate's four tabs",
-            "Languages with special characters in their code now open correctly"
-          ]
-        },
-        "vi": {
-          "headline": "Translate giờ mở nhiều ngôn ngữ cùng lúc",
-          "items": [
-            "Translate có thể mở cùng một đoạn văn bản bằng nhiều ngôn ngữ",
-            "Mỗi ngôn ngữ chọn trong Cũng mở bằng sẽ có tab riêng",
-            "Ghi chú ngắn xuất hiện dưới mỗi tab trong bốn tab của Translate",
-            "Ngôn ngữ có ký tự đặc biệt trong mã giờ mở đúng trang dịch"
-          ]
-        }
-      }
-    }
-  },
-  "0.6.0": {
-    "notesSha256": "12de1707e478223b1b836ea6add6de72e39f210fa73a990d28751aa0ad3f77c6",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Settings, About page, and command icons",
-          "items": [
-            "Added an About page and a Settings tab",
-            "Each command now has its own icon",
-            "Translation direction is now chosen from a segmented picker"
-          ]
-        },
-        "vi": {
-          "headline": "Cài đặt, trang Giới thiệu và biểu tượng lệnh",
-          "items": [
-            "Thêm trang Giới thiệu và tab Cài đặt",
-            "Mỗi lệnh giờ có biểu tượng riêng",
-            "Chọn hướng dịch từ bộ chọn phân đoạn"
-          ]
-        }
-      }
-    }
-  },
-  "0.5.0": {
-    "notesSha256": "90a08817645c0d97aaae21339f619cbb5c06a1f88c57a47020617117771aba17",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Settings now show which Lumi edition you're running",
-          "items": [
-            "The settings window now displays which Lumi you're running in and shows the edition if it's Pro"
-          ]
-        },
-        "vi": {
-          "headline": "Cài đặt hiện hiển thị phiên bản Lumi đang dùng",
-          "items": [
-            "Cửa sổ cài đặt giờ hiển thị Lumi nào đang chạy và phiên bản nếu là Pro"
-          ]
-        }
-      }
-    }
-  },
-  "0.4.0": {
-    "notesSha256": "4a2f78736a27ac5b867657966d205788c58c90de9d0a1937a19590284a896299",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Default language is now saved separately for each profile",
-          "items": [
-            "Each profile can have its own default language",
-            "The settings window shows which profile's language you are editing"
-          ]
-        },
-        "vi": {
-          "headline": "Ngôn ngữ mặc định giờ được lưu riêng cho từng hồ sơ",
-          "items": [
-            "Mỗi hồ sơ có thể có ngôn ngữ mặc định riêng",
-            "Cửa sổ cài đặt hiển thị bạn đang chỉnh sửa ngôn ngữ của hồ sơ nào"
-          ]
-        }
-      }
-    }
-  },
-  "0.3.0": {
-    "notesSha256": "81099056575be488684ed8df7a2ca2d6a067191f7397df9ecb6750cdea4f9034",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Profile indicator in settings",
-          "items": [
-            "The settings window now shows which profile is currently active"
-          ]
-        },
-        "vi": {
-          "headline": "Hiển thị hồ sơ đang dùng",
-          "items": [
-            "Cửa sổ cài đặt giờ đây hiển thị hồ sơ nào đang hoạt động"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.0": {
-    "notesSha256": "754559160a35f4c1b9a95353f761e6ac22193167752039bb05ef4a245489e993",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Settings window and extension icon",
-          "items": [
-            "Added a settings window accessible from the new Configure command",
-            "Added an icon for the extension"
-          ]
-        },
-        "vi": {
-          "headline": "Cửa sổ cài đặt và biểu tượng tiện ích",
-          "items": [
-            "Thêm cửa sổ cài đặt, mở từ lệnh Cấu hình mới",
-            "Thêm biểu tượng cho tiện ích"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.0": {
-    "notesSha256": "ccaa486a9428831d873409f434d0742f1d4820a15e57c34656838428ca04935b",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Initial release",
-          "items": [
-            "First release with basic commands to help you learn extension development"
-          ]
-        },
-        "vi": {
-          "headline": "Phiên bản đầu tiên",
-          "items": [
-            "Phiên bản đầu tiên với các lệnh cơ bản giúp bạn học phát triển tiện ích"
           ]
         }
       }
