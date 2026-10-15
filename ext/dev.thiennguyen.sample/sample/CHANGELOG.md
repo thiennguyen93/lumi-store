@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.28.0] - 2026-10-15
+
+### Added
+
+- The peek panel has a **Summarize** button. It sums up the text you selected in a sentence or two, with the AI you set up in Lumi, and writes the summary into the panel as it comes; while it comes, the button is **Stop**. If your model runs online, Lumi asks you first.
+- The panel offers Summarize only when you have set up a model in Settings › AI.
+- The peek panel grows to fit what it shows: its buttons wrap onto a second row instead of running past its edge, and a summary is shown whole.
+- Needs Lumi 1.52.0.
+
 ## [0.27.0] - 2026-10-14
 
 ### Added
