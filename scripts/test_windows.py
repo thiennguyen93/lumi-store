@@ -121,8 +121,15 @@ class SelectionWatch(unittest.TestCase):
         self.assertIn("is not true or false", str(caught.exception.code))
 
 
+class Ai(unittest.TestCase):
+    def test_it_is_a_capability_lumi_offers(self):
+        publish.check_manifest("dev.you.thing", tomllib.loads(
+            BASE.replace('version = "1.0.0"', 'version = "1.0.0"\ncapabilities = ["ai"]').format(fields="")
+        ))
+
+
 class Preload(unittest.TestCase):
-    GRANTED = BASE.replace('version = "1.0.0"', 'version = "1.0.0"\ncapabilities = ["preload"]')
+    GRANTED =BASE.replace('version = "1.0.0"', 'version = "1.0.0"\ncapabilities = ["preload"]')
 
     def granted(self, fields: str) -> None:
         publish.check_manifest("dev.you.thing", tomllib.loads(self.GRANTED.format(fields=fields)))
