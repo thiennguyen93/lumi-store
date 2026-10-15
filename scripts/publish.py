@@ -117,6 +117,9 @@ CAPABILITIES = {
     # Lumi 1.47: the text the person selects with the mouse in any app, as
     # they select it (the `selection` event), and one panel beside it.
     "selection-watch",
+    # Lumi 1.52: the `ai` interface (the models the person set up in Lumi;
+    # Lumi asks them before text leaves the Mac).
+    "ai",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
