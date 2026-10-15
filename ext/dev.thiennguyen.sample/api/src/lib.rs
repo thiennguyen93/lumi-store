@@ -313,6 +313,70 @@ pub mod translation {
     }
 }
 
+/// The AI the person set up in Lumi — Apple Intelligence and the models on
+/// their Mac, Claude Code on their own plan, providers on their own keys.
+/// They choose the models in Settings › AI; you choose among them for each
+/// of your features, and never see a key. Costs `ai`. Needs Lumi 1.52.0.
+///
+/// `system` is the model's instructions and `input` the text to work on,
+/// always sent as data. Text that would leave the Mac waits on the person,
+/// who may send it, run it on their Mac instead, or decline — a
+/// `FailureKind::Declined`, nothing to show. Their limits and plan hold, and
+/// a model that cannot run falls back, the answer's `fell_back` saying so.
+///
+/// ```ignore
+/// use lumi_extension_api::{ai, alert, selection};
+///
+/// let found = selection()?;
+/// match ai::complete(&ai::Request {
+///     system: "Summarize the text in two sentences.".into(),
+///     input: found.text,
+///     model: None,
+///     max_tokens: None,
+///     thinking: ai::Thinking::Off,
+///     answer_language: Some("same".into()),
+///     format: ai::Format::Text,
+/// }) {
+///     Ok(answer) => alert(&answer.text)?,
+///     Err(failure) if matches!(failure.kind, ai::FailureKind::Declined | ai::FailureKind::Stopped) => {}
+///     Err(failure) => alert(&failure.message)?,
+/// }
+/// ```
+pub mod ai {
+    use super::lumi::ext::ai as wit;
+
+    pub use wit::{Answer, Failure, FailureKind, Format, Model, Place, Request, Thinking, Usage};
+
+    /// Whether a model answers now. Asks the engines on this Mac.
+    pub fn ready() -> Result<bool, String> {
+        wit::ready()
+    }
+
+    /// The models your extension may ask for now, the person's default
+    /// first. `Model::id` is what `Request::model` takes.
+    pub fn models() -> Result<Vec<Model>, String> {
+        wit::models()
+    }
+
+    /// Ask, and wait for the whole answer — for a command, with no window
+    /// to stream into. Only from a press: a command, a menu row or one of
+    /// your windows.
+    pub fn complete(request: &Request) -> Result<Answer, Failure> {
+        wit::complete(request)
+    }
+
+    /// Ask, and have the answer streamed to your own windows as `lumi:ai`
+    /// events, returning the call's id at once. Only from a press.
+    pub fn start(request: &Request) -> Result<u64, Failure> {
+        wit::start(request)
+    }
+
+    /// Stop call `id` wherever it is. False when no call of yours has it.
+    pub fn cancel(id: u64) -> Result<bool, String> {
+        wit::cancel(id)
+    }
+}
+
 /// Draw a line of text over the frontmost application, in Lumi's own
 /// alert style. The way an extension talks to the person at the keyboard.
 pub fn alert(text: &str) -> Result<(), String> {
