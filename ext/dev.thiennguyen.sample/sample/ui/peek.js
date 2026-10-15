@@ -35,6 +35,63 @@ function translateButton() {
   return button;
 }
 
+// The panel as tall as what it shows: a row of buttons that wraps, a summary
+// over several lines. Asked of Lumi whenever the page's height changes, never
+// below the 104 points the manifest declares.
+const main = document.querySelector("main");
+let sized = 0;
+new ResizeObserver(() => {
+  const height = Math.max(104, Math.ceil(main.getBoundingClientRect().height));
+  if (height === sized) return;
+  sized = height;
+  fetch("/__lumi__/size", { method: "POST", body: JSON.stringify({ width: 360, height }) }).catch(() => {});
+}).observe(main);
+
+// The Summarize button, offered wherever the person set up a model this
+// extension may ask. The extension starts the call and answers with its id;
+// the summary arrives as `lumi:ai` events carrying that id, written into the
+// panel as it comes. While it comes the button is Stop.
+let summarizing = null;
+
+function summarizeButton() {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Summarize";
+  button.addEventListener("click", async () => {
+    if (summarizing !== null) {
+      fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "stop", call: summarizing }) }).catch(() => {});
+      return;
+    }
+    try {
+      const answer = await (await fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "summarize" }) })).json();
+      if (typeof answer.call === "number") {
+        summarizing = answer.call;
+        button.textContent = "Stop";
+        text.textContent = "";
+        text.classList.add("long");
+        where.textContent = "Summarizing…";
+      }
+    } catch {
+      // The extension said why in an alert.
+    }
+  });
+  return button;
+}
+
+window.addEventListener("lumi:ai", (event) => {
+  const e = event.detail ?? {};
+  if (e.id !== summarizing) return;
+  if (e.kind === "asking") where.textContent = "Waiting for you to say it may go online…";
+  else if (e.kind === "started") where.textContent = e.fellBack ? e.fellBack : `Summarizing with ${e.modelName}…`;
+  else if (e.kind === "delta") text.textContent += e.text;
+  else if (e.kind === "done" || e.kind === "failed") {
+    summarizing = null;
+    for (const button of actions.querySelectorAll("button")) if (button.textContent === "Stop") button.textContent = "Summarize";
+    if (e.kind === "done") where.textContent = `${e.answer.modelName} · ${e.answer.where === "on-device" ? "on this Mac" : "online"}`;
+    else where.textContent = e.failure === "declined" || e.failure === "stopped" ? "" : e.message;
+  }
+});
+
 window.addEventListener("lumi:message", (event) => {
   // A pair not on this Mac yet: said, with a button that asks macOS to
   // download it — its own prompt, put up only by this press. After a prompt
@@ -62,7 +119,8 @@ window.addEventListener("lumi:message", (event) => {
     where.textContent = "";
     return;
   }
-  const { text: shown, chars, editable, transforms, snippet, translates } = event.detail ?? {};
+  const { text: shown, chars, editable, transforms, snippet, translates, summarizes } = event.detail ?? {};
+  text.classList.remove("long");
   text.textContent = chars > 0 ? `“${shown}${chars > shown.length ? "…" : ""}”` : "Nothing is selected.";
   where.textContent = chars > 0 ? `${chars} chars` : "";
   // What was selected, on one line, ready to search for as it is or to be
@@ -90,6 +148,7 @@ window.addEventListener("lumi:message", (event) => {
   }
   if (editable === false) {
     if (translates) actions.append(translateButton());
+    if (summarizes) actions.append(summarizeButton());
     const note = document.createElement("span");
     note.className = "note";
     note.textContent = "This text can't be edited here.";
@@ -109,6 +168,7 @@ window.addEventListener("lumi:message", (event) => {
     actions.append(button);
   }
   if (translates) actions.append(translateButton());
+  if (summarizes) actions.append(summarizeButton());
 });
 
 window.addEventListener("lumi:placed", (event) => {

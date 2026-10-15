@@ -145,11 +145,16 @@ impl lumi::Guest for Sample {
                 (Some("snippet"), _) => peek_snippet(),
                 (Some("search"), _) => peek_search(parsed.get("query").and_then(|q| q.as_str()).unwrap_or("")),
                 (Some("translate"), _) => peek_translate(),
+                (Some("summarize"), _) => peek_summarize(),
+                (Some("stop"), _) => {
+                    let id = parsed.get("call").and_then(|id| id.as_u64()).unwrap_or(0);
+                    Ok(serde_json::json!({ "stopped": lumi::ai::cancel(id)? }).to_string())
+                }
                 (Some("prepare"), _) => {
                     let field = |name: &str| parsed.get(name).and_then(|v| v.as_str()).unwrap_or("").to_string();
                     peek_prepare(&field("source"), &field("target"))
                 }
-                _ => Err("the peek panel asks for apply, with a transform's id, snippet, search, translate or prepare"
+                _ => Err("the peek panel asks for apply, with a transform's id, snippet, search, translate, prepare, summarize or stop"
                     .to_string()),
             };
         }
@@ -755,6 +760,11 @@ fn peek_message(text: &str, how: &str, editable: Option<bool>) -> Result<String,
     // Whether this Mac translates at all — macOS 26 — so the panel offers
     // Translate only where pressing it can do something.
     let translates = lumi::translation::languages().is_ok_and(|languages| !languages.is_empty());
+    // Whether the person set up a model this extension may ask — so the
+    // panel offers Summarize only where there is something to ask. The list,
+    // not `ready`: nothing on the Mac is asked whether it answers just to
+    // draw a button.
+    let summarizes = lumi::ai::models().is_ok_and(|models| !models.is_empty());
     Ok(serde_json::json!({
         "text": text.chars().take(60).collect::<String>(),
         "chars": text.chars().count(),
@@ -763,6 +773,7 @@ fn peek_message(text: &str, how: &str, editable: Option<bool>) -> Result<String,
         "transforms": buttons,
         "snippet": snippet,
         "translates": translates,
+        "summarizes": summarizes,
     })
     .to_string())
 }
@@ -947,6 +958,38 @@ fn peek_translate() -> Result<String, String> {
         Err(refused) => {
             let _ = lumi::alert(&refused);
             Err(refused)
+        }
+    }
+}
+
+/// The peek panel's Summarize button: the selection summed up by the AI the
+/// person set up in Lumi, on their default model, streamed to the panel as
+/// `lumi:ai` events under the call's id — which the page is told here, and
+/// which its Stop button sends back. Whether the text may leave the Mac, and
+/// which model runs, are Lumi's to settle with the person; the extension says
+/// only what to do with the text.
+fn peek_summarize() -> Result<String, String> {
+    let found = lumi::selection()?;
+    if found.text.trim().is_empty() {
+        lumi::alert("Nothing is selected any more")?;
+        return Ok(serde_json::json!({ "how": "nothing" }).to_string());
+    }
+    let request = lumi::ai::Request {
+        system: "Summarize the text in one or two sentences. Answer with the summary only.".to_string(),
+        input: found.text,
+        model: None,
+        max_tokens: Some(256),
+        thinking: lumi::ai::Thinking::Off,
+        answer_language: Some("same".to_string()),
+        format: lumi::ai::Format::Text,
+    };
+    match lumi::ai::start(&request) {
+        Ok(id) => Ok(serde_json::json!({ "call": id }).to_string()),
+        Err(failure) => {
+            if !matches!(failure.kind, lumi::ai::FailureKind::Declined | lumi::ai::FailureKind::Stopped) {
+                let _ = lumi::alert(&failure.message);
+            }
+            Ok(serde_json::json!({ "failed": failure.message }).to_string())
         }
     }
 }

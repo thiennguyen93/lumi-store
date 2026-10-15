@@ -6,9 +6,10 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.27.0"
-# 1.51.0: the floor is the newest thing this manifest names or the component
-# calls — the peek panel's Translate and Download… buttons and their
+version = "0.28.0"
+# 1.52.0: the floor is the newest thing this manifest names or the component
+# calls — the `ai` capability and the peek panel's Summarize button.
+# Before it, 1.51.0: the peek panel's Translate and Download… buttons and their
 # `translation` calls.
 # Before it, 1.48.0: the peek panel's `side = "pointer"`, which an older Lumi refuses as
 # a word it does not know, its search field's `POST /__lumi__/keyboard`, and
@@ -21,7 +22,7 @@ version = "0.27.0"
 # older Lumi refuses. (Before it,
 # `input-hold` set the floor at 1.38. [tabs] below is the other direction: an
 # older Lumi ignores the table and draws its own tabs, so it sets no floor.)
-min-lumi-version = "1.51.0"
+min-lumi-version = "1.52.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
@@ -69,7 +70,10 @@ menu = "auto"
 # person's own triggers, and what it expands to (`snippet_of` in src/lib.rs)
 # — Lumi answers with text, and the sample decides that a web address is a
 # link to open (Lumi 1.31, under the floor already set).
-capabilities = ["accessibility", "applications", "clipboard", "input", "input-hold", "menu", "network", "preload", "screen", "selection-watch", "snippets"]
+# `ai` for the peek panel's Summarize button, which asks the AI the person
+# set up in Lumi (`peek_summarize` in src/lib.rs) — Lumi asks the person
+# before the text leaves the Mac (Lumi 1.52).
+capabilities = ["accessibility", "ai", "applications", "clipboard", "input", "input-hold", "menu", "network", "preload", "screen", "selection-watch", "snippets"]
 # `preload-enabled`: the Preload switch moved on the sample's
 # Permissions sheet, which the background card's own switch follows (Lumi
 # 1.45.0 — the floor above).
