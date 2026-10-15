@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.88.0] - 2026-10-15
+
+### Changed
+
+- The panel now opens on your newest copy, not on your first pinned item, so ↩ pastes what you copied last however many items you have pinned. Your pinned items are still at the top: press ↑ to reach them, or their own ⌘-letter. Clearing the search or switching between All, Text, Links and the rest also goes back to your newest copy. While you search, the first match is still selected, pinned or not.
+
 ## [0.87.1] - 2026-10-11
 
 ### Fixed

@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { cut, found, fuzzyScore, highlights, keptInSight, nextSkip, oneLine, searchWith, skipped, byWordStarts, wordStarts, type Found } from "../src/search.ts";
+import { cut, found, fuzzyScore, highlights, keptInSight, nextSkip, oneLine, restingRow, searchWith, skipped, byWordStarts, wordStarts, type Found } from "../src/search.ts";
 import type { Entry } from "../src/types.ts";
 
 function row(id: string, title: string, appName = "Claude", search = title): Entry {
@@ -285,4 +285,19 @@ test("an action marks the letters that found it", () => {
   assert.deepEqual(marks("Tiếng Việt", "tv"), [[0, 1], [6, 7]]);
   assert.deepEqual(marks("Tiếng Việt", "tieng"), [[0, 5]]);
   assert.deepEqual(marks("Paste", ""), []);
+});
+
+test("the list rests on the newest copy, not on the pins above it", () => {
+  const pinned = (id: string, pin: string) => ({ ...row(id, id), pin }) as Entry;
+  const plain = (id: string) => ({ ...row(id, id), pin: null }) as Entry;
+  const shown = [pinned("p1", "b"), pinned("p2", "d"), pinned("p3", "e"), pinned("p4", "f"), plain("new"), plain("old")];
+  assert.equal(restingRow(shown, ""), 4);
+  // Spaces alone are no search.
+  assert.equal(restingRow(shown, "  "), 4);
+  // A search rests on its first match, pinned or not.
+  assert.equal(restingRow(shown, "p"), 0);
+  // No pins, or nothing but pins, or nothing at all: the first row.
+  assert.equal(restingRow([plain("new"), plain("old")], ""), 0);
+  assert.equal(restingRow([pinned("p1", "b")], ""), 0);
+  assert.equal(restingRow([], ""), 0);
 });

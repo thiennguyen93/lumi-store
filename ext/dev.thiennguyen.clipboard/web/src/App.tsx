@@ -78,7 +78,7 @@ import {
   type Veil,
   VEIL_OFF,
 } from "./privacy";
-import { badPattern, FILTER_LABELS, FILTERS, type Filter, inFilter, search, searchWith, type SearchMode, shortcuts } from "./search";
+import { badPattern, FILTER_LABELS, FILTERS, type Filter, inFilter, restingRow, search, searchWith, type SearchMode, shortcuts } from "./search";
 import type { Entry, ListAnswer } from "./types";
 import { reconcile } from "./rows";
 import { currentGeneration, isHidden, whenShown } from "./visibility";
@@ -99,7 +99,10 @@ export function App() {
   // Lock history now — its setting; ⌘⇧L until the list says.
   const [lockKey, setLockKey] = useState<Combo | null>(() => parseCombo(DEFAULT_LOCK_KEY));
   const [filter, setFilter] = useState<Filter>("all");
-  const [selected, setSelected] = useState(0);
+  // The row the person chose — with the arrows, a click, a row's key — or
+  // null for the resting row (`restingRow`), which the list falls back to
+  // as it opens and whenever the search or the filter changes.
+  const [chosen, setChosen] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
   // The moment the rows' ages are counted from ("3m"): when the list was
   // last read on screen, and when the panel is shown again.
@@ -178,6 +181,8 @@ export function App() {
     [rows, query, filter, mode],
   );
   const keys = useMemo(() => shortcuts(shown), [shown]);
+  const resting = restingRow(shown, query);
+  const selected = chosen ?? resting;
   const current = shown[selected];
   const zoomed = zoom && canZoom(current);
   useEffect(() => {
@@ -220,7 +225,7 @@ export function App() {
         input.current?.value ?? "",
         modeRef.current,
       ).findIndex((row) => row.id === keepId);
-      if (at >= 0) setSelected(at);
+      if (at >= 0) setChosen(at);
     }
   }, [adoptWidth, adoptSplit]);
 
@@ -269,10 +274,10 @@ export function App() {
   }, [reload]);
 
   // The row a reread of the list keeps chosen: the one the person is on,
-  // wherever it moves to — except the top row, where a new copy lands, so
-  // resting there follows it.
+  // wherever it moves to — except the resting row, where a new copy lands,
+  // so resting there follows it.
   const following = useRef<string | null>(null);
-  following.current = selected > 0 ? (current?.id ?? null) : null;
+  following.current = selected !== resting ? (current?.id ?? null) : null;
 
   // A copy made while the panel is up — pinned over another app, or not —
   // comes as news from the extension (`ui.post`, src/lib.rs `tell_panel`),
@@ -333,8 +338,8 @@ export function App() {
   // A selection past the end — after a delete, or a search that narrowed
   // the list — lands on the last row rather than on nothing.
   useEffect(() => {
-    if (selected > 0 && selected >= shown.length) setSelected(Math.max(0, shown.length - 1));
-  }, [selected, shown.length]);
+    if (chosen !== null && chosen >= shown.length) setChosen(shown.length ? shown.length - 1 : null);
+  }, [chosen, shown.length]);
 
   useEffect(() => {
     document.getElementById(`row-${selected}`)?.scrollIntoView({ block: "nearest" });
@@ -386,7 +391,7 @@ export function App() {
   // is not drawn again (`Row`'s memo), so a press of an arrow key draws the
   // two rows it moves between, not every row in the history.
   const pick = useCallback((at: number) => {
-    setSelected(at);
+    setChosen(at);
     // Back from the preview, the next letter is the search's.
     input.current?.focus();
   }, []);
@@ -817,7 +822,7 @@ export function App() {
 
   const choose = (next: Filter) => {
     setFilter(next);
-    setSelected(0);
+    setChosen(null);
     setNotice("");
   };
 
@@ -831,9 +836,10 @@ export function App() {
   const move = (by: number, round = false) => {
     const count = shown.length;
     if (!count) return;
-    setSelected((at) =>
-      round ? (((at + by) % count) + count) % count : Math.max(0, Math.min(count - 1, at + by)),
-    );
+    setChosen((was) => {
+      const at = was ?? resting;
+      return round ? (((at + by) % count) + count) % count : Math.max(0, Math.min(count - 1, at + by));
+    });
   };
 
   /** The field a letter belongs in: the menu's own filter while it is up,
@@ -926,7 +932,7 @@ export function App() {
         setZoom(false);
       } else if (query) {
         setQuery("");
-        setSelected(0);
+        setChosen(null);
       } else if (filter !== "all") {
         choose("all");
       } else {
@@ -954,7 +960,7 @@ export function App() {
       const at = shown.findIndex((row) => keys.get(row.id) === wanted);
       // ⌘A, ⌘C, ⌘V and the rest stay the text field's when no row owns them.
       if (at < 0) return;
-      setSelected(at);
+      setChosen(at);
       paste(event.altKey, shown[at]);
     } else return;
     event.preventDefault();
@@ -1018,7 +1024,7 @@ export function App() {
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
-            setSelected(0);
+            setChosen(null);
             setNotice("");
             // A search is typed to see the list, so it comes back.
             setZoom(false);

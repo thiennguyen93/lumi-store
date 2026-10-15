@@ -544,6 +544,17 @@ export function shortcuts(shown: Entry[]): Map<string, string> {
   return keys;
 }
 
+/** The row the list rests on — chosen as the panel opens, and again when
+ *  the search or the filter changes: the first row not pinned, where a new
+ *  copy lands, so ↩ pastes the newest copy however many pins sit above it
+ *  (each one ↑ away round the top, and on its own ⌘-letter). A search rests
+ *  on its first match, pinned or not: what was typed ranks them. With no
+ *  row unpinned, the first. */
+export function restingRow(shown: Entry[], query: string): number {
+  if (words(query).length) return 0;
+  return Math.max(0, shown.findIndex((row) => !row.pin));
+}
+
 export function ago(ms: number, now = Date.now()): string {
   const s = Math.max(0, Math.round((now - ms) / 1000));
   if (s < 45) return "just now";
