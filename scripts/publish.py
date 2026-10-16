@@ -470,6 +470,15 @@ def check_manifest(entry_id: str, manifest: dict):
             side = str(anchor.get("side", "")).strip()
             if side not in ("", "above", "below", "pointer"):
                 fail(entry_id, f'the panel {name} asks for anchor side {side!r}; a panel beside the selection goes "above", "below" or "pointer"')
+        # `manifest.rs`'s scroll rule (Lumi 1.53): a panel beside the
+        # selection's alone, "hide" or "follow", same sentences. An older
+        # Lumi ignores the key.
+        if "scroll" in window:
+            if position != "selection" or kind != "panel":
+                fail(entry_id, f'the window {name} sets scroll, which only a panel at position = "selection" has')
+            scroll = str(window["scroll"]).strip()
+            if scroll not in ("hide", "follow"):
+                fail(entry_id, f'the panel {name} asks for scroll = {scroll!r}; a panel beside the selection does "hide" or "follow" when its text is scrolled')
         # `manifest.rs`'s rule for a panel beside the selection (Lumi 1.47):
         # it has no place of its own, so no key about one, same sentence.
         if position == "selection" and kind == "panel":

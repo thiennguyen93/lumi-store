@@ -187,6 +187,12 @@ class BesideTheSelection(unittest.TestCase):
         self.assertIn("a table of at and side", refusal('kind = "panel"\nposition = "selection"\nanchor = { gap = 4 }'))
         self.assertIn('only a panel at position = "selection"', refusal('kind = "panel"\nposition = "top-right"\nanchor = { at = "end" }'))
 
+    def test_it_says_what_a_scroll_does_in_words(self):
+        check('kind = "panel"\nposition = "selection"\nfocus = false\nscroll = "follow"')
+        check('kind = "panel"\nposition = "selection"\nscroll = "hide"')
+        self.assertIn('"hide" or "follow"', refusal('kind = "panel"\nposition = "selection"\nscroll = "stay"'))
+        self.assertIn('only a panel at position = "selection"', refusal('kind = "panel"\nposition = "top-right"\nscroll = "follow"'))
+
     def test_it_has_no_place_of_its_own(self):
         for key in ("remember-frame = true", "restore = true", "copies = 4"):
             refused = refusal(f'kind = "panel"\nposition = "selection"\n{key}')
