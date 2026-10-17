@@ -1,4 +1,30 @@
 {
+  "0.88.0": {
+    "notesSha256": "aff2cdf22c0ce22b9cd4739cda48c1c503540e5d88e1ca2d68f88c6c64f55ca2",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Panel opens on your newest copy, not your first pinned item",
+          "items": [
+            "Panel opens on your newest copy so Return pastes what you copied last",
+            "Pinned items stay at the top but press Up to reach them or use their shortcuts",
+            "Clearing search or switching filters returns to your newest copy",
+            "First match stays selected while you search regardless of pins"
+          ]
+        },
+        "vi": {
+          "headline": "Bảng mở tại mục vừa sao chép, không phải mục ghim đầu tiên",
+          "items": [
+            "Bảng mở tại mục vừa sao chép nên Return dán nội dung sao chép gần nhất",
+            "Mục ghim vẫn ở trên cùng nhưng nhấn Lên để tới hoặc dùng phím tắt riêng",
+            "Xóa tìm kiếm hoặc chuyển bộ lọc sẽ quay về mục vừa sao chép",
+            "Kết quả khớp đầu tiên vẫn được chọn khi tìm kiếm dù có ghim hay không"
+          ]
+        }
+      }
+    }
+  },
   "0.87.1": {
     "notesSha256": "879852d55dea0b4d1b62921bed3ea65e2c763641d6e412b968c12d5df0198a31",
     "summary": {
@@ -434,30 +460,6 @@
           "items": [
             "Các cài đặt riêng tư bị mờ khi chế độ riêng tư tắt và hiển thị khi nào chúng hoạt động",
             "Cài đặt giữ nguyên giá trị và khả dụng trở lại khi bật chế độ riêng tư"
-          ]
-        }
-      }
-    }
-  },
-  "0.78.0": {
-    "notesSha256": "4baaf47dcfcd594ffb68af490679155de342cafabf899a83ff7fe1d2ec9fbcd0",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Privacy mode is now controlled from Settings",
-          "items": [
-            "Privacy mode can only be toggled from Settings or with a keyboard shortcut",
-            "The eye icon in the panel now only shows when privacy mode is on",
-            "Command-K no longer offers to turn privacy mode on or off"
-          ]
-        },
-        "vi": {
-          "headline": "Chế độ riêng tư giờ chỉ điều khiển từ Cài đặt",
-          "items": [
-            "Chế độ riêng tư chỉ có thể bật tắt từ Cài đặt hoặc bằng phím tắt",
-            "Biểu tượng con mắt trong bảng giờ chỉ hiện khi chế độ riêng tư đang bật",
-            "Command-K không còn tùy chọn bật tắt chế độ riêng tư"
           ]
         }
       }
