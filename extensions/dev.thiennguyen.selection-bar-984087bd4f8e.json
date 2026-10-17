@@ -1,0 +1,142 @@
+[
+ {
+  "version": "0.3.24",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **A Welcome tour**, opened when Selection Bar is installed or updated, and again from Lumi's About page. A small pretend Mac acts out each step above the words: Fix Spelling & Grammar marking and correcting a mail's mistakes one by one, Rewrite in a style — then the same answer asked again with another of your models, and more thinking, for that card alone — Explain, Reply… offering the ways to answer a message, Translate on this Mac, the second bar ⌥ holds, and the keys: the shortcut, 1–9, ↩. The bar in it wears your Look, Dark, Light or Match macOS. The models it names are yours, from Lumi's AI settings — or \"Your model\" where you have none — and its last step says whether one is set up for the AI actions, and where to set one up if not. The shortcut step says whether ⌃⌥⌘Space was free to take, and if something else holds it, offers to take it, to pick another key, or to leave it for later.",
+  "notesSha256": "61ee2f9daccbb5c501045e81c45360b1b48807d9f5890d7eb3b0e192d4f20840",
+  "summary": null
+ },
+ {
+  "version": "0.3.23",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **Reply…** — for a message someone sent you. The AI reads it first and offers the ways you are likeliest to answer it, a few words each — \"3 pm works for me\", \"Suggest 4 pm instead\", \"Ask what the review covers\" — and a field to say your own. Pick one and it writes the reply along it, in the message's language and your voice, to copy and send. Back goes to the ways again, and ↻ on them asks for others. Its sheet has two sets of instructions: which ways to offer, and how to write the reply. However you word the first, the bar asks for the ways one a line, so they can always be listed; should none come back, the field is still there. The ways come in your Mac's language; the way you pick goes to the model with the message, as text to work on, never as instructions.\n- **Text you can't edit**, under an AI action's Shows for: a message, a page — where Reply… shows, and where an action of your own can too.\n\n### Fixed\n\n- The Settings tab no longer says every AI action needs a model when Lumi has one. Lumi lets the tab ask the bar anything only while Settings is in front, and a tab loaded behind another app — Lumi reopening Settings as it starts, or a new version arriving — was refused, and showed what it could not read as none: no model, no translator, an empty sample bar. It now reads them again as Settings comes to the front, waits longer while the bar is busy starting, and until it knows, says nothing either way.",
+  "notesSha256": "4f732c820ea83959dd7d76f9b31b512b978c9e7453fc0ad947c9ac8718f6c99e",
+  "summary": null
+ },
+ {
+  "version": "0.3.22",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **Each bar its own settings for an action.** An action's gear on the While holding ⌥ tab opens its sheet for that bar: Use the main bar's settings, on at first, shows the main bar's settings dimmed — what the bar asks with, changed from the Main tab. Turned off, the bar has its own — instructions, model, thinking, when it shows and what its answer is for, Translate's translator and languages, Search's site — starting as a copy of the main bar's, so Fix Spelling & Grammar can ask a quick model on one bar and a careful one on the other. Turned back on, its own are kept for the next time it is turned off. Each sheet says at its top which bar it saves for, and the While holding ⌥ tab marks an action with settings of its own there. An action of your own keeps one name and icon on both bars.\n- **Ask… chooses its model before the first question.** Under the question's field, the model it goes to and how hard it thinks — Ask…'s own — open Ask With: pick another model or thinking, Done, and the question asks with it, and the chat after it too.\n\n### Fixed\n\n- The model at the foot of an AI card is as tall as the card's buttons, and its corner follows the panel's: under Ask…'s first question, alone in its footer, it had shrunk to its text, its lit background against the panel's edge.",
+  "notesSha256": "c4218df7fa0cdce5d42f0b0e7bc887386684e699e53c44e8c3af35127f094b1d",
+  "summary": null
+ },
+ {
+  "version": "0.3.21",
+  "date": "2026-10-17",
+  "notes": "### Fixed\n\n- In Ask…'s chat, Return in the follow-up field sends the question again: the bar's own keys had taken it while the bar held the keyboard.\n- The follow-up field shows its caret only while what you type goes into it. In an app that answers Accessibility nothing while the bar has the keyboard — Chromium and Electron apps, Visual Studio Code — reading the selection for the question lent the keyboard back to the app, and the field kept a caret that typing never reached: the bar went instead. With Lumi 1.55.0 the keyboard comes back to the bar once the question is asked, so typing goes on into the field; with an older Lumi, a press on the field gives it back.",
+  "notesSha256": "1599e023610c12a22bb4e37b2ac6b8e94487ac069565f6e40e0f1d054a5584ea",
+  "summary": null
+ },
+ {
+  "version": "0.3.20",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **Ask… is a chat.** Once it has answered, a field under the answer takes the next question, and the model is asked it with the chat so far — your earlier questions with its instructions, its earlier answers after the selected text, as text to work on, never as instructions — so \"which part?\" or \"make it friendlier\" follow on. The card keeps every question and answer in turn, the newest last, as a messages app draws them — yours on the right in the accent colour, the model's on the left — each answer with a Copy of its own beside it — shown as you point at the answer, and on the latest until you point at another — that leaves the chat up — in place of the footer's Copy, which took the last answer and put the bar away — and ↻ asks the last one again with the same chat. The latest eight questions go with each, and of a long answer its first 3,000 characters. Like a translation, the chat goes when the bar does.",
+  "notesSha256": "24f4dddad1f0e917b8a097e9e0306f597e68e8b340426b2f627f54cd66770f1b",
+  "summary": null
+ },
+ {
+  "version": "0.3.19",
+  "date": "2026-10-17",
+  "notes": "### Changed\n\n- In an AI action's sheet, an answer that is new text to copy no longer shows Write it over at once, Show what changed and How changes are marked, dimmed: they are gone until the answer replaces what you selected again, each keeping its choice. How changes are marked goes the same way while Show what changed is off. The sheet is shorter for it.",
+  "notesSha256": "4d13e8feccdc64ba339bcc3b7f1db99aa1214922260d052631baaea2e21ee06d",
+  "summary": null
+ },
+ {
+  "version": "0.3.18",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **Ask again with another model.** On an AI action's card, once it has answered, the model named at the bottom opens Ask Again With: pick another of the models you turned on in Lumi, and how hard it thinks — Off, Low, Medium or High, for a model that can — then Ask Again. The choice holds for that card, ↻ asking with it too, and the action keeps its own as its sheet has it. Translate's card does the same when the AI translates, as Translate Again With, and a language changed on the card keeps the model chosen.",
+  "notesSha256": "74971a89342e4947cc244bd5af4aeabb9413d195628146066dfba3461c07df02",
+  "summary": null
+ },
+ {
+  "version": "0.3.17",
+  "date": "2026-10-17",
+  "notes": "### Removed\n\n- The Settings tab's AI section. It only said how many models Lumi has and which is the default: each AI action's sheet says which model runs it and whether it runs on this Mac, and with no model in Lumi, the AI actions' rows say they need one.",
+  "notesSha256": "05fbcab2a4c8b51917c5ec387476d21b078ad4f57f26627f710a4b3e9c6a3eb4",
+  "summary": null
+ },
+ {
+  "version": "0.3.16",
+  "date": "2026-10-17",
+  "notes": "### Changed\n\n- Selection Bar's page in Lumi opens on Settings rather than About. Once you pick another tab, Lumi reopens it on yours until it quits.\n- Show what changed and How changes are marked moved from the Settings tab's AI section into each AI action's sheet, under The answer, where they apply: only an answer that replaces what you selected is marked. Show what changed is each action's own now — on for Fix Spelling & Grammar and off for Rewrite, say. How changes are marked is still one choice for every action, chosen from a menu with a sample under it, from any of their sheets. Turned off before, Show what changed starts off for every action.",
+  "notesSha256": "9834d3da73212955da4d05ff77d52bf1bd31795fc9d366e035742bab057f23f1",
+  "summary": null
+ },
+ {
+  "version": "0.3.15",
+  "date": "2026-10-17",
+  "notes": "### Fixed\n\n- An AI action added with + in Settings could be missing from the list once its sheet closed, and a change made in an AI action's sheet could be lost: the action and the lists were saved apart, at the same moment, and Lumi kept only one of the two. They are now one save, as are Translate's choices and − taking an action off. An action lost that way has to be added again.",
+  "notesSha256": "88b9b58996360250f38f911b0fdd2779991899c67a2d25429f04ea8cbb8621df",
+  "summary": null
+ },
+ {
+  "version": "0.3.14",
+  "date": "2026-10-17",
+  "notes": "### Fixed\n\n- In Settings, switching the Actions list between Main and While holding ⌥ no longer moves the page up and down in a narrow window. How many actions go under ⋯ is now a small count on the preview's ⋯ itself, instead of words beside the samples that could wrap that row onto a second line, and the two tabs' notes keep the height of the longer.",
+  "notesSha256": "aeb07b27536df220bbbbbc9bdb44ca7139ed5843a4decd0792ba5e59e051f5b8",
+  "summary": null
+ },
+ {
+  "version": "0.3.13",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **A second bar while ⌥ is held.** Under Actions in Settings, a new tab, While holding ⌥, chooses a second set of actions in an order of their own. Hold ⌥ while the bar is up and it shows them instead, ⌥ after Lumi's name at its start; let go and it shows the main ones again. Select text with ⌥ held and it comes up as the second bar at once. Each action shows only when it fits, and past eight the rest go under ⋯, on either bar; one with nothing for the selection shows only ⋯. An action can be on both bars, its gear's choices the same on each. Everything starts off, so ⌥ changes nothing until you turn some on. A menu opened from either bar stays that bar's until you go back. Needs Lumi 1.54.0 for ⌥ to be heard with the pointer resting; an older Lumi swaps as the pointer comes onto the bar with ⌥ held.\n- Settings' Show the bar says that holding ⌘ as you select with the mouse keeps it away.",
+  "notesSha256": "0c0ba8d2a9ed368fb41ab8f9d3977a06736a940c1946e075a3cb9b8858e212ae",
+  "summary": null
+ },
+ {
+  "version": "0.3.12",
+  "date": "2026-10-16",
+  "notes": "### Fixed\n\n- In Translate's sheet, with the AI translating, the two languages' Download… was dimmed and could not be pressed. It can now: the languages are macOS's, for every app, and the bar's too whenever the AI cannot be asked and macOS translates instead.",
+  "notesSha256": "73e39e96764aa08a14d69bdfafbd341432c5726b16701a661271ce6349fee247",
+  "summary": null
+ },
+ {
+  "version": "0.3.11",
+  "date": "2026-10-16",
+  "notes": "### Changed\n\n- Translate's choices — who translates, the two languages, and the AI's model, instructions and thinking — and Search's site moved from their own places on the Settings tab into a sheet of their own, opened by the gear on the action's row, as an AI action's is. The row says what is chosen: \"For words · macOS\", \"For a short text · Google\".",
+  "notesSha256": "515cf62d68e7157b139d07f99818a99fabe1b74d7a01588940595e92e7c4e3e7",
+  "summary": null
+ },
+ {
+  "version": "0.3.10",
+  "date": "2026-10-16",
+  "notes": "### Fixed\n\n- In Settings, a click on an action's name or the line under it turned the action on or off. A click anywhere on its row now only picks the row; the switch alone turns the action on or off.",
+  "notesSha256": "9cf6cf96e2185b48c5748775b9c33f750eedc581ad63b0f37ac683994ad927f0",
+  "summary": null
+ },
+ {
+  "version": "0.3.9",
+  "date": "2026-10-16",
+  "notes": "### Changed\n\n- Scrolling a page with the arrow keys, Page Up and Down, Home, End or Space no longer puts the bar away: it follows the text as it does for the trackpad. In a text field those keys move the caret or type, and the bar goes as before. Needs Lumi 1.53.0.",
+  "notesSha256": "30f8fc432699b7108ae32314ebe9e5d7b0fe0a19c3bdf4897d90c9b126c57aa5",
+  "summary": null
+ },
+ {
+  "version": "0.3.8",
+  "date": "2026-10-16",
+  "notes": "### Changed\n\n- The bar opened with ⌃⌥⌘Space follows the text through a scroll too, as the one that comes up when you select does, instead of staying where it was. It keeps the keyboard throughout. In Chrome, Slack and other apps built on Chrome, which say nothing is selected while the bar holds the keyboard, it steps away while you scroll and comes back only if the app says again where the text is. Needs Lumi 1.53.0.",
+  "notesSha256": "d8b0ae7570cae3df0f6e891631755bbf5be4a2092fe5e4f9f606143c5f062b6f",
+  "summary": null
+ },
+ {
+  "version": "0.3.7",
+  "date": "2026-10-16",
+  "notes": "### Changed\n\n- Scrolling no longer puts the bar away. In apps that say at once where the text is — TextEdit, Notes, Safari and most of macOS — it moves with the text you selected, to the text's other side when there is no room. Where an app cannot say in time — Chrome, Slack and other apps built on Chrome — or the text scrolls out of sight, the bar steps away while you scroll and comes back beside the text when you stop, with whatever it was showing, such as a translation or an AI answer; if the text is out of sight by then, the bar goes. Needs Lumi 1.53.0; an older Lumi puts the bar away on a scroll, as before.",
+  "notesSha256": "70fe9ecb0eaee3d409173d3a1d4cb619d4ecea707b00667446ba545a66df10fb",
+  "summary": null
+ },
+ {
+  "version": "0.3.6",
+  "date": "2026-10-16",
+  "notes": "### Added\n\n- With the bar showing icons only, a button's name shows beside it the moment you point at it, or move onto it with the arrow keys: drawn as macOS draws a tooltip, above the bar or below it, away from the text you selected. Moving along the bar changes it at once; pressing a button or leaving the bar takes it away. Needs Lumi 1.53.0; an older Lumi shows no name.",
+  "notesSha256": "ab0ae6b4ef61dc07a1b4f7f0b45804426cda0cd091d8fc047e6f2a7967d1a5ef",
+  "summary": null
+ },
+ {
+  "version": "0.3.5",
+  "date": "2026-10-16",
+  "notes": "### Added\n\n- **Translate with AI.** Under Translate in Settings, choose who translates: macOS, on this Mac and offline, or the AI you set up in Lumi, which is better at tone and idioms. The translation is written onto the card as the model writes it, with Stop, Copy and Replace, and the footer says which model translated and whether it ran on this Mac. Choose its model, and change its instructions and how hard it thinks with Edit…\n- With the AI translating, a few words macOS cannot place are no longer asked about: the model tells their language, and the card says Detect Language. Choose the source on the card to tell the model instead.\n- On a Mac before macOS 26, Translate now works with the AI. With no model turned on in Lumi, macOS translates whatever is chosen; Settings says which one runs, and why.",
+  "notesSha256": "e45df018c0fd7455168ec7b20faaa1d351a759e315541cb76c4f7d55e1cc9a64",
+  "summary": null
+ }
+]
