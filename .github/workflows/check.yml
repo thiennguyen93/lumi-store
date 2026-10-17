@@ -46,6 +46,7 @@ jobs:
         env:
           SCREENSHOT_DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
           STICKY_DEPLOY_KEY: ${{ secrets.STICKY_DEPLOY_KEY }}
+          SELECTION_BAR_DEPLOY_KEY: ${{ secrets.SELECTION_BAR_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
 
       # No minisign: nothing here signs. corepack for a web entry's pinned

@@ -6,3 +6,7 @@
 	path = ext/dev.thiennguyen.sticky
 	url = git@github.com:thiennguyen93/lumi-sticky-notes.git
 	update = none
+[submodule "ext/dev.thiennguyen.selection-bar"]
+	path = ext/dev.thiennguyen.selection-bar
+	url = git@github.com:thiennguyen93/lumi-selection-bar.git
+	update = none
