@@ -121,6 +121,7 @@ jobs:
           ID: ${{ matrix.id }}
           SCREENSHOT_DEPLOY_KEY: ${{ matrix.id == 'dev.thiennguyen.screenshot' && secrets.SCREENSHOT_DEPLOY_KEY || '' }}
           STICKY_DEPLOY_KEY: ${{ matrix.id == 'dev.thiennguyen.sticky' && secrets.STICKY_DEPLOY_KEY || '' }}
+          SELECTION_BAR_DEPLOY_KEY: ${{ matrix.id == 'dev.thiennguyen.selection-bar' && secrets.SELECTION_BAR_DEPLOY_KEY || '' }}
         run: scripts/fetch-private.sh "$ID"
 
       # No minisign and no secret: nothing here signs. Node is the
@@ -179,6 +180,7 @@ jobs:
         env:
           SCREENSHOT_DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
           STICKY_DEPLOY_KEY: ${{ secrets.STICKY_DEPLOY_KEY }}
+          SELECTION_BAR_DEPLOY_KEY: ${{ secrets.SELECTION_BAR_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
       - id: sync
         env:
@@ -207,6 +209,7 @@ jobs:
         env:
           SCREENSHOT_DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
           STICKY_DEPLOY_KEY: ${{ secrets.STICKY_DEPLOY_KEY }}
+          SELECTION_BAR_DEPLOY_KEY: ${{ secrets.SELECTION_BAR_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
 
       # minisign from Ubuntu's archive. A mirror that stops answering held
