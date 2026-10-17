@@ -1,4 +1,24 @@
 {
+  "0.1.27": {
+    "notesSha256": "6233eeaa6704cd0dde9121c47e7fdbea2428c00f7cbce70470610973a8c0feef",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Locked notes now let you tick off to-dos",
+          "items": [
+            "You can now check and clear to-dos in locked notes while everything else stays protected"
+          ]
+        },
+        "vi": {
+          "headline": "Ghi chú đã khóa giờ cho phép đánh dấu công việc",
+          "items": [
+            "Bạn giờ có thể đánh dấu và xóa công việc trong ghi chú đã khóa trong khi mọi thứ khác vẫn được bảo vệ"
+          ]
+        }
+      }
+    }
+  },
   "0.1.26": {
     "notesSha256": "698ab323ca3abb0aed554f954d2bf9e5e31a68385daed1e2fc4ff0043eacc65f",
     "summary": {
@@ -440,26 +460,6 @@
           "headline": "Chân trang hiển thị thương hiệu Lumi",
           "items": [
             "Chân trang ghi chú giờ có logo Lumi, cho thấy rõ Sticky Notes chạy trong Lumi"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.7": {
-    "notesSha256": "01782f4f9078a301c15e4eda398eccde89449c8a0a01dafe44e6772b8b8e1f31",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Fixed caret position when opening notes that end with pictures",
-          "items": [
-            "Notes ending with a picture now open with the caret below it, so typing no longer replaces the picture"
-          ]
-        },
-        "vi": {
-          "headline": "Sửa vị trí con trỏ khi mở ghi chú kết thúc bằng hình ảnh",
-          "items": [
-            "Ghi chú kết thúc bằng hình ảnh giờ mở với con trỏ ở dưới, không còn xóa hình khi gõ phím"
           ]
         }
       }
