@@ -83,3 +83,20 @@ web = "web"
 category = "Productivity"
 private = true
 follow = true
+
+
+# First-party and closed source, Screenshot's arrangement: a private repo,
+# `update = none` in .gitmodules, fetched with a read-only deploy key of its
+# own (SELECTION_BAR_DEPLOY_KEY) by scripts/fetch-private.sh. Its React
+# front end under web/ is built by the store. Needs Lumi 1.52.0 (the `ai`
+# interface, on top of 1.51.0's `translation` and 1.47.0's panels beside
+# the selection and `selection-watch`).
+[[extension]]
+id = "dev.thiennguyen.selection-bar"
+path = "ext/dev.thiennguyen.selection-bar"
+subdir = "."
+web = "web"
+category = "Productivity"
+featured = true
+private = true
+follow = true
