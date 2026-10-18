@@ -1,0 +1,468 @@
+{
+  "0.3.25": {
+    "notesSha256": "eb01cad182dfeb11f6c84b6095c261fa58f3d22d60a495982a8ad1a867cb340a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Demo video added to the Extension Store",
+          "items": [
+            "A demo video now shows what Selection Bar does before you install it"
+          ]
+        },
+        "vi": {
+          "headline": "Thêm video giới thiệu vào Cửa hàng Tiện ích",
+          "items": [
+            "Video giới thiệu giờ hiển thị Selection Bar hoạt động như thế nào trước khi cài đặt"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.24": {
+    "notesSha256": "61ee2f9daccbb5c501045e81c45360b1b48807d9f5890d7eb3b0e192d4f20840",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour and setup guide",
+          "items": [
+            "A welcome tour now opens when Selection Bar is installed or updated",
+            "The tour shows how each action works using a small animated Mac demonstration",
+            "The tour uses your chosen appearance and shows your configured AI models",
+            "The shortcut setup step offers to claim the keyboard shortcut or pick another one"
+          ]
+        },
+        "vi": {
+          "headline": "Hướng dẫn chào mừng và thiết lập",
+          "items": [
+            "Hướng dẫn chào mừng hiện mở ra khi cài đặt hoặc cập nhật Selection Bar",
+            "Hướng dẫn minh họa cách hoạt động của từng tính năng bằng máy Mac nhỏ",
+            "Hướng dẫn sử dụng giao diện bạn chọn và hiển thị các mô hình AI đã cấu hình",
+            "Bước thiết lập phím tắt đề nghị chiếm phím tắt hoặc chọn phím khác"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.23": {
+    "notesSha256": "4f732c820ea83959dd7d76f9b31b512b978c9e7453fc0ad947c9ac8718f6c99e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Reply to messages with AI-suggested responses",
+          "items": [
+            "Reply to messages with AI-suggested quick responses in the sender's language",
+            "AI actions can now appear for text you cannot edit, like messages or web pages",
+            "Settings no longer incorrectly shows that AI actions need a model when one is set"
+          ]
+        },
+        "vi": {
+          "headline": "Trả lời tin nhắn với các gợi ý từ AI",
+          "items": [
+            "Trả lời tin nhắn với các phản hồi nhanh do AI gợi ý bằng ngôn ngữ người gửi",
+            "Các hành động AI giờ có thể xuất hiện cho văn bản không chỉnh sửa được như tin nhắn",
+            "Cài đặt không còn hiển thị sai rằng hành động AI cần mô hình khi đã có sẵn"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.22": {
+    "notesSha256": "c4218df7fa0cdce5d42f0b0e7bc887386684e699e53c44e8c3af35127f094b1d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Each bar can now use different settings for the same action",
+          "items": [
+            "Each bar can have its own settings for an action instead of sharing the main bar's",
+            "An action's gear on the While holding ⌥ tab opens settings just for that bar",
+            "Ask… now lets you pick the model and thinking level before asking the first question",
+            "The model picker at the bottom of AI cards now matches the height of nearby buttons"
+          ]
+        },
+        "vi": {
+          "headline": "Mỗi thanh giờ có thể dùng cài đặt riêng cho cùng một thao tác",
+          "items": [
+            "Mỗi thanh có thể có cài đặt riêng cho một thao tác thay vì dùng chung của thanh chính",
+            "Biểu tượng bánh răng của thao tác trên tab While holding ⌥ mở cài đặt riêng cho thanh đó",
+            "Ask… giờ cho phép chọn mô hình và mức độ suy nghĩ trước khi đặt câu hỏi đầu tiên",
+            "Bộ chọn mô hình ở cuối thẻ AI giờ có chiều cao khớp với các nút bên cạnh"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.21": {
+    "notesSha256": "1599e023610c12a22bb4e37b2ac6b8e94487ac069565f6e40e0f1d054a5584ea",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixes for Ask… chat follow-up field",
+          "items": [
+            "Return in the Ask… follow-up field now sends your question instead of being ignored",
+            "The follow-up field no longer shows a blinking cursor when typing goes elsewhere"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa lỗi ô nhập tiếp theo trong Ask…",
+          "items": [
+            "Phím Return trong ô nhập tiếp theo của Ask… giờ gửi câu hỏi thay vì bị bỏ qua",
+            "Ô nhập tiếp theo không còn hiện con trỏ nhấp nháy khi gõ vào chỗ khác"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.20": {
+    "notesSha256": "24f4dddad1f0e917b8a097e9e0306f597e68e8b340426b2f627f54cd66770f1b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Ask… now continues the conversation",
+          "items": [
+            "Ask… keeps the conversation going with a chat interface below each answer",
+            "Your questions appear on the right in the accent color, answers on the left",
+            "Each answer has its own Copy button that appears when you point at it",
+            "The refresh button asks the last question again with the conversation so far",
+            "The chat includes your last eight questions and the first 3,000 characters of long answers"
+          ]
+        },
+        "vi": {
+          "headline": "Ask… giờ tiếp tục cuộc trò chuyện",
+          "items": [
+            "Ask… duy trì cuộc trò chuyện với giao diện chat bên dưới mỗi câu trả lời",
+            "Câu hỏi của bạn hiện bên phải với màu nhấn, câu trả lời ở bên trái",
+            "Mỗi câu trả lời có nút Sao chép riêng xuất hiện khi bạn rê chuột vào",
+            "Nút làm mới hỏi lại câu hỏi cuối cùng với toàn bộ cuộc trò chuyện",
+            "Cuộc trò chuyện bao gồm tám câu hỏi gần nhất và 3.000 ký tự đầu của câu trả lời dài"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.19": {
+    "notesSha256": "4d13e8feccdc64ba339bcc3b7f1db99aa1214922260d052631baaea2e21ee06d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Cleaner AI action sheets",
+          "items": [
+            "AI action sheets hide irrelevant options when the answer is new text to copy"
+          ]
+        },
+        "vi": {
+          "headline": "Giao diện hành động AI gọn hơn",
+          "items": [
+            "Bảng hành động AI ẩn các tùy chọn không liên quan khi câu trả lời là văn bản mới để sao chép"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.18": {
+    "notesSha256": "74971a89342e4947cc244bd5af4aeabb9413d195628146066dfba3461c07df02",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Ask again with a different AI model",
+          "items": [
+            "After an AI action answers, tap the model name to ask again with a different model",
+            "Choose how hard the model thinks: Off, Low, Medium, or High",
+            "Your choice stays for that card and applies when you ask again",
+            "Translate actions also let you switch models while keeping your language choice"
+          ]
+        },
+        "vi": {
+          "headline": "Hỏi lại bằng mô hình AI khác",
+          "items": [
+            "Sau khi AI trả lời, chạm tên mô hình để hỏi lại bằng mô hình khác",
+            "Chọn mức độ suy nghĩ: Tắt, Thấp, Trung bình hoặc Cao",
+            "Lựa chọn của bạn được giữ nguyên cho thẻ đó và áp dụng khi hỏi lại",
+            "Hành động dịch cũng cho phép đổi mô hình mà vẫn giữ ngôn ngữ đã chọn"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.17": {
+    "notesSha256": "05fbcab2a4c8b51917c5ec387476d21b078ad4f57f26627f710a4b3e9c6a3eb4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Streamlined settings",
+          "items": [
+            "Removed the AI section from Settings since each action already shows its model"
+          ]
+        },
+        "vi": {
+          "headline": "Cài đặt gọn gàng hơn",
+          "items": [
+            "Đã xóa phần AI trong Cài đặt vì mỗi hành động đã hiển thị mô hình của nó"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.16": {
+    "notesSha256": "9834d3da73212955da4d05ff77d52bf1bd31795fc9d366e035742bab057f23f1",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Change tracking moved into each action's settings",
+          "items": [
+            "Selection Bar's page in Lumi now opens on Settings instead of About",
+            "Show what changed moved into each AI action's own settings under The answer",
+            "Each action remembers its own Show what changed preference separately",
+            "How changes are marked is still shared across all actions",
+            "Change tracking only applies to actions that replace your selected text"
+          ]
+        },
+        "vi": {
+          "headline": "Theo dõi thay đổi chuyển vào cài đặt từng hành động",
+          "items": [
+            "Trang Selection Bar trong Lumi giờ mở ở Cài đặt thay vì Giới thiệu",
+            "Hiển thị nội dung thay đổi chuyển vào cài đặt riêng của từng hành động AI",
+            "Mỗi hành động nhớ tùy chọn Hiển thị nội dung thay đổi riêng của nó",
+            "Cách đánh dấu thay đổi vẫn dùng chung cho tất cả hành động",
+            "Theo dõi thay đổi chỉ áp dụng cho hành động thay thế văn bản đã chọn"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.15": {
+    "notesSha256": "88b9b58996360250f38f911b0fdd2779991899c67a2d25429f04ea8cbb8621df",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixes for saving AI actions and translation settings",
+          "items": [
+            "AI actions added or edited in Settings are now saved reliably",
+            "Translation language choices are now saved reliably",
+            "Removing an action from the list is now saved reliably"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa lỗi lưu hành động AI và cài đặt dịch",
+          "items": [
+            "Hành động AI được thêm hoặc chỉnh sửa trong Cài đặt giờ được lưu đáng tin cậy",
+            "Lựa chọn ngôn ngữ dịch giờ được lưu đáng tin cậy",
+            "Xóa hành động khỏi danh sách giờ được lưu đáng tin cậy"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.14": {
+    "notesSha256": "aeb07b27536df220bbbbbc9bdb44ca7139ed5843a4decd0792ba5e59e051f5b8",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Settings layout improvements",
+          "items": [
+            "Switching between Main and While holding ⌥ in Settings no longer shifts the page when the window is narrow"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện bố cục Cài đặt",
+          "items": [
+            "Chuyển giữa Main và While holding ⌥ trong Cài đặt không còn làm trang nhảy lên xuống khi cửa sổ hẹp"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.13": {
+    "notesSha256": "0c0ba8d2a9ed368fb41ab8f9d3977a06736a940c1946e075a3cb9b8858e212ae",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "A second bar while holding Option",
+          "items": [
+            "Hold Option while the bar is up to see a second set of actions you choose in Settings",
+            "Select text with Option held and the second bar appears right away",
+            "Each bar shows up to eight actions that fit the selection, with the rest under More",
+            "An action can appear on both bars with the same settings",
+            "Holding Command while selecting with the mouse keeps the bar from appearing"
+          ]
+        },
+        "vi": {
+          "headline": "Thanh thứ hai khi giữ Option",
+          "items": [
+            "Giữ Option khi thanh đang hiện để xem nhóm hành động thứ hai bạn chọn trong Cài đặt",
+            "Chọn văn bản với Option đã giữ và thanh thứ hai xuất hiện ngay",
+            "Mỗi thanh hiển thị tối đa tám hành động phù hợp với lựa chọn, phần còn lại ở Thêm",
+            "Một hành động có thể xuất hiện trên cả hai thanh với cùng cài đặt",
+            "Giữ Command khi chọn bằng chuột để thanh không xuất hiện"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.12": {
+    "notesSha256": "73e39e96764aa08a14d69bdfafbd341432c5726b16701a661271ce6349fee247",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Translation language downloads now work while AI is translating",
+          "items": [
+            "The Download button for translation languages now works even when AI translation is active"
+          ]
+        },
+        "vi": {
+          "headline": "Tải ngôn ngữ dịch thuật hoạt động khi AI đang dịch",
+          "items": [
+            "Nút Tải xuống ngôn ngữ dịch thuật giờ hoạt động ngay cả khi đang dùng AI dịch"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.11": {
+    "notesSha256": "515cf62d68e7157b139d07f99818a99fabe1b74d7a01588940595e92e7c4e3e7",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Translate and Search settings moved to action rows",
+          "items": [
+            "Translate and Search settings now open from a gear icon on each action's row",
+            "The action row shows your current choices like 'For words · macOS' or 'For a short text · Google'"
+          ]
+        },
+        "vi": {
+          "headline": "Cài đặt Dịch và Tìm kiếm chuyển vào hàng thao tác",
+          "items": [
+            "Cài đặt Dịch và Tìm kiếm giờ mở từ biểu tượng bánh răng trên hàng của từng thao tác",
+            "Hàng thao tác hiển thị lựa chọn hiện tại như 'For words · macOS' hoặc 'For a short text · Google'"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.10": {
+    "notesSha256": "9cf6cf96e2185b48c5748775b9c33f750eedc581ad63b0f37ac683994ad927f0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Settings refinement",
+          "items": [
+            "In Settings, clicking an action's row now only selects it; the switch alone toggles it on or off"
+          ]
+        },
+        "vi": {
+          "headline": "Cải tiến phần Cài đặt",
+          "items": [
+            "Trong Cài đặt, nhấn vào hàng của hành động giờ chỉ chọn hàng đó; công tắc mới bật tắt hành động"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.9": {
+    "notesSha256": "30f8fc432699b7108ae32314ebe9e5d7b0fe0a19c3bdf4897d90c9b126c57aa5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The bar now follows your text when you scroll with the keyboard",
+          "items": [
+            "The bar follows your selection when you scroll with arrow keys, Page Up, Page Down, Home, End or Space"
+          ]
+        },
+        "vi": {
+          "headline": "Thanh công cụ giờ theo dõi văn bản khi cuộn bằng bàn phím",
+          "items": [
+            "Thanh công cụ theo dõi văn bản đã chọn khi cuộn bằng phím mũi tên, Page Up, Page Down, Home, End, Space"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.8": {
+    "notesSha256": "d8b0ae7570cae3df0f6e891631755bbf5be4a2092fe5e4f9f606143c5f062b6f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The bar now follows your text when you scroll",
+          "items": [
+            "The bar opened with ⌃⌥⌘Space now follows text as you scroll, just like the bar that appears when you select",
+            "In Chrome and Electron apps, the bar steps aside while scrolling and returns when text location updates",
+            "Requires Lumi 1.53.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Thanh công cụ giờ theo dõi văn bản khi cuộn",
+          "items": [
+            "Thanh mở bằng ⌃⌥⌘Space giờ theo văn bản khi cuộn, giống như thanh xuất hiện khi bạn chọn văn bản",
+            "Trong Chrome và ứng dụng Electron, thanh tạm ẩn khi cuộn và hiện lại khi ứng dụng báo vị trí văn bản",
+            "Yêu cầu Lumi 1.53.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.7": {
+    "notesSha256": "70fe9ecb0eaee3d409173d3a1d4cb619d4ecea707b00667446ba545a66df10fb",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The bar now follows your text when you scroll",
+          "items": [
+            "The bar stays visible when you scroll and moves with your selected text",
+            "In most apps the bar switches sides when there is no room on the current side",
+            "In Chrome-based apps the bar steps aside while scrolling and returns when you stop",
+            "If you scroll the text out of view the bar disappears",
+            "Requires Lumi 1.53.0 or newer to work"
+          ]
+        },
+        "vi": {
+          "headline": "Thanh công cụ giờ theo dõi văn bản khi bạn cuộn",
+          "items": [
+            "Thanh công cụ vẫn hiển thị khi bạn cuộn và di chuyển theo văn bản đã chọn",
+            "Trong hầu hết ứng dụng thanh công cụ chuyển sang bên kia khi không đủ chỗ",
+            "Trong ứng dụng dựa trên Chrome thanh công cụ tránh sang một bên khi cuộn và quay lại khi bạn dừng",
+            "Nếu bạn cuộn văn bản ra khỏi tầm nhìn thanh công cụ sẽ biến mất",
+            "Yêu cầu Lumi phiên bản 1.53.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.6": {
+    "notesSha256": "ab0ae6b4ef61dc07a1b4f7f0b45804426cda0cd091d8fc047e6f2a7967d1a5ef",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Tooltips for icon-only mode",
+          "items": [
+            "When the bar shows only icons, hovering or arrowing to a button reveals its name in a tooltip"
+          ]
+        },
+        "vi": {
+          "headline": "Chú thích cho chế độ chỉ hiện biểu tượng",
+          "items": [
+            "Khi thanh chỉ hiện biểu tượng, di chuột hoặc dùng phím mũi tên sẽ hiện tên nút trong chú thích"
+          ]
+        }
+      }
+    }
+  }
+}
