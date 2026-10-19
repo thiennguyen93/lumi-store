@@ -1756,6 +1756,16 @@ interface menu {
     set-shown: func(shown: bool) -> result<_, string>;
 }
 
+/// Feature flags: names typed into Lumi's hidden Feature Flags screen, each
+/// on or off. Not documented for extension developers. Costs no capability.
+interface feature-flags {
+    /// The names of the flags that are on, as typed, in the order they were
+    /// added — the same list for every extension. What a name means, and how
+    /// it is matched, is the extension's: Lumi is never told which one it
+    /// looks for. Added in Lumi 1.56.0.
+    enabled: func() -> list<string>;
+}
+
 world extension {
     import selection;
     import transforms;
@@ -1780,6 +1790,7 @@ world extension {
     import folders;
     import files;
     import owner;
+    import feature-flags;
 
     /// Run one of the commands the manifest declares.
     ///
