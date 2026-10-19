@@ -1757,13 +1757,22 @@ interface menu {
 }
 
 /// Feature flags: names typed into Lumi's hidden Feature Flags screen, each
-/// on or off. Not documented for extension developers. Costs no capability.
+/// with a value and on or off. Not documented for extension developers.
+/// Costs no capability.
 interface feature-flags {
-    /// The names of the flags that are on, as typed, in the order they were
-    /// added — the same list for every extension. What a name means, and how
-    /// it is matched, is the extension's: Lumi is never told which one it
-    /// looks for. Added in Lumi 1.56.0.
-    enabled: func() -> list<string>;
+    /// One flag that is on: its name and its value, both exactly as typed.
+    /// The value is a string and nothing more — empty for a plain switch, or
+    /// whatever its reader parses — and Lumi gives it no meaning.
+    record flag {
+        name: string,
+        value: string,
+    }
+
+    /// The flags that are on, in the order they were added — the same list
+    /// for every extension. What a name or a value means, and how either is
+    /// read, is the extension's: Lumi is never told which one it looks for.
+    /// Added in Lumi 1.56.0.
+    enabled: func() -> list<flag>;
 }
 
 world extension {
