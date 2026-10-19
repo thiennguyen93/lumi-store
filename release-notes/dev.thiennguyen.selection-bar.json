@@ -1,4 +1,32 @@
 {
+  "0.3.26": {
+    "notesSha256": "d9f76c3335535ebba4221202ce653bd8c9dc934c332a888d5568e480807efeb4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "AI answers now show formatted text instead of raw Markdown",
+          "items": [
+            "AI answers display headings, bold, italic, lists, code blocks, quotes, tables, and links as formatted text",
+            "Code blocks and wide tables scroll sideways within the card",
+            "Links in AI answers open in your browser when clicked",
+            "Copying formatted answers preserves formatting in apps like Mail and Notes, gives Markdown to plain text apps",
+            "Fixes, rewrites, and translations still show exactly as they will replace your text"
+          ]
+        },
+        "vi": {
+          "headline": "Câu trả lời AI hiện hiển thị văn bản định dạng thay vì Markdown thô",
+          "items": [
+            "Câu trả lời AI hiển thị tiêu đề, chữ đậm, nghiêng, danh sách, mã, trích dẫn, bảng và liên kết đã định dạng",
+            "Khối mã và bảng rộng cuộn ngang trong thẻ",
+            "Liên kết trong câu trả lời AI mở trong trình duyệt khi nhấp",
+            "Sao chép giữ định dạng trong Mail và Notes, cho Markdown với ứng dụng văn bản thuần",
+            "Sửa lỗi, viết lại và dịch vẫn hiển thị chính xác như sẽ thay thế văn bản"
+          ]
+        }
+      }
+    }
+  },
   "0.3.25": {
     "notesSha256": "eb01cad182dfeb11f6c84b6095c261fa58f3d22d60a495982a8ad1a867cb340a",
     "summary": {
@@ -440,26 +468,6 @@
             "Trong ứng dụng dựa trên Chrome thanh công cụ tránh sang một bên khi cuộn và quay lại khi bạn dừng",
             "Nếu bạn cuộn văn bản ra khỏi tầm nhìn thanh công cụ sẽ biến mất",
             "Yêu cầu Lumi phiên bản 1.53.0 trở lên"
-          ]
-        }
-      }
-    }
-  },
-  "0.3.6": {
-    "notesSha256": "ab0ae6b4ef61dc07a1b4f7f0b45804426cda0cd091d8fc047e6f2a7967d1a5ef",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Tooltips for icon-only mode",
-          "items": [
-            "When the bar shows only icons, hovering or arrowing to a button reveals its name in a tooltip"
-          ]
-        },
-        "vi": {
-          "headline": "Chú thích cho chế độ chỉ hiện biểu tượng",
-          "items": [
-            "Khi thanh chỉ hiện biểu tượng, di chuột hoặc dùng phím mũi tên sẽ hiện tên nút trong chú thích"
           ]
         }
       }
