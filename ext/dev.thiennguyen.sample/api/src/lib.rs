@@ -358,8 +358,9 @@ pub mod dictionary {
         wit::term(text, at)
     }
 
-    /// The Dictionary app, brought forward at `text`. Only from a command or
-    /// one of your windows.
+    /// The Dictionary app, brought forward at `text` — or, for empty text,
+    /// as the person left it, where its Settings turn dictionaries on. Only
+    /// from a command or one of your windows.
     pub fn show(text: &str) -> Result<(), String> {
         wit::show(text)
     }
