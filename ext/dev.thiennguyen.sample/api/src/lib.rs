@@ -367,22 +367,33 @@ pub mod dictionary {
 }
 
 /// Feature flags: names typed into Lumi's hidden Feature Flags screen, each
-/// on or off. Hidden from this crate's documentation and from Lumi's: not a
-/// part of the API anybody is promised. Lumi hands every extension the same
-/// list and never learns which name you look for — reading it is yours.
+/// with a value and on or off. Hidden from this crate's documentation and
+/// from Lumi's: not a part of the API anybody is promised. Lumi hands every
+/// extension the same list and never learns which name you look for, and a
+/// value is a string it gives no meaning — reading both is yours.
 #[doc(hidden)]
 pub mod flags {
     use super::lumi::ext::feature_flags as wit;
 
-    /// The names of the flags that are on, as typed. Needs Lumi 1.56.0.
-    pub fn enabled() -> Vec<String> {
+    pub use wit::Flag;
+
+    /// The flags that are on, each its name and its value, as typed. Needs
+    /// Lumi 1.56.0.
+    pub fn enabled() -> Vec<Flag> {
         wit::enabled()
     }
 
-    /// Whether `name` is among them, exactly as typed — matched here, in
-    /// your extension, never in Lumi. Read [`enabled`] for any other rule.
+    /// Whether the flag `name` is on — matched here, in your extension,
+    /// exactly as typed, never in Lumi. Read [`enabled`] for any other rule.
     pub fn on(name: &str) -> bool {
-        enabled().iter().any(|flag| flag == name)
+        enabled().iter().any(|flag| flag.name == name)
+    }
+
+    /// The value of the flag `name` while it is on, exactly as typed —
+    /// empty for a plain switch — or `None` when it is off or not there.
+    /// Parse it however you like.
+    pub fn value(name: &str) -> Option<String> {
+        enabled().into_iter().find(|flag| flag.name == name).map(|flag| flag.value)
     }
 }
 
