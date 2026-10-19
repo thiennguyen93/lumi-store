@@ -339,10 +339,11 @@ interface dictionary {
     term: func(text: string, at: u32) -> result<option<tuple<u32, u32>>, string>;
 
     /// The Dictionary app, brought forward at `text` — the whole entry, in
-    /// every dictionary, as the person reads it there. Only from a command or
-    /// one of your windows, as `open.reveal`: bringing an app forward is
-    /// something the person does. Refused for empty text and over 256
-    /// characters.
+    /// every dictionary, as the person reads it there. Empty text brings it
+    /// forward as the person left it, where Dictionary › Settings turns
+    /// dictionaries on. Only from a command or one of your windows, as
+    /// `open.reveal`: bringing an app forward is something the person does.
+    /// Refused over 256 characters.
     show: func(text: string) -> result<_, string>;
 }
 
