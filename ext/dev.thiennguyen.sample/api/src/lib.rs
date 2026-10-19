@@ -366,6 +366,26 @@ pub mod dictionary {
     }
 }
 
+/// Feature flags: names typed into Lumi's hidden Feature Flags screen, each
+/// on or off. Hidden from this crate's documentation and from Lumi's: not a
+/// part of the API anybody is promised. Lumi hands every extension the same
+/// list and never learns which name you look for — reading it is yours.
+#[doc(hidden)]
+pub mod flags {
+    use super::lumi::ext::feature_flags as wit;
+
+    /// The names of the flags that are on, as typed. Needs Lumi 1.56.0.
+    pub fn enabled() -> Vec<String> {
+        wit::enabled()
+    }
+
+    /// Whether `name` is among them, exactly as typed — matched here, in
+    /// your extension, never in Lumi. Read [`enabled`] for any other rule.
+    pub fn on(name: &str) -> bool {
+        enabled().iter().any(|flag| flag == name)
+    }
+}
+
 /// The AI the person set up in Lumi — Apple Intelligence and the models on
 /// their Mac, Claude Code on their own plan, providers on their own keys.
 /// They choose the models in Settings › AI; you choose among them for each
