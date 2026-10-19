@@ -313,6 +313,58 @@ pub mod translation {
     }
 }
 
+/// Words looked up in the dictionaries built into macOS — the ones the
+/// Dictionary app shows. Only those the person turned on in Dictionary ›
+/// Settings, in their order, so a lookup downloads nothing. Looked up on
+/// this Mac, so no capability. Needs Lumi 1.55.0.
+///
+/// ```ignore
+/// use lumi_extension_api::{dictionary, selection};
+///
+/// let found = selection()?;
+/// // Every dictionary turned on, in the person's order.
+/// for entry in dictionary::lookup(&found.text, &[])? {
+///     let said = entry.pronunciations.first().map(|p| p.text.as_str()).unwrap_or("");
+///     let first = entry.groups.first().and_then(|g| g.senses.first());
+///     // `entry.text` is the whole entry as plain text, always there.
+/// }
+/// ```
+pub mod dictionary {
+    use super::lumi::ext::dictionary as wit;
+
+    pub use wit::{Book, Entry, Example, Group, Notation, Pronunciation, Sense};
+
+    /// The dictionaries the person turned on, in their order. Empty when
+    /// they turned them all off, or on a macOS that no longer lets Lumi list
+    /// them — where [`lookup`] still answers, in plain text, from the first.
+    pub fn dictionaries() -> Result<Vec<Book>, String> {
+        wit::dictionaries()
+    }
+
+    /// `text` looked up in `books` — ids from [`dictionaries`] — in that
+    /// order; none named: every one, in the person's order. "houses" finds
+    /// "house", case does not matter, phrases work. At most 8 entries a
+    /// dictionary, 64 senses an entry and 3 examples a sense; empty when
+    /// nothing matches. Refused over 256 characters and for a book that is
+    /// not turned on.
+    pub fn lookup(text: &str, books: &[String]) -> Result<Vec<Entry>, String> {
+        wit::lookup(text, books)
+    }
+
+    /// Where the dictionaries' term around character `at` of `text` is, as
+    /// a start and a length in characters — "running total" in a sentence —
+    /// or `None`.
+    pub fn term(text: &str, at: u32) -> Result<Option<(u32, u32)>, String> {
+        wit::term(text, at)
+    }
+
+    /// The Dictionary app, brought forward at `text`. Only from a command or
+    /// one of your windows.
+    pub fn show(text: &str) -> Result<(), String> {
+        wit::show(text)
+    }
+}
+
 /// The AI the person set up in Lumi — Apple Intelligence and the models on
 /// their Mac, Claude Code on their own plan, providers on their own keys.
 /// They choose the models in Settings › AI; you choose among them for each

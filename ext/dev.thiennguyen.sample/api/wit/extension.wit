@@ -219,6 +219,133 @@ interface translation {
     prepare: func(source: string, target: string) -> result<readiness, string>;
 }
 
+/// Words looked up in the dictionaries built into macOS — the ones the
+/// Dictionary app and Look Up show. Only those the person turned on in
+/// Dictionary › Settings, in their order: a dictionary they did not turn on
+/// is never opened, so a lookup downloads nothing. The lookup happens on
+/// this Mac and nothing leaves it, so no capability is needed. The first
+/// lookup on a Mac where no app ever used a dictionary has macOS download
+/// its default ones, as Look Up would. Needs Lumi 1.55.0.
+///
+/// An entry comes as fields read from the dictionary's own markup —
+/// headword, pronunciations, groups of senses — and always as plain text
+/// too. A dictionary laid out in a way Lumi does not read still answers its
+/// headword and its text, with the other fields empty.
+interface dictionary {
+    /// One dictionary the person turned on.
+    record book {
+        /// Stable across launches, such as "com.apple.dictionary.NOAD".
+        id: string,
+        /// As the Dictionary app titles it: "New Oxford American Dictionary".
+        name: string,
+        /// As the Dictionary app's tabs say it: "Dictionary".
+        short-name: string,
+        /// The languages of the words it looks up, as BCP 47 ids — two for a
+        /// bilingual one.
+        looks-up: list<string>,
+        /// The languages it explains them in.
+        explains-in: list<string>,
+    }
+
+    /// How a pronunciation is written.
+    enum notation {
+        /// The International Phonetic Alphabet: "həˈləʊ".
+        ipa,
+        /// The dictionary's own respelling: "həˈlō".
+        respelling,
+        /// Anything the dictionary does not name, such as a kana reading.
+        other,
+    }
+
+    record pronunciation {
+        text: string,
+        notation: notation,
+        /// "us" or "uk" when the dictionary says whose; empty otherwise.
+        dialect: string,
+    }
+
+    /// An example of use, and its translation in a bilingual dictionary.
+    record example {
+        text: string,
+        /// Empty in a dictionary that explains in the language it looks up.
+        translation: string,
+    }
+
+    /// One sense of the headword, or of a phrase built on it.
+    record sense {
+        /// The phrase this sense belongs to ("set off"); empty for the
+        /// headword's own senses.
+        phrase: string,
+        /// What it means. Empty in a bilingual dictionary, which translates
+        /// instead, and in a thesaurus, which lists synonyms.
+        definition: string,
+        /// What it is in the other language, in a bilingual dictionary.
+        translations: list<string>,
+        /// From a thesaurus.
+        synonyms: list<string>,
+        antonyms: list<string>,
+        /// At most three.
+        examples: list<example>,
+        /// Usage labels as the dictionary words them: "informal", "British
+        /// English".
+        labels: list<string>,
+    }
+
+    /// The senses under one part of speech, or under one block of phrases.
+    record group {
+        /// As the dictionary words it: "noun", "transitive verb", "danh từ",
+        /// "PHRASAL VERBS". Empty when it names none.
+        heading: string,
+        /// Pronunciations for this part of speech alone — a verb said unlike
+        /// its noun. None repeats one the entry gives for the whole word.
+        pronunciations: list<pronunciation>,
+        senses: list<sense>,
+    }
+
+    record entry {
+        /// The `book` it came from. Empty when this macOS lets Lumi read
+        /// only the first dictionary turned on, in plain text (see
+        /// `dictionaries`).
+        book: string,
+        headword: string,
+        /// "ser·en·dip·i·ty", or empty.
+        syllables: string,
+        pronunciations: list<pronunciation>,
+        groups: list<group>,
+        /// The whole entry as plain text, always there.
+        text: string,
+    }
+
+    /// The dictionaries the person turned on, in their order. Empty when
+    /// they turned them all off — and on a macOS that no longer lets Lumi
+    /// list them, where `lookup` still answers, in plain text, from the
+    /// first one.
+    dictionaries: func() -> result<list<book>, string>;
+
+    /// `text` looked up in `books` — ids from `dictionaries` — in that
+    /// order; none named: every one, in the person's order. An inflected
+    /// form finds its headword ("houses" finds "house"), case does not
+    /// matter, and phrases work ("look up"). A dictionary may also answer
+    /// near entries ("set" finds "sett"), after the exact ones. At most 8
+    /// entries a dictionary, 64 senses an entry, 3 examples a sense and 40
+    /// words a list; empty when nothing matches. Refused for empty text,
+    /// text over 256 characters, and a book that is not turned on.
+    lookup: func(text: string, books: list<string>) -> result<list<entry>, string>;
+
+    /// Where the dictionaries' term around character `at` of `text` is, as
+    /// a start and a length in characters: in "the running total", at 4,
+    /// "running total". None when there is no term there. Refused over
+    /// 20,000 characters.
+    term: func(text: string, at: u32) -> result<option<tuple<u32, u32>>, string>;
+
+    /// The Dictionary app, brought forward at `text` — the whole entry, in
+    /// every dictionary, as the person reads it there. Only from a command or
+    /// one of your windows, as `open.reveal`: bringing an app forward is
+    /// something the person does. Refused for empty text and over 256
+    /// characters.
+    show: func(text: string) -> result<_, string>;
+}
+
 /// The AI the person set up in Lumi: Apple Intelligence and models running
 /// on this Mac, Claude Code on their own plan, and providers on their own
 /// keys. The person chooses the models in Settings › AI; an extension
@@ -1632,6 +1759,7 @@ world extension {
     import selection;
     import transforms;
     import translation;
+    import dictionary;
     import ai;
     import clipboard;
     import alert;
