@@ -91,11 +91,15 @@ def read_source(url: str, ssh: "str | None", subdir: str, pinned_sha: str) -> di
             )
         repo = Path(tmp, "source")
         git("init", "-q", "--bare", str(repo), env=env)
-        git("fetch", "-q", "--depth", "1", url, "main", cwd=repo, env=env)
+        # No maintenance after a fetch: git runs it in the background, still
+        # writing objects as the directory is removed (seen on CI, 2026-10-20:
+        # "Directory not empty: 'objects'"), and this repository lives only
+        # for these few reads.
+        git("fetch", "-q", "--no-auto-maintenance", "--depth", "1", url, "main", cwd=repo, env=env)
         main_sha = git("rev-parse", "FETCH_HEAD", cwd=repo, env=env)
         manifest = tomllib.loads(git("show", f"FETCH_HEAD:{in_source(subdir, 'manifest.toml')}", cwd=repo, env=env))
         changelog = git("show", f"FETCH_HEAD:{in_source(subdir, 'CHANGELOG.md')}", cwd=repo, env=env)
-        git("fetch", "-q", "--depth", "1", url, pinned_sha, cwd=repo, env=env)
+        git("fetch", "-q", "--no-auto-maintenance", "--depth", "1", url, pinned_sha, cwd=repo, env=env)
         was = tomllib.loads(git("show", f"{pinned_sha}:{in_source(subdir, 'manifest.toml')}", cwd=repo, env=env))
     ext = manifest.get("extension", {})
     return {
