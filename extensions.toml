@@ -59,8 +59,11 @@ private = true
 follow = true
 
 
-# First-party and in-tree, for the sample's reason. Its panel is React +
-# TypeScript under web/, built by the store (`web`), so no ui/ is committed.
+# First-party and closed source, Screenshot's arrangement: a private repo,
+# `update = none` in .gitmodules, fetched with a read-only deploy key of its
+# own (CLIPBOARD_DEPLOY_KEY) by scripts/fetch-private.sh. Its React front
+# end under web/ is built by the store. In-tree until 0.88.0, which the pin
+# is still the source of, so that version is carried as it was published.
 [[extension]]
 id = "dev.thiennguyen.clipboard"
 path = "ext/dev.thiennguyen.clipboard"
@@ -68,6 +71,8 @@ subdir = "."
 web = "web"
 category = "Productivity"
 featured = true
+private = true
+follow = true
 
 
 # First-party and closed source, Screenshot's arrangement: a private repo,

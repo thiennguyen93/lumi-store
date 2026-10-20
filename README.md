@@ -24,9 +24,9 @@ after review.
    extension to copy from, and `ext/dev.thiennguyen.sample/api/` is the
    SDK crate the guide's git dependency points at. The other two in-tree
    entries are fuller examples: `ext/dev.thiennguyen.keytest/` (a tab in
-   Lumi's own Extensions pane) and `ext/dev.thiennguyen.clipboard/` (a
-   panel, encrypted storage, clipboard events and a React front end the
-   store builds).
+   Lumi's own Extensions pane) and `ext/dev.thiennguyen.rhythm/` (a
+   game in a window of its own, network access and a hand-written
+   front end).
 2. Open a PR that
    - adds your repo as a submodule under `ext/<your-extension-id>`,
      pinned to the exact commit you are submitting, and
@@ -175,8 +175,7 @@ package's `ui/`. Review reads the TypeScript and the lockfile; the bundle
 is never committed — an entry with `web` set and a `ui/` directory in the
 source is refused, because a committed bundle is a binary swapped past
 review. The page's CSP (`default-src 'self'`) still applies: production
-builds only, no inline `<script>`. `ext/dev.thiennguyen.clipboard/web/` is
-a working example.
+builds only, no inline `<script>`.
 
 ### First-party private entries
 
@@ -256,14 +255,13 @@ taken the same way every time, without a Lumi build:
 - `scripts/preview/shots/<id>-<n>.js` — an optional scene run in the page
   before the picture (a row clicked, a field filled);
 - `scripts/preview/<id>.json` — what the stand-in bridge answers `call`
-  with. An extension with a built front end has its own stand-in instead
-  (the clipboard's is `web/src/dev/mock.ts`), which is the data the
-  pictures show.
+  with. An extension with a built front end has its own stand-in instead,
+  in its web/ source, which is the data the pictures show.
 
 1. For an extension with a built front end, start its dev server:
 
    ```bash
-   pnpm -C ext/dev.thiennguyen.clipboard/web dev --port 5173 --strictPort
+   pnpm -C ext/<id>/web dev --port 5173 --strictPort
    ```
 
 2. Serve the extension's pages with the stand-in for Lumi's bridge.
@@ -271,7 +269,7 @@ taken the same way every time, without a Lumi build:
    extension's page share an origin and a scene can reach into it:
 
    ```bash
-   python3 scripts/preview_ui.py ext/dev.thiennguyen.clipboard --port 5191 --proxy http://127.0.0.1:5173
+   python3 scripts/preview_ui.py ext/<id> --port 5191 --proxy http://127.0.0.1:5173
    ```
 
    It reads Lumi's stylesheet from `../lumi/src-tauri/src/ext/lumi.css`;
@@ -289,8 +287,8 @@ taken the same way every time, without a Lumi build:
 
    ```bash
    node scripts/screenshot.mjs "http://127.0.0.1:5191/__promo__/?shot=1" \
-     ext/dev.thiennguyen.clipboard/shots/1-history.png \
-     scripts/preview/shots/dev.thiennguyen.clipboard-1.js 1280 800 1
+     ext/dev.thiennguyen.keytest/shots/1-clean.png \
+     scripts/preview/shots/dev.thiennguyen.keytest-1.js 1280 800 1
    ```
 
    Pass `""` for the scene when a shot has none. A shot's `theme` is

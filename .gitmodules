@@ -10,3 +10,7 @@
 	path = ext/dev.thiennguyen.selection-bar
 	url = git@github.com:thiennguyen93/lumi-selection-bar.git
 	update = none
+[submodule "ext/dev.thiennguyen.clipboard"]
+	path = ext/dev.thiennguyen.clipboard
+	url = git@github.com:thiennguyen93/lumi-clipboard-manager.git
+	update = none
