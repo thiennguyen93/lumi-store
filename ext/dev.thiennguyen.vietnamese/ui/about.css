@@ -1,0 +1,56 @@
+/* The About tab (about.html). Lumi embeds it in its Extensions pane with
+   lumi.css first — its fonts, its colours for both themes, its focus ring — on
+   a transparent page with no inset, the pane's column being the inset. So this
+   sheet adds only what the page draws, on Lumi's tokens, each with a fallback
+   for a preview outside Lumi. The rows are the Settings tab's (settings.css),
+   so the two tabs read as one extension. */
+
+.about {
+  --muted: color-mix(in srgb, CanvasText 62%, transparent);
+  --line: var(--border, rgba(128, 128, 128, 0.28));
+  --well: var(--card, rgba(128, 128, 128, 0.08));
+  --well-up: var(--row-hover, rgba(128, 128, 128, 0.16));
+  --pick: var(--accent, #378add);
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 2px 0 20px;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+.about section + section { margin-top: 22px; }
+.about h2 { font-size: 13px; font-weight: 600; margin: 0; }
+.about .note { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; }
+.about .note.first { margin: 2px 0 0; }
+
+/* A row draws itself. Under `:where()`, as lumi.css's rules are, so the
+   classes below win over the reset rather than the other way round. */
+:where(.about button.row) { all: unset; box-sizing: border-box; cursor: default; }
+:where(.about button.row):focus-visible { outline: 2px solid var(--pick); outline-offset: -2px; }
+
+/* What it is on the left; on a row that takes a press, where it leads on the
+   right. */
+.rows { display: grid; gap: 8px; margin-top: 8px; }
+.row {
+  box-sizing: border-box; display: flex; align-items: center; gap: 11px;
+  padding: 9px 11px; min-height: 54px;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--well);
+}
+button.row:hover { background: var(--well-up); }
+.row .mark { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 8px; background: var(--well-up); }
+.row svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.row .text { flex: 1; min-width: 0; }
+.row b { display: block; font-weight: 500; }
+.row small { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
+.row .end { flex: none; display: grid; place-items: center; color: var(--muted); }
+.row .end svg { width: 14px; height: 14px; }
+.row .chevron svg { transition: transform 0.15s; }
+.row[aria-expanded="true"] .chevron svg { transform: rotate(90deg); }
+
+/* The licence and the notices, opened under their rows: read in place,
+   scrolled in their own box, and the one thing here worth copying. */
+.file {
+  margin: -2px 0 2px; max-height: 260px; overflow: auto; padding: 10px 12px;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--well);
+  font: 11px/1.45 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere;
+  user-select: text; -webkit-user-select: text; cursor: text;
+}

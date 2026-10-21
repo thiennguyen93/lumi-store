@@ -88,3 +88,11 @@ default = "true"
 # to them. Written last, since a table ends the one before it.
 [tabs.settings]
 page = "settings.html"
+
+# The About tab is the extension's own page too (ui/about.html), for the same
+# reason: what it can reach and its licence, in either display language.
+# Lumi keeps its header around the page — the name, the description, the
+# version, the switch and Permissions — so what it reaches is still shown in
+# Lumi's words.
+[tabs.about]
+page = "about.html"

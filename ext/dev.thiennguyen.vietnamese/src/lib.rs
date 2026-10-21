@@ -202,6 +202,24 @@ pub fn menu_label(language: Option<&str>) -> &'static str {
     }
 }
 
+/// The names of the extension's own tabs in Settings, Settings and About, in
+/// the display language: Vietnamese unless it says English, where `None`
+/// puts back the manifest's English names.
+pub fn tab_labels(language: Option<&str>) -> [(&'static str, Option<&'static str>); 2] {
+    let vi = language != Some("en");
+    [(":settings", vi.then_some("Cài đặt")), (":about", vi.then_some("Giới thiệu"))]
+}
+
+/// Name the tabs in the display language. Lumi keeps a label across restarts
+/// and updates, and the same one again is no change, so this runs where the
+/// language may be new: install, update, and a save from the Settings tab.
+fn label_tabs() -> Result<(), String> {
+    for (tab, label) in tab_labels(lumi::setting("language").as_deref()) {
+        lumi::set_tab_label(tab, label)?;
+    }
+    Ok(())
+}
+
 /// The one row in Lumi's menu bar menu: whether typing is on, and the way to
 /// switch it.
 fn draw_menu() -> Result<(), String> {
@@ -213,8 +231,18 @@ fn draw_menu() -> Result<(), String> {
 /// What the Settings tab sends (`POST /__lumi__/call`) after it saves a new
 /// display language. Nothing tells a component its settings changed, and the
 /// menu row is drawn from the stored tree until somebody draws it again, so
-/// the page asks for it to be drawn in the new language.
+/// the page asks for it to be drawn in the new language, and the tabs named
+/// in it.
 const LANGUAGE_CHANGED: &str = "language";
+
+/// What the About tab sends when the person presses its source link. The
+/// page may not leave its own files, so the component opens the address in
+/// the browser — a press, which costs no capability — and the address is
+/// this one, never one the page names.
+const OPEN_SOURCE: &str = "source";
+
+/// Where the source is: this extension's folder in the public store.
+const SOURCE_URL: &str = "https://github.com/thiennguyen93/lumi-store/tree/main/ext/dev.thiennguyen.vietnamese";
 
 /// The person switching typing on or off — a shortcut, the command, or the
 /// menu row — remembered for the app in front.
@@ -248,14 +276,17 @@ impl Guest for VietnameseTyping {
             }
         }
         if window == ":settings" && request == LANGUAGE_CHANGED {
-            return draw_menu().map(|()| String::new());
+            return draw_menu().and_then(|()| label_tabs()).map(|()| String::new());
+        }
+        if window == ":about" && request == OPEN_SOURCE {
+            return lumi::open_url(SOURCE_URL).map(|()| String::new());
         }
         Err("no window".to_string())
     }
 
     fn on_lifecycle(event: Lifecycle) -> Result<(), String> {
         match event {
-            Lifecycle::Installed | Lifecycle::Updated(_) => draw_menu(),
+            Lifecycle::Installed | Lifecycle::Updated(_) => draw_menu().and_then(|()| label_tabs()),
             Lifecycle::Uninstalling => Ok(()),
         }
     }
@@ -412,5 +443,16 @@ mod tests {
         // manifest's default.
         assert_eq!(menu_label(None), "Gõ tiếng Việt");
         assert_eq!(menu_label(Some("fr")), "Gõ tiếng Việt");
+    }
+
+    #[test]
+    fn the_tabs_are_named_in_the_display_language() {
+        let vietnamese = [(":settings", Some("Cài đặt")), (":about", Some("Giới thiệu"))];
+        assert_eq!(tab_labels(Some("vi")), vietnamese);
+        assert_eq!(tab_labels(None), vietnamese);
+        // English is the manifest's own names, put back.
+        assert_eq!(tab_labels(Some("en")), [(":settings", None), (":about", None)]);
+        // Held to Lumi's 24 characters.
+        assert!(vietnamese.iter().all(|(_, label)| label.unwrap().chars().count() <= 24));
     }
 }
