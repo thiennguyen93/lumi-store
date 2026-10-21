@@ -31,8 +31,9 @@ label = "Switch Vietnamese typing on or off"
 icon = "languages"
 
 # A key of the extension's own for the switch, armed by Lumi at install when
-# nothing holds it. When something does, Lumi arms nothing and the Shortcuts
-# tab says who holds it, with a recorder for another. ⌃⇧V: V for Việt.
+# nothing holds it. When something does, Lumi arms nothing and the Settings
+# tab's Shortcut row says who holds it, with a recorder for another.
+# ⌃⇧V: V for Việt.
 # Few apps bind ⌃⇧ with a letter, where ⌥ with a letter types a character
 # and ⌘⇧V pastes in many apps.
 [[shortcut]]
@@ -149,3 +150,11 @@ default = true
 # reaches is still shown in Lumi's words.
 [tabs.about]
 page = "about.html"
+
+# Lumi's Shortcuts tab, hidden: the toggle's key — the `[[shortcut]]` above —
+# is recorded and changed on the Settings tab, under General, the one place
+# it is set, as Clipboard Manager's and Selection Bar's are. The same key,
+# kept by Lumi in every profile. Left out of `[tabs] order`, which may not
+# name a hidden tab.
+[tabs.shortcuts]
+hidden = true

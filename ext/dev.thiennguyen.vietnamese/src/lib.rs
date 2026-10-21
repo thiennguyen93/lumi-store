@@ -204,17 +204,14 @@ pub fn menu_label(language: Option<&str>) -> &'static str {
     }
 }
 
-/// The names of the extension's own tabs in Settings — Settings, About, and
-/// the Shortcuts tab Lumi draws for its `[[shortcut]]` — in the display
-/// language: Vietnamese unless it says English, where `None` puts back the
-/// manifest's English names.
-pub fn tab_labels(language: Option<&str>) -> [(&'static str, Option<&'static str>); 3] {
+/// The names of the extension's own tabs in Settings, Settings and About, in
+/// the display language: Vietnamese unless it says English, where `None`
+/// puts back the manifest's English names. Not the Shortcuts tab: it is
+/// hidden, its key recorded on the Settings tab, and Lumi refuses a label
+/// for a tab the manifest does not draw.
+pub fn tab_labels(language: Option<&str>) -> [(&'static str, Option<&'static str>); 2] {
     let vi = language != Some("en");
-    [
-        (":settings", vi.then_some("Cài đặt")),
-        (":about", vi.then_some("Giới thiệu")),
-        (":shortcuts", vi.then_some("Phím tắt")),
-    ]
+    [(":settings", vi.then_some("Cài đặt")), (":about", vi.then_some("Giới thiệu"))]
 }
 
 /// Name the tabs in the display language. Lumi keeps a label across restarts
@@ -476,11 +473,11 @@ mod tests {
 
     #[test]
     fn the_tabs_are_named_in_the_display_language() {
-        let vietnamese = [(":settings", Some("Cài đặt")), (":about", Some("Giới thiệu")), (":shortcuts", Some("Phím tắt"))];
+        let vietnamese = [(":settings", Some("Cài đặt")), (":about", Some("Giới thiệu"))];
         assert_eq!(tab_labels(Some("vi")), vietnamese);
         assert_eq!(tab_labels(None), vietnamese);
         // English is the manifest's own names, put back.
-        assert_eq!(tab_labels(Some("en")), [(":settings", None), (":about", None), (":shortcuts", None)]);
+        assert_eq!(tab_labels(Some("en")), [(":settings", None), (":about", None)]);
         // Held to Lumi's 24 characters.
         assert!(vietnamese.iter().all(|(_, label)| label.unwrap().chars().count() <= 24));
     }
