@@ -274,7 +274,10 @@ taken the same way every time, without a Lumi build:
 
    It reads Lumi's stylesheet from `../lumi/src-tauri/src/ext/lumi.css`;
    point `--lumi-css` elsewhere if Lumi is not checked out beside this
-   repo. Restart it after editing a promo JSON — it is read once.
+   repo. Restart it after editing a promo JSON — it is read once. It
+   answers `/__lumi__/app-icon/<bundle id>` with the icon this Mac draws
+   for that app, as Lumi does, so a page that shows where something came
+   from shows real icons rather than a stand-in.
 
    A private entry keeps its promo spec and scenes in its own repo, beside
    its pictures, so nothing of it lands in this public one: pass the spec

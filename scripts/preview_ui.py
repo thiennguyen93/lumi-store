@@ -21,6 +21,10 @@ photographed for the store's `screenshots` without a Lumi build:
                             "partial" says so), and "keep": false answers the
                             bytes themselves, at most 8 MB, instead of a blob
                             — Lumi 1.44.0's rules, `download_ask`'s
+  GET  /__lumi__/app-icon/<bundle id>
+                            that application's icon as this Mac draws it, a
+                            PNG, as Lumi answers it; 404 for an application
+                            this Mac does not have
   GET  /__lumi__/blob/<id>  a blob downloaded or kept here, as opaque bytes
   PUT  /__lumi__/blob       the body kept as a blob: {"blob"}
                             Blobs are files under the system's temp folder,
@@ -59,6 +63,7 @@ so this public one holds nothing of it: `--promo <its file>`.
 """
 
 import argparse
+import base64
 import http.server
 import ipaddress
 import json
@@ -66,6 +71,7 @@ import secrets
 import re
 import socket
 import ssl
+import subprocess
 import tempfile
 import tomllib
 import urllib.error
@@ -199,6 +205,48 @@ PROMO = """<!doctype html>
 </body></html>
 """
 
+# An application's icon, as Lumi answers `/__lumi__/app-icon/<id>`: the one
+# AppKit draws for it (NSWorkspace), so a picture shows the icons a Mac
+# shows rather than a stand-in. JavaScript for Automation reaches AppKit
+# with nothing to build; the bundle id is an argument, never part of the
+# script, and the PNG comes back as base64 on stdout.
+APP_ICON_JXA = """ObjC.import("AppKit");
+function run(argv) {
+  const workspace = $.NSWorkspace.sharedWorkspace;
+  const url = workspace.URLForApplicationWithBundleIdentifier(argv[0]);
+  if (url.isNil()) return "";
+  const image = workspace.iconForFile(url.path);
+  image.size = $.NSMakeSize(64, 64);
+  const rep = $.NSBitmapImageRep.alloc.initWithCGImage(image.CGImageForProposedRectContextHints($(), $(), $()));
+  return rep.representationUsingTypeProperties($.NSBitmapImageFileTypePNG, $()).base64EncodedStringWithOptions(0).js;
+}
+"""
+
+# A bundle id as macOS spells one: reverse-DNS letters, digits, dots and
+# hyphens. Anything else is not looked up.
+BUNDLE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9.-]{0,254}$")
+
+
+def app_icon(bundle_id: str) -> "bytes | None":
+    """The icon of the application `bundle_id` names, a PNG, or None when
+    this Mac has no such application (or no AppKit to ask)."""
+    try:
+        drawn = subprocess.run(
+            ["osascript", "-l", "JavaScript", "-e", APP_ICON_JXA, bundle_id],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    try:
+        data = base64.b64decode(drawn.stdout.strip(), validate=True)
+    except ValueError:
+        return None
+    return data if data.startswith(b"\x89PNG\r\n\x1a\n") else None
+
+
 CALLOUT = """<div class="callout" style="{side}">
     <div class="head"><img src="/__icon__" alt="">{title}</div>
     <div class="label">{label}</div>
@@ -287,6 +335,10 @@ def handler_for(
     proxy: str,
     blob_dir: Path,
 ):
+    # Application icons, by bundle id, drawn once a run: a page asks for
+    # the same few over and over, and each draw starts osascript.
+    icons: dict = {}
+
     # Blobs, by id: a file each in `blob_dir`. An id is this server's own
     # hex, so a path never comes from the page.
     blob_id = re.compile(r"^[0-9a-f]{32}$")
@@ -330,6 +382,22 @@ def handler_for(
                 self._json(settings)
             elif path == "/__lumi__/shortcuts":
                 self._json({"on": True, "commands": [], "ess": []})
+            elif path.startswith("/__lumi__/app-icon/"):
+                bundle_id = urllib.parse.unquote(path[len("/__lumi__/app-icon/"):])
+                if not BUNDLE_ID.match(bundle_id):
+                    self.send_error(404)
+                    return
+                if bundle_id not in icons:
+                    icons[bundle_id] = app_icon(bundle_id)
+                data = icons[bundle_id]
+                if data is None:
+                    self.send_error(404)
+                    return
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
             elif path.startswith("/__lumi__/blob/"):
                 blob = path[len("/__lumi__/blob/"):]
                 if not blob_id.match(blob) or not (blob_dir / blob).is_file():
