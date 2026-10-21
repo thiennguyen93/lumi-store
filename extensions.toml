@@ -29,14 +29,16 @@ subdir = "sample"
 category = "Developer"
 
 
-# First-party and in-tree, and public on purpose: an extension that sees
-# every key typed is listed only from a source anybody can read
-# (`check_open_source`).
-[[extension]]
-id = "dev.thiennguyen.vietnamese"
-path = "ext/dev.thiennguyen.vietnamese"
-subdir = "."
-category = "Writing"
+# Lumi Gõ tiếng Việt (ext/dev.thiennguyen.vietnamese) is not listed yet.
+# When it is: first-party and in-tree, and public on purpose — an extension
+# that sees every key typed is listed only from a source anybody can read
+# (`check_open_source`):
+#
+# [[extension]]
+# id = "dev.thiennguyen.vietnamese"
+# path = "ext/dev.thiennguyen.vietnamese"
+# subdir = "."
+# category = "Writing"
 
 
 # First-party and in-tree, for the sample's reason.
