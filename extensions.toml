@@ -107,6 +107,7 @@ private = true
 follow = true
 
 
+# Âm Lịch Việt Nam, the Vietnamese lunar calendar, in Vietnamese only.
 # First-party and closed source, Screenshot's arrangement: a private repo,
 # `update = none` in .gitmodules, fetched with a read-only deploy key of its
 # own (LUNAR_CALENDAR_DEPLOY_KEY) by scripts/fetch-private.sh. Its React
