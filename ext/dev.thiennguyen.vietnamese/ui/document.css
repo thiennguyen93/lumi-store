@@ -26,6 +26,9 @@ pre {
   border-radius: 10px;
   background: color-mix(in srgb, CanvasText 5%, transparent);
   font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Pulled past its end, the text bounces in its own box, as a scroll view
+     does, rather than handing the scroll on to the sheet. */
+  overscroll-behavior: contain;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   user-select: text;
