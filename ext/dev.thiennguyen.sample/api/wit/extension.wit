@@ -1874,6 +1874,52 @@ interface timers {
     %list: func() -> result<list<listed>, string>;
 }
 
+/// Schedules: Lumi runs the extension's `on-event("schedule", …)` every time
+/// this Mac's clock reaches a moment a cron expression names — with its
+/// windows closed, and after Lumi restarts. A schedule is a name of the
+/// extension's own and the expression; Lumi keeps them as it keeps `timers`,
+/// on the same clock and under the same rules: at least once, a firing that
+/// came due while the Mac slept or Lumi was quit told once with `late`, and
+/// the moments folded into it counted in `missed`. The event's payload is
+/// `timer`'s: `{"v":1, "name", "at", "late", "missed"}`. A schedule's names
+/// are its own — one may share a timer's.
+///
+/// The expression is the five fields every cron has: minute (0–59), hour
+/// (0–23), day of the month (1–31), month (1–12 or `jan`–`dec`) and day of
+/// the week (0–7, Sunday 0 or 7, or `sun`–`sat`), each `*`, a number, a range
+/// `a-b`, a list `a,b`, or any of them with a `/step` (`5/15` is `5-59/15`);
+/// or one of `@yearly`, `@annually`, `@monthly`, `@weekly`, `@daily` and
+/// `@hourly`. Given both a day of the month and a day of the week, neither
+/// starting with `*`, a day is either one, as in every cron. No seconds, `L`,
+/// `W`, `#` or `?`. It is read on this Mac's clock, in the person's time
+/// zone: a minute a change of clocks skips fires once at the first minute
+/// after, and one that comes twice fires the first time only.
+///
+/// Needs the `timers` capability — a schedule is a timer that repeats by an
+/// expression — and `events = ["schedule"]` in the manifest. Every call costs
+/// budget. Added to 0.3 in Lumi 1.60.0 without a new world version.
+interface schedules {
+    record schedule {
+        name: string,
+        /// As it was set.
+        expr: string,
+        /// When it next fires, in milliseconds since the Unix epoch.
+        due: u64,
+    }
+
+    /// Set the schedule called `name` to `expr`, replacing one of that name.
+    /// Set again to the expression it has, nothing changes — its next firing
+    /// included — so it may be set from every run. Refused for an expression
+    /// that is not one, or that names no moment in the next five years. A
+    /// first moment less than 30 seconds away is 30 seconds away. At most 128
+    /// timers and schedules together; a name as `timers.set` takes one.
+    set: func(name: string, expr: string) -> result<_, string>;
+    /// Remove the schedule called `name`; true when there was one.
+    cancel: func(name: string) -> result<bool, string>;
+    /// Every schedule, by name.
+    %list: func() -> result<list<schedule>, string>;
+}
+
 /// This Mac's time zone: where the person's clock is, by name, and how far
 /// from UTC it stands at any moment. A component's own clock is UTC; this is
 /// how it reads the person's — a date the way they would write it, "today"
@@ -1947,6 +1993,7 @@ world extension {
     import permissions;
     import menu;
     import timers;
+    import schedules;
     import time-zone;
     import folders;
     import files;

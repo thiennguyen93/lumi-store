@@ -55,7 +55,8 @@
 //! needs `config`, [`screen`] needs `screen`, [`snippets`] needs
 //! `snippets`, and [`permissions`] needs the capability of the permission
 //! asked about — `screen` for Screen Recording, [`menu`] needs `menu`,
-//! [`timers`] needs `timers`, and [`time_zone`] needs `time-zone`. `alert`, `settings`, `profiles`, [`storage`],
+//! [`timers`] and [`schedules`] need `timers`, and [`time_zone`] needs
+//! `time-zone`. `alert`, `settings`, `profiles`, [`storage`],
 //! [`owner`] and [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
@@ -1806,6 +1807,11 @@ pub mod timers {
         if name != EVENT {
             return None;
         }
+        read_fired(payload)
+    }
+
+    /// A `timer` or `schedule` payload: the two are one shape.
+    pub(crate) fn read_fired(payload: &str) -> Option<Fired> {
         let value: serde_json::Value = serde_json::from_str(payload).ok()?;
         Some(Fired {
             name: value.get("name")?.as_str()?.to_string(),
@@ -1813,6 +1819,70 @@ pub mod timers {
             late: value.get("late").and_then(serde_json::Value::as_bool).unwrap_or(false),
             missed: value.get("missed").and_then(serde_json::Value::as_u64).unwrap_or(0),
         })
+    }
+}
+
+/// Your extension's own schedules: Lumi runs your
+/// [`Guest::on_event`](crate::Guest::on_event) with `"schedule"` every time
+/// the Mac's clock reaches a moment a cron expression names — with every one
+/// of your windows closed, and after Lumi restarts.
+///
+/// ```ignore
+/// // 09:00 on weekdays, and every quarter hour from 09:00 to 17:45.
+/// lumi::schedules::set("morning", "0 9 * * mon-fri")?;
+/// lumi::schedules::set("tick", "*/15 9-17 * * *")?;
+/// ```
+///
+/// The expression is the five fields every cron has: minute (0–59), hour
+/// (0–23), day of the month (1–31), month (1–12 or `jan`–`dec`) and day of the
+/// week (0–7, Sunday 0 or 7, or `sun`–`sat`), each `*`, a number, a range, a
+/// list, or any of them with a `/step`; or `@yearly`, `@annually`,
+/// `@monthly`, `@weekly`, `@daily` or `@hourly`. Given both a day of the month
+/// and a day of the week, neither starting with `*`, a day is either one. It
+/// is read on the Mac's clock, in the person's time zone.
+///
+/// Schedules live beside your [`timers`](crate::timers), on the same clock and
+/// under the same rules — told at least once, a firing that came due while
+/// the Mac slept or Lumi was quit told once with `late`, the moments folded
+/// into it counted in `missed` — and with the same capability. Their names are
+/// their own. Setting one again to the expression it has changes nothing, so
+/// you may set it from every run.
+///
+/// Needs the `timers` capability, `events = ["schedule"]` in your manifest,
+/// and Lumi 1.60.0 — say so with `min-lumi-version`.
+pub mod schedules {
+    use super::lumi::ext::schedules as wit;
+
+    pub use super::timers::Fired;
+    pub use wit::Schedule;
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a schedule fires as.
+    pub const EVENT: &str = "schedule";
+
+    /// Set the schedule called `name` to `expr`, replacing one of that name —
+    /// or changing nothing, when it has that expression already.
+    pub fn set(name: &str, expr: &str) -> Result<(), String> {
+        wit::set(name, expr)
+    }
+
+    /// Remove the schedule called `name`; `true` when there was one.
+    pub fn cancel(name: &str) -> Result<bool, String> {
+        wit::cancel(name)
+    }
+
+    /// Every schedule, by name, each with `expr` as you set it and `due`, when
+    /// it next fires in milliseconds since the Unix epoch.
+    pub fn list() -> Result<Vec<Schedule>, String> {
+        wit::list()
+    }
+
+    /// The schedule that fired, when [`Guest::on_event`](crate::Guest::on_event)
+    /// was called for one.
+    pub fn fired(name: &str, payload: &str) -> Option<Fired> {
+        if name != EVENT {
+            return None;
+        }
+        super::timers::read_fired(payload)
     }
 }
 

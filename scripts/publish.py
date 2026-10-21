@@ -154,6 +154,9 @@ EVENTS = {
     "keyboard-selection": "selection-watch",
     # Lumi 1.59: one of the extension's own timers coming due.
     "timer": "timers",
+    # Lumi 1.60: one of the extension's own schedules (a cron expression)
+    # coming due — `timers`' word, the same power.
+    "schedule": "timers",
     # Lumi 1.59: this Mac's time zone changing.
     "time-zone": "time-zone",
 }
