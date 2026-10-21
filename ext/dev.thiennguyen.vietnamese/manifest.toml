@@ -10,7 +10,10 @@ version = "0.1.1"
 description = "Type Vietnamese with Telex or VNI in every app, with no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
-homepage = "https://lumikeys.app/docs/extensions"
+# The extension's own page in the store, which the About tab links to as
+# well (`ABOUT_LINKS` in src/lib.rs). It is there once the extension is
+# listed.
+homepage = "https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"
 # 1.61.0 for `text-input` and `front-app`: an older Lumi does not know
 # either word and would refuse the manifest for it.
 min-lumi-version = "1.61.0"

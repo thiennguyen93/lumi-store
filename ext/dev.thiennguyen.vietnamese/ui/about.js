@@ -1,47 +1,44 @@
-// The About tab (about.html): what the extension can reach and its licence,
-// drawn in the display language the person chose. An extension
-// page may run no inline script (its CSP is `default-src 'self'`), so this is
-// a file of its own.
+// The About tab (about.html): what the extension can reach, who made it,
+// where to find it and its licence, drawn in the display language the person
+// chose. An extension page may run no inline script (its CSP is
+// `default-src 'self'`), so this is a file of its own.
 
-// Every word the page draws, in both languages. The source's address is the
-// same in either, so it is not here.
+// Every word the page draws, in both languages. The author's name, the
+// addresses and the licence's short name are the same in either, so they are
+// not here.
 const WORDS = {
   vi: {
-    privacyTitle: "Riêng tư",
-    privacyLead: "Mọi phím bạn gõ đều đi qua extension này để thành chữ Việt, và nó không làm gì khác.",
-    netName: "Không dùng mạng",
-    netSays: "Nó không có quyền truy cập mạng.",
-    keepName: "Không giữ phím",
-    keepSays: "Phím bạn gõ không được lưu lại.",
-    wordName: "Chỉ sửa từ đang gõ",
-    wordSays: "Lumi chỉ cho nó thay đổi từ bạn đang gõ.",
-    permsNote: "Lumi ghi đủ những gì nó được phép làm ở nút Permissions phía trên.",
-    licenceTitle: "Giấy phép",
-    licenceLead: "Phần mềm tự do, theo giấy phép GNU GPL phiên bản 2 trở lên.",
-    sourceName: "Mã nguồn",
-    gplName: "Giấy phép GNU GPL",
-    gplSays: "Toàn văn, bằng tiếng Anh.",
-    noticesName: "Ghi nhận bên thứ ba",
-    noticesSays: "Giấy phép của các thành phần bên thứ ba.",
+    privacy: "Riêng tư",
+    privacyTitle: "Chỉ để gõ tiếng Việt",
+    noNetwork: "Không dùng mạng",
+    noKeys: "Không lưu phím",
+    onlyWord: "Chỉ sửa từ đang gõ",
+    author: "Tác giả",
+    links: "Liên kết",
+    homepage: "Trang chủ",
+    source: "Mã nguồn",
+    licence: "GNU GPL 2.0 trở lên",
+    licenceSays: "Phần mềm tự do, mã nguồn mở.",
+    licenceText: "Giấy phép",
+    notices: "Bên thứ ba",
+    copyright: "Bản quyền © 2026 Thien Nguyen.",
     unread: "Không đọc được tệp này.",
   },
   en: {
-    privacyTitle: "Privacy",
-    privacyLead: "Every key you type passes through this extension to become Vietnamese, and it does nothing else.",
-    netName: "No network",
-    netSays: "It holds no network access.",
-    keepName: "Keeps no keys",
-    keepSays: "The keys you type are not stored.",
-    wordName: "Only the word you are typing",
-    wordSays: "Lumi lets it change only the word you are typing.",
-    permsNote: "Lumi lists everything it may do under Permissions, above.",
-    licenceTitle: "Licence",
-    licenceLead: "Free software under the GNU General Public License, version 2 or later.",
-    sourceName: "Source code",
-    gplName: "GNU General Public License",
-    gplSays: "The full text.",
-    noticesName: "Third-party notices",
-    noticesSays: "The licences of the components it is built on.",
+    privacy: "Privacy",
+    privacyTitle: "Just for typing Vietnamese",
+    noNetwork: "No network",
+    noKeys: "Keeps no keys",
+    onlyWord: "Only the word you are typing",
+    author: "Author",
+    links: "Links",
+    homepage: "Website",
+    source: "Source code",
+    licence: "GNU GPL 2.0 or later",
+    licenceSays: "Free and open source.",
+    licenceText: "Licence",
+    notices: "Third-party",
+    copyright: "Copyright © 2026 Thien Nguyen.",
     unread: "This file could not be read.",
   },
 };
@@ -85,25 +82,33 @@ function draw() {
   document.querySelector(".about").hidden = false;
 }
 
-// The page may not leave its own files, so the source on GitHub is opened in
-// the browser by the component (`OPEN_SOURCE` in src/lib.rs), which holds the
-// address.
-document.querySelector("[data-source]").addEventListener("click", () => {
-  fetch("/__lumi__/call", { method: "POST", body: "source" }).catch(() => {});
-});
+// The page may not leave its own files, so the store page, the source and the
+// mail are opened by the component (`ABOUT_LINKS` in src/lib.rs), which holds
+// the addresses: the page only says which one.
+for (const link of document.querySelectorAll("[data-open]")) {
+  link.addEventListener("click", () => {
+    fetch("/__lumi__/call", { method: "POST", body: link.dataset.open }).catch(() => {});
+  });
+}
 
 // The licence and the notices ship beside this page as text. Followed as a
 // link, a file would take the tab over, unstyled, with no way back to the
-// page; so each opens under its own row instead, read on the first press.
-for (const row of document.querySelectorAll("[data-file]")) {
-  const text = document.getElementById(row.getAttribute("aria-controls"));
-  row.addEventListener("click", async () => {
-    const open = row.getAttribute("aria-expanded") !== "true";
-    row.setAttribute("aria-expanded", String(open));
+// page; so each opens under the licence card instead, one at a time, read on
+// the first press.
+const openers = [...document.querySelectorAll("[data-file]")];
+for (const opener of openers) {
+  const text = document.getElementById(opener.getAttribute("aria-controls"));
+  opener.addEventListener("click", async () => {
+    const open = opener.getAttribute("aria-expanded") !== "true";
+    for (const other of openers) {
+      other.setAttribute("aria-expanded", "false");
+      document.getElementById(other.getAttribute("aria-controls")).hidden = true;
+    }
+    opener.setAttribute("aria-expanded", String(open));
     text.hidden = !open;
     if (!open || text.dataset.read) return;
     try {
-      const answer = await fetch(row.dataset.file);
+      const answer = await fetch(opener.dataset.file);
       if (!answer.ok) throw new Error(String(answer.status));
       text.textContent = await answer.text();
       text.dataset.read = "true";

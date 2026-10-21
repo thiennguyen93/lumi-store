@@ -235,14 +235,22 @@ fn draw_menu() -> Result<(), String> {
 /// in it.
 const LANGUAGE_CHANGED: &str = "language";
 
-/// What the About tab sends when the person presses its source link. The
-/// page may not leave its own files, so the component opens the address in
-/// the browser — a press, which costs no capability — and the address is
-/// this one, never one the page names.
-const OPEN_SOURCE: &str = "source";
+/// What the About tab sends when the person presses one of its links, and
+/// where each leads: the extension's page in the store (the manifest's
+/// `homepage`), its source, and its author's mail. The page may not leave its
+/// own files, so the component opens the address in the browser or the mail
+/// app — a press, which costs no capability — and only these addresses, never
+/// one the page names.
+const ABOUT_LINKS: [(&str, &str); 3] = [
+    ("homepage", "https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"),
+    ("source", "https://github.com/thiennguyen93/lumi-store/tree/main/ext/dev.thiennguyen.vietnamese"),
+    ("contact", "mailto:hi@thiennguyen.dev"),
+];
 
-/// Where the source is: this extension's folder in the public store.
-const SOURCE_URL: &str = "https://github.com/thiennguyen93/lumi-store/tree/main/ext/dev.thiennguyen.vietnamese";
+/// Where an About tab link leads, by the word the page sends.
+fn about_link(request: &str) -> Option<&'static str> {
+    ABOUT_LINKS.iter().find(|(word, _)| *word == request).map(|(_, url)| *url)
+}
 
 /// The person switching typing on or off — a shortcut, the command, or the
 /// menu row — remembered for the app in front.
@@ -278,8 +286,8 @@ impl Guest for VietnameseTyping {
         if window == ":settings" && request == LANGUAGE_CHANGED {
             return draw_menu().and_then(|()| label_tabs()).map(|()| String::new());
         }
-        if window == ":about" && request == OPEN_SOURCE {
-            return lumi::open_url(SOURCE_URL).map(|()| String::new());
+        if let Some(url) = about_link(&request).filter(|_| window == ":about") {
+            return lumi::open_url(url).map(|()| String::new());
         }
         Err("no window".to_string())
     }
@@ -443,6 +451,16 @@ mod tests {
         // manifest's default.
         assert_eq!(menu_label(None), "Gõ tiếng Việt");
         assert_eq!(menu_label(Some("fr")), "Gõ tiếng Việt");
+    }
+
+    #[test]
+    fn the_about_tab_opens_only_its_own_links() {
+        assert_eq!(about_link("homepage"), Some("https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"));
+        assert_eq!(about_link("contact"), Some("mailto:hi@thiennguyen.dev"));
+        assert!(about_link("source").is_some_and(|url| url.starts_with("https://github.com/")));
+        // Anything else the page sends opens nothing, a URL included.
+        assert_eq!(about_link("https://example.com"), None);
+        assert_eq!(about_link(""), None);
     }
 
     #[test]

@@ -1,56 +1,113 @@
 /* The About tab (about.html). Lumi embeds it in its Extensions pane with
    lumi.css first — its fonts, its colours for both themes, its focus ring — on
    a transparent page with no inset, the pane's column being the inset. So this
-   sheet adds only what the page draws, on Lumi's tokens, each with a fallback
-   for a preview outside Lumi. The rows are the Settings tab's (settings.css),
-   so the two tabs read as one extension. */
+   sheet adds only what the page draws: borderless cards tinted from the text
+   colour, so they follow either theme on their own, and the extension's red
+   (icon.svg) as the one accent. Type steps are the HIG's macOS ones: Title 3
+   15, Headline 13 semibold, Callout 12, Subheadline 11. */
 
 .about {
-  --muted: color-mix(in srgb, CanvasText 62%, transparent);
-  --line: var(--border, rgba(128, 128, 128, 0.28));
-  --well: var(--card, rgba(128, 128, 128, 0.08));
-  --well-up: var(--row-hover, rgba(128, 128, 128, 0.16));
+  --muted: color-mix(in srgb, CanvasText 58%, transparent);
+  --surface: color-mix(in srgb, CanvasText 4.5%, transparent);
+  --surface-up: color-mix(in srgb, CanvasText 7%, transparent);
+  --surface-hover: color-mix(in srgb, CanvasText 10%, transparent);
+  --brand-from: #ef4444;
+  --brand-to: #b91c1c;
+  --brand-ink: #c81e1e;
+  --tint: color-mix(in srgb, #dc2626 10%, transparent);
   --pick: var(--accent, #378add);
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  padding: 2px 0 20px;
+  padding: 4px 0 20px;
   user-select: none;
   -webkit-user-select: none;
   cursor: default;
 }
-.about section + section { margin-top: 22px; }
-.about h2 { font-size: 13px; font-weight: 600; margin: 0; }
-.about .note { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; }
-.about .note.first { margin: 2px 0 0; }
-
-/* A row draws itself. Under `:where()`, as lumi.css's rules are, so the
-   classes below win over the reset rather than the other way round. */
-:where(.about button.row) { all: unset; box-sizing: border-box; cursor: default; }
-:where(.about button.row):focus-visible { outline: 2px solid var(--pick); outline-offset: -2px; }
-
-/* What it is on the left; on a row that takes a press, where it leads on the
-   right. */
-.rows { display: grid; gap: 8px; margin-top: 8px; }
-.row {
-  box-sizing: border-box; display: flex; align-items: center; gap: 11px;
-  padding: 9px 11px; min-height: 54px;
-  border-radius: 10px; border: 1px solid var(--line); background: var(--well);
+/* Red read on a dark window: lighter, and a stronger tint behind it. */
+:root[data-theme="dark"] .about {
+  --brand-ink: #fb7185;
+  --tint: color-mix(in srgb, #f43f5e 16%, transparent);
 }
-button.row:hover { background: var(--well-up); }
-.row .mark { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 8px; background: var(--well-up); }
-.row svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.row .text { flex: 1; min-width: 0; }
-.row b { display: block; font-weight: 500; }
-.row small { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
-.row .end { flex: none; display: grid; place-items: center; color: var(--muted); }
-.row .end svg { width: 14px; height: 14px; }
-.row .chevron svg { transition: transform 0.15s; }
-.row[aria-expanded="true"] .chevron svg { transform: rotate(90deg); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .about {
+    --brand-ink: #fb7185;
+    --tint: color-mix(in srgb, #f43f5e 16%, transparent);
+  }
+}
 
-/* The licence and the notices, opened under their rows: read in place,
-   scrolled in their own box, and the one thing here worth copying. */
+/* Every control here draws itself. Under `:where()`, as lumi.css's rules are,
+   so the classes below win over the reset rather than the other way round. */
+:where(.about button) { all: unset; box-sizing: border-box; cursor: default; }
+:where(.about button):focus-visible { outline: 2px solid var(--pick); outline-offset: -2px; }
+.about svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.about h2, .about p { margin: 0; }
+.grow { flex: 1; min-width: 0; }
+
+.card { background: var(--surface); border-radius: 14px; padding: 14px 16px; }
+.about > .card, .about > .pair { margin-top: 10px; }
+.about > :first-child { margin-top: 0; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); }
+
+/* Privacy: the shield in the extension's red, one line, three facts. */
+.head { display: flex; align-items: center; gap: 12px; }
+.tile {
+  flex: none; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+  color: #fff; background: linear-gradient(145deg, var(--brand-from), var(--brand-to));
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.25), 0 1px 3px rgba(185, 28, 28, 0.35);
+}
+.tile svg { width: 18px; height: 18px; }
+.title { font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: -0.005em; }
+.chips { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.chips li {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 8px;
+  border-radius: 999px; background: var(--surface-up); font-size: 12px; font-weight: 500;
+}
+.chips svg { width: 14px; height: 14px; color: var(--brand-ink); }
+
+/* Author: initials on the accent's tint, the address under the name. */
+.person { display: flex; align-items: center; gap: 11px; margin-top: 8px; }
+.person b { display: block; font-weight: 600; }
+.avatar {
+  flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--tint); color: var(--brand-ink); font-size: 13.5px; font-weight: 650; letter-spacing: 0.02em;
+}
+.link { display: block; font-size: 12px; color: var(--accent-ink, var(--pick)); }
+.link:hover { text-decoration: underline; }
+
+/* Links: each a row that leads out of Lumi, marked ↗. */
+.links { display: flex; flex-direction: column; }
+.go { display: flex; align-items: center; gap: 9px; padding: 6px 8px; margin: 0 -8px; border-radius: 8px; }
+.go:first-of-type { margin-top: 4px; }
+.go:hover { background: var(--surface-up); }
+.go > svg:first-child { flex: none; width: 16px; height: 16px; color: var(--brand-ink); }
+.go b { display: block; font-weight: 500; line-height: 1.3; }
+.go small { display: block; font-size: 11px; line-height: 1.3; color: var(--muted); }
+.go .out { flex: none; width: 13px; height: 13px; opacity: 0.45; }
+.go:hover .out { opacity: 0.75; }
+
+/* Licence: its short name as a badge, the two texts behind two pills. */
+.licence { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.badge {
+  flex: none; padding: 6px 9px; border-radius: 9px; background: var(--tint); color: var(--brand-ink);
+  font: 700 12px/1 var(--mono); letter-spacing: 0.02em;
+}
+.licence .name { font-size: 13px; font-weight: 600; }
+.licence small { display: block; font-size: 12px; color: var(--muted); }
+.pills { display: flex; gap: 6px; }
+.pill {
+  padding: 5px 12px; border-radius: 999px; background: var(--surface-up);
+  font-size: 12.5px; font-weight: 500; white-space: nowrap;
+}
+.pill:hover { background: var(--surface-hover); }
+.pill[aria-expanded="true"] { background: var(--tint); color: var(--brand-ink); }
+
+/* The text a pill opens: read in place, scrolled in its own box, and the one
+   thing here worth copying. */
 .file {
-  margin: -2px 0 2px; max-height: 260px; overflow: auto; padding: 10px 12px;
-  border-radius: 10px; border: 1px solid var(--line); background: var(--well);
+  margin: 8px 0 0; max-height: 260px; overflow: auto; padding: 12px 14px;
+  border-radius: 12px; background: var(--surface);
   font: 11px/1.45 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere;
   user-select: text; -webkit-user-select: text; cursor: text;
 }
+
+.about .copyright { margin-top: 20px; text-align: center; font-size: 11px; color: var(--muted); }

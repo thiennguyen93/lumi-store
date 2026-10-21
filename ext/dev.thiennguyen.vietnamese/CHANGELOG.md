@@ -6,7 +6,7 @@
 
 - The Settings tab reads in Vietnamese or English: choose with **Display language** at its top. Vietnamese is the default.
 - The row in Lumi's menu bar menu follows the display language: **Gõ tiếng Việt**, or **Vietnamese typing** in English.
-- An About tab of its own, in the display language: what the extension can reach, and its licence, source and third-party notices.
+- An About tab of its own, in the display language: what the extension can reach, who made it and how to get in touch, its page in the store, its source, and its licence and third-party notices.
 - The Settings and About tab names follow the display language: **Cài đặt** and **Giới thiệu** in Vietnamese.
 
 ### Changed
