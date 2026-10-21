@@ -88,9 +88,12 @@ default = "true"
 # The Settings tab is the extension's own page (ui/settings.html) rather
 # than Lumi's form, so it can be read in either display language. The
 # declarations above still decide what is stored, and Lumi holds every save
-# to them. Written last, since a table ends the one before it.
+# to them. Written last, since a table ends the one before it. The page
+# opens on it (`default`): choosing how to type is what somebody comes here
+# for, and About says nothing they need twice.
 [tabs.settings]
 page = "settings.html"
+default = true
 
 # The About tab is the extension's own page too (ui/about.html), for the same
 # reason: what it can reach and its licence, in either display language.

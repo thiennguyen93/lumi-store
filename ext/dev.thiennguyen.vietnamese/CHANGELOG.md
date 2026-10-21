@@ -13,6 +13,7 @@
 
 - The Settings tab is laid out as rows, each with its control on the right: the typing method is a Telex/VNI switch, and placing tone marks the modern way (hoà, thuý) is a switch of its own.
 - A new icon: a V over a keyboard.
+- The extension's page in Settings opens on its Settings tab.
 
 ## [0.1.0] - 2026-10-21
 
