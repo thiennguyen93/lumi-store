@@ -28,6 +28,8 @@ use gonhanh_core::data::keys as kc;
 use gonhanh_core::engine::Engine;
 use lumi_extension_api::{self as lumi, front_app, menu, text_input, Guest, Lifecycle};
 
+mod welcome;
+
 /// The engine's settings, read from the extension's settings object.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Settings {
@@ -202,12 +204,17 @@ pub fn menu_label(language: Option<&str>) -> &'static str {
     }
 }
 
-/// The names of the extension's own tabs in Settings, Settings and About, in
-/// the display language: Vietnamese unless it says English, where `None`
-/// puts back the manifest's English names.
-pub fn tab_labels(language: Option<&str>) -> [(&'static str, Option<&'static str>); 2] {
+/// The names of the extension's own tabs in Settings — Settings, About, and
+/// the Shortcuts tab Lumi draws for its `[[shortcut]]` — in the display
+/// language: Vietnamese unless it says English, where `None` puts back the
+/// manifest's English names.
+pub fn tab_labels(language: Option<&str>) -> [(&'static str, Option<&'static str>); 3] {
     let vi = language != Some("en");
-    [(":settings", vi.then_some("Cài đặt")), (":about", vi.then_some("Giới thiệu"))]
+    [
+        (":settings", vi.then_some("Cài đặt")),
+        (":about", vi.then_some("Giới thiệu")),
+        (":shortcuts", vi.then_some("Phím tắt")),
+    ]
 }
 
 /// Name the tabs in the display language. Lumi keeps a label across restarts
@@ -278,6 +285,9 @@ impl Guest for VietnameseTyping {
     }
 
     fn run_ui(window: String, request: String) -> Result<String, String> {
+        if let Some(ask) = welcome::asked(&window, &request) {
+            return welcome::answer(ask);
+        }
         if let Some(id) = menu::pressed(&window, &request) {
             if id == "toggle" {
                 return toggle().map(|()| String::new());
@@ -294,7 +304,8 @@ impl Guest for VietnameseTyping {
 
     fn on_lifecycle(event: Lifecycle) -> Result<(), String> {
         match event {
-            Lifecycle::Installed | Lifecycle::Updated(_) => draw_menu().and_then(|()| label_tabs()),
+            Lifecycle::Installed => welcome::on_install(),
+            Lifecycle::Updated(_) => draw_menu().and_then(|()| label_tabs()),
             Lifecycle::Uninstalling => Ok(()),
         }
     }
@@ -465,11 +476,11 @@ mod tests {
 
     #[test]
     fn the_tabs_are_named_in_the_display_language() {
-        let vietnamese = [(":settings", Some("Cài đặt")), (":about", Some("Giới thiệu"))];
+        let vietnamese = [(":settings", Some("Cài đặt")), (":about", Some("Giới thiệu")), (":shortcuts", Some("Phím tắt"))];
         assert_eq!(tab_labels(Some("vi")), vietnamese);
         assert_eq!(tab_labels(None), vietnamese);
         // English is the manifest's own names, put back.
-        assert_eq!(tab_labels(Some("en")), [(":settings", None), (":about", None)]);
+        assert_eq!(tab_labels(Some("en")), [(":settings", None), (":about", None), (":shortcuts", None)]);
         // Held to Lumi's 24 characters.
         assert!(vietnamese.iter().all(|(_, label)| label.unwrap().chars().count() <= 24));
     }

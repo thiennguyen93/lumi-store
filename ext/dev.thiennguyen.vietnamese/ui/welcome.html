@@ -1,0 +1,144 @@
+<!doctype html>
+<!-- Lumi Gõ tiếng Việt's Welcome window: the two steps `on_lifecycle` opens
+     on a first install (src/welcome.rs), and a finish of its own. The top
+     half is a small stage acting out each step, the words below, as in
+     Clipboard Manager's, Screenshot's and Selection Bar's tours. An ordinary
+     declared window with the ordinary bridge: by the time it opens, the
+     extension is installed. It is read in the display language the Settings
+     tab reads in (`language`); the words below are the Vietnamese ones, the
+     default, and welcome.js writes either language over them once the
+     settings are read. -->
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Lumi Gõ tiếng Việt</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <!-- The extension's icon, drawn wherever the page shows it. -->
+  <svg class="defs" aria-hidden="true">
+    <defs>
+      <linearGradient id="logo-fill" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ef4444"/>
+        <stop offset="1" stop-color="#b91c1c"/>
+      </linearGradient>
+    </defs>
+    <symbol id="logo" viewBox="0 0 64 64">
+      <rect width="64" height="64" rx="14" fill="url(#logo-fill)"/>
+      <g fill="#ffffff" fill-opacity="0.35">
+        <rect x="10" y="32" width="5" height="5.5" rx="1.3"/><rect x="16.5" y="32" width="5" height="5.5" rx="1.3"/>
+        <rect x="23" y="32" width="5" height="5.5" rx="1.3"/><rect x="29.5" y="32" width="5" height="5.5" rx="1.3"/>
+        <rect x="36" y="32" width="5" height="5.5" rx="1.3"/><rect x="42.5" y="32" width="5" height="5.5" rx="1.3"/>
+        <rect x="49" y="32" width="5" height="5.5" rx="1.3"/><rect x="10" y="39" width="8.25" height="5.5" rx="1.3"/>
+        <rect x="19.75" y="39" width="5" height="5.5" rx="1.3"/><rect x="26.25" y="39" width="5" height="5.5" rx="1.3"/>
+        <rect x="32.75" y="39" width="5" height="5.5" rx="1.3"/><rect x="39.25" y="39" width="5" height="5.5" rx="1.3"/>
+        <rect x="45.75" y="39" width="8.25" height="5.5" rx="1.3"/><rect x="10" y="46" width="5" height="5.5" rx="1.3"/>
+        <rect x="16.5" y="46" width="5" height="5.5" rx="1.3"/><rect x="23" y="46" width="18" height="5.5" rx="1.3"/>
+        <rect x="42.5" y="46" width="5" height="5.5" rx="1.3"/><rect x="49" y="46" width="5" height="5.5" rx="1.3"/>
+      </g>
+      <g fill="none" stroke-width="8" stroke-linecap="round">
+        <path d="M47 16.5l-15 31" stroke="#fecaca"/>
+        <path d="M17 16.5l15 31" stroke="#ffffff"/>
+      </g>
+    </symbol>
+  </svg>
+
+  <main class="tour" id="tour" hidden>
+    <div class="stage">
+      <!-- 1. A note typing itself, key by key, in the method chosen below. -->
+      <div class="scene typing" data-scene="0">
+        <div class="app">
+          <div class="app-bar"><span class="lights"><i></i><i></i><i></i></span><span class="app-title" data-t="appTitle">Ghi chú</span></div>
+          <div class="app-text"><span id="typed"></span><span class="caret"></span></div>
+        </div>
+        <div class="hud" aria-hidden="true"><kbd id="pressed"></kbd></div>
+      </div>
+      <!-- 2. Keys into the box on the left, a key at a time; on the right,
+           what they have come out as so far. Nothing else leaves the box. -->
+      <div class="scene sealed" data-scene="1" hidden>
+        <span class="caps keys-in" id="keys-in" aria-hidden="true"></span>
+        <span class="arrow" aria-hidden="true">→</span>
+        <span class="box" id="box">
+          <svg class="box-logo"><use href="#logo"/></svg>
+          <span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+        </span>
+        <span class="arrow" aria-hidden="true">→</span>
+        <span class="word-out"><span id="word-out"></span><span class="caret"></span></span>
+      </div>
+    </div>
+
+    <div class="body">
+      <section class="step" data-step="0">
+        <h1 data-t="helloTitle">Gõ tiếng Việt mà không cần cài bộ gõ</h1>
+        <p class="dim" data-t="helloSays">Gõ Telex hoặc VNI ngay trên bàn phím bạn vẫn dùng, không phải thêm bộ gõ nào trong Cài đặt hệ thống.</p>
+        <div class="rows">
+          <div class="row">
+            <span class="mark"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
+            <span class="text"><b id="lang-name" data-t="langName">Ngôn ngữ hiển thị</b><small data-t="langOther">Display language</small></span>
+            <div class="seg" role="radiogroup" aria-labelledby="lang-name" data-group="language">
+              <button type="button" role="radio" data-value="vi" lang="vi">Tiếng Việt</button>
+              <button type="button" role="radio" data-value="en" lang="en">English</button>
+            </div>
+          </div>
+          <div class="row">
+            <span class="mark"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="M7 16h10"/></svg></span>
+            <span class="text"><b id="method-name" data-t="methodName">Kiểu gõ</b><small data-t="methodSays">tieengs thành tiếng</small></span>
+            <div class="seg" role="radiogroup" aria-labelledby="method-name" data-group="method">
+              <button type="button" role="radio" data-value="telex">Telex</button>
+              <button type="button" role="radio" data-value="vni">VNI</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- What it can reach, no stronger than the manifest's summary. -->
+      <section class="step" data-step="1" hidden>
+        <h1 data-t="privacyTitle">Phím bạn gõ đi đâu?</h1>
+        <div class="rows">
+          <div class="row">
+            <span class="mark"><svg viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></svg></span>
+            <span class="text"><b data-t="netName">Không dùng mạng</b><small data-t="netSays">Tiện ích không được kết nối Internet.</small></span>
+          </div>
+          <div class="row">
+            <span class="mark"><svg viewBox="0 0 24 24"><path d="M20 4a2 2 0 0 1 2 2"/><path d="M22 6v10.41"/><path d="M7 16h9"/><path d="M9.69 4H20"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="m2 2 20 20"/><path d="M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2"/><path d="M6 8h.01"/><path d="M8 12h.01"/></svg></span>
+            <span class="text"><b data-t="keepName">Không giữ lại phím nào</b><small data-t="keepSays">Chỉ ghi nhớ bạn bật hay tắt gõ tiếng Việt ở ứng dụng nào.</small></span>
+          </div>
+          <div class="row">
+            <span class="mark"><svg viewBox="0 0 24 24"><path d="M5 4h1a3 3 0 0 1 3 3 3 3 0 0 1 3-3h1"/><path d="M13 20h-1a3 3 0 0 1-3-3 3 3 0 0 1-3 3H5"/><path d="M5 16H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h1"/><path d="M13 8h7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-7"/><path d="M9 7v10"/></svg></span>
+            <span class="text"><b data-t="wordName">Chỉ sửa từ đang gõ</b><small data-t="wordSays">Lumi không cho tiện ích làm gì khác với phím của bạn.</small></span>
+          </div>
+        </div>
+      </section>
+
+      <p class="failed" id="failed" role="alert" hidden></p>
+    </div>
+
+    <footer class="actions">
+      <span class="dots" id="dots" aria-hidden="true"></span>
+      <button type="button" class="link" id="to-settings" data-t="toSettings">Cài đặt</button>
+      <span class="sp"></span>
+      <button type="button" id="back" data-t="back">Quay lại</button>
+      <button type="button" class="primary" id="next" data-t="next">Tiếp</button>
+    </footer>
+  </main>
+
+  <!-- The end: the whole window, no stage and no dots, so it reads as the
+       end rather than one more step. -->
+  <main class="finish" id="finish" hidden>
+    <div class="finish-mark" id="finish-mark">
+      <svg class="finish-logo"><use href="#logo"/></svg>
+      <span class="tick" aria-hidden="true">✓</span>
+    </div>
+    <h1 data-t="doneTitle">Xong rồi 🎉</h1>
+    <p class="dim" id="done-says"></p>
+    <div class="finish-buttons">
+      <button type="button" id="finish-settings" data-t="openSettings">Mở Cài đặt</button>
+      <button type="button" class="primary" id="finish-done" data-t="finishDone">Xong</button>
+    </div>
+    <button type="button" class="link again" id="again" data-t="again">Xem lại từ đầu</button>
+    <p class="failed" id="finish-failed" role="alert" hidden></p>
+  </main>
+  <script src="welcome.js"></script>
+</body>
+</html>

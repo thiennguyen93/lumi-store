@@ -30,6 +30,29 @@ name = "toggle"
 label = "Switch Vietnamese typing on or off"
 icon = "languages"
 
+# A key of the extension's own for the switch, armed by Lumi at install when
+# nothing holds it. When something does, Lumi arms nothing and the Shortcuts
+# tab says who holds it, with a recorder for another. ⌃⇧V: V for Việt.
+# Few apps bind ⌃⇧ with a letter, where ⌥ with a letter types a character
+# and ⌘⇧V pastes in many apps.
+[[shortcut]]
+command = "toggle"
+key = "ctrl+shift+v"
+
+# The Welcome, opened on a first install (`on_lifecycle`, src/welcome.rs):
+# two short steps, in the display language: what it does, with the language
+# and the typing method to choose, and where the keys typed go. Laid out for
+# this size and no other, so it does not resize; the height holds macOS's
+# title bar too (32 points), so the page itself is 488 high.
+[[window]]
+name = "welcome"
+title = "Lumi Gõ tiếng Việt"
+path = "welcome.html"
+width = 600
+height = 520
+resizable = false
+maximizable = false
+
 # The language this extension's own pages are read in. Vietnamese first: it
 # is who the extension is for. Lumi's own words around them — the tab names,
 # the Permissions sheet — stay Lumi's.

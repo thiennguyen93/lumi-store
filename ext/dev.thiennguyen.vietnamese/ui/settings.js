@@ -21,7 +21,7 @@ const WORDS = {
     engSays: "Những từ như “with” hay “text” được để nguyên như bạn gõ.",
     appName: "Nhớ bật hay tắt cho từng ứng dụng",
     appSays: "Mỗi ứng dụng giữ lựa chọn riêng.",
-    foot: "Bật hoặc tắt gõ tiếng Việt từ menu bar của Lumi, hoặc bằng phím tắt trong tab Shortcuts.",
+    foot: "Bật hoặc tắt gõ tiếng Việt từ menu bar của Lumi, hoặc bằng phím tắt trong tab Phím tắt.",
   },
   en: {
     generalTitle: "General",
