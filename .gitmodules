@@ -14,3 +14,7 @@
 	path = ext/dev.thiennguyen.clipboard
 	url = git@github.com:thiennguyen93/lumi-clipboard-manager.git
 	update = none
+[submodule "ext/dev.thiennguyen.lunar-calendar"]
+	path = ext/dev.thiennguyen.lunar-calendar
+	url = git@github.com:thiennguyen93/lumi-lunar-calendar.git
+	update = none

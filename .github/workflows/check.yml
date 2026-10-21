@@ -47,6 +47,7 @@ jobs:
           SCREENSHOT_DEPLOY_KEY: ${{ secrets.SCREENSHOT_DEPLOY_KEY }}
           STICKY_DEPLOY_KEY: ${{ secrets.STICKY_DEPLOY_KEY }}
           SELECTION_BAR_DEPLOY_KEY: ${{ secrets.SELECTION_BAR_DEPLOY_KEY }}
+          LUNAR_CALENDAR_DEPLOY_KEY: ${{ secrets.LUNAR_CALENDAR_DEPLOY_KEY }}
           CLIPBOARD_DEPLOY_KEY: ${{ secrets.CLIPBOARD_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
 
