@@ -1,4 +1,7 @@
-//! Vietnamese Typing: Telex and VNI in every app, on Lumi's `text-input`
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Thien Nguyen
+
+//! Lumi Gõ tiếng Việt: Telex and VNI in every app, on Lumi's `text-input`
 //! primitive, with Gõ Nhanh's core as the engine.
 //!
 //! **Every key's run is fresh.** Lumi tells `on_event("text-input", …)` the

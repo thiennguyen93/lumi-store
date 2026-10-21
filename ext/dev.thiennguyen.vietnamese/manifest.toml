@@ -1,15 +1,15 @@
-# Vietnamese Typing's manifest: Telex and VNI in every app, typed through
+# Lumi Gõ tiếng Việt's manifest: Telex and VNI in every app, typed through
 # Lumi's text-input primitive. The engine is Gõ Nhanh's core (BSD-3-Clause,
 # THIRD-PARTY-NOTICES.md); Lumi itself knows no language — every key of the
 # word goes to this extension's sealed run, which answers how the word
 # changes.
 [extension]
 id = "dev.thiennguyen.vietnamese"
-name = "Vietnamese Typing"
+name = "Lumi Gõ tiếng Việt"
 version = "0.1.0"
 description = "Type Vietnamese with Telex or VNI in every app, with no input method to install."
 author = "Thien Nguyen"
-summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Built on the Gõ Nhanh engine. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
+summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
 homepage = "https://lumikeys.app/docs/extensions"
 # 1.61.0 for `text-input` and `front-app`: an older Lumi does not know
 # either word and would refuse the manifest for it.

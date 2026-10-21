@@ -1,5 +1,11 @@
-Vietnamese Typing is built on the core engine of Gõ Nhanh
-(https://github.com/khaphanspace/gonhanh.org), used under this licence:
+Lumi Gõ tiếng Việt is free software under the GNU General Public License,
+version 2 or (at your option) any later version — the licence is in
+LICENSE.txt beside this file. Its source is at
+https://github.com/thiennguyen93/lumi-store/tree/main/ext/dev.thiennguyen.vietnamese
+
+The typing engine is the core of Gõ Nhanh
+(https://github.com/khaphanspace/gonhanh.org), used under this licence. The
+name Gõ Nhanh is its contributors'; this extension is not endorsed by them.
 
 BSD 3-Clause License
 
@@ -29,3 +35,9 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The engine carries a list of Vietnamese syllables that comes from the
+hunspell-vi dictionaries (https://github.com/1ec5/hunspell-vi), converted by
+László Németh from the GNU Aspell Vietnamese dictionary
+(https://ftp.gnu.org/gnu/aspell/dict/vi/), whose word list is by Hồ Ngọc Đức
+and is distributed under the GNU General Public License.
