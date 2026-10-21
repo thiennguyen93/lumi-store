@@ -103,6 +103,12 @@ width = 486
 height = 480
 title = "Third-party notices"
 
+# The tabs in the order the page draws them: Settings, About, then the
+# Changelog last, after About rather than before it as Lumi would. Lumi
+# 1.61.0's `order`, which the `min-lumi-version` above already asks for.
+[tabs]
+order = ["settings", "about", "changelog"]
+
 # The Settings tab is the extension's own page (ui/settings.html) rather
 # than Lumi's form, so it can be read in either display language. The
 # declarations above still decide what is stored, and Lumi holds every save
@@ -120,8 +126,3 @@ default = true
 # reaches is still shown in Lumi's words.
 [tabs.about]
 page = "about.html"
-
-# No Changelog tab: the owner's call (2026-10-22). CHANGELOG.md stays in the
-# package all the same.
-[tabs.changelog]
-hidden = true

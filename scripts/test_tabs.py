@@ -62,6 +62,20 @@ class Tabs(unittest.TestCase):
         )
         self.assertEqual(old, new)
 
+    def test_an_order_names_the_tabs_to_draw_first(self):
+        publish.check_tabs(
+            "dev.you.thing",
+            manifest(tables='[[page]]\nname = "keys"\n\n[tabs]\norder = ["settings", "about", "keys", "changelog"]\n\n[tabs.settings]\nlabel = "Options"\n'),
+        )
+        for tables, said in [
+            ('[tabs]\norder = ["news"]\n', "neither one of Lumi's tabs"),
+            ('[tabs]\norder = ["about", "about"]\n', "twice"),
+            ('[tabs]\norder = ["settings"]\n\n[tabs.settings]\nhidden = true\n', "takes away"),
+            ('[[page]]\nname = "about"\nlabel = "Keys"\n\n[tabs]\norder = ["about"]\n', "both one of Lumi's tabs"),
+            ('[tabs]\norder = "about"\n', "is a list of tab names"),
+        ]:
+            self.assertIn(said, refusal(tables=tables), tables)
+
     def test_refusals_say_what_lumi_says(self):
         for extension, tables, said in [
             ("", "[tabs.news]\nhidden = true\n", "not one of Lumi's tabs"),

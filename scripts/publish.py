@@ -737,6 +737,8 @@ def check_tabs(entry_id: str, manifest: dict):
         return path
 
     for word, table in raw.items():
+        if word == "order":
+            continue  # `[tabs] order`, checked below once the tabs are known
         if word not in BUILTIN_TABS:
             fail(entry_id, f"[tabs.{word}] is not one of Lumi's tabs — {offered} are")
         if not isinstance(table, dict):
@@ -793,6 +795,31 @@ def check_tabs(entry_id: str, manifest: dict):
         # Only the Shortcuts tab can be known empty from the manifest alone.
         if word == "shortcuts" and not manifest.get("shortcut"):
             fail(entry_id, f"{hidden_key} hides the {BUILTIN_TABS[word]} tab, and this manifest gives Lumi nothing to draw in it")
+
+    # `[tabs] order`: the tabs drawn first, held to Lumi's `manifest::tab_order`
+    # — Lumi's tab words or [[page]] names, each once, never a hidden tab, and
+    # never a word that is both (Lumi 1.61.0).
+    order = raw.get("order", [])
+    if not isinstance(order, list) or not all(isinstance(entry, str) for entry in order):
+        fail(entry_id, '[tabs] order is a list of tab names: ["settings", "about", …]')
+    page_names = [str(page.get("name", "")) for page in manifest.get("page", [])]
+    placed = []
+    for entry in order:
+        word = entry.strip()
+        builtin, page = word in BUILTIN_TABS, word in page_names
+        if builtin and page:
+            fail(entry_id, f"[tabs] order names {word!r}, which is both one of Lumi's tabs and a [[page]] — rename the page")
+        if builtin:
+            if tabs[word]["hidden"]:
+                fail(entry_id, f"[tabs] order names {word!r}, which [tabs.{word}] hidden takes away — leave one of them out")
+            wire = word
+        elif page:
+            wire = f"page:{word}"
+        else:
+            fail(entry_id, f"[tabs] order names {word!r}, which is neither one of Lumi's tabs — {offered} are — nor a [[page]] of this manifest")
+        if wire in placed:
+            fail(entry_id, f"[tabs] order names {word!r} twice")
+        placed.append(wire)
 
     # `default = true`: the one tab the page opens on, held to Lumi's rule
     # — one in the whole page, [[page]]s included, and never a tab the
