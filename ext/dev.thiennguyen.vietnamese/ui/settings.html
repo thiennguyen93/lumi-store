@@ -1,0 +1,68 @@
+<!doctype html>
+<!-- The Settings tab under Settings → Extensions → Lumi Gõ tiếng Việt, drawn by
+     the extension in place of Lumi's form (`[tabs.settings]` in the manifest),
+     so it can be read in Vietnamese or English (`language`). The words below
+     are the Vietnamese ones, the default; settings.js writes either language
+     over them once the settings are read. -->
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Lumi Gõ tiếng Việt settings</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div class="settings" hidden>
+    <section>
+      <h2 data-t="generalTitle">Chung</h2>
+      <div class="rows">
+        <div class="row">
+          <span class="mark"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
+          <span class="text"><b id="lang-name" data-t="langName">Ngôn ngữ hiển thị</b><small data-t="langOther">Display language</small></span>
+          <div class="seg" role="radiogroup" aria-labelledby="lang-name" data-group="language">
+            <button type="button" role="radio" data-value="vi" lang="vi">Tiếng Việt</button>
+            <button type="button" role="radio" data-value="en" lang="en">English</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 data-t="typingTitle">Gõ phím</h2>
+      <div class="rows">
+        <div class="row">
+          <span class="mark"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="M7 16h10"/></svg></span>
+          <span class="text"><b id="method-name" data-t="methodName">Kiểu gõ</b></span>
+          <div class="seg" role="radiogroup" aria-labelledby="method-name" data-group="method">
+            <button type="button" role="radio" data-value="telex">Telex</button>
+            <button type="button" role="radio" data-value="vni">VNI</button>
+          </div>
+        </div>
+        <button type="button" role="switch" class="row" data-switch="modernTone" aria-labelledby="tone-name" aria-describedby="tone-says">
+          <span class="mark"><svg viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg></span>
+          <span class="text"><b id="tone-name" data-t="toneName">Đặt dấu kiểu mới</b><small id="tone-says" data-t="toneSays">hoà, thuý thay vì hòa, thúy.</small></span>
+          <span class="toggle" aria-hidden="true"></span>
+        </button>
+        <button type="button" role="switch" class="row" data-switch="escRestore" aria-labelledby="esc-name" aria-describedby="esc-says">
+          <span class="mark"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/></svg></span>
+          <span class="text"><b id="esc-name" data-t="escName">Esc trả lại phím đã gõ</b><small id="esc-says" data-t="escSays">Nhấn Esc ngay sau một từ để lấy lại đúng các phím: tiếng → tieengs.</small></span>
+          <span class="toggle" aria-hidden="true"></span>
+        </button>
+        <button type="button" role="switch" class="row" data-switch="englishRestore" aria-labelledby="eng-name" aria-describedby="eng-says">
+          <span class="mark"><svg viewBox="0 0 24 24"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></span>
+          <span class="text"><b id="eng-name" data-t="engName">Giữ nguyên từ tiếng Anh</b><small id="eng-says" data-t="engSays">Những từ như “with” hay “text” được để nguyên như bạn gõ.</small></span>
+          <span class="toggle" aria-hidden="true"></span>
+        </button>
+        <button type="button" role="switch" class="row" data-switch="perApp" aria-labelledby="app-name" aria-describedby="app-says">
+          <span class="mark"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 4v4"/><path d="M2 8h20"/><path d="M6 4v4"/></svg></span>
+          <span class="text"><b id="app-name" data-t="appName">Nhớ bật hay tắt cho từng ứng dụng</b><small id="app-says" data-t="appSays">Mỗi ứng dụng giữ lựa chọn riêng.</small></span>
+          <span class="toggle" aria-hidden="true"></span>
+        </button>
+      </div>
+    </section>
+
+    <p class="foot" data-t="foot">Bật hoặc tắt gõ tiếng Việt từ menu bar của Lumi, hoặc bằng phím tắt trong tab Shortcuts.</p>
+  </div>
+  <script src="settings.js"></script>
+</body>
+</html>

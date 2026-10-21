@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.0"
+version = "0.1.1"
 description = "Type Vietnamese with Telex or VNI in every app, with no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
@@ -26,6 +26,23 @@ events = ["text-input", "text-input-enabled", "front-app"]
 name = "toggle"
 label = "Switch Vietnamese typing on or off"
 icon = "languages"
+
+# The language this extension's own pages are read in. Vietnamese first: it
+# is who the extension is for. Lumi's own words around them — the tab names,
+# the Permissions sheet — stay Lumi's.
+[[settings]]
+name = "language"
+label = "Display language"
+kind = "select"
+default = "vi"
+
+[[settings.options]]
+value = "vi"
+label = "Tiếng Việt"
+
+[[settings.options]]
+value = "en"
+label = "English"
 
 [[settings]]
 name = "method"
@@ -64,3 +81,10 @@ name = "perApp"
 label = "Remember on or off for each app"
 kind = "bool"
 default = "true"
+
+# The Settings tab is the extension's own page (ui/settings.html) rather
+# than Lumi's form, so it can be read in either display language. The
+# declarations above still decide what is stored, and Lumi holds every save
+# to them. Written last, since a table ends the one before it.
+[tabs.settings]
+page = "settings.html"

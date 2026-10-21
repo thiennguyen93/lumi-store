@@ -192,12 +192,29 @@ fn remember(on: bool) -> Result<(), String> {
         .map_err(lumi::storage::PutError::into_message)
 }
 
+/// The menu row's words in the display language the person chose
+/// (`language`): Vietnamese unless it says English, as the Settings tab reads
+/// it.
+pub fn menu_label(language: Option<&str>) -> &'static str {
+    match language {
+        Some("en") => "Vietnamese typing",
+        _ => "Gõ tiếng Việt",
+    }
+}
+
 /// The one row in Lumi's menu bar menu: whether typing is on, and the way to
 /// switch it.
 fn draw_menu() -> Result<(), String> {
     let on = text_input::enabled()?;
-    menu::set(&[menu::Entry::check("toggle", "Gõ tiếng Việt", on)])
+    let label = menu_label(lumi::setting("language").as_deref());
+    menu::set(&[menu::Entry::check("toggle", label, on)])
 }
+
+/// What the Settings tab sends (`POST /__lumi__/call`) after it saves a new
+/// display language. Nothing tells a component its settings changed, and the
+/// menu row is drawn from the stored tree until somebody draws it again, so
+/// the page asks for it to be drawn in the new language.
+const LANGUAGE_CHANGED: &str = "language";
 
 /// The person switching typing on or off — a shortcut, the command, or the
 /// menu row — remembered for the app in front.
@@ -229,6 +246,9 @@ impl Guest for VietnameseTyping {
             if id == "toggle" {
                 return toggle().map(|()| String::new());
             }
+        }
+        if window == ":settings" && request == LANGUAGE_CHANGED {
+            return draw_menu().map(|()| String::new());
         }
         Err("no window".to_string())
     }
@@ -382,5 +402,15 @@ mod tests {
             Settings { vni: true, modern_tone: false, esc_restore: true, english_restore: true }
         );
         assert_eq!(Settings::from_json(&serde_json::json!({})), TELEX);
+    }
+
+    #[test]
+    fn the_menu_row_reads_in_the_display_language() {
+        assert_eq!(menu_label(Some("en")), "Vietnamese typing");
+        assert_eq!(menu_label(Some("vi")), "Gõ tiếng Việt");
+        // Never chosen, or a value this build does not know: Vietnamese, the
+        // manifest's default.
+        assert_eq!(menu_label(None), "Gõ tiếng Việt");
+        assert_eq!(menu_label(Some("fr")), "Gõ tiếng Việt");
     }
 }
