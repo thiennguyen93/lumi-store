@@ -204,14 +204,20 @@ pub fn menu_label(language: Option<&str>) -> &'static str {
     }
 }
 
-/// The names of the extension's own tabs in Settings, Settings and About, in
-/// the display language: Vietnamese unless it says English, where `None`
-/// puts back the manifest's English names. Not the Shortcuts tab: it is
-/// hidden, its key recorded on the Settings tab, and Lumi refuses a label
-/// for a tab the manifest does not draw.
-pub fn tab_labels(language: Option<&str>) -> [(&'static str, Option<&'static str>); 2] {
+/// The names of the extension's own tabs in Settings — Settings, About and
+/// Changelog, in the order `[tabs] order` draws them — in the display
+/// language: Vietnamese unless it says English, where `None` puts back the
+/// manifest's English names and Lumi's own Changelog. Not the Shortcuts tab:
+/// it is hidden, its key recorded on the Settings tab, and Lumi refuses a
+/// label for a tab the manifest does not draw, which would fail the whole
+/// run.
+pub fn tab_labels(language: Option<&str>) -> [(&'static str, Option<&'static str>); 3] {
     let vi = language != Some("en");
-    [(":settings", vi.then_some("Cài đặt")), (":about", vi.then_some("Giới thiệu"))]
+    [
+        (":settings", vi.then_some("Cài đặt")),
+        (":about", vi.then_some("Giới thiệu")),
+        (":changelog", vi.then_some("Nhật ký thay đổi")),
+    ]
 }
 
 /// Name the tabs in the display language. Lumi keeps a label across restarts
@@ -473,11 +479,12 @@ mod tests {
 
     #[test]
     fn the_tabs_are_named_in_the_display_language() {
-        let vietnamese = [(":settings", Some("Cài đặt")), (":about", Some("Giới thiệu"))];
+        let vietnamese =
+            [(":settings", Some("Cài đặt")), (":about", Some("Giới thiệu")), (":changelog", Some("Nhật ký thay đổi"))];
         assert_eq!(tab_labels(Some("vi")), vietnamese);
         assert_eq!(tab_labels(None), vietnamese);
         // English is the manifest's own names, put back.
-        assert_eq!(tab_labels(Some("en")), [(":settings", None), (":about", None)]);
+        assert_eq!(tab_labels(Some("en")), [(":settings", None), (":about", None), (":changelog", None)]);
         // Held to Lumi's 24 characters.
         assert!(vietnamese.iter().all(|(_, label)| label.unwrap().chars().count() <= 24));
     }
