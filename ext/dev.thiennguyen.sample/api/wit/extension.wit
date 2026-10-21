@@ -62,7 +62,10 @@ interface selection {
     /// replacement the app will not take through Accessibility is refused.
     /// Refused, with nothing typed, where `editable` answers `some(false)`:
     /// there a keystroke is a key — a page's shortcut, a word at a shell
-    /// prompt — not a replacement.
+    /// prompt — not a replacement. Refused too, since Lumi 1.59.0, where
+    /// `expected` holds U+FFFC — a picture in the selection, an image or an
+    /// emoji drawn as one — since no text written over it can put the
+    /// picture back.
     ///
     /// Costs `accessibility` and `input`. Answers only something the person
     /// did — a command or one of the extension's windows — and closes this
@@ -91,6 +94,19 @@ interface selection {
     /// again after this answers: Lumi moves it beside the new selection.
     /// Needs Lumi 1.48.0.
     replace-and-select: func(expected: string, replacement: string) -> result<replaced, string>;
+
+    /// Copy the selection in the app in front the way that app copies it —
+    /// its own ⌘C — so the board holds what it puts there: the text as it
+    /// lays it out, and the formatting, links and pictures it keeps. `true`
+    /// once the board has changed; `false` when nothing changed within a
+    /// moment — nothing selected, or nothing the app will copy. Not put back
+    /// afterwards, as `read`'s ⌘C is: it is the person's copy. A panel of
+    /// this extension's holding the keys lends them to the app for it, as
+    /// for `read`. Refused with one of Lumi's own windows in front. Costs
+    /// `clipboard`, `input` and `accessibility`, and answers only something
+    /// the person did — a command or one of the extension's windows. Needs
+    /// Lumi 1.59.0.
+    copy: func() -> result<bool, string>;
 
     /// Whether this extension is told of the selections the person makes
     /// — the `selection` event, and `keyboard-selection` (Lumi 1.50.0) — now:

@@ -169,7 +169,11 @@ pub fn selection_editable() -> Result<Option<bool>, String> {
 /// Through Accessibility where the app takes it; else typed when it is
 /// short; else pasted, the board put back after — only when you also
 /// declare `clipboard`. Refused, with nothing typed, where
-/// [`selection_editable`] answers `Some(false)`. Your panels close first.
+/// [`selection_editable`] answers `Some(false)`, and since Lumi 1.59.0 where
+/// `expected` holds U+FFFC — a picture in the selection, an image or an
+/// emoji drawn as one, which no text written over it can put back: ask
+/// `text.contains('\u{FFFC}')` before offering to replace. Your panels close
+/// first.
 ///
 /// Needs `accessibility` and `input`, and answers only something the person
 /// did: a command, or a request from one of your windows. Needs Lumi 1.47.0.
@@ -190,6 +194,24 @@ pub fn replace_selection(expected: &str, replacement: &str) -> Result<String, St
 /// `min-lumi-version`.
 pub fn replace_selection_and_select(expected: &str, replacement: &str) -> Result<Replaced, String> {
     lumi::ext::selection::replace_and_select(expected, replacement)
+}
+
+/// Copy the selection in the frontmost application the way that application
+/// copies it — its own ⌘C — so the board holds what it puts there: the text
+/// as it lays it out, and the formatting, links and pictures it keeps, which
+/// no reading of the text carries. `true` once the board has changed;
+/// `false` when nothing changed within a moment — nothing selected, or
+/// nothing the app will copy. Unlike [`selection`]'s ⌘C, the board is not
+/// put back: it is the person's copy, and a clipboard history keeps it as
+/// one. Asked from one of your panels while it holds the keys, the keys are
+/// lent to the app for the copy, as [`selection`] lends them. Refused with
+/// one of Lumi's own windows in front.
+///
+/// Needs `clipboard`, `input` and `accessibility`, and answers only something
+/// the person did: a command, or a request from one of your windows. Needs
+/// Lumi 1.59.0 — say so with `min-lumi-version`.
+pub fn copy_selection() -> Result<bool, String> {
+    lumi::ext::selection::copy()
 }
 
 /// Whether you are told of the selections the person makes — the
