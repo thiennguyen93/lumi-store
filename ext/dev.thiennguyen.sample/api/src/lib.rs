@@ -54,7 +54,8 @@
 //! a web address), `fetch` needs `network`, everything in [`config`]
 //! needs `config`, [`screen`] needs `screen`, [`snippets`] needs
 //! `snippets`, and [`permissions`] needs the capability of the permission
-//! asked about — `screen` for Screen Recording, and [`menu`] needs `menu`. `alert`, `settings`, `profiles`, [`storage`],
+//! asked about — `screen` for Screen Recording, [`menu`] needs `menu`, and
+//! [`timers`] needs `timers`. `alert`, `settings`, `profiles`, [`storage`],
 //! [`owner`] and [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
@@ -1034,8 +1035,10 @@ pub mod storage {
 
     /// [`blob_save`], with every `{date}` and `{time}` in `name` filled in
     /// from the Mac's own clock and time zone — `2026-10-02`, `14.03.11` —
-    /// which your component cannot read: its clock is UTC. Lumi never tells
-    /// you the name it filled in.
+    /// which your component's own clock does not give: it is UTC. The name
+    /// filled in is not told back: this costs no capability, and Lumi lets a
+    /// component learn the time zone only through one that needs it —
+    /// [`timers`](crate::timers).
     ///
     /// ```ignore
     /// storage::blob_save_dated(&shot.blob, "Screenshot {date} at {time}.png")?;
@@ -1713,6 +1716,100 @@ pub mod menu {
         }
         let value: serde_json::Value = serde_json::from_str(request).ok()?;
         value.get("id")?.as_str().map(str::to_string)
+    }
+}
+
+/// Your extension's own timers: Lumi runs your
+/// [`Guest::on_event`](crate::Guest::on_event) with `"timer"` at the times you
+/// set — with every one of your windows closed, and after Lumi restarts.
+///
+/// A timer is a name of yours, a [`When`] and a [`Repeat`]. Lumi keeps them on
+/// the Mac, across restarts and updates, and never learns what one is for;
+/// switching your extension off holds them, uninstalling removes them. Setting
+/// a name again replaces the timer of that name.
+///
+/// ```ignore
+/// use lumi::timers::{self, Clock, Repeat, When};
+///
+/// // Every day as the Mac's clock reaches 00:00.
+/// timers::set("day", When::Clock(Clock { date: None, hour: 0, minute: 0 }), Repeat::Daily)?;
+/// // Once, an hour from now.
+/// timers::set("later", When::After(60 * 60 * 1000), Repeat::Once)?;
+/// ```
+///
+/// One that came due while the Mac slept, Lumi was quit or your extension was
+/// off fires once, as soon as it can, with [`Fired::late`] set and the repeats
+/// it folded in counted in [`Fired::missed`]. A firing is told at least once —
+/// one Lumi could not finish telling is told again — so a run that must not
+/// act twice keeps its own note of what it did. Its run is any event's: no
+/// window opens from it; [`alert`](crate::alert), [`post`](crate::post) to an
+/// open window, [`menu`](crate::menu) and [`storage`](crate::storage) all work.
+///
+/// At most 128 timers; a name is 1–128 bytes with no control characters, kept
+/// as you wrote it — keep anything secret in [`storage`](crate::storage), not
+/// in a name. A time less than a minute ahead is set a minute ahead; one more
+/// than five years ahead is refused, as is [`Repeat::Every`] under a minute.
+///
+/// Your component's clock is UTC. A [`Clock`] time is read on the Mac's clock,
+/// in the person's time zone, and moves when the zone or the clock changes —
+/// which is how a timer set on it tells you where the person is, and one
+/// reason these need a capability.
+///
+/// Needs the `timers` capability, `events = ["timer"]` in your manifest, and
+/// Lumi 1.59.0 — say so with `min-lumi-version`.
+pub mod timers {
+    use super::lumi::ext::timers as wit;
+
+    pub use wit::{Clock, Day, Listed, Repeat, Timer, When};
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a timer fires as.
+    pub const EVENT: &str = "timer";
+
+    /// Set the timer called `name`, replacing one of that name.
+    pub fn set(name: &str, when: When, repeat: Repeat) -> Result<(), String> {
+        wit::set(name, when, repeat)
+    }
+
+    /// Remove the timer called `name`; `true` when there was one.
+    pub fn cancel(name: &str) -> Result<bool, String> {
+        wit::cancel(name)
+    }
+
+    /// Every timer still to fire, by name, each with `due`, when it next
+    /// fires in milliseconds since the Unix epoch. An `After` reads back as
+    /// the `At` it named. A timer firing once is not listed while it is
+    /// being told.
+    pub fn list() -> Result<Vec<Listed>, String> {
+        wit::list()
+    }
+
+    /// One timer firing, as [`fired`] reads it.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Fired {
+        /// The name you set it under.
+        pub name: String,
+        /// When it fired, in milliseconds since the Unix epoch.
+        pub at: u64,
+        /// It fired more than a minute after it was due: the Mac slept, Lumi
+        /// was quit, or your extension was off.
+        pub late: bool,
+        /// How many further repeats came due meanwhile, folded into this one.
+        pub missed: u64,
+    }
+
+    /// The timer that fired, when [`Guest::on_event`](crate::Guest::on_event)
+    /// was called for one.
+    pub fn fired(name: &str, payload: &str) -> Option<Fired> {
+        if name != EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        Some(Fired {
+            name: value.get("name")?.as_str()?.to_string(),
+            at: value.get("at")?.as_u64()?,
+            late: value.get("late").and_then(serde_json::Value::as_bool).unwrap_or(false),
+            missed: value.get("missed").and_then(serde_json::Value::as_u64).unwrap_or(0),
+        })
     }
 }
 

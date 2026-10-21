@@ -120,6 +120,9 @@ CAPABILITIES = {
     # Lumi 1.52: the `ai` interface (the models the person set up in Lumi;
     # Lumi asks them before text leaves the Mac).
     "ai",
+    # Lumi 1.59: the `timers` interface (the extension's code run at times
+    # it sets, with its windows closed and after Lumi restarts).
+    "timers",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -146,6 +149,8 @@ EVENTS = {
     "selection-watching": "selection-watch",
     # Lumi 1.50: a selection made with the keyboard, once it rests.
     "keyboard-selection": "selection-watch",
+    # Lumi 1.59: one of the extension's own timers coming due.
+    "timer": "timers",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",

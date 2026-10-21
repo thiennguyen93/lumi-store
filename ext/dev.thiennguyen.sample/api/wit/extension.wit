@@ -1127,9 +1127,10 @@ interface storage {
     /// `blob-save`, with every `{date}` and `{time}` in `name` filled in
     /// from this Mac's clock and time zone — `2026-10-02` and `14.03.11`,
     /// the way macOS names a screenshot — before the name is checked. For a
-    /// component, which knows the time only in UTC. The name as filled in is
-    /// never told back: handed back beside the clock the component already
-    /// has, it would say the person's time zone. Added in Lumi 1.34.
+    /// component, whose own clock is UTC. The name as filled in is not told
+    /// back: this costs no capability, and Lumi lets a component learn the
+    /// person's time zone only through one that needs it — `timers`. Added
+    /// in Lumi 1.34.
     blob-save-dated: func(id: string, name: string) -> result<_, string>;
     /// Every blob and its size in bytes, sorted by id.
     blobs: func() -> result<list<tuple<string, u64>>, string>;
@@ -1772,6 +1773,105 @@ interface menu {
     set-shown: func(shown: bool) -> result<_, string>;
 }
 
+/// Timers: Lumi runs the extension's `on-event("timer", …)` at times it
+/// set — with every one of its windows closed, and after Lumi restarts. A
+/// timer is a name of the extension's own, a time and how it repeats. Lumi
+/// keeps them on this Mac, across restarts and updates, and never learns
+/// what one is for; switching the extension off holds them, and
+/// uninstalling it removes them.
+///
+/// A timer that came due while the Mac slept, Lumi was quit or the
+/// extension was off fires once, as soon as it can. However many repeats
+/// came due meanwhile are folded into that one firing, and a repeating
+/// timer whose last firing is still being told is not told again on top of
+/// it. A firing is told at least once: one Lumi could not finish telling —
+/// quit part way, or every run the extension may have taken — is told
+/// again, so a run that must not act twice keeps its own note of what it
+/// did.
+///
+/// The event's payload is `{"v":1, "name", "at", "late", "missed"}`:
+/// `at` the moment it fired, in milliseconds since the Unix epoch; `late`
+/// true when that was more than a minute after it was due; `missed` how
+/// many further repeats came due meanwhile and are folded into this one.
+/// Its run is any event's: no window opens from it, and nothing that needs
+/// a person is allowed — an `alert` is.
+///
+/// A component's own clock is UTC. A `clock` time is read on this Mac's
+/// clock, in the person's time zone, so an extension that sets one learns
+/// where that is — one reason these need a capability.
+///
+/// Needs the `timers` capability and `events = ["timer"]` in the manifest.
+/// Every call costs budget. Added to 0.3 in Lumi 1.59.0 without a new world
+/// version.
+interface timers {
+    /// A day on this Mac's calendar.
+    record day {
+        year: u16,
+        /// 1 to 12.
+        month: u8,
+        /// 1 to the month's last.
+        day: u8,
+    }
+
+    /// A time on this Mac's clock, in the person's time zone, read again
+    /// whenever the clock or the zone changes. A time a change of clocks
+    /// skips that day fires at the first minute after it; one that comes
+    /// twice fires the first time.
+    record clock {
+        /// `none`: the next time the clock shows `hour`:`minute`.
+        date: option<day>,
+        /// 0 to 23.
+        hour: u8,
+        /// 0 to 59.
+        minute: u8,
+    }
+
+    variant when {
+        /// This many milliseconds from now.
+        after(u64),
+        /// This moment, in milliseconds since the Unix epoch.
+        at(u64),
+        /// When this Mac's clock shows it.
+        clock(clock),
+    }
+
+    variant repeat {
+        once,
+        /// Every this many milliseconds from the first firing, at least a
+        /// minute.
+        every(u64),
+        /// Every day at `when`'s time, which must be a `clock` without a
+        /// `date`.
+        daily,
+    }
+
+    /// A timer as it was set — `after` reads back as the `at` it named.
+    record timer {
+        name: string,
+        when: when,
+        repeat: repeat,
+    }
+
+    record listed {
+        timer: timer,
+        /// When it next fires, in milliseconds since the Unix epoch.
+        due: u64,
+    }
+
+    /// Set the timer called `name`, replacing one of that name. At most 128
+    /// timers; a name is 1–128 bytes with no control characters, kept as
+    /// written — keep anything secret in `storage`, not in a name. A time
+    /// less than a minute ahead is set a minute ahead; one more than five
+    /// years ahead is refused, as is `every` under a minute or over five
+    /// years.
+    set: func(name: string, when: when, repeat: repeat) -> result<_, string>;
+    /// Remove the timer called `name`; true when there was one.
+    cancel: func(name: string) -> result<bool, string>;
+    /// Every timer still to fire, by name. One firing once is not listed
+    /// while it is being told.
+    %list: func() -> result<list<listed>, string>;
+}
+
 /// Feature flags: names typed into Lumi's hidden Feature Flags screen, each
 /// with a value and on or off. Not documented for extension developers.
 /// Costs no capability.
@@ -1812,6 +1912,7 @@ world extension {
     import snippets;
     import permissions;
     import menu;
+    import timers;
     import folders;
     import files;
     import owner;
