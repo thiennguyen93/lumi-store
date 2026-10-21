@@ -55,8 +55,10 @@
 //! needs `config`, [`screen`] needs `screen`, [`snippets`] needs
 //! `snippets`, and [`permissions`] needs the capability of the permission
 //! asked about — `screen` for Screen Recording, [`menu`] needs `menu`,
-//! [`timers`] and [`schedules`] need `timers`, and [`time_zone`] needs
-//! `time-zone`. `alert`, `settings`, `profiles`, [`storage`],
+//! [`timers`] and [`schedules`] need `timers`, [`time_zone`] needs
+//! `time-zone`, [`text_input`] needs `text-input` — and works only from the
+//! `text-input` run, the one told a key — and [`front_app`] needs
+//! `front-app`. `alert`, `settings`, `profiles`, [`storage`],
 //! [`owner`] and [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
@@ -1975,6 +1977,180 @@ pub mod time_zone {
             assert_eq!(super::civil(20_747), (2026, 10, 21));
             assert_eq!(super::civil(20_819), (2027, 1, 1));
         }
+    }
+}
+
+/// Typing through your extension: every key typed in any app passes through
+/// it while Lumi types through it, and it answers how the word changes — a
+/// way to type a language whose letters the keyboard does not have is the
+/// case it is built for. Lumi knows no language; what a key becomes is yours.
+///
+/// Each key arrives as `on_event("text-input", …)` with the keys since the
+/// word began, oldest first. Read them with [`keys`](text_input::keys), replay them through
+/// your engine — nothing of a run survives it, so the list is how you know
+/// where the word stands — and answer the last one with [`answer`](text_input::answer) or
+/// [`replace`](text_input::replace), or not at all to let the key type itself.
+///
+/// The run is sealed: only [`answer`](text_input::answer) and `settings()` work in it, it has
+/// about 25 milliseconds, and the key is held until it answers. A run that is
+/// late, traps or refuses has its key typed as pressed; three failures in a
+/// minute and Lumi stops typing through you until you are switched on again.
+///
+/// Needs the `text-input` capability and `events = ["text-input"]`; the
+/// manifest may not declare `network` or `ai` beside it. Lumi 1.61.0.
+///
+/// ```ignore
+/// fn on_event(name: String, payload: String) -> Result<(), String> {
+///     let Some(keys) = lumi::text_input::keys(&name, &payload) else { return Ok(()) };
+///     let (delete, insert, word_ended) = my_engine::replay(&keys);
+///     lumi::text_input::replace(delete, &insert, word_ended)
+/// }
+/// ```
+pub mod text_input {
+    use super::lumi::ext::text_input as wit;
+
+    /// How the text before the caret changes: `delete_before` characters
+    /// (Unicode scalar values, at most as many as your answers typed into
+    /// this word), `delete_after` (0 in this release), `insert` (printable,
+    /// at most 64 characters), and `commit` to end the word.
+    pub use wit::Edit;
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a key arrives as.
+    pub const EVENT: &str = "text-input";
+
+    /// The name the switch arrives as when somebody else moved it.
+    pub const ENABLED_EVENT: &str = "text-input-enabled";
+
+    /// One key of the word: the character it typed on the person's keyboard
+    /// layout (empty for Backspace), and its `KeyboardEvent.code` name — the
+    /// physical key, `"KeyA"`, `"Digit2"`, `"Backspace"` — for an engine that
+    /// works by key rather than by character.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Key {
+        pub text: String,
+        pub code: String,
+    }
+
+    impl Key {
+        /// Whether this key is Backspace, told only while a word is open.
+        pub fn is_backspace(&self) -> bool {
+            self.code == "Backspace"
+        }
+
+        /// Whether this key is Escape, told only while a word is open. The
+        /// word ends after it whatever you answer; answering with the keys as
+        /// they were typed is how an engine undoes what it made of them.
+        pub fn is_escape(&self) -> bool {
+            self.code == "Escape"
+        }
+    }
+
+    /// The keys since the word began, oldest first, when
+    /// [`Guest::on_event`](crate::Guest::on_event) was called for a key.
+    pub fn keys(name: &str, payload: &str) -> Option<Vec<Key>> {
+        if name != EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        value
+            .get("keys")?
+            .as_array()?
+            .iter()
+            .map(|key| {
+                Some(Key {
+                    text: key.get("text")?.as_str()?.to_string(),
+                    code: key.get("code")?.as_str()?.to_string(),
+                })
+            })
+            .collect()
+    }
+
+    /// Answer the key this run was told of. Once per run, and only from the
+    /// `text-input` run.
+    pub fn answer(edit: &Edit) -> Result<(), String> {
+        wit::answer(edit)
+    }
+
+    /// [`answer`] for the usual case: delete `delete_before` characters
+    /// before the caret, type `insert`, and end the word if `commit`.
+    pub fn replace(delete_before: u32, insert: &str, commit: bool) -> Result<(), String> {
+        wit::answer(&Edit { delete_before, delete_after: 0, insert: insert.to_string(), commit })
+    }
+
+    /// Whether Lumi types through your extension now — the switch on your
+    /// Permissions sheet. Refused from the `text-input` run.
+    pub fn enabled() -> Result<bool, String> {
+        wit::enabled()
+    }
+
+    /// Turn typing through your extension on or off — a command bound to a
+    /// shortcut is the usual way to switch languages. On switches off any
+    /// other extension Lumi typed through. Refused from the `text-input` run.
+    pub fn set_enabled(on: bool) -> Result<(), String> {
+        wit::set_enabled(on)
+    }
+
+    /// Where the switch stands now, when [`Guest::on_event`](crate::Guest::on_event)
+    /// was called because somebody else moved it: the person on your
+    /// Permissions sheet, or Lumi switching you off because another
+    /// extension was switched on to type through. Hear it with
+    /// `events = ["text-input-enabled"]`.
+    pub fn enabled_changed(name: &str, payload: &str) -> Option<bool> {
+        if name != ENABLED_EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        value.get("enabled")?.as_bool()
+    }
+
+    #[cfg(test)]
+    mod tests {
+        #[test]
+        fn the_keys_come_out_in_the_order_they_were_typed() {
+            let payload = r#"{"v":1,"keys":[{"text":"a","code":"KeyA"},{"text":"","code":"Backspace"}]}"#;
+            let keys = super::keys("text-input", payload).expect("keys");
+            assert_eq!(keys.len(), 2);
+            assert_eq!((keys[0].text.as_str(), keys[0].code.as_str()), ("a", "KeyA"));
+            assert!(keys[1].is_backspace());
+            assert!(super::keys("timer", payload).is_none());
+            assert_eq!(super::enabled_changed("text-input-enabled", r#"{"v":1,"enabled":false,"at":1}"#), Some(false));
+        }
+    }
+}
+
+/// Which app is in front, as the person moves between them — for an
+/// extension that keeps something per app, a typing extension remembering
+/// its switch for each being the usual one.
+///
+/// Hear it with `events = ["front-app"]`; needs the `front-app` capability.
+/// Every switch is told, Lumi's own windows coming forward included. Nothing
+/// is told when your extension starts, so what is in front then is unknown
+/// until the person next switches. Lumi 1.61.0.
+pub mod front_app {
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a switch arrives as.
+    pub const EVENT: &str = "front-app";
+
+    /// The app that came to the front.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct App {
+        /// Its bundle id, `"com.apple.TextEdit"` — `None` for a process that
+        /// has none.
+        pub id: Option<String>,
+        /// The name macOS shows for it.
+        pub name: Option<String>,
+        /// When it came to the front, in milliseconds since the Unix epoch.
+        pub at: u64,
+    }
+
+    /// The app that came to the front, when
+    /// [`Guest::on_event`](crate::Guest::on_event) was called for a switch.
+    pub fn changed(name: &str, payload: &str) -> Option<App> {
+        if name != EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        let text = |field: &str| value.get(field).and_then(serde_json::Value::as_str).map(str::to_string);
+        Some(App { id: text("app"), name: text("name"), at: value.get("at")?.as_u64()? })
     }
 }
 

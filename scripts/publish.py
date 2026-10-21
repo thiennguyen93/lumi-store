@@ -126,6 +126,13 @@ CAPABILITIES = {
     # Lumi 1.59: the `time-zone` interface (this Mac's zone and its offset at
     # any moment).
     "time-zone",
+    # Lumi 1.60: the `text-input` interface (every key typed in any app, in a
+    # sealed run that answers how the word changes). Never beside `network`
+    # or `ai`, and only from a public source (`check_open_source`).
+    "text-input",
+    # Lumi 1.60: the `front-app` event (which app is in front, as the person
+    # moves between them).
+    "front-app",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -159,6 +166,12 @@ EVENTS = {
     "schedule": "timers",
     # Lumi 1.59: this Mac's time zone changing.
     "time-zone": "time-zone",
+    # Lumi 1.60: a key typed in any app while Lumi types through the
+    # extension, and the switch over that moved by somebody else.
+    "text-input": "text-input",
+    "text-input-enabled": "text-input",
+    # Lumi 1.60: the app in front changing.
+    "front-app": "front-app",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -396,6 +409,12 @@ def check_manifest(entry_id: str, manifest: dict):
     for word in ext.get("capabilities", []):
         if word not in CAPABILITIES:
             fail(entry_id, f"capability {word!r} is not one the host offers ({sorted(CAPABILITIES)})")
+    # `manifest.rs`'s refusal, word for word: an extension that sees every
+    # key may hold no word that reaches past the Mac.
+    if "text-input" in ext.get("capabilities", []):
+        for reaching in ("network", "ai"):
+            if reaching in ext.get("capabilities", []):
+                fail(entry_id, f"text-input cannot be declared with {reaching}: an extension that sees every key you type may not be able to send anything off this Mac")
     for name in ext.get("events", []):
         if name not in EVENTS:
             fail(entry_id, f"unknown event {name!r} — Lumi sends {sorted(EVENTS)}")
@@ -419,6 +438,13 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"selection-watch-default = {start!r} is not true or false")
         if "selection-watch" not in ext.get("capabilities", []):
             fail(entry_id, "selection-watch-default says where the selection-watch switch starts, which needs the selection-watch capability — add it to capabilities")
+    # And `text-input-default`, for the typing switch.
+    if "text-input-default" in ext or "text_input_default" in ext:
+        start = ext.get("text-input-default", ext.get("text_input_default"))
+        if not isinstance(start, bool):
+            fail(entry_id, f"text-input-default = {start!r} is not true or false")
+        if "text-input" not in ext.get("capabilities", []):
+            fail(entry_id, "text-input-default says where the text-input switch starts, which needs the text-input capability — add it to capabilities")
     seen = set()
     for command in manifest.get("command", []):
         name = command.get("name", "")
@@ -1314,12 +1340,31 @@ def sources(entry: dict):
     with open(manifest_path, "rb") as f:
         manifest = tomllib.load(f)
     ext = check_manifest(entry_id, manifest)
+    check_open_source(entry, ext)
     # In the package (signed, what the app trusts) AND beside it (a
     # plain URL for the store page) — the same split as capabilities:
     # the page shows a claim, the app reads the verified copy.
     icon_path = crate / "icon.svg"
     icon = icon_path if icon_path.exists() else None
     return crate, manifest_path, manifest, ext, icon
+
+
+def check_open_source(entry: dict, ext: dict):
+    """The store's own rule, beside Lumi's: an extension that declares
+    `text-input` sees every key the person types, so anybody must be able to
+    read what it does with them. Lumi's sandbox already keeps it from
+    sending a key anywhere (no `network`, no `ai`, a sealed run); this is the
+    second half, the one a person can check. A `private = true` entry is
+    closed source by definition, so it may not declare the word — and every
+    other entry is built here from a source this repository, or a submodule
+    fetched with no secret, makes public. Lumi does not ask it of a package
+    installed from a file, which no store vouches for."""
+    if "text-input" in ext.get("capabilities", []) and entry.get("private"):
+        fail(
+            entry["id"],
+            "declares text-input, which only an extension whose source is public may — "
+            "every key typed passes through it; list it from a public repository",
+        )
 
 
 def published(entry_id: str, data: bytes, ext: str) -> str:

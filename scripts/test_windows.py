@@ -121,6 +121,38 @@ class SelectionWatch(unittest.TestCase):
         self.assertIn("is not true or false", str(caught.exception.code))
 
 
+class TextInput(unittest.TestCase):
+    def manifest(self, capabilities: str, line: str = ""):
+        return tomllib.loads(
+            BASE.replace('version = "1.0.0"', f'version = "1.0.0"\ncapabilities = [{capabilities}]\n{line}').format(fields="")
+        )
+
+    def refusal(self, capabilities: str, line: str = "") -> str:
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", self.manifest(capabilities, line))
+        return str(caught.exception.code)
+
+    def test_it_never_stands_beside_a_way_off_the_mac(self):
+        for capabilities, named in (('"text-input", "network"', "network"), ('"ai", "text-input"', "ai")):
+            self.assertIn(f"text-input cannot be declared with {named}", self.refusal(capabilities))
+        publish.check_manifest("dev.you.thing", self.manifest('"text-input", "front-app"', 'events = ["text-input", "text-input-enabled", "front-app"]'))
+
+    def test_its_events_and_switch_need_their_words(self):
+        for event, needs in (("text-input", "text-input"), ("text-input-enabled", "text-input"), ("front-app", "front-app")):
+            self.assertIn(f"needs the {needs} capability", self.refusal('"menu"', f'events = ["{event}"]'))
+        publish.check_manifest("dev.you.thing", self.manifest('"text-input"', "text-input-default = false"))
+        self.assertIn("needs the text-input capability", self.refusal("", "text-input-default = false"))
+        self.assertIn("is not true or false", self.refusal('"text-input"', 'text-input-default = "off"'))
+
+    def test_only_a_public_source_may_type(self):
+        ext = {"capabilities": ["text-input"]}
+        publish.check_open_source({"id": "dev.you.thing"}, ext)
+        publish.check_open_source({"id": "dev.you.thing", "private": True}, {"capabilities": ["menu"]})
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_open_source({"id": "dev.you.thing", "private": True}, ext)
+        self.assertIn("only an extension whose source is public", str(caught.exception.code))
+
+
 class Ai(unittest.TestCase):
     def test_it_is_a_capability_lumi_offers(self):
         publish.check_manifest("dev.you.thing", tomllib.loads(

@@ -1952,6 +1952,81 @@ interface time-zone {
     offset-at: func(at: u64) -> result<s32, string>;
 }
 
+/// Typing through the extension: it stands between the keyboard and the
+/// text as a transducer — the keys of the word being typed in, how the text
+/// before the caret changes out. A way to type a language whose letters the
+/// keyboard does not have is the case it is built for; Lumi knows nothing of
+/// any language, and what a key becomes is entirely the extension's.
+///
+/// While Lumi types through the extension — its switch, on the Permissions
+/// sheet and moved with `set-enabled`, on for one extension at a time —
+/// every key typed in any app is told to `on-event("text-input", …)` as
+/// `{"v":1, "keys":[…]}`: the keys since the word began, oldest first, each
+/// `{"text", "code"}` — the character it types on the person's keyboard
+/// layout (empty for Backspace) and its `KeyboardEvent.code` name, `"KeyA"`,
+/// `"Backspace"`. The run answers with `answer`, or does not: no answer
+/// means the key does what it does and the word goes on. Replay the keys to
+/// know where the word stands; nothing of a run survives it, so there is no
+/// other way to remember the word, and none is needed.
+///
+/// A word begins after a click, an app or field changing, a key that moves
+/// the caret, Return, Tab, a ⌘ or ⌃ chord, and after an answer that says
+/// `commit`; Lumi tells you nothing of these, and the next key simply arrives
+/// with a shorter list. Backspace and Escape are told only while a word is
+/// open, as `"Backspace"` and `"Escape"`. The word ends after Escape whatever
+/// you answer: not answering lets Escape do what it does, and answering — the
+/// keys as they were typed, say — replaces it. Keys never reach a password
+/// field: macOS hides them from every app while one has the keyboard.
+///
+/// **The run is sealed.** `answer` and `settings.read` are the only calls
+/// that work from it; every other call is refused, whatever the manifest
+/// declares. It has about 25 milliseconds — the key is held until it
+/// answers — and a run that is late, traps or refuses has its key typed as
+/// it was pressed. Three failures in a minute and Lumi stops typing through
+/// the extension until it is switched on again.
+///
+/// Hear `text-input-enabled` (`events = ["text-input-enabled"]`) to be told
+/// when somebody else moves the switch — the person on the Permissions
+/// sheet, or Lumi switching it off because another extension was switched on
+/// to type through: `{"v":1, "enabled", "at"}`. Never told for your own
+/// `set-enabled`.
+///
+/// Needs the `text-input` capability and `events = ["text-input"]`, and the
+/// manifest may not declare `network` or `ai` beside it. Added to 0.3 in Lumi
+/// 1.61.0 without a new world version.
+interface text-input {
+    /// How the text before the caret changes for the key this run was told
+    /// of. Counts are Unicode scalar values, and only ever of text your own
+    /// answers typed since the word began.
+    record edit {
+        /// Characters to delete before the caret, at most as many as your
+        /// answers typed into this word.
+        delete-before: u32,
+        /// Characters to delete after the caret. Refused unless 0 in this
+        /// release: the caret stays at the end of what you typed.
+        delete-after: u32,
+        /// Printable text to type at the caret — no control characters, so
+        /// no Return or Tab — at most 64 characters.
+        insert: string,
+        /// The word is finished: the keys so far are forgotten after this
+        /// edit, and the next key starts a new word.
+        commit: bool,
+    }
+
+    /// Answer the key this run was told of. Once per run, and only from the
+    /// `text-input` run: refused anywhere else, and a second answer fails
+    /// the run.
+    answer: func(edit: edit) -> result<_, string>;
+
+    /// Whether Lumi types through this extension now — the switch on its
+    /// Permissions sheet. Refused from the `text-input` run.
+    enabled: func() -> result<bool, string>;
+    /// Turn typing through this extension on or off — a command bound to a
+    /// shortcut is the usual way to switch languages. On switches off any
+    /// other extension Lumi typed through. Refused from the `text-input` run.
+    set-enabled: func(on: bool) -> result<_, string>;
+}
+
 /// Feature flags: names typed into Lumi's hidden Feature Flags screen, each
 /// with a value and on or off. Not documented for extension developers.
 /// Costs no capability.
@@ -1995,6 +2070,7 @@ world extension {
     import timers;
     import schedules;
     import time-zone;
+    import text-input;
     import folders;
     import files;
     import owner;
@@ -2087,5 +2163,14 @@ world extension {
     /// the panel's `focus` says. It may set that panel's size, material,
     /// theme and anchor; nothing else that needs a person — a paste, a
     /// replacement, a pin, Settings — is allowed from it.
+    ///
+    /// Another, `text-input` (Lumi 1.61.0): a key the person typed, held
+    /// until the run answers how the word changes. Its run is sealed and
+    /// brief, and only `text-input.answer` and `settings.read` work from it
+    /// — see `text-input`.
+    ///
+    /// `front-app` (Lumi 1.61.0, the `front-app` capability) is the app in
+    /// front changing: `{"v":1, "app", "name", "at"}`, its bundle id — `null`
+    /// for a process without one — and the name macOS shows for it.
     export on-event: func(name: string, payload: string) -> result<_, string>;
 }
