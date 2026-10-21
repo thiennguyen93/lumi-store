@@ -949,6 +949,21 @@ interface ui {
     /// Added in Lumi 1.45.0.
     set-preload-enabled: func(on: bool) -> result<_, string>;
 
+    /// Put your own words on one of the tabs of your page in Lumi's
+    /// Settings → Extensions — for a page shown in the language the person
+    /// picked, whose tabs should follow. `tab` is named as a call from it
+    /// arrives: ":about", ":settings", ":shortcuts", ":changelog" or
+    /// ":page:<name>". `none` puts back the manifest's label. Held to the
+    /// manifest's rules for a label: up to 24 characters, one line, never
+    /// Permissions or the name of another of Lumi's tabs (its own back is
+    /// fine), and no two tabs alike; a tab the manifest does not draw is
+    /// refused. Lumi keeps the label across restarts and updates, so set
+    /// it from `on-lifecycle` and wherever the language changes; the same
+    /// label again is no change. The Permissions sheet keeps the
+    /// manifest's words. From any run but an uninstall; no capability.
+    /// Added in Lumi 1.61.0.
+    set-tab-label: func(tab: string, label: option<string>) -> result<_, string>;
+
     /// Choose the glass one of your panels opens on from now on:
     /// "popover", "hud" or "sidebar" — for a setting that lets the person
     /// pick. Only a panel whose manifest declares one of those three — a

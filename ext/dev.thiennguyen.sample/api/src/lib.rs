@@ -748,6 +748,29 @@ pub fn set_preload_enabled(on: bool) -> Result<(), String> {
     lumi::ext::ui::set_preload_enabled(on)
 }
 
+/// Put your own words on one of the tabs of your page in Lumi's Settings →
+/// Extensions — for a page shown in the language the person picked, whose
+/// tabs should follow it. `tab` is named as a call from it arrives:
+/// `":about"`, `":settings"`, `":shortcuts"`, `":changelog"` or
+/// `":page:<name>"`; `None` puts back your manifest's label. Held to the
+/// manifest's rules for a label — up to 24 characters, one line, never
+/// Permissions or the name of another of Lumi's tabs (the tab's own back is
+/// fine), no two tabs alike — and refused for a tab your manifest does not
+/// draw. Lumi keeps it across restarts and updates, so set it from
+/// [`Guest::on_lifecycle`] and wherever the language changes; the same label
+/// again is no change. The Permissions sheet keeps your manifest's words. A
+/// page can do the same itself with `POST /__lumi__/tab-label`. From any run
+/// but an uninstall; no capability. Needs Lumi 1.61.0 or later — say so with
+/// `min-lumi-version`.
+///
+/// ```ignore
+/// let settings = if lumi::setting("language").as_deref() == Some("vi") { "Cài đặt" } else { "Settings" };
+/// lumi::set_tab_label(":settings", Some(settings))?;
+/// ```
+pub fn set_tab_label(tab: &str, label: Option<&str>) -> Result<(), String> {
+    lumi::ext::ui::set_tab_label(tab, label)
+}
+
 /// Choose the glass one of your panels opens on from now on — "popover",
 /// "hud" or "sidebar" — for an appearance setting. The panel's manifest
 /// entry must declare one of those three; a `"clear"` panel stays clear.
