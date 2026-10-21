@@ -1129,8 +1129,9 @@ interface storage {
     /// the way macOS names a screenshot — before the name is checked. For a
     /// component, whose own clock is UTC. The name as filled in is not told
     /// back: this costs no capability, and Lumi lets a component learn the
-    /// person's time zone only through one that needs it — `timers`. Added
-    /// in Lumi 1.34.
+    /// person's time zone only through one that says so — `time-zone`, and
+    /// `timers`, whose clock times fire on the person's clock. Added in Lumi
+    /// 1.34.
     blob-save-dated: func(id: string, name: string) -> result<_, string>;
     /// Every blob and its size in bytes, sorted by id.
     blobs: func() -> result<list<tuple<string, u64>>, string>;
@@ -1798,7 +1799,8 @@ interface menu {
 ///
 /// A component's own clock is UTC. A `clock` time is read on this Mac's
 /// clock, in the person's time zone, so an extension that sets one learns
-/// where that is — one reason these need a capability.
+/// where that is — one reason these need a capability. To read the zone
+/// itself, use `time-zone`.
 ///
 /// Needs the `timers` capability and `events = ["timer"]` in the manifest.
 /// Every call costs budget. Added to 0.3 in Lumi 1.59.0 without a new world
@@ -1837,8 +1839,8 @@ interface timers {
 
     variant repeat {
         once,
-        /// Every this many milliseconds from the first firing, at least a
-        /// minute.
+        /// Every this many milliseconds from the first firing, at least 30
+        /// seconds.
         every(u64),
         /// Every day at `when`'s time, which must be a `clock` without a
         /// `date`.
@@ -1861,8 +1863,8 @@ interface timers {
     /// Set the timer called `name`, replacing one of that name. At most 128
     /// timers; a name is 1–128 bytes with no control characters, kept as
     /// written — keep anything secret in `storage`, not in a name. A time
-    /// less than a minute ahead is set a minute ahead; one more than five
-    /// years ahead is refused, as is `every` under a minute or over five
+    /// less than 30 seconds ahead is set 30 seconds ahead; one more than five
+    /// years ahead is refused, as is `every` under 30 seconds or over five
     /// years.
     set: func(name: string, when: when, repeat: repeat) -> result<_, string>;
     /// Remove the timer called `name`; true when there was one.
@@ -1870,6 +1872,38 @@ interface timers {
     /// Every timer still to fire, by name. One firing once is not listed
     /// while it is being told.
     %list: func() -> result<list<listed>, string>;
+}
+
+/// This Mac's time zone: where the person's clock is, by name, and how far
+/// from UTC it stands at any moment. A component's own clock is UTC; this is
+/// how it reads the person's — a date the way they would write it, "today"
+/// where they are.
+///
+/// Hear `time-zone` (`events = ["time-zone"]`) to be told when the person's
+/// Mac changes zone, once per change: `{"v":1, "id", "offsetMinutes",
+/// "at"}`, the new zone as `current` answers it and the moment it changed, in
+/// milliseconds since the Unix epoch. A change of clocks for summer is not a
+/// change of zone and is not told; `offset-at` answers across it.
+///
+/// Needs the `time-zone` capability: what it tells is where the person is.
+/// Every call costs budget. Added to 0.3 in Lumi 1.59.0 without a new world
+/// version.
+interface time-zone {
+    record zone {
+        /// Its name in the IANA time zone database, as macOS has it:
+        /// "Europe/Lisbon".
+        id: string,
+        /// Whole minutes east of UTC now, summer time included: 60 for
+        /// Lisbon in July, -300 for New York in January.
+        offset-minutes: s32,
+    }
+
+    /// The zone this Mac's clock is in now.
+    current: func() -> result<zone, string>;
+    /// Whole minutes east of UTC this Mac's zone stands at `at`, a moment in
+    /// milliseconds since the Unix epoch, past or future — summer time and
+    /// every change the zone's rules have had included.
+    offset-at: func(at: u64) -> result<s32, string>;
 }
 
 /// Feature flags: names typed into Lumi's hidden Feature Flags screen, each
@@ -1913,6 +1947,7 @@ world extension {
     import permissions;
     import menu;
     import timers;
+    import time-zone;
     import folders;
     import files;
     import owner;

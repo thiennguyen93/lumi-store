@@ -54,8 +54,8 @@
 //! a web address), `fetch` needs `network`, everything in [`config`]
 //! needs `config`, [`screen`] needs `screen`, [`snippets`] needs
 //! `snippets`, and [`permissions`] needs the capability of the permission
-//! asked about — `screen` for Screen Recording, [`menu`] needs `menu`, and
-//! [`timers`] needs `timers`. `alert`, `settings`, `profiles`, [`storage`],
+//! asked about — `screen` for Screen Recording, [`menu`] needs `menu`,
+//! [`timers`] needs `timers`, and [`time_zone`] needs `time-zone`. `alert`, `settings`, `profiles`, [`storage`],
 //! [`owner`] and [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
@@ -1037,8 +1037,9 @@ pub mod storage {
     /// from the Mac's own clock and time zone — `2026-10-02`, `14.03.11` —
     /// which your component's own clock does not give: it is UTC. The name
     /// filled in is not told back: this costs no capability, and Lumi lets a
-    /// component learn the time zone only through one that needs it —
-    /// [`timers`](crate::timers).
+    /// component learn the time zone only through one that says so —
+    /// [`time_zone`](crate::time_zone), and [`timers`](crate::timers), whose
+    /// clock times fire on the person's clock.
     ///
     /// ```ignore
     /// storage::blob_save_dated(&shot.blob, "Screenshot {date} at {time}.png")?;
@@ -1747,13 +1748,15 @@ pub mod menu {
 ///
 /// At most 128 timers; a name is 1–128 bytes with no control characters, kept
 /// as you wrote it — keep anything secret in [`storage`](crate::storage), not
-/// in a name. A time less than a minute ahead is set a minute ahead; one more
-/// than five years ahead is refused, as is [`Repeat::Every`] under a minute.
+/// in a name. A time less than 30 seconds ahead is set 30 seconds ahead; one
+/// more than five years ahead is refused, as is [`Repeat::Every`] under 30
+/// seconds.
 ///
 /// Your component's clock is UTC. A [`Clock`] time is read on the Mac's clock,
 /// in the person's time zone, and moves when the zone or the clock changes —
 /// which is how a timer set on it tells you where the person is, and one
-/// reason these need a capability.
+/// reason these need a capability. To read the zone itself, see
+/// [`time_zone`](crate::time_zone).
 ///
 /// Needs the `timers` capability, `events = ["timer"]` in your manifest, and
 /// Lumi 1.59.0 — say so with `min-lumi-version`.
@@ -1810,6 +1813,98 @@ pub mod timers {
             late: value.get("late").and_then(serde_json::Value::as_bool).unwrap_or(false),
             missed: value.get("missed").and_then(serde_json::Value::as_u64).unwrap_or(0),
         })
+    }
+}
+
+/// This Mac's time zone: its name, and how far from UTC it stands at any
+/// moment. Your component's clock is UTC and carries no time zone database;
+/// this is how it reads the person's clock — a date the way they would write
+/// it, "today" where they are.
+///
+/// ```ignore
+/// let now = lumi::time_zone::current()?;          // "Europe/Lisbon", 60
+/// let today = lumi::time_zone::local_day(at_ms)?; // 2026-10-21 where they are
+/// ```
+///
+/// Declare `events = ["time-zone"]` to hear the zone change, once per change,
+/// in [`Guest::on_event`](crate::Guest::on_event); [`changed`] reads it. A
+/// change of clocks for summer is not a change of zone and is not told —
+/// [`offset_at`] answers across it.
+///
+/// Needs the `time-zone` capability — what it tells is where the person is —
+/// and Lumi 1.59.0; say so with `min-lumi-version`.
+pub mod time_zone {
+    use super::lumi::ext::time_zone as wit;
+
+    pub use wit::Zone;
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a change of zone
+    /// arrives as.
+    pub const EVENT: &str = "time-zone";
+
+    /// The zone this Mac's clock is in now: its IANA name, and whole minutes
+    /// east of UTC now, summer time included.
+    pub fn current() -> Result<Zone, String> {
+        wit::current()
+    }
+
+    /// Whole minutes east of UTC this Mac's zone stands at `at`, in
+    /// milliseconds since the Unix epoch — past or future, summer time
+    /// included.
+    pub fn offset_at(at: u64) -> Result<i32, String> {
+        wit::offset_at(at)
+    }
+
+    /// The day on the person's calendar at `at`, in milliseconds since the
+    /// Unix epoch: [`offset_at`], then the date — no time zone database in
+    /// your component.
+    pub fn local_day(at: u64) -> Result<super::timers::Day, String> {
+        let offset = i64::from(offset_at(at)?);
+        let at = i64::try_from(at).map_err(|_| "time_zone::local_day: that moment is too far ahead".to_string())?;
+        let (year, month, day) = civil(at.saturating_add(offset * 60_000).div_euclid(86_400_000));
+        let year = u16::try_from(year).map_err(|_| format!("time_zone::local_day: the year {year} has no day here"))?;
+        Ok(super::timers::Day { year, month, day })
+    }
+
+    /// The date `days` after 1970-01-01 on the proleptic Gregorian calendar
+    /// (Howard Hinnant's `civil_from_days`).
+    fn civil(days: i64) -> (i64, u8, u8) {
+        let z = days + 719_468;
+        let era = z.div_euclid(146_097);
+        let doe = z.rem_euclid(146_097);
+        let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365;
+        let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+        let mp = (5 * doy + 2) / 153;
+        let day = (doy - (153 * mp + 2) / 5 + 1) as u8;
+        let month = if mp < 10 { mp + 3 } else { mp - 9 } as u8;
+        let year = yoe + era * 400 + i64::from(month <= 2);
+        (year, month, day)
+    }
+
+    /// The new zone, when [`Guest::on_event`](crate::Guest::on_event) was
+    /// called for a change of it.
+    pub fn changed(name: &str, payload: &str) -> Option<Zone> {
+        if name != EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        Some(Zone {
+            id: value.get("id")?.as_str()?.to_string(),
+            offset_minutes: i32::try_from(value.get("offsetMinutes")?.as_i64()?).ok()?,
+        })
+    }
+
+    #[cfg(test)]
+    mod tests {
+        #[test]
+        fn a_day_count_is_the_calendar_s_date() {
+            assert_eq!(super::civil(0), (1970, 1, 1));
+            assert_eq!(super::civil(-1), (1969, 12, 31));
+            assert_eq!(super::civil(59), (1970, 3, 1));
+            assert_eq!(super::civil(11_016), (2000, 2, 29));
+            assert_eq!(super::civil(20_747), (2026, 10, 21));
+            assert_eq!(super::civil(20_819), (2027, 1, 1));
+        }
     }
 }
 

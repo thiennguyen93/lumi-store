@@ -123,6 +123,9 @@ CAPABILITIES = {
     # Lumi 1.59: the `timers` interface (the extension's code run at times
     # it sets, with its windows closed and after Lumi restarts).
     "timers",
+    # Lumi 1.59: the `time-zone` interface (this Mac's zone and its offset at
+    # any moment).
+    "time-zone",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -151,6 +154,8 @@ EVENTS = {
     "keyboard-selection": "selection-watch",
     # Lumi 1.59: one of the extension's own timers coming due.
     "timer": "timers",
+    # Lumi 1.59: this Mac's time zone changing.
+    "time-zone": "time-zone",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
