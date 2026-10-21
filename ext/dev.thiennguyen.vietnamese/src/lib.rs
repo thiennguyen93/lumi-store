@@ -196,7 +196,7 @@ fn remember(on: bool) -> Result<(), String> {
 /// switch it.
 fn draw_menu() -> Result<(), String> {
     let on = text_input::enabled()?;
-    menu::set(&[menu::Entry::check("toggle", "Vietnamese typing", on)])
+    menu::set(&[menu::Entry::check("toggle", "Gõ tiếng Việt", on)])
 }
 
 /// The person switching typing on or off — a shortcut, the command, or the
