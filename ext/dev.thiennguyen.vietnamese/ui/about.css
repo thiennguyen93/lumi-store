@@ -17,11 +17,22 @@
   --tint: color-mix(in srgb, #dc2626 10%, transparent);
   --pick: var(--accent, #378add);
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  padding: 4px 0 20px;
+  /* No inset below: Lumi already leaves 32pt between the page's frame and
+     the window's bottom edge (`.content` and `.ext-detail`'s 16 each). */
+  padding: 4px 0 0;
   user-select: none;
   -webkit-user-select: none;
   cursor: default;
+  /* At least as tall as the tab, so the copyright sits on its bottom edge
+     when the cards are shorter than the tab, and after them when they are
+     not: the page is the webview's whole height, scrolled in itself. */
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+/* `display: flex` would otherwise show it before the settings are read. */
+.about[hidden] { display: none; }
 /* Red read on a dark window: lighter, and a stronger tint behind it. */
 :root[data-theme="dark"] .about {
   --brand-ink: #fb7185;
@@ -110,4 +121,4 @@
   user-select: text; -webkit-user-select: text; cursor: text;
 }
 
-.about .copyright { margin-top: 20px; text-align: center; font-size: 11px; color: var(--muted); }
+.about .copyright { margin-top: auto; padding-top: 20px; text-align: center; font-size: 11px; line-height: 14px; color: var(--muted); }

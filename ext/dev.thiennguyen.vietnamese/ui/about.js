@@ -9,7 +9,7 @@
 const WORDS = {
   vi: {
     privacy: "Riêng tư",
-    privacyTitle: "Chỉ để gõ tiếng Việt",
+    privacyTitle: "Bộ gõ tiếng Việt",
     noNetwork: "Không dùng mạng",
     noKeys: "Không lưu phím",
     onlyWord: "Chỉ sửa từ đang gõ",
@@ -26,7 +26,7 @@ const WORDS = {
   },
   en: {
     privacy: "Privacy",
-    privacyTitle: "Just for typing Vietnamese",
+    privacyTitle: "Vietnamese typing",
     noNetwork: "No network",
     noKeys: "Keeps no keys",
     onlyWord: "Only the word you are typing",
