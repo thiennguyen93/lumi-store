@@ -96,3 +96,8 @@ page = "settings.html"
 # Lumi's words.
 [tabs.about]
 page = "about.html"
+
+# No Changelog tab: the owner's call (2026-10-22). CHANGELOG.md stays in the
+# package all the same.
+[tabs.changelog]
+hidden = true
