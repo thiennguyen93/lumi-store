@@ -1,0 +1,23 @@
+<!doctype html>
+<!-- One of the texts that ship beside the About tab — the licence or the
+     third-party notices — read in a sheet over Lumi's window (`[[sheet]]`
+     licence and notices in the manifest). Lumi's frame above it already
+     shows the extension's icon and name, so this is the text's own title,
+     the text, and Done. In English, as the About tab is. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Lumi Gõ tiếng Việt</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="document.css">
+</head>
+<body>
+  <header>
+    <h1 id="title"></h1>
+    <p id="subtitle"></p>
+  </header>
+  <pre id="text" tabindex="0" aria-labelledby="title"></pre>
+  <footer><button type="button" class="primary" id="done">Done</button></footer>
+  <script src="document.js"></script>
+</body>
+</html>

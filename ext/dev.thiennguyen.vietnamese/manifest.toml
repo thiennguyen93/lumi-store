@@ -85,6 +85,24 @@ label = "Remember on or off for each app"
 kind = "bool"
 default = "true"
 
+# The licence and the third-party notices, each read in a sheet over Lumi's
+# window from the About tab's two buttons. One page for both
+# (ui/document.html), told by the About tab which text it shows; the title is
+# each sheet's accessible name, under Lumi's frame naming the extension.
+[[sheet]]
+name = "licence"
+path = "document.html"
+width = 486
+height = 480
+title = "GNU General Public License"
+
+[[sheet]]
+name = "notices"
+path = "document.html"
+width = 486
+height = 480
+title = "Third-party notices"
+
 # The Settings tab is the extension's own page (ui/settings.html) rather
 # than Lumi's form, so it can be read in either display language. The
 # declarations above still decide what is stored, and Lumi holds every save
@@ -95,11 +113,11 @@ default = "true"
 page = "settings.html"
 default = true
 
-# The About tab is the extension's own page too (ui/about.html), for the same
-# reason: what it can reach and its licence, in either display language.
-# Lumi keeps its header around the page — the name, the description, the
-# version, the switch and Permissions — so what it reaches is still shown in
-# Lumi's words.
+# The About tab is the extension's own page too (ui/about.html): what it can
+# reach, its author, its links and its licence, as cards, in English whatever
+# the display language. Lumi keeps its header around the page — the name,
+# the description, the version, the switch and Permissions — so what it
+# reaches is still shown in Lumi's words.
 [tabs.about]
 page = "about.html"
 

@@ -17,8 +17,8 @@
   --tint: color-mix(in srgb, #dc2626 10%, transparent);
   --pick: var(--accent, #378add);
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  /* No inset below: Lumi already leaves 32pt between the page's frame and
-     the window's bottom edge (`.content` and `.ext-detail`'s 16 each). */
+  /* No inset below: Lumi already leaves 16pt between the page's frame and
+     the window's bottom edge (`.content`'s padding). */
   padding: 4px 0 0;
   user-select: none;
   -webkit-user-select: none;
@@ -30,10 +30,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-/* `display: flex` would otherwise show it before the settings are read. */
-.about[hidden] { display: none; }
-/* Red read on a dark window: lighter, and a stronger tint behind it. */
+}/* Red read on a dark window: lighter, and a stronger tint behind it. */
 :root[data-theme="dark"] .about {
   --brand-ink: #fb7185;
   --tint: color-mix(in srgb, #f43f5e 16%, transparent);
@@ -96,7 +93,8 @@
 .go .out { flex: none; width: 13px; height: 13px; opacity: 0.45; }
 .go:hover .out { opacity: 0.75; }
 
-/* Licence: its short name as a badge, the two texts behind two pills. */
+/* Licence: its short name as a badge, the two texts behind two pills, each
+   opening a sheet (document.html). */
 .licence { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .badge {
   flex: none; padding: 6px 9px; border-radius: 9px; background: var(--tint); color: var(--brand-ink);
@@ -110,15 +108,5 @@
   font-size: 12.5px; font-weight: 500; white-space: nowrap;
 }
 .pill:hover { background: var(--surface-hover); }
-.pill[aria-expanded="true"] { background: var(--tint); color: var(--brand-ink); }
-
-/* The text a pill opens: read in place, scrolled in its own box, and the one
-   thing here worth copying. */
-.file {
-  margin: 8px 0 0; max-height: 260px; overflow: auto; padding: 12px 14px;
-  border-radius: 12px; background: var(--surface);
-  font: 11px/1.45 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere;
-  user-select: text; -webkit-user-select: text; cursor: text;
-}
 
 .about .copyright { margin-top: auto; padding-top: 20px; text-align: center; font-size: 11px; line-height: 14px; color: var(--muted); }

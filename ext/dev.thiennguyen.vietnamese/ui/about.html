@@ -1,13 +1,12 @@
 <!doctype html>
 <!-- The About tab under Settings → Extensions → Lumi Gõ tiếng Việt, drawn by
      the extension in place of Lumi's own (`[tabs.about]` in the manifest), so
-     it can be read in Vietnamese or English (`language`). Lumi keeps its
-     header around it: the name, what it does, the version, the switch and
-     Permissions. So the page is cards of what is left to say: what it can
-     reach, who made it, where to find it, and its licence. The words below
-     are the Vietnamese ones, the default; about.js writes either language
-     over them once the settings are read. -->
-<html lang="vi">
+     it is cards rather than Lumi's list. It reads in English whatever the
+     display language (`language`), which only the Settings tab and the menu
+     row follow. Lumi keeps its header around it: the name, what it does, the
+     version, the switch and Permissions. So the page is what is left to say:
+     what it can reach, who made it, where to find it, and its licence. -->
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>About Lumi Gõ tiếng Việt</title>
@@ -15,37 +14,37 @@
   <link rel="stylesheet" href="about.css">
 </head>
 <body>
-  <div class="about" hidden>
+  <div class="about">
     <section class="card">
       <div class="head">
         <span class="tile"><svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
-        <div><h2 class="eyebrow" data-t="privacy">Riêng tư</h2><p class="title" data-t="privacyTitle">Bộ gõ tiếng Việt</p></div>
+        <div><h2 class="eyebrow">Privacy</h2><p class="title">Vietnamese typing</p></div>
       </div>
       <ul class="chips">
-        <li><svg viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></svg><span data-t="noNetwork">Không dùng mạng</span></li>
-        <li><svg viewBox="0 0 24 24"><path d="M 20 4 A2 2 0 0 1 22 6"/><path d="M 22 6 L 22 16.41"/><path d="M 7 16 L 16 16"/><path d="M 9.69 4 L 20 4"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="m2 2 20 20"/><path d="M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2"/><path d="M6 8h.01"/><path d="M8 12h.01"/></svg><span data-t="noKeys">Không lưu phím</span></li>
-        <li><svg viewBox="0 0 24 24"><path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1"/><path d="M7 22h1a4 4 0 0 0 4-4"/><path d="M7 2h1a4 4 0 0 1 4 4"/></svg><span data-t="onlyWord">Chỉ sửa từ đang gõ</span></li>
+        <li><svg viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></svg><span>No network</span></li>
+        <li><svg viewBox="0 0 24 24"><path d="M 20 4 A2 2 0 0 1 22 6"/><path d="M 22 6 L 22 16.41"/><path d="M 7 16 L 16 16"/><path d="M 9.69 4 L 20 4"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="m2 2 20 20"/><path d="M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2"/><path d="M6 8h.01"/><path d="M8 12h.01"/></svg><span>Keeps no keys</span></li>
+        <li><svg viewBox="0 0 24 24"><path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1"/><path d="M7 22h1a4 4 0 0 0 4-4"/><path d="M7 2h1a4 4 0 0 1 4 4"/></svg><span>Only the word you are typing</span></li>
       </ul>
     </section>
 
     <div class="pair">
       <section class="card">
-        <h2 class="eyebrow" data-t="author">Tác giả</h2>
+        <h2 class="eyebrow">Author</h2>
         <div class="person">
           <span class="avatar" aria-hidden="true">TN</span>
           <div><b>Thien Nguyen</b><button type="button" class="link" data-open="contact">hi@thiennguyen.dev</button></div>
         </div>
       </section>
       <section class="card links">
-        <h2 class="eyebrow" data-t="links">Liên kết</h2>
+        <h2 class="eyebrow">Links</h2>
         <button type="button" class="go" data-open="homepage">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-          <span class="grow"><b data-t="homepage">Trang chủ</b><small>lumikeys.app</small></span>
+          <span class="grow"><b>Website</b><small>lumikeys.app</small></span>
           <svg class="out" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
         </button>
         <button type="button" class="go" data-open="source">
           <svg viewBox="0 0 24 24"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
-          <span class="grow"><b data-t="source">Mã nguồn</b><small>GitHub</small></span>
+          <span class="grow"><b>Source code</b><small>GitHub</small></span>
           <svg class="out" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
         </button>
       </section>
@@ -53,16 +52,14 @@
 
     <section class="card licence">
       <span class="badge">GPL</span>
-      <div class="grow"><h2 class="name" data-t="licence">GNU GPL 2.0 trở lên</h2><small data-t="licenceSays">Phần mềm tự do, mã nguồn mở.</small></div>
+      <div class="grow"><h2 class="name">GNU GPL 2.0 or later</h2><small>Free and open source.</small></div>
       <div class="pills">
-        <button type="button" class="pill" data-file="LICENSE.txt" aria-expanded="false" aria-controls="licence-text" data-t="licenceText">Giấy phép</button>
-        <button type="button" class="pill" data-file="THIRD-PARTY-NOTICES.txt" aria-expanded="false" aria-controls="notices-text" data-t="notices">Bên thứ ba</button>
+        <button type="button" class="pill" data-sheet="licence" aria-haspopup="dialog">Licence</button>
+        <button type="button" class="pill" data-sheet="notices" aria-haspopup="dialog">Third-party</button>
       </div>
     </section>
-    <pre class="file" id="licence-text" lang="en" hidden></pre>
-    <pre class="file" id="notices-text" lang="en" hidden></pre>
 
-    <p class="copyright" data-t="copyright">Bản quyền © 2026 Thien Nguyen.</p>
+    <p class="copyright">Copyright © 2026 Thien Nguyen.</p>
   </div>
   <script src="about.js"></script>
 </body>
