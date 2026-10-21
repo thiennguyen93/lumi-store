@@ -105,3 +105,18 @@ category = "Productivity"
 featured = true
 private = true
 follow = true
+
+
+# First-party and closed source, Screenshot's arrangement: a private repo,
+# `update = none` in .gitmodules, fetched with a read-only deploy key of its
+# own (LUNAR_CALENDAR_DEPLOY_KEY) by scripts/fetch-private.sh. Its React
+# front end under web/ is built by the store. Needs Lumi 1.47.0 (a kept
+# panel's `lumi:shown`, on top of 1.45.0's menu bar switch).
+[[extension]]
+id = "dev.thiennguyen.lunar-calendar"
+path = "ext/dev.thiennguyen.lunar-calendar"
+subdir = "."
+web = "web"
+category = "Utilities"
+private = true
+follow = true
