@@ -783,6 +783,36 @@ def check_folders(entry_id: str, manifest: dict):
         fail(entry_id, f"the manifest declares {len(folders)} folders; at most {MAX_FOLDERS}")
 
 
+# Lumi's `modifier_tap::token`: every spelling of each modifier a tap of
+# modifiers may name, to the one Lumi keeps, in `Chord::TOKENS`' order.
+TAP_SPELLINGS = {
+    "fn": "Fn", "globe": "Fn",
+    "ctrl": "Ctrl", "control": "Ctrl",
+    "alt": "Alt", "option": "Alt", "opt": "Alt",
+    "shift": "Shift",
+    "super": "Super", "cmd": "Super", "command": "Super", "meta": "Super",
+}
+TAP_ORDER = ["Fn", "Ctrl", "Alt", "Shift", "Super"]
+
+
+def tap_key(text):
+    """A `[[shortcut]] key` that is a tap of modifiers — "tap+fn+shift" — as
+    Lumi keeps it ("Tap+Fn+Shift"), and the refusal or None:
+    `modifier_tap::resolve`'s rules, two or more modifiers, each once."""
+    named = []
+    for word in text.split("+")[1:]:
+        kept = TAP_SPELLINGS.get(word.strip().lower())
+        if kept is None:
+            return None, f"\"{word}\" in \"{text}\" is not a modifier — a tap is two or more of fn, ctrl, alt, shift and cmd"
+        if kept in named:
+            return None, f"\"{text}\" names {word} twice"
+        named.append(kept)
+    if len(named) < 2:
+        return None, (f"\"{text}\" is one modifier, and a tap needs two or more: fn alone is the 🌐 key's, "
+                      "and a modifier alone is let go after every shortcut and capital letter")
+    return "Tap+" + "+".join(m for m in TAP_ORDER if m in named), None
+
+
 def check_shortcuts(entry_id: str, manifest: dict):
     """The [[shortcut]] declarations, held to Lumi's `manifest::parse`: each
     names a [[command]] of this manifest, once, with a key spelled the way
@@ -801,10 +831,13 @@ def check_shortcuts(entry_id: str, manifest: dict):
             fail(entry_id, f"two [[shortcut]]s name the command {command}")
         named.add(command)
         key = str(shortcut.get("key", "")).strip()
-        why = suggested_key_problem(key)
+        if key.lower().startswith("tap+"):
+            spelled, why = tap_key(key)
+        else:
+            why = suggested_key_problem(key)
+            spelled = "+".join(sorted(p.strip().lower() for p in key.split("+")))
         if why:
             fail(entry_id, f"shortcut for {command}: {why}")
-        spelled = "+".join(sorted(p.strip().lower() for p in key.split("+")))
         if spelled in keys:
             fail(entry_id, f"two [[shortcut]]s ask for {key} — one combination runs one command")
         keys.add(spelled)

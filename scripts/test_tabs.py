@@ -140,5 +140,31 @@ class Pack(unittest.TestCase):
                 self.assertEqual(tar.extractfile("CHANGELOG.md").read(), b"## 1.0.0\n- first\n")
 
 
+class Shortcuts(unittest.TestCase):
+    """`[[shortcut]] key`: a combination as `suggested-key` reads one, or a
+    tap of modifiers held to Lumi's `modifier_tap::resolve`."""
+
+    def refused(self, *keys):
+        tables = "\n".join(f'[[command]]\nname = "c{n}"\nlabel = "C"\n[[shortcut]]\ncommand = "c{n}"\nkey = "{key}"'
+                           for n, key in enumerate(keys))
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_shortcuts("dev.you.thing", manifest(tables=tables))
+        return str(caught.exception.code)
+
+    def test_a_tap_of_two_or_more_modifiers_is_a_key(self):
+        tables = '[[command]]\nname = "go"\nlabel = "Go"\n[[shortcut]]\ncommand = "go"\nkey = "tap+fn+shift"'
+        publish.check_shortcuts("dev.you.thing", manifest(tables=tables))
+        self.assertEqual(publish.tap_key("tap+shift+fn"), ("Tap+Fn+Shift", None))
+        self.assertEqual(publish.tap_key("Tap+Cmd+Option+Control")[0], "Tap+Ctrl+Alt+Super")
+
+    def test_one_modifier_a_repeat_or_a_key_is_no_tap(self):
+        self.assertIn("two or more", self.refused("tap+fn"))
+        self.assertIn("twice", self.refused("tap+fn+fn"))
+        self.assertIn("not a modifier", self.refused("tap+fn+a"))
+
+    def test_two_spellings_of_one_tap_are_one_key(self):
+        self.assertIn("one combination runs one command", self.refused("tap+fn+shift", "tap+shift+fn"))
+
+
 if __name__ == "__main__":
     unittest.main()
