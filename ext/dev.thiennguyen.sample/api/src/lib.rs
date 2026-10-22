@@ -1753,7 +1753,7 @@ pub mod menu {
 /// ```ignore
 /// use lumi::menu_bar_item::{self, Item};
 ///
-/// menu_bar_item::set(&Item::icon("languages").text("VI").tooltip("Typing in Vietnamese"))?;
+/// menu_bar_item::set(&Item::icon("globe").text("VI").tooltip("Typing in Vietnamese"))?;
 /// ```
 ///
 /// Lumi keeps the last item you set, across restarts and updates, and draws
@@ -1761,8 +1761,10 @@ pub mod menu {
 /// away, uninstalling forgets it. A press on it opens a menu Lumi draws: your
 /// extension's name (left out with `menu-bar-item-heading = false` in your
 /// manifest), then your [`menu`](crate::menu) tree when you declare `menu`,
-/// then a row onto your page in Settings — so a press on it means what your
-/// rows already say. The person can ⌘-drag it where they want it,
+/// then "Settings…", onto your Settings tab in Lumi — "Open in Lumi…", onto
+/// your page, when you draw no Settings tab — (left out with
+/// `menu-bar-item-settings = false`, unless your menu has no enabled row of
+/// its own) — so a press on it means what your rows already say. The person can ⌘-drag it where they want it,
 /// and it keeps that place.
 ///
 /// A menu bar too full for every item hides the ones that do not fit, as
@@ -1774,8 +1776,9 @@ pub mod menu {
 pub mod menu_bar_item {
     use super::lumi::ext::menu_bar_item as wit;
 
-    /// What the item shows. Build it with [`Item::icon`] or [`Item::text`],
-    /// then the others as needed.
+    /// What the item shows. Build it with [`Item::icon`] or
+    /// [`Item::text_only`], then [`Item::text`] and [`Item::tooltip`] as
+    /// needed.
     #[derive(Debug, Clone, Default, PartialEq, Eq)]
     pub struct Item {
         pub icon: Option<String>,
@@ -1785,7 +1788,7 @@ pub mod menu_bar_item {
 
     impl Item {
         /// An item drawn as an icon, spelled as a `[[command]]` icon is: a
-        /// Lucide icon's name from Lumi's set (`"languages"`), or an `.svg`
+        /// Lucide icon's name from Lumi's set (`"globe"`), or an `.svg`
         /// under your `ui/` of at most 64 KiB. Drawn 18 points tall in the
         /// menu bar's own ink, whatever colours the file has, and no wider
         /// than twice its height.
@@ -1835,8 +1838,8 @@ pub mod menu_bar_item {
     }
 
     /// Whether your item shows: one switch, kept by Lumi, that your own
-    /// settings move with [`set_shown`] and the person moves with the Menu
-    /// bar item switch on your Permissions sheet. Off, [`set`] goes on
+    /// settings move with [`set_shown`] and the person moves with the "Show
+    /// its own item in the menu bar" switch on your Permissions sheet. Off, [`set`] goes on
     /// keeping your item, and it comes back as you left it when the switch
     /// is on again. Declare `events = ["menu-bar-item-shown"]` to be told in
     /// [`Guest::on_event`](crate::Guest::on_event) when the person moves it,

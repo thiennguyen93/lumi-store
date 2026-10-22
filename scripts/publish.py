@@ -459,6 +459,14 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"menu-bar-item-heading = {heading!r} is not true or false")
         if "menu-bar-item" not in ext.get("capabilities", []):
             fail(entry_id, "menu-bar-item-heading says whether the menu bar item's menu starts with the extension's name, which needs the menu-bar-item capability — add it to capabilities")
+    # And `menu-bar-item-settings`, whether that menu ends with Lumi's row
+    # onto the extension's settings — the same rule.
+    if "menu-bar-item-settings" in ext or "menu_bar_item_settings" in ext:
+        settings_row = ext.get("menu-bar-item-settings", ext.get("menu_bar_item_settings"))
+        if not isinstance(settings_row, bool):
+            fail(entry_id, f"menu-bar-item-settings = {settings_row!r} is not true or false")
+        if "menu-bar-item" not in ext.get("capabilities", []):
+            fail(entry_id, "menu-bar-item-settings says whether the menu bar item's menu ends with a row onto the extension's settings, which needs the menu-bar-item capability — add it to capabilities")
     seen = set()
     for command in manifest.get("command", []):
         name = command.get("name", "")

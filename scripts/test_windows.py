@@ -149,6 +149,9 @@ class TextInput(unittest.TestCase):
         self.assertIn("needs the menu-bar-item capability", self.refusal('"menu"', "menu-bar-item-heading = false"))
         self.assertIn("is not true or false", self.refusal('"menu-bar-item"', 'menu-bar-item-heading = "no"'))
         self.assertIn("needs the menu-bar-item capability", self.refusal('"menu"', 'events = ["menu-bar-item-shown"]'))
+        publish.check_manifest("dev.you.thing", self.manifest('"menu-bar-item"', "menu-bar-item-settings = false"))
+        self.assertIn("needs the menu-bar-item capability", self.refusal('"menu"', "menu-bar-item-settings = false"))
+        self.assertIn("is not true or false", self.refusal('"menu-bar-item"', "menu-bar-item-settings = 0"))
 
     def test_only_a_public_source_may_type(self):
         ext = {"capabilities": ["text-input"]}

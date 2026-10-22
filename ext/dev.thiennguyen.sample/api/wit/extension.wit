@@ -1795,8 +1795,10 @@ interface menu {
 /// updates, and draws it with none of your code running; uninstalling takes
 /// it away. A press on it opens a menu Lumi draws: your extension's name
 /// (left out with `menu-bar-item-heading = false` in your manifest), then
-/// your `menu` tree when you declare `menu`, then a row onto your page in
-/// Settings. The person can ⌘-drag it where they want it, and it keeps
+/// your `menu` tree when you declare `menu`, then "Settings…", onto your
+/// Settings tab in Lumi — "Open in Lumi…", onto your page, when you draw no
+/// Settings tab — (left out with `menu-bar-item-settings = false`, unless
+/// your menu has no enabled row of its own). The person can ⌘-drag it where they want it, and it keeps
 /// that place.
 ///
 /// A menu bar too full for every item hides the ones that do not fit, as
@@ -1808,7 +1810,7 @@ interface menu {
 interface menu-bar-item {
     record item {
         /// Spelled as a `[[command]]` icon is: a Lucide icon's name from
-        /// Lumi's set ("languages"), or an `.svg` under your `ui/` of at most
+        /// Lumi's set ("globe"), or an `.svg` under your `ui/` of at most
         /// 64 KiB. Drawn in the menu bar's own ink, whatever colours the
         /// file has, 18 points tall.
         icon: option<string>,
@@ -1824,8 +1826,8 @@ interface menu-bar-item {
     /// Take your item out of the menu bar.
     clear: func() -> result<_, string>;
     /// Whether your item shows: one switch, kept by Lumi, that your own
-    /// settings and the Menu bar item switch on your Permissions sheet both
-    /// move — `set-shown` from your side. Off, `set` goes on keeping your
+    /// settings and the "Show its own item in the menu bar" switch on your
+    /// Permissions sheet both move — `set-shown` from your side. Off, `set` goes on keeping your
     /// item, and it comes back as you left it when the switch is on again.
     /// Hear `"menu-bar-item-shown"` to be told when the person moves it.
     shown: func() -> result<bool, string>;
