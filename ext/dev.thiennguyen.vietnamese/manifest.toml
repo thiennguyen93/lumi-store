@@ -18,9 +18,10 @@ homepage = "https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"
 # own pages (scripts/preview/promo/dev.thiennguyen.vietnamese.json, its
 # scenes in scripts/preview/shots/ — README: Store pictures).
 screenshots = ["shots/1-popover.png", "shots/2-per-app.png", "shots/3-settings.png", "shots/4-private.png"]
-# 1.61.0 for `text-input` and `front-app`: an older Lumi does not know
-# either word and would refuse the manifest for it.
-min-lumi-version = "1.61.0"
+# 1.62.0 for the toggle's `tap+fn+shift` below: 1.61.0 reads `tap` as a
+# word it does not know in a key and refuses the whole manifest for it.
+# (1.61.0 is what `text-input`, `front-app` and `menu-bar-item` need.)
+min-lumi-version = "1.62.0"
 # `text-input`: every key of the word, answered in a sealed run. The review
 # sheet says it loudest and adds a warning; Lumi refuses it beside
 # `network` or `ai`, and this extension holds neither.
