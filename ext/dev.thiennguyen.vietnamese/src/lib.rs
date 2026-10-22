@@ -1067,8 +1067,9 @@ mod tests {
     }
 
     /// Every link the About tab and its sheet send is one the component
-    /// opens, and every sheet the tab opens is one the manifest declares: a
-    /// word the component does not know would be a dead press.
+    /// opens — or the Welcome, which it opens again — and every sheet the
+    /// tab opens is one the manifest declares: a word the component does
+    /// not know would be a dead press.
     #[test]
     fn the_about_pages_ask_only_for_what_exists() {
         let quoted = |page: &'static str, attribute: &str| -> Vec<&'static str> {
@@ -1083,9 +1084,11 @@ mod tests {
         let about = include_str!("../ui/about.html");
         let sheet = include_str!("../ui/document.html");
         let opened: Vec<&str> = quoted(about, "data-open").into_iter().chain(quoted(sheet, "data-open")).collect();
-        assert!(opened.len() >= 7, "{opened:?}");
+        assert!(opened.len() >= 8, "{opened:?}");
+        assert!(opened.contains(&"welcome"), "the About tab no longer opens the Welcome again");
         for word in opened {
-            assert!(about_link(word).is_some(), "a page opens {word:?}, which ABOUT_LINKS does not hold");
+            let known = about_link(word).is_some() || welcome::asked(":about", word) == Some(welcome::Ask::Open);
+            assert!(known, "a page opens {word:?}, which neither ABOUT_LINKS nor the Welcome answers");
         }
         let manifest = include_str!("../manifest.toml");
         for name in quoted(about, "data-sheet") {

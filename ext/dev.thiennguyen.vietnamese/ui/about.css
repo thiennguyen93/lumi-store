@@ -125,10 +125,19 @@ button.cell:active { background: var(--group-press); }
 .icon:active { background: var(--group-press); }
 .icon svg { width: 15px; height: 15px; stroke-width: 1.8; }
 
-/* The engine's credit, a row of its own. */
-.powered { margin-top: 12px; }
-.powered .cell { min-height: 52px; gap: 12px; }
-.powered .label { font-weight: 500; }
+/* Rows of their own, each a tile, a title and a line under it: Getting
+   started under the promise, the engine's credit after the groups. */
+.start, .powered { margin-top: 12px; }
+.start .cell, .powered .cell { min-height: 52px; gap: 12px; }
+.start .label, .powered .label { font-weight: 500; }
+.play {
+  flex: none; width: 30px; height: 30px; border-radius: 8px;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.18);
+}
+/* Nudged right: a triangle's weight sits left of its box's middle. */
+.play svg { width: 14px; height: 14px; margin-left: 2px; fill: currentColor; stroke: none; }
 .bolt {
   flex: none; width: 30px; height: 30px; border-radius: 8px;
   display: grid; place-items: center; color: #fff;

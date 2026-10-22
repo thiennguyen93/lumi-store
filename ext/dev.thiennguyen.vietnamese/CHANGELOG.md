@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.8] - 2026-10-22
+
+### Added
+
+- **Getting started** on the About tab, under what the extension does with your keys: it opens the welcome tour again, to choose the language and the typing method and see where your keys go.
+
 ## [0.1.7] - 2026-10-22
 
 ### Fixed

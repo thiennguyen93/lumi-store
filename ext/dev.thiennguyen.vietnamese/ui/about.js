@@ -7,7 +7,8 @@
 // The page may not leave its own files, so the store page, the source, the
 // mail and the developer's and the engine's pages are opened by the component
 // (`ABOUT_LINKS` in src/lib.rs), which holds the addresses: the page only
-// says which one.
+// says which one. Getting started's "welcome" opens the Welcome window the
+// same way (src/welcome.rs).
 for (const link of document.querySelectorAll("[data-open]")) {
   link.addEventListener("click", () => {
     fetch("/__lumi__/call", { method: "POST", body: link.dataset.open }).catch(() => {});

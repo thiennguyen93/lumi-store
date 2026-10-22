@@ -1,6 +1,6 @@
 [package]
 name = "lumi-vietnamese-ext"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 publish = false
 # GPL because the engine carries a word list under the GPL — see
