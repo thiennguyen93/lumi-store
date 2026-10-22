@@ -153,6 +153,12 @@ class TextInput(unittest.TestCase):
         self.assertIn("needs the menu-bar-item capability", self.refusal('"menu"', "menu-bar-item-settings = false"))
         self.assertIn("is not true or false", self.refusal('"menu-bar-item"', "menu-bar-item-settings = 0"))
 
+    def test_a_right_click_on_the_item_runs_a_declared_command(self):
+        publish.check_manifest("dev.you.thing", self.manifest('"menu-bar-item"', 'menu-bar-item-right-click = "open"'))
+        self.assertIn("does not declare", self.refusal('"menu-bar-item"', 'menu-bar-item-right-click = "quit"'))
+        self.assertIn("needs the menu-bar-item capability", self.refusal('"menu"', 'menu-bar-item-right-click = "open"'))
+        self.assertIn("is not a command's name", self.refusal('"menu-bar-item"', "menu-bar-item-right-click = true"))
+
     def test_only_a_public_source_may_type(self):
         ext = {"capabilities": ["text-input"]}
         publish.check_open_source({"id": "dev.you.thing"}, ext)

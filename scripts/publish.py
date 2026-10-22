@@ -469,6 +469,17 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"menu-bar-item-settings = {settings_row!r} is not true or false")
         if "menu-bar-item" not in ext.get("capabilities", []):
             fail(entry_id, "menu-bar-item-settings says whether the menu bar item's menu ends with a row onto the extension's settings, which needs the menu-bar-item capability — add it to capabilities")
+    # And `menu-bar-item-right-click` (Lumi 1.61): the command a right-click
+    # on the item runs instead of opening its menu — one this manifest
+    # declares, beside the capability, same sentences.
+    if "menu-bar-item-right-click" in ext or "menu_bar_item_right_click" in ext:
+        right_click = ext.get("menu-bar-item-right-click", ext.get("menu_bar_item_right_click"))
+        if not isinstance(right_click, str):
+            fail(entry_id, f"menu-bar-item-right-click = {right_click!r} is not a command's name")
+        if "menu-bar-item" not in ext.get("capabilities", []):
+            fail(entry_id, "menu-bar-item-right-click names the command a right-click on the menu bar item runs, which needs the menu-bar-item capability — add it to capabilities")
+        if right_click.strip() not in {c.get("name", "") for c in manifest.get("command", [])}:
+            fail(entry_id, f"menu-bar-item-right-click names the command {right_click.strip()!r}, which this manifest does not declare")
     seen = set()
     for command in manifest.get("command", []):
         name = command.get("name", "")
