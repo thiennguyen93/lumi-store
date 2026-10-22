@@ -1,0 +1,76 @@
+{
+  "color": "#dc2626",
+  "shots": [
+    {
+      "headline": "Type Vietnamese in every app",
+      "sub": "Telex or VNI on the keyboard you already use, with no input method to install.",
+      "frame": "panel",
+      "width": 320,
+      "height": 302,
+      "zoom": 1.7,
+      "top": 236,
+      "left": 640,
+      "page": "popover.html",
+      "theme": "light",
+      "inset": "0",
+      "callout": {
+        "title": "Lumi Gõ tiếng Việt",
+        "label": "Right there in the menu bar",
+        "body": "Click the <b>V</b> for everything here. Right-click it, or press <b>⌃⇧V</b>, to switch to English at once.",
+        "side": "left"
+      }
+    },
+    {
+      "headline": "Each app keeps its own",
+      "sub": "Switch to English in Terminal once, and it stays English there.",
+      "frame": "panel",
+      "width": 320,
+      "height": 302,
+      "zoom": 1.7,
+      "top": 236,
+      "left": 100,
+      "page": "popover.html",
+      "theme": "dark",
+      "inset": "0",
+      "callout": {
+        "title": "Lumi Gõ tiếng Việt",
+        "label": "Remembered for each app",
+        "body": "The other apps you type <b>English</b> in, at a glance under <b>Per app</b>."
+      }
+    },
+    {
+      "headline": "Type it your way",
+      "sub": "Modern tone marks, Escape to take a word back, English kept as typed.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Lumi Gõ tiếng Việt",
+      "width": 680,
+      "height": 440,
+      "zoom": 1.25,
+      "top": 250,
+      "page": "settings.html",
+      "theme": "light",
+      "callout": {
+        "title": "Lumi Gõ tiếng Việt",
+        "label": "Escape gives back the keys",
+        "body": "Press <b>esc</b> right after a word to get back what you typed: tiếng → <b>tieengs</b>."
+      }
+    },
+    {
+      "headline": "Your keys stay on this Mac",
+      "sub": "No network and nothing kept: Lumi lets it change only the word you are typing.",
+      "window": "Lumi Gõ tiếng Việt",
+      "width": 600,
+      "height": 520,
+      "zoom": 1.1,
+      "top": 236,
+      "page": "welcome.html",
+      "theme": "light",
+      "inset": "0",
+      "callout": {
+        "title": "Lumi Gõ tiếng Việt",
+        "label": "In Vietnamese or English",
+        "body": "Every page of it reads in <b>Tiếng Việt</b> or English — you choose."
+      }
+    }
+  ]
+}

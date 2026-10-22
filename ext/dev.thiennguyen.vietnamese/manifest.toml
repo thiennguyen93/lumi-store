@@ -14,6 +14,10 @@ summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (t
 # well (`ABOUT_LINKS` in src/lib.rs). It is there once the extension is
 # listed.
 homepage = "https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"
+# The store's pictures, 1280 × 800: promo pages drawn round the extension's
+# own pages (scripts/preview/promo/dev.thiennguyen.vietnamese.json, its
+# scenes in scripts/preview/shots/ — README: Store pictures).
+screenshots = ["shots/1-popover.png", "shots/2-per-app.png", "shots/3-settings.png", "shots/4-private.png"]
 # 1.61.0 for `text-input` and `front-app`: an older Lumi does not know
 # either word and would refuse the manifest for it.
 min-lumi-version = "1.61.0"
