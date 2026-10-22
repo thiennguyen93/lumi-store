@@ -34,6 +34,10 @@ menu-bar-item-heading = false
 # and, below it, "Thoát" (Quit), which switches the extension off in Lumi —
 # not Lumi itself — and the person switches it on again under Extensions.
 menu-bar-item-settings = false
+# A right-click switches Vietnamese typing on or off at once, as ⌃⇧V does —
+# the click opens the popover (`[[window]] popover`). The menu above stays
+# VoiceOver's, which presses the V or E rather than clicking it.
+menu-bar-item-right-click = "toggle"
 events = ["text-input", "text-input-enabled", "front-app"]
 
 [[command]]
