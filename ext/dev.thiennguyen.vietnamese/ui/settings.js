@@ -21,6 +21,7 @@ const WORDS = {
     keyLooking: "Đang xem phím tắt…",
     keyNone: "Lumi chưa cho biết phím của tiện ích này.",
     keyReady: "Bấm vào phím để đổi.",
+    keyTap: "Nhấn {keys} cùng lúc rồi thả. Bấm vào phím để đổi.",
     keyInstead: "Thay cho {declared}. Bấm vào phím để đổi.",
     keysOff: "Phím tắt của Lumi đang tắt, nên phím này chưa chạy.",
     keyTaken: "{holder} đang dùng {declared}, nên Lumi chưa gán phím này.",
@@ -69,6 +70,7 @@ const WORDS = {
     keyLooking: "Looking up the shortcut…",
     keyNone: "Lumi has not told this extension its key.",
     keyReady: "Click the key to change it.",
+    keyTap: "Press {keys} together and let go. Click the key to change it.",
     keyInstead: "Instead of {declared}. Click the key to change it.",
     keysOff: "Shortcuts are switched off in Lumi, so this key does nothing yet.",
     keyTaken: "{holder} already uses {declared}, so Lumi left it unset.",
@@ -278,8 +280,13 @@ async function write(key, replace = false) {
 }
 
 // An accelerator as Lumi writes one (`Ctrl+Shift+KeyV`), one key cap each,
-// in macOS's glyphs and order.
+// in macOS's glyphs and order. A tap of modifiers (`Tap+Fn+Shift`, pressed
+// together and let go) is its modifiers alone, fn first, as Lumi draws it.
 function capsOf(accelerator) {
+  if (isTap(accelerator)) {
+    const held = accelerator.split("+").slice(1).map((part) => TAP_GLYPHS[part] || part);
+    return ["fn", "⌃", "⌥", "⇧", "⌘"].filter((cap) => held.includes(cap));
+  }
   const parts = accelerator.split("+");
   const key = parts.pop() || "";
   const glyph = { Ctrl: "⌃", Control: "⌃", Alt: "⌥", Option: "⌥", Shift: "⇧", Super: "⌘", Cmd: "⌘", Command: "⌘" };
@@ -288,7 +295,17 @@ function capsOf(accelerator) {
   return [...["⌃", "⌥", "⇧", "⌘"].filter((mod) => mods.has(mod)), name];
 }
 
-const glyphs = (accelerator) => capsOf(accelerator).join("");
+// A tap reads "fn ⇧", its two keys apart, where a chord reads "⌃⇧V" as one.
+const glyphs = (accelerator) => capsOf(accelerator).join(isTap(accelerator) ? " " : "");
+
+// The default key, fn and ⇧ pressed together and let go (Lumi 1.61.0's
+// modifier tap; the manifest's `[[shortcut]]`). Offered by a link wherever
+// the key is another, since a page's recorder cannot hear fn: a person who
+// set ⌃⇧V, or kept it from before the default was this, gets back here by a
+// press.
+const FN_SHIFT = "Tap+Fn+Shift";
+const TAP_GLYPHS = { Fn: "fn", Ctrl: "⌃", Alt: "⌥", Shift: "⇧", Super: "⌘" };
+const isTap = (accelerator) => accelerator.startsWith("Tap+");
 
 // The combination a press makes, as Lumi's recorder writes it, or null for a
 // key no global shortcut can end on — a modifier still being held.
@@ -317,7 +334,7 @@ function holdersText(holders) {
 }
 
 // While recording, Lumi lets go of every global shortcut, so the combination
-// pressed — even one something holds, ⌃⇧V itself — reaches this page rather
+// pressed — even one something holds, the toggle's own — reaches this page rather
 // than running. Lumi ends that itself when the page loses the keyboard or
 // after 30 seconds, and says so with `lumi:shortcut-recording-ended`.
 function take(event) {
@@ -407,6 +424,8 @@ function drawKey() {
   } else if (said) {
     line.textContent = said;
     line.classList.add("bad");
+  } else if (own.key && isTap(own.key) && shortcutsOn) {
+    line.textContent = fill(words.keyTap, { keys: capsOf(own.key).join(" ") });
   } else if (own.key) {
     line.textContent = !shortcutsOn ? words.keysOff : own.key === own.declared ? words.keyReady : fill(words.keyInstead, { declared });
     line.classList.toggle("bad", !shortcutsOn);
@@ -422,6 +441,9 @@ function drawKey() {
 
   const parts = [];
   if (!recording && own.key !== own.declared) parts.push(link(fill(words.keyUse, { declared }), () => void write(own.declared)));
+  if (!recording && own.key !== FN_SHIFT && own.declared !== FN_SHIFT) {
+    parts.push(link(fill(words.keyUse, { declared: glyphs(FN_SHIFT) }), () => void write(FN_SHIFT)));
+  }
   if (!recording && own.key) parts.push(link(words.keyClear, () => void write(null)));
   const keys = document.createElement("button");
   keys.type = "button";

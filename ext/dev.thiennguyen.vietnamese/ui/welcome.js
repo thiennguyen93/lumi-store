@@ -31,8 +31,9 @@ const WORDS = {
     next: "Tiếp",
 
     doneTitle: "Xong rồi 🎉",
-    doneKey: "Nhấn {key} để bật hoặc tắt gõ tiếng Việt, hoặc bấm Gõ tiếng Việt trong menu của Lumi trên thanh menu.",
-    doneNoKey: "Bật hoặc tắt gõ tiếng Việt ở dòng Gõ tiếng Việt trong menu của Lumi trên thanh menu.",
+    doneKey: "Nhấn {key} để bật hoặc tắt gõ tiếng Việt, hoặc bấm chuột phải vào chữ V trên thanh menu.",
+    doneTap: "Nhấn {key} cùng lúc rồi thả để bật hoặc tắt gõ tiếng Việt, hoặc bấm chuột phải vào chữ V trên thanh menu.",
+    doneNoKey: "Bấm chuột phải vào chữ V trên thanh menu để bật hoặc tắt gõ tiếng Việt.",
     openSettings: "Mở Cài đặt",
     finishDone: "Xong",
     again: "Xem lại từ đầu",
@@ -59,8 +60,9 @@ const WORDS = {
     next: "Continue",
 
     doneTitle: "You’re all set 🎉",
-    doneKey: "Press {key} to switch Vietnamese typing on or off, or use Vietnamese typing in Lumi’s menu in the menu bar.",
-    doneNoKey: "Switch Vietnamese typing on or off from Vietnamese typing in Lumi’s menu in the menu bar.",
+    doneKey: "Press {key} to switch Vietnamese typing on or off, or right-click the V in the menu bar.",
+    doneTap: "Press {key} together and let go to switch Vietnamese typing on or off, or right-click the V in the menu bar.",
+    doneNoKey: "Right-click the V in the menu bar to switch Vietnamese typing on or off.",
     openSettings: "Open Settings",
     finishDone: "Done",
     again: "Take the tour again",
@@ -194,14 +196,16 @@ function t(name, fill = {}) {
 }
 
 // An accelerator as Lumi writes one (`Ctrl+Shift+KeyV`), as macOS's glyphs,
-// one per key cap.
+// one per key cap. A tap of modifiers (`Tap+Fn+Shift`) is its modifiers
+// alone, fn first.
 function caps(accelerator) {
   const parts = accelerator.split("+");
-  const key = parts.pop() || "";
-  const glyph = { Ctrl: "⌃", Control: "⌃", Alt: "⌥", Option: "⌥", Shift: "⇧", Super: "⌘", Cmd: "⌘", Command: "⌘" };
+  const tap = parts[0] === "Tap";
+  const key = tap ? "" : parts.pop() || "";
+  const glyph = { Fn: "fn", Ctrl: "⌃", Control: "⌃", Alt: "⌥", Option: "⌥", Shift: "⇧", Super: "⌘", Cmd: "⌘", Command: "⌘" };
   const mods = new Set(parts.map((part) => glyph[part] || part));
   const name = /^Key([A-Z])$/.exec(key)?.[1] ?? /^Digit([0-9])$/.exec(key)?.[1] ?? key;
-  return [...["⌃", "⌥", "⇧", "⌘"].filter((mod) => mods.has(mod)), name].map((cap) => {
+  return [...["fn", "⌃", "⌥", "⇧", "⌘"].filter((mod) => mods.has(mod)), name].filter(Boolean).map((cap) => {
     const kbd = document.createElement("kbd");
     kbd.textContent = cap;
     return kbd;
@@ -381,7 +385,7 @@ function drawDone() {
     line.textContent = t("doneNoKey");
     return;
   }
-  const [head, tail] = t("doneKey").split("{key}");
+  const [head, tail] = t(armed.startsWith("Tap+") ? "doneTap" : "doneKey").split("{key}");
   line.replaceChildren(head, ...caps(armed), tail);
 }
 

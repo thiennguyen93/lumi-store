@@ -22,7 +22,7 @@
     const method = (init.method || "GET").toUpperCase();
     if (path === "/__lumi__/settings" && method === "GET") return answer(settings);
     if (path === "/__lumi__/shortcuts" && method === "GET") {
-      return answer({ on: true, commands: [], ess: [{ command: "toggle", key: "Ctrl+Shift+KeyV", declared: "Ctrl+Shift+KeyV", state: "set" }] });
+      return answer({ on: true, commands: [], ess: [{ command: "toggle", key: "Tap+Fn+Shift", declared: "Tap+Fn+Shift", state: "set" }] });
     }
     return fetched(url, init);
   };

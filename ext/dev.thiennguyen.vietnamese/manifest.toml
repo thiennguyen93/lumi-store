@@ -41,7 +41,7 @@ menu-bar-item-heading = false
 # and, below it, "Thoát" (Quit), which switches the extension off in Lumi —
 # not Lumi itself — and the person switches it on again under Extensions.
 menu-bar-item-settings = false
-# A right-click switches Vietnamese typing on or off at once, as ⌃⇧V does —
+# A right-click switches Vietnamese typing on or off at once, as fn ⇧ does —
 # the click opens the popover (`[[window]] popover`). The menu above stays
 # VoiceOver's, which presses the V or E rather than clicking it.
 menu-bar-item-right-click = "toggle"
@@ -55,12 +55,15 @@ icon = "languages"
 # A key of the extension's own for the switch, armed by Lumi at install when
 # nothing holds it. When something does, Lumi arms nothing and the Settings
 # tab's Shortcut row says who holds it, with a recorder for another.
-# ⌃⇧V: V for Việt.
-# Few apps bind ⌃⇧ with a letter, where ⌥ with a letter types a character
-# and ⌘⇧V pastes in many apps.
+# fn ⇧, pressed together and let go (Lumi 1.61.0's modifier tap): the gesture
+# Vietnamese typists know from UniKey's Ctrl+Shift, with fn because nothing
+# types with it held. Measured: no setting of the 🌐 key acts on it. A
+# keyboard that never sends fn — many that are not Apple's — takes another
+# key on the Settings tab; an install from before this kept ⌃⇧V, and the
+# Settings tab offers fn ⇧ with one press.
 [[shortcut]]
 command = "toggle"
-key = "ctrl+shift+v"
+key = "tap+fn+shift"
 
 # The Welcome, opened on a first install (`on_lifecycle`, src/welcome.rs):
 # two short steps, in the display language: what it does, with the language

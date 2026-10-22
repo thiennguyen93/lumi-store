@@ -16,7 +16,7 @@
       "callout": {
         "title": "Lumi Gõ tiếng Việt",
         "label": "Right there in the menu bar",
-        "body": "Click the <b>V</b> for everything here. Right-click it, or press <b>⌃⇧V</b>, to switch to English at once.",
+        "body": "Click the <b>V</b> for everything here. Right-click it, or press <b>fn ⇧</b>, to switch to English at once.",
         "side": "left"
       }
     },

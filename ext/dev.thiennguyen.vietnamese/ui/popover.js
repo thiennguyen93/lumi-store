@@ -66,14 +66,17 @@ async function readKey() {
   }
 }
 
-// An accelerator as key caps: `Ctrl+Shift+KeyV` → `⌃⇧V` (settings.js's).
+// An accelerator as key caps: `Ctrl+Shift+KeyV` → `⌃⇧V`, and a tap of
+// modifiers, `Tap+Fn+Shift` → `fn ⇧` (settings.js's).
 function glyphs(accelerator) {
   const parts = accelerator.split("+");
-  const last = parts.pop() || "";
-  const glyph = { Ctrl: "⌃", Control: "⌃", Alt: "⌥", Option: "⌥", Shift: "⇧", Super: "⌘", Cmd: "⌘", Command: "⌘" };
+  const tap = parts[0] === "Tap";
+  const last = tap ? "" : parts.pop() || "";
+  const glyph = { Fn: "fn", Ctrl: "⌃", Control: "⌃", Alt: "⌥", Option: "⌥", Shift: "⇧", Super: "⌘", Cmd: "⌘", Command: "⌘" };
   const mods = new Set(parts.map((part) => glyph[part] || part));
   const name = /^Key([A-Z])$/.exec(last)?.[1] ?? /^Digit([0-9])$/.exec(last)?.[1] ?? last;
-  return [...["⌃", "⌥", "⇧", "⌘"].filter((mod) => mods.has(mod)), name].join("");
+  const caps = [...["fn", "⌃", "⌥", "⇧", "⌘"].filter((mod) => mods.has(mod)), name].filter(Boolean);
+  return caps.join(tap ? " " : "");
 }
 
 function draw() {
