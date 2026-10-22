@@ -12,6 +12,7 @@
 - An About tab of its own, in English: what the extension can reach, who made it and how to get in touch, its page in the store, its source, and its licence and third-party notices, each read in a sheet.
 - The Settings, About and Changelog tab names follow the display language: **Cài đặt**, **Giới thiệu** and **Nhật ký thay đổi** in Vietnamese.
 - A V or an E in the menu bar, beside Lumi's icon, says at a glance whether Vietnamese typing is on. Click it for a popover of tiles: the switch — with the app it is remembered for — Telex or VNI, the switches from the Settings tab — modern tone marks, Escape, English words, remembering each app, which shows the icons of the other apps typing is left the same way in — the extension's settings, and **Quit**, which switches the extension off in Lumi until you switch it on again under Extensions. Right-click it to switch Vietnamese typing on or off at once, as ⌃⇧V does. Hide it from the extension's Permissions sheet in Lumi.
+- The popover is loaded as Lumi starts, so even the first click shows it at once. Turn that off with **Preload** on the extension's Permissions sheet in Lumi.
 
 ### Changed
 

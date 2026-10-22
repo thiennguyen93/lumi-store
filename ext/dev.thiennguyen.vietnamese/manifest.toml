@@ -25,7 +25,10 @@ min-lumi-version = "1.61.0"
 # `menu-bar-item`: an item of its own in the menu bar, V or E, showing the
 # same at a glance; its menu holds that row (Lumi 1.61.0, which the
 # `min-lumi-version` above already asks for).
-capabilities = ["text-input", "front-app", "menu", "menu-bar-item"]
+# `preload`: the popover loaded ahead, out of sight, as Lumi starts, so the
+# first click shows it at once. Its switch starts on; the person turns it
+# off with Preload on the Permissions sheet.
+capabilities = ["text-input", "front-app", "menu", "menu-bar-item", "preload"]
 # The item's menu without Lumi's heading naming the extension: its one row,
 # "Gõ tiếng Việt", already says whose it is, and the name above it said the
 # same twice. The tooltip and VoiceOver still name it.
@@ -72,8 +75,9 @@ maximizable = false
 # What a click on the V or E opens, under it (Lumi 1.61.0): the switch, Telex
 # or VNI and the Settings tab's switches, as tiles. The menu above answers a
 # right-click — and VoiceOver, which presses the item rather than clicking it.
-# Kept loaded between openings, so it is up at once; its page fits the panel
-# to what it shows. Centred under the V or E, as a popover hangs — Lumi holds
+# Kept loaded between openings and loaded ahead as Lumi starts, so it is up
+# at once, the first click included; its page fits the panel to what it
+# shows. Centred under the V or E, as a popover hangs — Lumi holds
 # it inside the display when the item stands near an edge — and pointing at
 # it with an arrow Lumi cuts into the glass.
 [[window]]
@@ -86,6 +90,7 @@ anchor = { at = "center" }
 material = "popover"
 arrow = true
 keep-alive = true
+preload = true
 width = 320
 height = 340
 
