@@ -1,8 +1,8 @@
 /* The sheet (document.html), inside Lumi's sheet frame: lumi.css paints the
    root in the frame's colour (`data-lumi-sheet`). The room is the manifest's
-   `width` × `height`, so the page fills it — title, the content scrolled in
-   its own box, Done — rather than sizing itself, and to its edges: no inset
-   of its own (the owner's call, 2026-10-22). */
+   `width` × `height`, so the page fills it — title, the content, Done —
+   rather than sizing itself, and to its edges: no inset of its own (the
+   owner's call, 2026-10-22). */
 
 :root {
   --muted: color-mix(in srgb, CanvasText 55%, transparent);
@@ -31,14 +31,24 @@ body {
 header h1 { margin: 0; font-size: 15px; font-weight: 600; }
 header p { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
 
-/* The content's own scroll box: pulled past its end, it bounces there, as a
-   scroll view does, rather than handing the scroll on to the sheet. */
-.scroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+/* A page between the title and Done: whatever room the sheet leaves. */
+.scroll { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+/* The list scrolls as a whole, should it ever outgrow the sheet. */
+#notices { overflow: auto; overscroll-behavior: contain; }
 
 /* A licence as prose: the body font, wrapped by its box, a paragraph's space
    between paragraphs. Shipped as text wrapped at 78 columns, it broke
-   mid-sentence in a narrower box. Selectable, as text to quote is. */
+   mid-sentence in a narrower box. Selectable, as text to quote is.
+
+   The box is the scroll view, as a text view is on the Mac: it stays where
+   it is, rounded corners and all, and only the text moves in it, its
+   scroller inside its edge. Pulled past its end, the text bounces there
+   rather than handing the scroll on to the sheet. */
 .prose {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
   padding: 12px 16px;
   border-radius: 10px;
   background: var(--group);
@@ -72,7 +82,9 @@ header p { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
 
 /* A work's page: why it is here, its project, then its licence. */
 .work { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+/* The note and the project stay put; only the licence's box scrolls. */
 .work .prose { align-self: stretch; margin-top: 4px; font-size: 11.5px; }
+.work > :not(.prose) { flex: none; }
 .note { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
 .out { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--accent-ink, #2a6eb4); }
 .out:hover { text-decoration: underline; }

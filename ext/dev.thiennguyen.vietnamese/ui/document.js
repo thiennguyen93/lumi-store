@@ -88,8 +88,10 @@ function go(to) {
   $("title").textContent = work ? work.dataset.title : doc.title;
   $("subtitle").textContent = work ? work.dataset.subtitle : doc.subtitle;
   $("back").hidden = !work;
+  // A page opens at its top, its licence's box too.
   const shown = $(to);
   shown.scrollTop = 0;
+  for (const box of shown.querySelectorAll(".prose")) box.scrollTop = 0;
   return fit();
 }
 

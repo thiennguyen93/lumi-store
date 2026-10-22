@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.5] - 2026-10-22
+
+### Fixed
+
+- In the Licence and Acknowledgements sheets the grey box stays where it is and only the text inside it scrolls, as a text view does on the Mac, instead of the whole box moving.
+
 ## [0.1.4] - 2026-10-22
 
 ### Changed
