@@ -108,6 +108,9 @@ CAPABILITIES = {
     "snippets",
     # Lumi 1.33: the `menu` interface (rows of its own in the menu bar menu).
     "menu",
+    # Lumi 1.61: the `menu-bar-item` interface (an item of its own in the
+    # menu bar, beside Lumi's icon).
+    "menu-bar-item",
     # Lumi 1.38: a page's `/__lumi__/input-hold` (hold every key, and the
     # pointer if asked, for a while).
     "input-hold",
@@ -150,6 +153,9 @@ EVENTS = {
     # Lumi 1.44: the extension's rows in Lumi's menu bar menu shown or hidden
     # on its Permissions sheet — the one switch the extension moves too.
     "menu-shown": "menu",
+    # Lumi 1.61: the extension's own item in the menu bar shown or hidden on
+    # its Permissions sheet — `menu-shown`'s twin.
+    "menu-bar-item-shown": "menu-bar-item",
     # Lumi 1.45: loading the extension's panels ahead turned on or off on its
     # Permissions sheet.
     "preload-enabled": "preload",

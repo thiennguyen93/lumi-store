@@ -1789,6 +1789,50 @@ interface menu {
     set-shown: func(shown: bool) -> result<_, string>;
 }
 
+/// An item of your own in the menu bar, beside Lumi's icon: an icon, a few
+/// characters, or both — a state somebody wants at a glance without opening
+/// a menu. Lumi keeps the last item you set, on this Mac, across restarts and
+/// updates, and draws it with none of your code running; uninstalling takes
+/// it away. A press on it opens a menu Lumi draws: your extension's name,
+/// then your `menu` tree when you declare `menu`, then a row onto your page
+/// in Settings. The person can ⌘-drag it where they want it, and it keeps
+/// that place.
+///
+/// A menu bar too full for every item hides the ones that do not fit, as
+/// macOS does for any app's — beside a notch, most often — and says nothing
+/// to the app. The person decides which stay.
+///
+/// Needs the `menu-bar-item` capability. Every call costs budget. Added to
+/// 0.3 in Lumi 1.61.0 without a new world version, the way `menu` was.
+interface menu-bar-item {
+    record item {
+        /// Spelled as a `[[command]]` icon is: a Lucide icon's name from
+        /// Lumi's set ("languages"), or an `.svg` under your `ui/` of at most
+        /// 64 KiB. Drawn in the menu bar's own ink, whatever colours the
+        /// file has, 18 points tall.
+        icon: option<string>,
+        /// Beside the icon, or alone: at most 16 characters on one line.
+        text: option<string>,
+        /// What a pointer resting on the item reads: at most 120 characters.
+        tooltip: option<string>,
+    }
+
+    /// Draw your item, or change it. It needs an icon, text, or both. The
+    /// same item again is no change, so you may set it from every run.
+    set: func(item: item) -> result<_, string>;
+    /// Take your item out of the menu bar.
+    clear: func() -> result<_, string>;
+    /// Whether your item shows: one switch, kept by Lumi, that your own
+    /// settings and the Menu bar item switch on your Permissions sheet both
+    /// move — `set-shown` from your side. Off, `set` goes on keeping your
+    /// item, and it comes back as you left it when the switch is on again.
+    /// Hear `"menu-bar-item-shown"` to be told when the person moves it.
+    shown: func() -> result<bool, string>;
+    /// Show or hide your item: the switch `shown` reads. From any run but
+    /// an uninstall.
+    set-shown: func(shown: bool) -> result<_, string>;
+}
+
 /// Timers: Lumi runs the extension's `on-event("timer", …)` at times it
 /// set — with every one of its windows closed, and after Lumi restarts. A
 /// timer is a name of the extension's own, a time and how it repeats. Lumi
@@ -2082,6 +2126,7 @@ world extension {
     import snippets;
     import permissions;
     import menu;
+    import menu-bar-item;
     import timers;
     import schedules;
     import time-zone;

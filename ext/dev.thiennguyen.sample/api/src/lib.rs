@@ -1746,6 +1746,112 @@ pub mod menu {
     }
 }
 
+/// An item of your own in the menu bar, beside Lumi's icon: an icon, a few
+/// characters, or both — a state somebody wants at a glance without opening
+/// a menu.
+///
+/// ```ignore
+/// use lumi::menu_bar_item::{self, Item};
+///
+/// menu_bar_item::set(&Item::icon("languages").text("VI").tooltip("Typing in Vietnamese"))?;
+/// ```
+///
+/// Lumi keeps the last item you set, across restarts and updates, and draws
+/// it with none of your code running; switching your extension off takes it
+/// away, uninstalling forgets it. A press on it opens a menu Lumi draws: your
+/// extension's name, then your [`menu`](crate::menu) tree when you declare
+/// `menu`, then a row onto your page in Settings — so a press on it means
+/// what your rows already say. The person can ⌘-drag it where they want it,
+/// and it keeps that place.
+///
+/// A menu bar too full for every item hides the ones that do not fit, as
+/// macOS does for any app's — beside a notch, most often — and tells nobody.
+/// The person decides which stay.
+///
+/// Needs the `menu-bar-item` capability and Lumi 1.61.0 or later — say so
+/// with `min-lumi-version`.
+pub mod menu_bar_item {
+    use super::lumi::ext::menu_bar_item as wit;
+
+    /// What the item shows. Build it with [`Item::icon`] or [`Item::text`],
+    /// then the others as needed.
+    #[derive(Debug, Clone, Default, PartialEq, Eq)]
+    pub struct Item {
+        pub icon: Option<String>,
+        pub text: Option<String>,
+        pub tooltip: Option<String>,
+    }
+
+    impl Item {
+        /// An item drawn as an icon, spelled as a `[[command]]` icon is: a
+        /// Lucide icon's name from Lumi's set (`"languages"`), or an `.svg`
+        /// under your `ui/` of at most 64 KiB. Drawn 18 points tall in the
+        /// menu bar's own ink, whatever colours the file has, and no wider
+        /// than twice its height.
+        pub fn icon(icon: &str) -> Self {
+            Item {
+                icon: Some(icon.to_string()),
+                ..Item::default()
+            }
+        }
+
+        /// An item drawn as text: at most 16 characters on one line.
+        pub fn text_only(text: &str) -> Self {
+            Item {
+                text: Some(text.to_string()),
+                ..Item::default()
+            }
+        }
+
+        /// Text beside the icon: at most 16 characters on one line.
+        pub fn text(mut self, text: &str) -> Self {
+            self.text = Some(text.to_string());
+            self
+        }
+
+        /// What a pointer resting on the item reads: at most 120 characters.
+        /// Your extension's name without one.
+        pub fn tooltip(mut self, tooltip: &str) -> Self {
+            self.tooltip = Some(tooltip.to_string());
+            self
+        }
+    }
+
+    /// Draw your item, or change it. The same item again is no change, so
+    /// you may set it from every run — an event that may or may not have
+    /// changed what it shows.
+    pub fn set(item: &Item) -> Result<(), String> {
+        wit::set(&wit::Item {
+            icon: item.icon.clone(),
+            text: item.text.clone(),
+            tooltip: item.tooltip.clone(),
+        })
+    }
+
+    /// Take your item out of the menu bar.
+    pub fn clear() -> Result<(), String> {
+        wit::clear()
+    }
+
+    /// Whether your item shows: one switch, kept by Lumi, that your own
+    /// settings move with [`set_shown`] and the person moves with the Menu
+    /// bar item switch on your Permissions sheet. Off, [`set`] goes on
+    /// keeping your item, and it comes back as you left it when the switch
+    /// is on again. Declare `events = ["menu-bar-item-shown"]` to be told in
+    /// [`Guest::on_event`](crate::Guest::on_event) when the person moves it,
+    /// with `{"v":1, "shown":bool, "at":<ms since the Unix epoch>}`.
+    pub fn shown() -> Result<bool, String> {
+        wit::shown()
+    }
+
+    /// Show or hide your item — the switch [`shown`] reads, for a "Show in
+    /// the menu bar" in your own settings. Your item is kept either way. From
+    /// any run but an uninstall.
+    pub fn set_shown(shown: bool) -> Result<(), String> {
+        wit::set_shown(shown)
+    }
+}
+
 /// Your extension's own timers: Lumi runs your
 /// [`Guest::on_event`](crate::Guest::on_event) with `"timer"` at the times you
 /// set — with every one of your windows closed, and after Lumi restarts.
