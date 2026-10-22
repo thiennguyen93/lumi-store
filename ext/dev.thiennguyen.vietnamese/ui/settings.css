@@ -54,8 +54,6 @@ button.row:hover { background: var(--well-up); }
 .row[aria-checked="true"] .toggle { background: var(--pick); }
 .row[aria-checked="true"] .toggle::after { transform: translateX(12px); }
 
-.foot { margin: 18px 0 0; padding-top: 11px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11.5px; }
-
 /* The shortcut row's recorder, as Selection Bar's Settings draws it: the key
    as key caps, pressed to record another; a link to put back the declared
    key, and one to clear it. */

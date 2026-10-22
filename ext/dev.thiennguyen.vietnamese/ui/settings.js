@@ -54,7 +54,6 @@ const WORDS = {
     engSays: "Những từ như “with” hay “text” được để nguyên như bạn gõ.",
     appName: "Nhớ bật hay tắt cho từng ứng dụng",
     appSays: "Mỗi ứng dụng giữ lựa chọn riêng.",
-    foot: "Bật hoặc tắt gõ tiếng Việt từ menu bar của Lumi, hoặc bằng phím tắt ở trên.",
   },
   en: {
     generalTitle: "General",
@@ -103,7 +102,6 @@ const WORDS = {
     engSays: "Words like “with” and “text” stay the way you typed them.",
     appName: "Remember on or off for each app",
     appSays: "Each app keeps its own choice.",
-    foot: "Switch Vietnamese typing on or off from Lumi's menu bar, or with the shortcut above.",
   },
 };
 
