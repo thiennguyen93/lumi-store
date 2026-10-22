@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.9"
+version = "0.1.10"
 description = "Type Vietnamese with Telex or VNI in every app, with no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
@@ -18,6 +18,10 @@ homepage = "https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"
 # own pages (scripts/preview/promo/dev.thiennguyen.vietnamese.json, its
 # scenes in scripts/preview/shots/ — README: Store pictures).
 screenshots = ["shots/1-popover.png", "shots/2-per-app.png", "shots/3-settings.png", "shots/4-private.png"]
+# The demo video, ahead of the pictures. Store-only too: lumi-store reads
+# the id out of the link and publishes YouTube's picture of it beside the
+# package, so the store page asks nothing of YouTube until play is pressed.
+video = "https://youtu.be/qhMTPz81R3w"
 # 1.62.0 for the toggle's `tap+fn+shift` below: 1.61.0 reads `tap` as a
 # word it does not know in a key and refuses the whole manifest for it.
 # (1.61.0 is what `text-input`, `front-app` and `menu-bar-item` need.)

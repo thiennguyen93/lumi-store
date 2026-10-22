@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.10] - 2026-10-22
+
+### Added
+
+- A short demo video on Lumi Gõ tiếng Việt's page in the Extension Store and on lumikeys.app — typing in your apps, the V in the menu bar, fn ⇧ and Keep English — to watch before you install.
+
 ## [0.1.9] - 2026-10-22
 
 ### Removed
