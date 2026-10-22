@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.7] - 2026-10-22
+
+### Fixed
+
+- The About tab's help tags show. Rest the pointer on **Works offline**, **No typing history** or **Open source** for what each means, or on the developer's mail, website and GitHub buttons for where each goes; tab to a button and its tag shows at once. They never showed before.
+
 ## [0.1.6] - 2026-10-22
 
 ### Changed

@@ -137,5 +137,25 @@ button.cell:active { background: var(--group-press); }
 }
 .bolt svg { width: 16px; height: 16px; fill: currentColor; stroke: none; }
 
+/* ---- Help tags ---------------------------------------------------------
+
+   Lumi's own bubble (`.tip` in its App.css), drawn by about.js: the raised
+   colour with a hairline and a shadow, 12 points, a sentence on one line up
+   to 320 points. The pointer goes through it. */
+.tip {
+  position: fixed;
+  z-index: 10;
+  box-sizing: border-box;
+  max-width: 320px;
+  padding: 8px 10px;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.36);
+  font-size: 12px;
+  line-height: 1.45;
+  pointer-events: none;
+}
+
 /* The copyright, on the tab's bottom edge or after the groups. */
 .copyright { margin: auto 0 0; padding-top: 20px; text-align: center; font-size: 11px; line-height: 14px; color: var(--faint); }
