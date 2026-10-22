@@ -1,6 +1,6 @@
 <!doctype html>
-<!-- Lumi Gõ tiếng Việt's Welcome window: the two steps `on_lifecycle` opens
-     on a first install (src/welcome.rs), and a finish of its own. The top
+<!-- Lumi Gõ tiếng Việt's Welcome window: the three steps `on_lifecycle`
+     opens on a first install (src/welcome.rs), and a finish of its own. The top
      half is a small stage acting out each step, the words below, as in
      Clipboard Manager's, Screenshot's and Selection Bar's tours. An ordinary
      declared window with the ordinary bridge: by the time it opens, the
@@ -42,6 +42,14 @@
         <path d="M17 16.5l15 31" stroke="#ffffff"/>
       </g>
     </symbol>
+    <!-- The V and the E the extension puts in the menu bar (menu-bar-v.svg,
+         menu-bar-e.svg), in the colour of the text around them. -->
+    <symbol id="item-v" viewBox="0 0 20 18">
+      <path fill="currentColor" fill-rule="evenodd" d="M5 1.5H15A4 4 0 0 1 19 5.5V12.5A4 4 0 0 1 15 16.5H5A4 4 0 0 1 1 12.5V5.5A4 4 0 0 1 5 1.5ZM5.6 4.8H7.6L10 10.6L12.4 4.8H14.4L10.9 13.2H9.1Z"/>
+    </symbol>
+    <symbol id="item-e" viewBox="0 0 20 18">
+      <path fill="currentColor" fill-rule="evenodd" d="M5 1.5H15A4 4 0 0 1 19 5.5V12.5A4 4 0 0 1 15 16.5H5A4 4 0 0 1 1 12.5V5.5A4 4 0 0 1 5 1.5ZM7 4.8H13.4V6.6H8.9V8.1H12.6V9.9H8.9V11.4H13.4V13.2H7Z"/>
+    </symbol>
   </svg>
 
   <main class="tour" id="tour" hidden>
@@ -54,9 +62,25 @@
         </div>
         <div class="hud" aria-hidden="true"><kbd id="pressed"></kbd></div>
       </div>
-      <!-- 2. Keys into the box on the left, a key at a time; on the right,
+      <!-- 2. The key armed for the switch, pressed again and again: the V
+           in the menu bar turns to E and back, and the same keys come out
+           as Vietnamese or as typed. -->
+      <div class="scene switch" data-scene="1" hidden>
+        <div class="menu-bar">
+          <b data-t="appTitle">Ghi chú</b><span data-t="barFile">Tệp</span><span data-t="barEdit">Sửa</span>
+          <span class="sp"></span>
+          <span class="item" id="item"><svg><use id="item-use" href="#item-v"/></svg></span>
+          <span class="clock" id="clock">9:41</span>
+        </div>
+        <div class="switch-row">
+          <span class="caps press" id="press"></span>
+          <span class="arrow" aria-hidden="true">→</span>
+          <span class="word-out"><span id="switch-word"></span><span class="caret"></span></span>
+        </div>
+      </div>
+      <!-- 3. Keys into the box on the left, a key at a time; on the right,
            what they have come out as so far. Nothing else leaves the box. -->
-      <div class="scene sealed" data-scene="1" hidden>
+      <div class="scene sealed" data-scene="2" hidden>
         <span class="caps keys-in" id="keys-in" aria-hidden="true"></span>
         <span class="arrow" aria-hidden="true">→</span>
         <span class="box" id="box">
@@ -92,8 +116,26 @@
         </div>
       </section>
 
-      <!-- What it can reach, no stronger than the manifest's summary. -->
+      <!-- The switch: its key as Lumi armed it at install, or why there is
+           none, recorded again here as on the Settings tab (shortcut.js);
+           and the V in the menu bar, which a right-click switches too. -->
       <section class="step" data-step="1" hidden>
+        <h1 data-t="keyTitle">Bật, tắt gõ tiếng Việt thế nào?</h1>
+        <div class="rows">
+          <div class="row">
+            <span class="mark"><svg viewBox="0 0 24 24"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/></svg></span>
+            <span class="text"><b data-t="keyName">Phím tắt</b><small id="key-says"></small></span>
+            <div class="recorder" id="recorder"></div>
+          </div>
+          <div class="row">
+            <span class="mark"><svg class="glyph"><use href="#item-v"/></svg></span>
+            <span class="text"><b data-t="itemName">Chữ V trên thanh menu</b><small data-t="itemSays">Bấm chuột phải vào đó để bật hoặc tắt. V là đang gõ tiếng Việt, E là đang tắt.</small></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- What it can reach, no stronger than the manifest's summary. -->
+      <section class="step" data-step="2" hidden>
         <h1 data-t="privacyTitle">Phím bạn gõ đi đâu?</h1>
         <div class="rows">
           <div class="row">
@@ -139,6 +181,7 @@
     <button type="button" class="link again" id="again" data-t="again">Xem lại từ đầu</button>
     <p class="failed" id="finish-failed" role="alert" hidden></p>
   </main>
+  <script src="shortcut.js"></script>
   <script src="welcome.js"></script>
 </body>
 </html>

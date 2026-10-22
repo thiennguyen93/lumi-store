@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.10"
+version = "0.1.11"
 description = "Type Vietnamese with Telex or VNI in every app, with no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
@@ -71,10 +71,11 @@ command = "toggle"
 key = "tap+fn+shift"
 
 # The Welcome, opened on a first install (`on_lifecycle`, src/welcome.rs):
-# two short steps, in the display language: what it does, with the language
-# and the typing method to choose, and where the keys typed go. Laid out for
-# this size and no other, so it does not resize; the height holds macOS's
-# title bar too (32 points), so the page itself is 488 high.
+# three short steps, in the display language: what it does, with the
+# language and the typing method to choose; the switch's key, as Lumi armed
+# it at install, with a recorder for another; and where the keys typed go.
+# Laid out for this size and no other, so it does not resize; the height
+# holds macOS's title bar too (32 points), so the page itself is 488 high.
 [[window]]
 name = "welcome"
 title = "Lumi Gõ tiếng Việt"

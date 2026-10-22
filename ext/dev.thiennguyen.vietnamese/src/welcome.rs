@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Thien Nguyen
 
-//! The Welcome window (`ui/welcome.html`): two short steps `on_lifecycle`
+//! The Welcome window (`ui/welcome.html`): three short steps `on_lifecycle`
 //! opens on a first install — what the extension does, with the display
-//! language and the typing method to choose right there, and where the keys
-//! typed go.
+//! language and the typing method to choose right there; the key that
+//! switches it, as Lumi armed it at install, recorded again there as on the
+//! Settings tab; and where the keys typed go.
 //!
 //! **An install only, not an update.** Clipboard Manager and Selection Bar
 //! open theirs on every update to say what is new; this one is typed through
@@ -220,5 +221,9 @@ mod tests {
         }
         let page = include_str!("../ui/welcome.html");
         assert!(page.contains("src=\"welcome.js\"") && page.contains("href=\"welcome.css\""));
+        // The shortcut step's row is shortcut.js's, which has to be there
+        // before welcome.js asks for it.
+        let row = page.find("src=\"shortcut.js\"").expect("welcome.html does not load shortcut.js");
+        assert!(row < page.find("src=\"welcome.js\"").unwrap_or(0), "shortcut.js loads after welcome.js");
     }
 }

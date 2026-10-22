@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.11] - 2026-10-22
+
+### Added
+
+- The Welcome has a step for switching Vietnamese typing on and off. It shows the key Lumi set at install, **fn ⇧** unless something else already held it, and says who does when it is taken. Record another key right there, take one back from a shortcut that holds it, or go back to fn ⇧, as on the Settings tab. Right-clicking the V in the menu bar switches too.
+
+### Changed
+
+- **Getting started** on the About tab names the shortcut among what the tour shows.
+
 ## [0.1.10] - 2026-10-22
 
 ### Added

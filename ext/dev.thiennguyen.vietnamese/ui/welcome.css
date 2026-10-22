@@ -1,5 +1,5 @@
 /* The Welcome window (welcome.html): a small stage on top acting out each of
-   two steps, the words below, and a finish of its own — the tours of
+   three steps, the words below, and a finish of its own — the tours of
    Clipboard Manager, Screenshot and Selection Bar, in this extension's red
    and gold. lumi.css comes first and has no specificity, so these rules win
    without trying; its tokens are used with a fallback each, so a preview
@@ -149,7 +149,40 @@ kbd {
 .hud kbd.down { animation: press 0.18s ease-out; }
 .hud kbd.marks { border-color: var(--wc-mark); color: var(--wc-mark-ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--wc-mark) 20%, transparent); }
 
-/* 2. Keys into the box on the left, and on the right the words they have
+/* 2. The menu bar along the stage's top, the V or E in it; under it, the
+   switch's key pressed, and the same keys come out as Vietnamese or as
+   typed. */
+.switch { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 24px; }
+.menu-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 24px;
+  padding: 0 14px;
+  background: color-mix(in srgb, var(--wc-app) 62%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.14);
+  font-size: 12.5px;
+}
+.menu-bar b { font-weight: 700; }
+.menu-bar .sp { flex: 1; }
+.menu-bar .item { display: grid; place-items: center; width: 28px; height: 20px; margin-right: -8px; border-radius: 5px; }
+.menu-bar .item svg { width: 19px; height: 17px; }
+.menu-bar .item.flip { animation: flip 0.6s ease-out; }
+.clock { font-variant-numeric: tabular-nums; }
+.switch-row { display: flex; align-items: center; gap: 14px; }
+.press { gap: 6px; }
+.press kbd { min-width: 46px; height: 42px; padding: 0 12px; border-radius: 9px; border-bottom-width: 3px; font: 500 17px/1 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.press.down kbd { animation: push 0.32s ease-out; }
+.press.none { padding: 10px 14px; border: 1px dashed var(--wc-line); border-radius: 9px; font-size: 12.5px; color: var(--wc-dim); }
+#switch-word.off { color: var(--wc-dim); font-weight: 500; }
+
+/* 3. Keys into the box on the left, and on the right the words they have
    come out as so far. Both sides keep their width while they fill, so the
    box never moves. */
 .sealed { display: flex; align-items: center; gap: 12px; }
@@ -231,6 +264,31 @@ kbd {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
 }
 
+/* The shortcut row's recorder, as the Settings tab draws it (settings.css):
+   the key as key caps, pressed to record another, and links to put back
+   fn ⇧ or the declared key, or clear it. Its buttons draw themselves. */
+.row small.bad { color: var(--wc-bad); }
+.row .mark .glyph { width: 17px; height: 15px; stroke: none; }
+:where(.recorder button) { all: unset; box-sizing: border-box; cursor: default; }
+:where(.recorder button):focus-visible { outline: 2px solid var(--wc-pick); outline-offset: -2px; border-radius: 6px; }
+.recorder { flex: none; display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.keycaps {
+  display: inline-flex; align-items: center; gap: 3px;
+  min-height: 28px; padding: 3px; border-radius: 8px;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+.keycaps:hover:not(:disabled) { background: var(--wc-card-up); }
+.keycaps.recording, .keycaps.unset { padding: 3px 10px; }
+.keycaps.recording { box-shadow: 0 0 0 1px var(--wc-pick), 0 0 0 4px color-mix(in srgb, var(--wc-pick) 22%, transparent); }
+.keycaps.unset { background: var(--wc-card-up); }
+.keycaps .listening { font-size: 12px; font-weight: 500; color: var(--accent-ink, var(--wc-pick)); }
+.keycaps kbd {
+  min-width: 22px; height: 22px; padding: 0 6px;
+  border-radius: 5px;
+  font: 500 11.5px/1 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+.recorder .link:disabled { opacity: 0.5; }
+
 .failed { margin-top: 8px; color: var(--wc-bad); font-size: 12px; }
 
 /* ---- The way through --------------------------------------------------- */
@@ -251,7 +309,7 @@ button.primary { background: var(--wc-button); border-color: transparent; color:
 /* ---- The finish -------------------------------------------------------- */
 
 /* The whole window, on the stage's backdrop, so the end looks like the end
-   and not a third step. */
+   and not a fourth step. */
 .finish {
   height: 100%;
   box-sizing: border-box;
@@ -322,6 +380,8 @@ button.primary { background: var(--wc-button); border-color: transparent; color:
 @keyframes press { from { transform: translateY(2px); filter: brightness(0.92); } }
 @keyframes key-pop { from { opacity: 0; transform: translateY(-6px) scale(0.9); } }
 @keyframes beat { 50% { transform: scale(1.06); } }
+@keyframes push { 30% { transform: translateY(2px); border-bottom-width: 1px; filter: brightness(0.92); } }
+@keyframes flip { from { background: color-mix(in srgb, var(--wc-mark) 32%, transparent); } }
 @keyframes burst {
   0% { opacity: 1; transform: translate(0, 0) rotate(0); }
   70% { opacity: 1; }

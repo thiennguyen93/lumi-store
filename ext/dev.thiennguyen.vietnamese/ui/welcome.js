@@ -1,6 +1,7 @@
-// The Welcome window (welcome.html): two steps and a finish, read in the
+// The Welcome window (welcome.html): three steps and a finish, read in the
 // display language the Settings tab reads in, saving what is chosen here the
-// way that tab does. The component answers what a page cannot do itself
+// way that tab does, and recording the switch's key the way it does
+// (shortcut.js). The component answers what a page cannot do itself
 // (src/welcome.rs): the menu row and the tab names in a new language, and the
 // ways out. An extension page may run no inline script (its CSP is
 // `default-src 'self'`), so this is a file of its own.
@@ -17,6 +18,14 @@ const WORDS = {
     langOther: "Display language",
     methodName: "Kiểu gõ",
     methodSays: "{keys} thành tiếng",
+
+    barFile: "Tệp",
+    barEdit: "Sửa",
+    stageNoKey: "Chưa có phím",
+    keyTitle: "Bật, tắt gõ tiếng Việt thế nào?",
+    keyName: "Phím tắt",
+    itemName: "Chữ V trên thanh menu",
+    itemSays: "Bấm chuột phải vào đó để bật hoặc tắt. V là đang gõ tiếng Việt, E là đang tắt.",
 
     privacyTitle: "Phím bạn gõ đi đâu?",
     netName: "Không dùng mạng",
@@ -46,6 +55,14 @@ const WORDS = {
     langOther: "Ngôn ngữ hiển thị",
     methodName: "Typing method",
     methodSays: "{keys} becomes tiếng",
+
+    barFile: "File",
+    barEdit: "Edit",
+    stageNoKey: "No key yet",
+    keyTitle: "How do you switch it on or off?",
+    keyName: "Shortcut",
+    itemName: "The V in the menu bar",
+    itemSays: "Right-click it to switch. V means Vietnamese typing is on, E that it is off.",
 
     privacyTitle: "Where do your keys go?",
     netName: "No network",
@@ -91,7 +108,7 @@ const SCENE = {
   ],
 };
 
-// What the second step's box takes in and gives out, the same way.
+// What the third step's box takes in and gives out, the same way.
 const BOX = {
   telex: [
     { keys: "tieengs", shows: ["t", "ti", "tie", "tiê", "tiên", "tiêng", "tiếng"] },
@@ -175,42 +192,24 @@ function save(name, value) {
     .finally(() => void reread());
 }
 
-// The extension's own key for the switch as Lumi holds it, for the finish:
-// null when none is armed, or Lumi has none to tell.
-async function ownKey() {
-  try {
-    const answer = await fetch("/__lumi__/shortcuts");
-    if (!answer.ok) return null;
-    const all = await answer.json();
-    const own = (all.ess || []).find((one) => one.command === "toggle");
-    return own && own.key ? own.key : null;
-  } catch {
-    return null;
-  }
-}
-
 // ---- Drawing --------------------------------------------------------------
 
 function t(name, fill = {}) {
   return WORDS[settings.language][name].replace(/\{(\w+)\}/g, (all, key) => (key in fill ? fill[key] : all));
 }
 
-// An accelerator as Lumi writes one (`Ctrl+Shift+KeyV`), as macOS's glyphs,
-// one per key cap. A tap of modifiers (`Tap+Fn+Shift`) is its modifiers
-// alone, fn first.
-function caps(accelerator) {
-  const parts = accelerator.split("+");
-  const tap = parts[0] === "Tap";
-  const key = tap ? "" : parts.pop() || "";
-  const glyph = { Fn: "fn", Ctrl: "⌃", Control: "⌃", Alt: "⌥", Option: "⌥", Shift: "⇧", Super: "⌘", Cmd: "⌘", Command: "⌘" };
-  const mods = new Set(parts.map((part) => glyph[part] || part));
-  const name = /^Key([A-Z])$/.exec(key)?.[1] ?? /^Digit([0-9])$/.exec(key)?.[1] ?? key;
-  return [...["fn", "⌃", "⌥", "⇧", "⌘"].filter((mod) => mods.has(mod)), name].filter(Boolean).map((cap) => {
-    const kbd = document.createElement("kbd");
-    kbd.textContent = cap;
-    return kbd;
-  });
-}
+// The switch's key, its line and its recorder on the shortcut step
+// (shortcut.js), in the page's language. Whatever it comes to shows on that
+// step's stage and in the finish.
+const shortcut = keyRow({
+  line: $("key-says"),
+  recorder: $("recorder"),
+  language: () => settings.language,
+  changed: () => {
+    if (!$("finish").hidden) drawDone();
+    else if (read && step === 1) playScene();
+  },
+});
 
 let step = 0;
 let failed = "";
@@ -228,6 +227,8 @@ function draw(methodChanged = false) {
       option.tabIndex = on ? 0 : -1;
     }
   }
+  shortcut.draw();
+  tick();
   $("back").hidden = step === 0;
   for (const section of document.querySelectorAll(".step")) {
     section.hidden = Number(section.dataset.step) !== step;
@@ -254,6 +255,19 @@ function draw(methodChanged = false) {
 }
 
 // ---- The stage ------------------------------------------------------------
+
+// The menu bar's clock on the shortcut step: the time now, as the menu bar
+// shows it, in the display language with the Mac's own 12 or 24 hours. Kept
+// right to the minute while the window is up, from each minute's turn.
+const hourCycle = new Intl.DateTimeFormat([], { hour: "numeric" }).resolvedOptions().hourCycle;
+let clockTimer = 0;
+
+function tick() {
+  const now = new Date();
+  $("clock").textContent = now.toLocaleTimeString(settings.language, { hour: "numeric", minute: "2-digit", hourCycle });
+  clearTimeout(clockTimer);
+  clockTimer = setTimeout(tick, 60000 - (now.getTime() % 60000));
+}
 
 // The run now playing, so a newer one (another step, the method changed) ends
 // it, and the step it plays.
@@ -322,10 +336,41 @@ function restart(el, className) {
   el.classList.add(className);
 }
 
+// The switch's key pressed every so often: the caps go down, the V in the
+// menu bar turns to E and back, and the same keys come out as “tiếng” or as
+// typed. With no key armed, the caps say so and nothing switches.
+function playSwitch() {
+  const run = (playing = Date.now());
+  clearTimeout(timer);
+  const armed = shortcut.key;
+  const press = $("press");
+  press.replaceChildren(...(armed ? kbdsOf(armed) : [t("stageNoKey")]));
+  press.classList.toggle("none", !armed);
+  let on = true;
+  const show = () => {
+    $("item-use").setAttribute("href", on ? "#item-v" : "#item-e");
+    $("switch-word").textContent = on ? "tiếng" : TYPED[settings.method];
+    $("switch-word").classList.toggle("off", !on);
+  };
+  show();
+  if (still || !armed) return;
+  const next = () => {
+    if (run !== playing) return;
+    restart(press, "down");
+    on = !on;
+    show();
+    restart($("item"), "flip");
+    timer = setTimeout(next, 1800);
+  };
+  timer = setTimeout(next, 1200);
+}
+
 // The stage of the step showing, from its first key.
 function playScene() {
   played = step;
-  if (step === 0) {
+  if (step === 1) {
+    playSwitch();
+  } else if (step === 0) {
     // A note typing the whole line; the key just pressed under it, in the
     // icon's red when it put a mark on the word.
     const typed = $("typed");
@@ -377,20 +422,20 @@ function playScene() {
 
 // ---- The finish -----------------------------------------------------------
 
-let armed = null;
-
 function drawDone() {
   const line = $("done-says");
+  const armed = shortcut.key;
   if (!armed) {
     line.textContent = t("doneNoKey");
     return;
   }
   const [head, tail] = t(armed.startsWith("Tap+") ? "doneTap" : "doneKey").split("{key}");
-  line.replaceChildren(head, ...caps(armed), tail);
+  line.replaceChildren(head, ...kbdsOf(armed), tail);
 }
 
 function finish() {
   stopPlaying();
+  shortcut.stop();
   $("tour").hidden = true;
   $("finish").hidden = false;
   // The confetti made again, so it bursts every time the finish comes.
@@ -407,14 +452,13 @@ function finish() {
     });
   }
   drawDone();
-  void ownKey().then((key) => {
-    armed = key;
-    drawDone();
-  });
+  // Read again, should it have been changed on the Settings tab meanwhile.
+  void shortcut.read();
   $("finish-done").focus();
 }
 
 function go(to) {
+  shortcut.stop();
   failed = "";
   step = Math.max(0, Math.min(STEPS - 1, to));
   $("finish").hidden = true;
@@ -477,3 +521,4 @@ const theme = new URLSearchParams(location.search).get("theme");
 if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
 
 void reread();
+void shortcut.read();
