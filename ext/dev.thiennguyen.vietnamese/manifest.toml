@@ -26,6 +26,10 @@ min-lumi-version = "1.61.0"
 # same at a glance; its menu holds that row (Lumi 1.61.0, which the
 # `min-lumi-version` above already asks for).
 capabilities = ["text-input", "front-app", "menu", "menu-bar-item"]
+# The item's menu without Lumi's heading naming the extension: its one row,
+# "Gõ tiếng Việt", already says whose it is, and the name above it said the
+# same twice. The tooltip and VoiceOver still name it.
+menu-bar-item-heading = false
 events = ["text-input", "text-input-enabled", "front-app"]
 
 [[command]]
