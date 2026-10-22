@@ -308,6 +308,15 @@ class UnderTheMenuBarItem(unittest.TestCase):
     def test_the_selections_keys_stay_the_selections(self):
         self.assertIn('only a panel at position = "selection"', under_item_refusal('scroll = "follow"'))
 
+    def test_it_may_point_an_arrow_cut_into_its_glass(self):
+        under_item('material = "popover"\narrow = true')
+        under_item('material = "hud"\narrow = false')
+        self.assertIn("cut into its glass", under_item_refusal("arrow = true"))
+        self.assertIn("cut into its glass", under_item_refusal('material = "clear"\narrow = true'))
+        self.assertIn("leave overhang out", under_item_refusal('material = "popover"\narrow = true\noverhang = 40'))
+        self.assertIn("is not true or false", under_item_refusal('material = "popover"\narrow = "yes"'))
+        self.assertIn('only a panel at position = "menu-bar-item"', refusal('kind = "panel"\nmaterial = "popover"\narrow = true'))
+
     def test_one_item_opens_one_panel(self):
         second = '\n[[window]]\nname = "other"\npath = "other.html"\nkind = "panel"\nposition = "menu-bar-item"'
         self.assertIn("both open under the extension's item", under_item_refusal(second))
