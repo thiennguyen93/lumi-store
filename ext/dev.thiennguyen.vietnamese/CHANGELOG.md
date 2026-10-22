@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.9] - 2026-10-22
+
+### Removed
+
+- The **Source code** row on the About tab.
+
 ## [0.1.8] - 2026-10-22
 
 ### Added

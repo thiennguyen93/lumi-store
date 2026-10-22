@@ -545,16 +545,15 @@ const LANGUAGE_CHANGED: &str = "language";
 
 /// What the About tab and its acknowledgements sheet send when the person
 /// presses one of their links, and where each leads: the extension's page in
-/// the store (the manifest's `homepage`), its source, its developer's mail,
-/// website and GitHub, the typing engine's repository — "Powered by the Gõ
-/// Nhanh engine", with a link to it, is the credit its author asked for — and
-/// the projects the engine's word list comes from. The pages may not leave
+/// the store (the manifest's `homepage`), its developer's mail, website and
+/// GitHub, the typing engine's repository — "Powered by the Gõ Nhanh
+/// engine", with a link to it, is the credit its author asked for — and the
+/// projects the engine's word list comes from. The pages may not leave
 /// their own files, so the component opens the address in the browser or the
 /// mail app — a press, which costs no capability — and only these addresses,
 /// never one a page names.
-const ABOUT_LINKS: [(&str, &str); 8] = [
+const ABOUT_LINKS: [(&str, &str); 7] = [
     ("homepage", "https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"),
-    ("source", "https://github.com/thiennguyen93/lumi-store/tree/main/ext/dev.thiennguyen.vietnamese"),
     ("contact", "mailto:hi@thiennguyen.dev"),
     ("developer-site", "https://thiennguyen.dev"),
     ("developer-github", "https://github.com/thiennguyen93"),
@@ -1058,7 +1057,6 @@ mod tests {
         assert_eq!(about_link("contact"), Some("mailto:hi@thiennguyen.dev"));
         assert_eq!(about_link("developer-site"), Some("https://thiennguyen.dev"));
         assert_eq!(about_link("developer-github"), Some("https://github.com/thiennguyen93"));
-        assert!(about_link("source").is_some_and(|url| url.starts_with("https://github.com/")));
         assert_eq!(about_link("engine"), Some("https://github.com/khaphanspace/gonhanh.org"));
         assert!(about_link("hunspell").is_some() && about_link("aspell").is_some());
         // Anything else a page sends opens nothing, a URL included.
@@ -1084,7 +1082,7 @@ mod tests {
         let about = include_str!("../ui/about.html");
         let sheet = include_str!("../ui/document.html");
         let opened: Vec<&str> = quoted(about, "data-open").into_iter().chain(quoted(sheet, "data-open")).collect();
-        assert!(opened.len() >= 8, "{opened:?}");
+        assert!(opened.len() >= 7, "{opened:?}");
         assert!(opened.contains(&"welcome"), "the About tab no longer opens the Welcome again");
         for word in opened {
             let known = about_link(word).is_some() || welcome::asked(":about", word) == Some(welcome::Ask::Open);

@@ -4,8 +4,8 @@
 // extension page may run no inline script (its CSP is `default-src 'self'`),
 // so this is a file of its own.
 
-// The page may not leave its own files, so the store page, the source, the
-// mail and the developer's and the engine's pages are opened by the component
+// The page may not leave its own files, so the store page, the mail and the
+// developer's and the engine's pages are opened by the component
 // (`ABOUT_LINKS` in src/lib.rs), which holds the addresses: the page only
 // says which one. Getting started's "welcome" opens the Welcome window the
 // same way (src/welcome.rs).
