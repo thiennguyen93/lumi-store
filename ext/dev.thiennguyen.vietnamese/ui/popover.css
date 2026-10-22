@@ -33,8 +33,12 @@
 }
 
 html, body { margin: 0; background: transparent; overflow: hidden; }
+/* 12 points from every edge to what is drawn: the tiles at the sides and
+   top, the footer's words at the bottom — its buttons' own 5 points of
+   padding, the room their hover takes, are part of that 12, so the panel's
+   own padding gives the rest. */
 .pop {
-  box-sizing: border-box; width: 320px; padding: 12px;
+  box-sizing: border-box; width: 320px; padding: 12px 12px 7px;
   user-select: none; -webkit-user-select: none; cursor: default;
 }
 /* Every control here draws itself; under `:where()`, as lumi.css's rules
@@ -99,8 +103,9 @@ kbd {
 .apps .none { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .apps .said { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* Settings… and Quit. */
-.bar { display: flex; justify-content: space-between; margin-top: 10px; }
+/* Settings… and Quit, 12 points under the tiles to their words, as the
+   words are 12 points over the panel's edge. */
+.bar { display: flex; justify-content: space-between; margin-top: 7px; }
 .bar button { display: flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 7px; font-size: 12.5px; }
 .bar button:hover { background: var(--tile-up); }
 .bar svg { width: 15px; height: 15px; }
