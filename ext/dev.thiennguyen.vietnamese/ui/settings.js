@@ -459,6 +459,20 @@ window.addEventListener("lumi:settings", (event) => {
   if (state.popoverAppearance !== look) void restyle();
 });
 
+// Whether there is more of the page above or below what the pane shows, for
+// the fades at its edges (settings.css). Asked on every scroll, and whenever
+// the page or the pane changes height — another language, the shortcut's
+// line, Lumi's window resized.
+const settings = document.querySelector(".settings");
+function edges() {
+  const root = document.scrollingElement || document.documentElement;
+  settings.classList.toggle("above", root.scrollTop > 1);
+  settings.classList.toggle("below", root.scrollTop + root.clientHeight < root.scrollHeight - 1);
+}
+window.addEventListener("scroll", edges, { passive: true });
+window.addEventListener("resize", edges);
+new ResizeObserver(edges).observe(settings);
+
 // A preview outside Lumi is told its theme on the URL, as Lumi tells a pane
 // page; inside Lumi the embedding script has already written it.
 const theme = new URLSearchParams(location.search).get("theme");

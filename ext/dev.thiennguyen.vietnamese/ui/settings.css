@@ -16,6 +16,31 @@
   cursor: default;
 }
 .settings section + section { margin-top: 22px; }
+
+/* Where the tab's body is cut by the pane, the rows fade into it rather than
+   ending at a hard edge: at the bottom while there is more below, at the top
+   once some has scrolled away above (`above`, `below`, from settings.js).
+   Drawn over the page in the pane's own colour, `Canvas`, since the page is
+   transparent on it — not a mask on a scroller of the page's own, because the
+   root is what scrolls, and must, for a page switched off in Lumi
+   (`data-lumi-off`), whose body takes no press and scrolls only there. Fixed
+   to the viewport, which leaves the scroll bar out. */
+.settings::before,
+.settings::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 28px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.settings::before { top: 0; background: linear-gradient(Canvas, transparent); }
+.settings::after { bottom: 0; background: linear-gradient(transparent, Canvas); }
+.settings.above::before,
+.settings.below::after { opacity: 1; }
 .settings h2 { font-size: 13px; font-weight: 600; margin: 0; }
 /* Every control here draws itself. Under `:where()`, as lumi.css's rules are,
    so the classes below win over the reset rather than the other way round. */
