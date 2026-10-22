@@ -237,7 +237,9 @@ MAX_PAGE_LABEL = 24
 MAX_SHEETS = 4
 # `ext::manifest`'s MAX_FOLDERS, MAX_FOLDER_NAME and MAX_FOLDER_LABEL.
 # `ext::manifest::PanelPosition::parse`'s words.
-PANEL_POSITIONS = ("", "cursor", "center", "top-left", "top-right", "bottom-left", "bottom-right", "selection")
+PANEL_POSITIONS = (
+    "", "cursor", "center", "top-left", "top-right", "bottom-left", "bottom-right", "selection", "menu-bar-item"
+)
 MAX_FOLDERS = 8
 MAX_FOLDER_NAME = 64
 MAX_FOLDER_LABEL = 60
@@ -514,21 +516,45 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(
                 entry_id,
                 f'the panel {name} asks for position {position!r}; a panel opens at "cursor", "center", '
-                '"top-left", "top-right", "bottom-left", "bottom-right" or "selection"',
+                '"top-left", "top-right", "bottom-left", "bottom-right", "selection" or "menu-bar-item"',
+            )
+        # `manifest.rs`'s rule for a panel under the extension's own item in
+        # the menu bar (Lumi 1.61): what a click on that item opens, so it
+        # needs the item's capability. One per extension, below the loop.
+        under_item = position == "menu-bar-item" and kind == "panel"
+        if under_item and "menu-bar-item" not in ext.get("capabilities", []):
+            fail(
+                entry_id,
+                f"the panel {name} opens under the extension's item in the menu bar, which needs the "
+                "menu-bar-item capability — add it to capabilities",
             )
         # `manifest.rs`'s anchor rule (Lumi 1.47; side "pointer" 1.48): a
-        # panel beside the selection's alone, its words or nothing, same
-        # sentences.
+        # panel beside the selection's, or under the menu bar item's (Lumi
+        # 1.61), its words or nothing, same sentences. Under the item it is
+        # an edge alone: there is no side above the menu bar.
         if "anchor" in window:
             anchor = window["anchor"]
-            if position != "selection" or kind != "panel":
-                fail(entry_id, f'the window {name} sets an anchor, which only a panel at position = "selection" has')
+            if position not in ("selection", "menu-bar-item") or kind != "panel":
+                fail(
+                    entry_id,
+                    f'the window {name} sets an anchor, which only a panel at position = "selection" or '
+                    '"menu-bar-item" has',
+                )
             if not isinstance(anchor, dict) or not set(anchor) <= {"at", "side"}:
                 fail(entry_id, f"the panel {name}'s anchor is a table of at and side")
             at = str(anchor.get("at", "")).strip()
+            side = str(anchor.get("side", "")).strip()
+            if under_item:
+                if side:
+                    fail(
+                        entry_id,
+                        f"the panel {name} opens under the extension's item in the menu bar and sets anchor side; "
+                        "it always goes below the item",
+                    )
+                if at not in ("", "start", "end", "center", "pointer"):
+                    fail(entry_id, f'the panel {name} asks for anchor at {at!r}; a panel under the menu bar item stands at "start", "end", "center" or "pointer"')
             if at not in ("", "start", "end", "center", "pointer"):
                 fail(entry_id, f'the panel {name} asks for anchor at {at!r}; a panel beside the selection stands at "start", "end", "center" or "pointer"')
-            side = str(anchor.get("side", "")).strip()
             if side not in ("", "above", "below", "pointer"):
                 fail(entry_id, f'the panel {name} asks for anchor side {side!r}; a panel beside the selection goes "above", "below" or "pointer"')
         # `manifest.rs`'s scroll rule (Lumi 1.53): a panel beside the
@@ -540,15 +566,21 @@ def check_manifest(entry_id: str, manifest: dict):
             scroll = str(window["scroll"]).strip()
             if scroll not in ("hide", "follow"):
                 fail(entry_id, f'the panel {name} asks for scroll = {scroll!r}; a panel beside the selection does "hide" or "follow" when its text is scrolled')
-        # `manifest.rs`'s rule for a panel beside the selection (Lumi 1.47):
-        # it has no place of its own, so no key about one, same sentence.
-        if position == "selection" and kind == "panel":
+        # `manifest.rs`'s rule for a panel beside the selection (Lumi 1.47),
+        # and under the menu bar item (Lumi 1.61): it has no place of its
+        # own, so no key about one, same sentence.
+        if position in ("selection", "menu-bar-item") and kind == "panel":
+            opens, placed_by = (
+                ("beside the selection", "the selection")
+                if position == "selection"
+                else ("under the extension's item in the menu bar", "that item")
+            )
             for key in ("remember-frame", "restore", "copies"):
                 if key in window and window[key] not in (False, None):
                     fail(
                         entry_id,
-                        f"the panel {name} opens beside the selection and sets {key}; a panel placed by the "
-                        "selection has no place of its own to remember, bring back or step copies from",
+                        f"the panel {name} opens {opens} and sets {key}; a panel placed by "
+                        f"{placed_by} has no place of its own to remember, bring back or step copies from",
                     )
                     break
         # `manifest.rs`'s focus rule: a panel's alone, and a boolean.
@@ -653,6 +685,21 @@ def check_manifest(entry_id: str, manifest: dict):
             if one in answering:
                 fail(entry_id, f"two windows answer to {one}")
             answering.add(one)
+    # `manifest.rs`'s rule that one item opens one panel (Lumi 1.61): a
+    # second would leave which one a click opens to the order they are listed
+    # in, same sentence.
+    under_item = [
+        window.get("name", "")
+        for window in manifest.get("window", [])
+        if str(window.get("position", "")).strip() == "menu-bar-item"
+        and (str(window.get("kind", "")).strip() or "window") == "panel"
+    ]
+    if len(under_item) > 1:
+        fail(
+            entry_id,
+            f"the panels {under_item[0]} and {under_item[1]} both open under the extension's item in the "
+            "menu bar; a click on it opens one",
+        )
     check_page_tabs(entry_id, manifest)
     check_sheets(entry_id, manifest)
     check_shortcuts(entry_id, manifest)

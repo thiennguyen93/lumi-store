@@ -240,6 +240,73 @@ class BesideTheSelection(unittest.TestCase):
             self.assertIn("opens beside the selection", refused)
 
 
+ITEM_BASE = """
+[extension]
+id = "dev.you.thing"
+name = "Thing"
+version = "1.0.0"
+capabilities = ["menu-bar-item"]
+
+[[command]]
+name = "open"
+label = "Open"
+
+[[window]]
+name = "card"
+path = "card.html"
+kind = "panel"
+position = "menu-bar-item"
+{fields}
+"""
+
+
+def under_item(fields: str) -> None:
+    publish.check_manifest("dev.you.thing", tomllib.loads(ITEM_BASE.format(fields=fields)))
+
+
+def under_item_refusal(fields: str) -> str:
+    with unittest.TestCase().assertRaises(SystemExit) as caught:
+        under_item(fields)
+    return str(caught.exception.code)
+
+
+class UnderTheMenuBarItem(unittest.TestCase):
+    """`position = "menu-bar-item"` (Lumi 1.61): a panel's word that needs
+    the item's capability, one per extension, an edge for its anchor and
+    never a side, and no place of its own — `manifest.rs`'s refusals, same
+    sentences."""
+
+    def test_a_panel_may_open_under_the_item(self):
+        under_item("")
+        under_item("focus = false")
+        under_item('material = "popover"\nkeep-alive = true')
+
+    def test_it_needs_the_items_capability(self):
+        self.assertIn("needs the menu-bar-item capability", refusal('kind = "panel"\nposition = "menu-bar-item"'))
+
+    def test_a_window_may_not(self):
+        self.assertIn("only a panel has", refusal('position = "menu-bar-item"'))
+
+    def test_its_anchor_is_an_edge_and_never_a_side(self):
+        under_item('anchor = { at = "center" }')
+        under_item('anchor = { at = "end" }')
+        under_item("anchor = {}")
+        self.assertIn("always goes below the item", under_item_refusal('anchor = { side = "above" }'))
+        self.assertIn("always goes below the item", under_item_refusal('anchor = { at = "end", side = "below" }'))
+        self.assertIn("under the menu bar item stands at", under_item_refusal('anchor = { at = "middle" }'))
+
+    def test_it_has_no_place_of_its_own(self):
+        for key in ("remember-frame = true", "restore = true", "copies = 4"):
+            self.assertIn("under the extension's item in the menu bar", under_item_refusal(key))
+
+    def test_the_selections_keys_stay_the_selections(self):
+        self.assertIn('only a panel at position = "selection"', under_item_refusal('scroll = "follow"'))
+
+    def test_one_item_opens_one_panel(self):
+        second = '\n[[window]]\nname = "other"\npath = "other.html"\nkind = "panel"\nposition = "menu-bar-item"'
+        self.assertIn("both open under the extension's item", under_item_refusal(second))
+
+
 class PanelFloor(unittest.TestCase):
     """A panel's floor is a panel's (`PANEL_*_MIN`, Lumi 1.47): a one-row
     panel may say how small it can be made; a window keeps its own floor."""
