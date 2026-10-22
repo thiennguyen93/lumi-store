@@ -1796,6 +1796,35 @@ def discussion_of(entry_id: str):
     return listed.get(entry_id)
 
 
+# Where an entry kept in this repository is read on GitHub, for the store
+# page's Source row. Written out rather than read from the git remote, which
+# a fork's CI would name instead; the homepage's lib/extensions.ts accepts
+# links under its own copy of it and no other.
+STORE_SOURCE = "https://github.com/thiennguyen93/lumi-store/tree/main/"
+
+
+def submodule_paths() -> set:
+    """The paths .gitmodules pins, each an entry kept in a repository of
+    its own rather than in this one."""
+    gitmodules = ROOT / ".gitmodules"
+    if not gitmodules.is_file():
+        return set()
+    found = (re.match(r"\s*path\s*=\s*(.+?)\s*$", line) for line in gitmodules.read_text(encoding="utf-8").splitlines())
+    return {match.group(1).strip("/") for match in found if match}
+
+
+def source_of(entry: dict):
+    """The store page's link to an entry's source, or None for no Source
+    row. An entry kept in this repository is read here, at the path the
+    listing names. A private entry has no public source to name, and a
+    submodule's is in its own repository at its pinned commit, which this
+    does not name yet."""
+    if entry.get("private") or entry["path"].strip("/") in submodule_paths():
+        return None
+    path = Path(entry["path"]) / entry.get("subdir", ".")
+    return f"{STORE_SOURCE}{path.as_posix().strip('/')}/"
+
+
 def notes_sha256(notes: str) -> str:
     """What a summary is pinned to: a version's notes, byte for byte. An
     edited section leaves its old summary unshown until it is redone."""
@@ -2096,6 +2125,10 @@ def main(check: bool = False, built: "Path | None" = None):
                 # thread, never how many, since a count here is stale the
                 # moment it is written.
                 "discussion": discussion_of(entry_id),
+                # Where the source is read (`source_of`), or null for an
+                # entry whose source is not in this repository. The store
+                # page's Source row; Lumi ignores it.
+                "source": source_of(entry),
                 "size": len(package),
                 "commands": [c.get("label") or c.get("name", "") for c in manifest.get("command", [])],
                 "shortcuts": [
