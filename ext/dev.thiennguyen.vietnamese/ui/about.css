@@ -65,7 +65,9 @@
 }
 .tile svg { width: 18px; height: 18px; }
 .title { font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: -0.005em; }
-.chips { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+/* The facts start where the words above them do, past the tile (its 34 and
+   the head's 12 gap): the tile leads the card, as Engine's leads its own. */
+.chips { list-style: none; margin: 12px 0 0 46px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .chips li {
   display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 8px;
   border-radius: 999px; background: var(--surface-up); font-size: 12px; font-weight: 500;
