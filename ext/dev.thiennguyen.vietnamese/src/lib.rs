@@ -26,7 +26,7 @@
 
 use gonhanh_core::data::keys as kc;
 use gonhanh_core::engine::Engine;
-use lumi_extension_api::{self as lumi, front_app, menu, text_input, Guest, Lifecycle};
+use lumi_extension_api::{self as lumi, front_app, menu, menu_bar_item, text_input, Guest, Lifecycle};
 
 mod welcome;
 
@@ -230,12 +230,38 @@ fn label_tabs() -> Result<(), String> {
     Ok(())
 }
 
-/// The one row in Lumi's menu bar menu: whether typing is on, and the way to
-/// switch it.
+/// The menu bar item's icon: V while typing is on, E while it is off — the
+/// letters every Vietnamese input method shows — each a key with its letter
+/// cut out, shipped under `ui/` and drawn by Lumi in the menu bar's ink.
+pub fn menu_bar_icon(on: bool) -> &'static str {
+    if on {
+        "menu-bar-v.svg"
+    } else {
+        "menu-bar-e.svg"
+    }
+}
+
+/// What a pointer resting on the item reads, in the display language.
+pub fn menu_bar_tooltip(on: bool, language: Option<&str>) -> &'static str {
+    match (language, on) {
+        (Some("en"), true) => "Vietnamese typing is on",
+        (Some("en"), false) => "Vietnamese typing is off",
+        (_, true) => "Gõ tiếng Việt: đang bật",
+        (_, false) => "Gõ tiếng Việt: đang tắt",
+    }
+}
+
+/// The one row in Lumi's menu bar menu — whether typing is on, and the way to
+/// switch it — and the item of the extension's own in the menu bar, which
+/// shows the same at a glance and opens a menu holding that row. Drawn
+/// together, wherever the switch or the language may have moved; Lumi keeps
+/// both, and the same item again is no change.
 fn draw_menu() -> Result<(), String> {
     let on = text_input::enabled()?;
-    let label = menu_label(lumi::setting("language").as_deref());
-    menu::set(&[menu::Entry::check("toggle", label, on)])
+    let language = lumi::setting("language");
+    let label = menu_label(language.as_deref());
+    menu::set(&[menu::Entry::check("toggle", label, on)])?;
+    menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on)).tooltip(menu_bar_tooltip(on, language.as_deref())))
 }
 
 /// What the Settings tab sends (`POST /__lumi__/call`) after it saves a new
@@ -465,6 +491,20 @@ mod tests {
         // manifest's default.
         assert_eq!(menu_label(None), "Gõ tiếng Việt");
         assert_eq!(menu_label(Some("fr")), "Gõ tiếng Việt");
+    }
+
+    /// The item says the switch at a glance: V on, E off, each a file the
+    /// package ships, and its tooltip in the display language.
+    #[test]
+    fn the_menu_bar_item_shows_the_switch() {
+        assert_eq!(menu_bar_icon(true), "menu-bar-v.svg");
+        assert_eq!(menu_bar_icon(false), "menu-bar-e.svg");
+        for on in [true, false] {
+            let file = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("ui").join(menu_bar_icon(on));
+            assert!(file.is_file(), "{} ships", file.display());
+        }
+        assert_eq!(menu_bar_tooltip(true, Some("en")), "Vietnamese typing is on");
+        assert_eq!(menu_bar_tooltip(false, None), "Gõ tiếng Việt: đang tắt");
     }
 
     #[test]

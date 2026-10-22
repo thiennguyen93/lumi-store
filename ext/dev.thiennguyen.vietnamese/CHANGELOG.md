@@ -10,6 +10,7 @@
 - The row in Lumi's menu bar menu follows the display language: **Gõ tiếng Việt**, or **Vietnamese typing** in English.
 - An About tab of its own, in English: what the extension can reach, who made it and how to get in touch, its page in the store, its source, and its licence and third-party notices, each read in a sheet.
 - The Settings, About and Changelog tab names follow the display language: **Cài đặt**, **Giới thiệu** and **Nhật ký thay đổi** in Vietnamese.
+- A V or an E in the menu bar, beside Lumi's icon, says at a glance whether Vietnamese typing is on. Click it for the switch and the extension's settings; hide it from the extension's Permissions sheet in Lumi.
 
 ### Changed
 

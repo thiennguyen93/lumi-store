@@ -22,7 +22,10 @@ min-lumi-version = "1.61.0"
 # `network` or `ai`, and this extension holds neither.
 # `front-app`: which app is in front, so the switch is remembered per app.
 # `menu`: one row in Lumi's menu bar menu showing whether typing is on.
-capabilities = ["text-input", "front-app", "menu"]
+# `menu-bar-item`: an item of its own in the menu bar, V or E, showing the
+# same at a glance; its menu holds that row (Lumi 1.61.0, which the
+# `min-lumi-version` above already asks for).
+capabilities = ["text-input", "front-app", "menu", "menu-bar-item"]
 events = ["text-input", "text-input-enabled", "front-app"]
 
 [[command]]
