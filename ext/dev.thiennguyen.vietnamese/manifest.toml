@@ -144,6 +144,27 @@ label = "Remember on or off for each app"
 kind = "bool"
 default = "true"
 
+# The popover's look, on its own: Lumi's Appearance, or light or dark for it
+# alone (`lumi::set_theme`). Its glass and its page both follow it. Only on
+# the Settings tab — the menu and the popover hold the typing's switches.
+[[settings]]
+name = "popoverAppearance"
+label = "Popover appearance"
+kind = "select"
+default = "system"
+
+[[settings.options]]
+value = "system"
+label = "System"
+
+[[settings.options]]
+value = "light"
+label = "Light"
+
+[[settings.options]]
+value = "dark"
+label = "Dark"
+
 # The licence and the third-party notices, each read in a sheet over Lumi's
 # window from the About tab's two buttons. One page for both
 # (ui/document.html), told by the About tab which text it shows; the title is

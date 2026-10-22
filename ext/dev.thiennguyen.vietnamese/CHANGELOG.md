@@ -7,6 +7,7 @@
 - A Welcome window when it is first installed, in Vietnamese or English: choose the display language and the typing method, and see where the keys you type go.
 - **Switch Vietnamese typing on or off** has a key of its own, ⌃⇧V, set at install when nothing else holds it. Change it on the Settings tab, under **Shortcut**.
 - The Settings tab reads in Vietnamese or English: choose with **Display language** at its top. Vietnamese is the default.
+- **Popover appearance** on the Settings tab: the popover in Lumi's own look, or light or dark on its own.
 - The row in Lumi's menu bar menu follows the display language: **Gõ tiếng Việt**, or **Vietnamese typing** in English.
 - An About tab of its own, in English: what the extension can reach, who made it and how to get in touch, its page in the store, its source, and its licence and third-party notices, each read in a sheet.
 - The Settings, About and Changelog tab names follow the display language: **Cài đặt**, **Giới thiệu** and **Nhật ký thay đổi** in Vietnamese.

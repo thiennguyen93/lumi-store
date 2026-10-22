@@ -11,6 +11,11 @@ const WORDS = {
     generalTitle: "Chung",
     langName: "Ngôn ngữ hiển thị",
     langOther: "Display language",
+    lookName: "Giao diện popover",
+    lookSays: "Khung mở ra khi bấm V hoặc E trên menu bar.",
+    lookSystem: "Hệ thống",
+    lookLight: "Sáng",
+    lookDark: "Tối",
     shortcutTitle: "Phím tắt",
     keyName: "Bật hoặc tắt gõ tiếng Việt",
     keyLooking: "Đang xem phím tắt…",
@@ -55,6 +60,11 @@ const WORDS = {
     generalTitle: "General",
     langName: "Display language",
     langOther: "Ngôn ngữ hiển thị",
+    lookName: "Popover appearance",
+    lookSays: "What opens when you click the V or E in the menu bar.",
+    lookSystem: "System",
+    lookLight: "Light",
+    lookDark: "Dark",
     shortcutTitle: "Shortcut",
     keyName: "Switch Vietnamese typing on or off",
     keyLooking: "Looking up the shortcut…",
@@ -113,6 +123,7 @@ function fromLumi(raw) {
     escRestore: flag("escRestore", true),
     englishRestore: flag("englishRestore", false),
     perApp: flag("perApp", true),
+    popoverAppearance: ["light", "dark"].includes(value("popoverAppearance")) ? value("popoverAppearance") : "system",
   };
 }
 
@@ -145,6 +156,16 @@ function redrawMenu() {
   return fetch("/__lumi__/call", { method: "POST", body: "language" }).catch(() => {});
 }
 
+// The popover's look is Lumi's to put on its window (`lumi::set_theme`), so
+// the component is asked to, once the new look is stored (`APPEARANCE_CHANGED`
+// in src/lib.rs) — at once if the popover is up.
+function restyle() {
+  return fetch("/__lumi__/call", { method: "POST", body: "appearance" }).catch(() => {});
+}
+
+// What the component is told after a save of `name`, if anything.
+const AFTER_SAVE = { language: redrawMenu, popoverAppearance: restyle };
+
 // One change, drawn at once and saved as text; then read back, so a save
 // Lumi refused — the extension switched off meanwhile — shows what stands.
 function save(name, value) {
@@ -152,7 +173,7 @@ function save(name, value) {
   state = { ...state, [name]: value };
   draw();
   fetch("/__lumi__/settings", { method: "PUT", body: JSON.stringify({ [name]: String(value) }), keepalive: true })
-    .then(() => (name === "language" ? redrawMenu() : undefined))
+    .then(() => AFTER_SAVE[name]?.())
     .catch(() => {})
     .finally(() => void reread());
 }
@@ -433,9 +454,11 @@ function drawKey() {
 window.addEventListener("lumi:settings", (event) => {
   asked++;
   const before = state.language;
+  const look = state.popoverAppearance;
   state = fromLumi(event.detail || {});
   draw();
   if (state.language !== before) void redrawMenu();
+  if (state.popoverAppearance !== look) void restyle();
 });
 
 // A preview outside Lumi is told its theme on the URL, as Lumi tells a pane

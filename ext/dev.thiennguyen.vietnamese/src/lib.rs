@@ -402,7 +402,11 @@ fn popover_now(on: bool, settings: &serde_json::Value) -> serde_json::Value {
 /// a press on that row ([`pressed`]) — answered with what to show next.
 fn popover_request(request: &str) -> Result<String, String> {
     match request {
-        "state" => {}
+        // Every showing asks: the look is put on before the answer is drawn.
+        // A look refused is no reason to show an empty popover.
+        "state" => {
+            let _ = apply_appearance();
+        }
         "close" => return lumi::close_window(POPOVER).map(|()| String::new()),
         id => pressed(id)?,
     }
@@ -514,6 +518,30 @@ fn draw_menu() -> Result<(), String> {
     menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on)).tooltip(menu_bar_tooltip(on, language)))
 }
 
+/// The look the popover is drawn in, by the `popoverAppearance` setting:
+/// `"light"`, `"dark"`, or `"system"` — Lumi's Appearance, as every other
+/// window — for that or anything this build does not know.
+pub fn popover_appearance(settings: &serde_json::Value) -> &'static str {
+    match settings.get("popoverAppearance").and_then(|value| value.as_str()) {
+        Some("light") => "light",
+        Some("dark") => "dark",
+        _ => "system",
+    }
+}
+
+/// Put the popover in the look its setting names (`lumi::set_theme`), at
+/// once if it is up. Lumi keeps the choice until it quits and nothing runs
+/// when it starts, so it is asked again wherever a run may change windows:
+/// installing or updating, the Settings tab saving it, and the popover's
+/// page asking what to show — which, the first time after a launch, is a
+/// moment after the popover opened in Lumi's own look.
+fn apply_appearance() -> Result<(), String> {
+    lumi::set_theme(POPOVER, popover_appearance(&lumi::settings()))
+}
+
+/// What the Settings tab sends after it saves the popover's appearance.
+const APPEARANCE_CHANGED: &str = "appearance";
+
 /// What the Settings tab sends (`POST /__lumi__/call`) after it saves a new
 /// display language. Nothing tells a component its settings changed, and the
 /// menu row is drawn from the stored tree until somebody draws it again, so
@@ -576,6 +604,9 @@ impl Guest for VietnameseTyping {
         if window == ":settings" && request == LANGUAGE_CHANGED {
             return draw_menu().and_then(|()| label_tabs()).map(|()| String::new());
         }
+        if window == ":settings" && request == APPEARANCE_CHANGED {
+            return apply_appearance().map(|()| String::new());
+        }
         if let Some(url) = about_link(&request).filter(|_| window == ":about") {
             return lumi::open_url(url).map(|()| String::new());
         }
@@ -586,13 +617,17 @@ impl Guest for VietnameseTyping {
         match event {
             Lifecycle::Installed => {
                 menu::set_shown(false)?;
-                welcome::on_install()
+                // A look that cannot be put on is no reason to skip the
+                // Welcome; it is still said, after.
+                let look = apply_appearance();
+                welcome::on_install().and(look)
             }
             Lifecycle::Updated(from) => {
                 if drew_no_item(&from) {
                     menu::set_shown(false)?;
                 }
-                draw_menu().and_then(|()| label_tabs())
+                let look = apply_appearance();
+                draw_menu().and_then(|()| label_tabs()).and(look)
             }
             Lifecycle::Uninstalling => Ok(()),
         }
@@ -912,6 +947,23 @@ mod tests {
             ["com.apple.Terminal=Terminal", "com.microsoft.VSCode=Visual Studio Code"],
         );
         assert!(alike(true, &serde_json::Map::new(), names, None).is_empty());
+    }
+
+    /// The popover's look is its own setting, never one of the switches the
+    /// menu and the popover draw.
+    #[test]
+    fn the_popover_appearance_is_a_setting_of_the_settings_tab_alone() {
+        let look = |value: serde_json::Value| popover_appearance(&serde_json::json!({ "popoverAppearance": value }));
+        assert_eq!(look("light".into()), "light");
+        assert_eq!(look("dark".into()), "dark");
+        assert_eq!(look("system".into()), "system");
+        assert_eq!(look("sepia".into()), "system");
+        assert_eq!(popover_appearance(&serde_json::json!({})), "system");
+        let settings = serde_json::json!({ "popoverAppearance": "dark" });
+        assert!(menu_entries(true, &settings).iter().all(|entry| !entry.id.contains("ppearance")));
+        assert!(popover_state(true, &settings, None, &[])["options"].get("popoverAppearance").is_none());
+        let manifest = include_str!("../manifest.toml");
+        assert!(manifest.contains("name = \"popoverAppearance\"") && manifest.contains("default = \"system\""));
     }
 
     /// The popover and the right-click menu are two drawings of one state.
