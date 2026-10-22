@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.6] - 2026-10-22
+
+### Changed
+
+- On a work's page in the Acknowledgements sheet, the button back to the list reads **Back**.
+
 ## [0.1.5] - 2026-10-22
 
 ### Fixed

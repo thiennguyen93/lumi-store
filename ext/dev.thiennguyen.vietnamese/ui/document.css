@@ -91,7 +91,8 @@ header p { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
 .out svg { width: 10px; height: 10px; stroke-width: 2.4; }
 
 /* Back to the list, where a navigation bar keeps it: the leading edge,
-   above the title, in the accent, with the list's name. */
+   above the title, in the accent. It says Back rather than the list's
+   name: the sheet is two pages deep, and the name is long. */
 .back { display: inline-flex; align-items: center; gap: 2px; margin: 0 0 6px -4px; padding: 2px 6px 2px 2px; border-radius: 6px; font-size: 13px; color: var(--accent-ink, #2a6eb4); }
 .back:hover { background: var(--group-hover); }
 .back svg { width: 15px; height: 15px; stroke-width: 2.2; }
