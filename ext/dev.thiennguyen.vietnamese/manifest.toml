@@ -6,8 +6,8 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.11"
-description = "Type Vietnamese with Telex or VNI in every app, with no input method to install."
+version = "0.1.12"
+description = "Vietnamese typing for your Mac, with Telex or VNI and no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
 # The extension's own page in the store, which the About tab links to as

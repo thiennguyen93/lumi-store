@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.12] - 2026-10-22
+
+### Changed
+
+- The line that describes it in the Extension Store and in Lumi reads: *Vietnamese typing for your Mac, with Telex or VNI and no input method to install.*
+
 ## [0.1.11] - 2026-10-22
 
 ### Added
