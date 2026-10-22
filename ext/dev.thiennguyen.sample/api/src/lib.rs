@@ -891,6 +891,19 @@ pub fn setting(name: &str) -> Option<String> {
         .map(|value| value.to_string())
 }
 
+/// Save one setting, as your Settings page would: for a menu row that
+/// switches it — `set_setting("method", "vni")` — without the person opening
+/// the page. Held to the field's own rules, filed under the live profile
+/// for a field declared `scope = "profile"`, and told to your pages; the
+/// rest of this run's [`settings`] read the new value. Only for something
+/// the person did: a command, a menu bar row or one of your windows. Needs
+/// Lumi 1.61.0.
+pub fn set_setting(name: &str, value: &str) -> Result<(), String> {
+    let mut values = serde_json::Map::new();
+    values.insert(name.to_string(), serde_json::Value::String(value.to_string()));
+    lumi::ext::settings::write(&serde_json::Value::Object(values).to_string())
+}
+
 /// Every profile on this Mac, and which one is live.
 ///
 /// A profile is a whole set of the person's automations — shortcuts,

@@ -678,6 +678,15 @@ interface open {
 /// the live profile's value, so the same read serves every profile.
 interface settings {
     read: func() -> string;
+
+    /// Save some of your settings, as a save from your Settings page does:
+    /// `values` is a JSON object of field name to text, merged over what is
+    /// saved, held to the same rules, filed under the live profile for a
+    /// field declared `scope = "profile"`, and told to your pages. The rest
+    /// of this run reads the new values. For a row of your menu that
+    /// switches a setting — only for something the person did. Added in
+    /// Lumi 1.61.0.
+    write: func(values: string) -> result<_, string>;
 }
 
 /// The person's profiles, and which one is live.
