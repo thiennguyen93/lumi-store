@@ -230,6 +230,28 @@ fn label_tabs() -> Result<(), String> {
     Ok(())
 }
 
+/// The rows of the menu the V or E opens, after the switch: the extension's
+/// own Settings… and, last, Quit — which switches the extension off in Lumi
+/// (`lumi::switch_off`), not Lumi — in the display language: Vietnamese
+/// unless it says English. Lumi's own heading and Settings row are left out
+/// (`menu-bar-item-heading`, `menu-bar-item-settings`): these say both.
+pub fn menu_rows(language: Option<&str>) -> (&'static str, &'static str) {
+    match language {
+        Some("en") => ("Settings…", "Quit"),
+        _ => ("Cài đặt…", "Thoát"),
+    }
+}
+
+/// The menu row ids a press comes back with.
+const SETTINGS_ROW: &str = "settings";
+const QUIT_ROW: &str = "quit";
+
+/// The glyphs beside those two rows, from Lumi's Lucide set: the gear and the
+/// power button Lumi's own menu draws beside its Settings… and Quit Lumi, so
+/// the rows read as the ones they stand in for.
+const SETTINGS_ICON: &str = "settings";
+const QUIT_ICON: &str = "power";
+
 /// The menu bar item's icon: V while typing is on, E while it is off — the
 /// letters every Vietnamese input method shows — each a key with its letter
 /// cut out, shipped under `ui/` and drawn by Lumi in the menu bar's ink.
@@ -260,7 +282,15 @@ fn draw_menu() -> Result<(), String> {
     let on = text_input::enabled()?;
     let language = lumi::setting("language");
     let label = menu_label(language.as_deref());
-    menu::set(&[menu::Entry::check("toggle", label, on)])?;
+    let (settings, quit) = menu_rows(language.as_deref());
+    // `set_rows`, not `set`: only it draws a row's icon.
+    menu::set_rows(&[
+        menu::Entry::check("toggle", label, on),
+        menu::Entry::separator("s1"),
+        menu::Entry::item(SETTINGS_ROW, settings).icon(SETTINGS_ICON),
+        menu::Entry::separator("s2"),
+        menu::Entry::item(QUIT_ROW, quit).icon(QUIT_ICON),
+    ])?;
     menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on)).tooltip(menu_bar_tooltip(on, language.as_deref())))
 }
 
@@ -318,9 +348,15 @@ impl Guest for VietnameseTyping {
             return welcome::answer(ask);
         }
         if let Some(id) = menu::pressed(&window, &request) {
-            if id == "toggle" {
-                return toggle().map(|()| String::new());
-            }
+            return match id.as_str() {
+                "toggle" => toggle().map(|()| String::new()),
+                SETTINGS_ROW => lumi::open_settings().map(|()| String::new()),
+                // Off in Lumi, as the switch under Extensions would put it:
+                // the item and the typing go, and nothing of this runs until
+                // the person switches it on again there.
+                QUIT_ROW => lumi::switch_off().map(|()| String::new()),
+                other => Err(format!("no menu row {other}")),
+            };
         }
         if window == ":settings" && request == LANGUAGE_CHANGED {
             return draw_menu().and_then(|()| label_tabs()).map(|()| String::new());
@@ -481,6 +517,15 @@ mod tests {
             Settings { vni: true, modern_tone: false, esc_restore: true, english_restore: true }
         );
         assert_eq!(Settings::from_json(&serde_json::json!({})), TELEX);
+    }
+
+    #[test]
+    fn the_menu_rows_after_the_switch_read_in_the_display_language() {
+        assert_eq!(menu_rows(Some("en")), ("Settings…", "Quit"));
+        assert_eq!(menu_rows(Some("vi")), ("Cài đặt…", "Thoát"));
+        // Never chosen, or a value this build does not know: Vietnamese.
+        assert_eq!(menu_rows(None), ("Cài đặt…", "Thoát"));
+        assert_eq!(menu_rows(Some("fr")), ("Cài đặt…", "Thoát"));
     }
 
     #[test]

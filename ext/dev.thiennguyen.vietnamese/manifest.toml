@@ -30,6 +30,10 @@ capabilities = ["text-input", "front-app", "menu", "menu-bar-item"]
 # "Gõ tiếng Việt", already says whose it is, and the name above it said the
 # same twice. The tooltip and VoiceOver still name it.
 menu-bar-item-heading = false
+# And without Lumi's last row: the menu draws its own "Cài đặt…" (Settings…)
+# and, below it, "Thoát" (Quit), which switches the extension off in Lumi —
+# not Lumi itself — and the person switches it on again under Extensions.
+menu-bar-item-settings = false
 events = ["text-input", "text-input-enabled", "front-app"]
 
 [[command]]
