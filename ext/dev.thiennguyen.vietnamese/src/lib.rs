@@ -164,10 +164,18 @@ pub fn physical(key: &text_input::Key) -> Option<(u16, bool, bool)> {
 const APPS: &str = "apps";
 /// The storage key holding the app last in front.
 const FRONT: &str = "front";
+/// The storage key holding that app's name, for the popover's "remembered
+/// for" line — the one app, never a list of them.
+const FRONT_NAME: &str = "front-name";
 
 /// The app last in front, as `front-app` last told it.
 fn front() -> Option<String> {
     lumi::storage::get(FRONT).ok().flatten().map(|entry| entry.value).filter(|id| !id.is_empty())
+}
+
+/// Its name, as `front-app` last told it.
+fn front_name() -> Option<String> {
+    lumi::storage::get(FRONT_NAME).ok().flatten().map(|entry| entry.value).filter(|name| !name.is_empty())
 }
 
 /// What the person left the switch at in each app.
@@ -233,7 +241,8 @@ fn label_tabs() -> Result<(), String> {
     Ok(())
 }
 
-/// The menu the V or E opens: the switch, the typing method, the engine's
+/// The menu a right-click on the V or E opens — VoiceOver's way in, the
+/// popover being the click's ([`popover_state`]): the switch, the typing method, the engine's
 /// switches, the extension's own Settings… and, last, Quit — which switches
 /// the extension off in Lumi (`lumi::switch_off`), not Lumi. The method and
 /// the switches are the Settings tab's own rows, put where a press reaches
@@ -287,6 +296,45 @@ const QUIT_ROW: &str = "quit";
 /// so the rows read as the ones they stand in for.
 const SETTINGS_ICON: &str = "settings";
 const QUIT_ICON: &str = "power";
+
+/// The popover a click on the V or E opens, under it (`[[window]] popover`,
+/// `position = "menu-bar-item"`) — the menu above answers a right-click, and
+/// VoiceOver, which presses the item rather than clicking it.
+const POPOVER: &str = "popover";
+
+/// What the popover shows, as JSON its page reads (popover.js): the switch,
+/// the typing method, the four switches by setting, the app the switch is
+/// remembered for — only while it is remembered per app — and the display
+/// language. Every value read as the menu reads it ([`menu_entries`]), so the
+/// two never disagree.
+pub fn popover_state(on: bool, settings: &serde_json::Value, app: Option<&str>) -> serde_json::Value {
+    let options: serde_json::Map<String, serde_json::Value> = OPTIONS
+        .iter()
+        .map(|(setting, default, ..)| (setting.to_string(), serde_json::Value::Bool(flag(settings, setting, *default))))
+        .collect();
+    let english = settings.get("language").and_then(|value| value.as_str()) == Some("en");
+    serde_json::json!({
+        "v": 1,
+        "on": on,
+        "method": if Settings::from_json(settings).vni { "vni" } else { "telex" },
+        "options": options,
+        "app": app.filter(|_| flag(settings, "perApp", true)),
+        "language": if english { "en" } else { "vi" },
+    })
+}
+
+/// A request from the popover's page: `"state"` for what to show, `"close"`
+/// for its Escape, or the id of the menu row it stands for — carried out as
+/// a press on that row ([`pressed`]) — answered with what to show next.
+fn popover_request(request: &str) -> Result<String, String> {
+    match request {
+        "state" => {}
+        "close" => return lumi::close_window(POPOVER).map(|()| String::new()),
+        id => pressed(id)?,
+    }
+    let state = popover_state(text_input::enabled()?, &lumi::settings(), front_name().as_deref());
+    Ok(state.to_string())
+}
 
 /// What a press on a row of that menu does, read against the settings it was
 /// drawn from.
@@ -388,6 +436,8 @@ fn draw_menu() -> Result<(), String> {
     let language = settings.get("language").and_then(|value| value.as_str());
     // `set_rows`, not `set`: only it draws a row's icon.
     menu::set_rows(&menu_entries(on, &settings))?;
+    // The popover, when it is up, shows the same; `false` when it is not.
+    let _ = lumi::post(POPOVER, &popover_state(on, &settings, front_name().as_deref()).to_string());
     menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on)).tooltip(menu_bar_tooltip(on, language)))
 }
 
@@ -444,6 +494,9 @@ impl Guest for VietnameseTyping {
         if let Some(ask) = welcome::asked(&window, &request) {
             return welcome::answer(ask);
         }
+        if window == POPOVER {
+            return popover_request(&request);
+        }
         if let Some(id) = menu::pressed(&window, &request) {
             return pressed(&id).map(|()| String::new());
         }
@@ -482,9 +535,12 @@ impl Guest for VietnameseTyping {
             };
         }
         if let Some(app) = front_app::changed(&name, &payload) {
+            let app_name = app.name.unwrap_or_default();
             let id = app.id.unwrap_or_default();
             let rev = lumi::storage::get(FRONT)?.map(|entry| entry.rev);
             lumi::storage::put(FRONT, &id, rev).map_err(lumi::storage::PutError::into_message)?;
+            let rev = lumi::storage::get(FRONT_NAME)?.map(|entry| entry.rev);
+            lumi::storage::put(FRONT_NAME, &app_name, rev).map_err(lumi::storage::PutError::into_message)?;
             if per_app() {
                 if let Some(on) = remembered().get(&id).and_then(serde_json::Value::as_bool) {
                     if on != text_input::enabled()? {
@@ -724,6 +780,50 @@ mod tests {
         // Never chosen, or a value this build does not know: Vietnamese.
         assert_eq!(labels(serde_json::Value::Null), vietnamese);
         assert_eq!(labels(serde_json::json!("fr")), vietnamese);
+    }
+
+    #[test]
+    fn the_popover_shows_what_is_saved_and_the_app_only_when_remembered_per_app() {
+        let state = popover_state(true, &serde_json::json!({}), Some("Slack"));
+        assert_eq!(
+            state,
+            serde_json::json!({
+                "v": 1,
+                "on": true,
+                "method": "telex",
+                "options": { "modernTone": true, "escRestore": true, "englishRestore": false, "perApp": true },
+                "app": "Slack",
+                "language": "vi",
+            })
+        );
+        let shared = popover_state(false, &serde_json::json!({ "perApp": "false", "language": "en", "method": "vni" }), Some("Slack"));
+        assert_eq!(shared["app"], serde_json::Value::Null, "the same in every app names none");
+        assert_eq!(shared["on"], false);
+        assert_eq!(shared["method"], "vni");
+        assert_eq!(shared["language"], "en");
+        assert_eq!(popover_state(true, &serde_json::json!({}), None)["app"], serde_json::Value::Null);
+    }
+
+    /// The popover and the right-click menu are two drawings of one state.
+    #[test]
+    fn the_popover_and_the_menu_never_disagree() {
+        for settings in [
+            serde_json::json!({}),
+            serde_json::json!({ "method": "vni", "modernTone": "false", "englishRestore": "true", "perApp": "false" }),
+        ] {
+            for on in [true, false] {
+                let state = popover_state(on, &settings, None);
+                for entry in menu_entries(on, &settings) {
+                    if let Some(setting) = entry.id.strip_prefix(OPTION_ROW) {
+                        assert_eq!(state["options"][setting], entry.checked, "{setting}");
+                    } else if let Some(method) = entry.id.strip_prefix(METHOD_ROW) {
+                        assert_eq!(state["method"] == method, entry.checked, "{method}");
+                    } else if entry.id == TOGGLE_ROW {
+                        assert_eq!(state["on"], entry.checked);
+                    }
+                }
+            }
+        }
     }
 
     #[test]

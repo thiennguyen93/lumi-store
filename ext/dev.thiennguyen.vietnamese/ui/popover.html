@@ -1,0 +1,61 @@
+<!doctype html>
+<!-- The popover a click on the V or E in the menu bar opens, under it
+     (`[[window]] popover`, `position = "menu-bar-item"`): the switch, the
+     typing method and the Settings tab's switches, as tiles. popover.js asks
+     the component what to draw and tells it every press; the words below are
+     the Vietnamese ones, the default, which it writes over once it knows the
+     display language. -->
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Gõ tiếng Việt</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="popover.css">
+</head>
+<body>
+  <main class="pop" hidden>
+    <div class="grid">
+      <button type="button" class="tile big" role="switch" data-act="toggle" aria-checked="true">
+        <span class="disc" id="glyph">V</span>
+        <span class="say"><b id="state-name">Tiếng Việt</b><small id="remembered"></small></span>
+        <kbd id="key" hidden></kbd>
+      </button>
+      <div class="tile method">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="M7 16h10"/></svg>
+        <span id="method-name" data-t="method">Kiểu gõ</span>
+        <div class="seg" role="radiogroup" aria-labelledby="method-name">
+          <button type="button" role="radio" data-act="method:telex" data-value="telex">Telex</button>
+          <button type="button" role="radio" data-act="method:vni" data-value="vni">VNI</button>
+        </div>
+      </div>
+      <button type="button" class="tile mini" role="switch" data-act="option:modernTone" data-option="modernTone">
+        <span class="dot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg></span>
+        <b><span data-t="tone">Dấu kiểu mới</span><small>hoà, thuý</small></b>
+      </button>
+      <button type="button" class="tile mini" role="switch" data-act="option:escRestore" data-option="escRestore">
+        <span class="dot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/></svg></span>
+        <b><span data-t="esc">Esc trả phím</span><small>tiếng → tieengs</small></b>
+      </button>
+      <button type="button" class="tile mini" role="switch" data-act="option:englishRestore" data-option="englishRestore">
+        <span class="dot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></span>
+        <b><span data-t="eng">Giữ từ tiếng Anh</span><small>with, text</small></b>
+      </button>
+      <button type="button" class="tile mini" role="switch" data-act="option:perApp" data-option="perApp">
+        <span class="dot"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 4v4"/><path d="M2 8h20"/><path d="M6 4v4"/></svg></span>
+        <b><span data-t="app">Nhớ theo app</span><small data-t="appSays">riêng mỗi app</small></b>
+      </button>
+    </div>
+    <div class="bar">
+      <button type="button" data-act="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span data-t="settings">Cài đặt…</span>
+      </button>
+      <button type="button" data-act="quit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
+        <span data-t="quit">Thoát</span>
+      </button>
+    </div>
+  </main>
+  <script src="popover.js"></script>
+</body>
+</html>

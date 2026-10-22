@@ -65,6 +65,24 @@ height = 520
 resizable = false
 maximizable = false
 
+# What a click on the V or E opens, under it (Lumi 1.61.0): the switch, Telex
+# or VNI and the Settings tab's switches, as tiles. The menu above answers a
+# right-click — and VoiceOver, which presses the item rather than clicking it.
+# Kept loaded between openings, so it is up at once; its page fits the panel
+# to what it shows. Centred under the V or E, as a popover hangs — Lumi holds
+# it inside the display when the item stands near an edge.
+[[window]]
+name = "popover"
+title = "Lumi Gõ tiếng Việt"
+path = "popover.html"
+kind = "panel"
+position = "menu-bar-item"
+anchor = { at = "center" }
+material = "popover"
+keep-alive = true
+width = 300
+height = 340
+
 # The language this extension's own pages are read in. Vietnamese first: it
 # is who the extension is for. Lumi's own words around them — the tab names,
 # the Permissions sheet — stay Lumi's.

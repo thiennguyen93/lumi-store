@@ -1,0 +1,92 @@
+/* The popover under the V or E (popover.html): tiles, Control Center's shape.
+   Lumi draws it on the popover glass (`material = "popover"`), so the page is
+   clear and every tile a tint over the glass, on lumi.css's tokens with a
+   fallback for a preview outside Lumi. */
+
+:root {
+  --pick: var(--accent, #378add);
+  --muted: color-mix(in srgb, CanvasText 55%, transparent);
+  --tile: rgba(255, 255, 255, 0.5);
+  --tile-line: rgba(0, 0, 0, 0.08);
+  --tile-up: rgba(255, 255, 255, 0.72);
+  --off: rgba(0, 0, 0, 0.1);
+  --seg: rgba(0, 0, 0, 0.07);
+  --seg-pick: var(--raised, #fff);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --tile: rgba(255, 255, 255, 0.07);
+    --tile-line: rgba(255, 255, 255, 0.08);
+    --tile-up: rgba(255, 255, 255, 0.12);
+    --off: rgba(255, 255, 255, 0.16);
+    --seg: rgba(255, 255, 255, 0.1);
+    --seg-pick: rgba(255, 255, 255, 0.28);
+  }
+}
+:root[data-theme="dark"] {
+  --tile: rgba(255, 255, 255, 0.07);
+  --tile-line: rgba(255, 255, 255, 0.08);
+  --tile-up: rgba(255, 255, 255, 0.12);
+  --off: rgba(255, 255, 255, 0.16);
+  --seg: rgba(255, 255, 255, 0.1);
+  --seg-pick: rgba(255, 255, 255, 0.28);
+}
+
+html, body { margin: 0; background: transparent; overflow: hidden; }
+.pop {
+  box-sizing: border-box; width: 300px; padding: 12px;
+  user-select: none; -webkit-user-select: none; cursor: default;
+}
+/* Every control here draws itself; under `:where()`, as lumi.css's rules
+   are, so the classes below win over the reset. */
+:where(.pop button) { all: unset; box-sizing: border-box; cursor: default; }
+:where(.pop button):focus-visible { outline: 2px solid var(--pick); outline-offset: -2px; }
+.pop svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tile {
+  border-radius: 12px; background: var(--tile); box-shadow: 0 0 0 0.5px var(--tile-line) inset;
+  padding: 10px;
+}
+button.tile:hover { background: var(--tile-up); }
+
+/* The switch: on or off, the app it is remembered for, its key. */
+.big { grid-column: span 2; display: flex; align-items: center; gap: 12px; }
+.disc {
+  flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  font: 800 17px/1 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--off); color: CanvasText;
+}
+.big[aria-checked="true"] .disc { background: var(--pick); color: #fff; }
+.say { flex: 1; min-width: 0; }
+.say b { display: block; font-size: 13.5px; font-weight: 600; }
+.say small { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+kbd {
+  flex: none; font: 500 11px/1 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  padding: 3px 5px; border-radius: 5px; color: var(--muted); box-shadow: 0 0 0 0.5px var(--tile-line) inset;
+}
+
+/* The typing method: a segmented choice of two. */
+.method { grid-column: span 2; display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+.method svg { width: 16px; height: 16px; flex: none; color: var(--muted); }
+.method > span { white-space: nowrap; }
+.seg { flex: 1; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; padding: 2px; border-radius: 8px; background: var(--seg); }
+.seg button { text-align: center; padding: 3px 0; border-radius: 6px; font-size: 12.5px; color: var(--muted); }
+.seg button[aria-checked="true"] {
+  background: var(--seg-pick); color: CanvasText;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+}
+
+/* The four switches: a dot that takes the accent when on. */
+.mini { display: flex; flex-direction: column; gap: 6px; min-height: 70px; }
+.dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--off); color: CanvasText; }
+.dot svg { width: 15px; height: 15px; }
+.mini[aria-checked="true"] .dot { background: var(--pick); color: #fff; }
+.mini b { font-size: 12px; font-weight: 600; line-height: 1.25; }
+.mini small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+
+/* Settings… and Quit. */
+.bar { display: flex; justify-content: space-between; margin-top: 10px; }
+.bar button { display: flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 7px; font-size: 12.5px; }
+.bar button:hover { background: var(--tile-up); }
+.bar svg { width: 15px; height: 15px; }
