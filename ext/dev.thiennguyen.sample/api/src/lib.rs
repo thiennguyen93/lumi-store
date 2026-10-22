@@ -714,6 +714,16 @@ pub fn open_settings() -> Result<(), String> {
     lumi::ext::ui::open_settings()
 }
 
+/// Switch your extension off, as the switch beside it under Extensions in
+/// Lumi's Settings does — for a "Quit" of your own. Your windows close, your
+/// menu bar item and rows go, and none of your code runs until the person
+/// switches it on again there; you cannot switch yourself back on. Only for
+/// a press — a command, a menu bar row or one of your windows. Needs Lumi
+/// 1.61.0 or later.
+pub fn switch_off() -> Result<(), String> {
+    lumi::ext::ui::switch_off()
+}
+
 /// Bring up Lumi's Settings on your extension with its Permissions sheet
 /// open — what it may reach, and the switches Lumi keeps over it: its
 /// folders, its menu bar rows, loading its panels ahead. Only for a press.

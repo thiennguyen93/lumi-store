@@ -928,6 +928,15 @@ interface ui {
     /// person did. Added in Lumi 1.44.0.
     open-permissions: func() -> result<_, string>;
 
+    /// Switch your extension off, as the switch beside it under Extensions
+    /// in Lumi's Settings does: its windows close, its menu bar item and rows
+    /// go, and none of its code runs — commands, shortcuts, events, timers —
+    /// until the person switches it on again there. For a "Quit" of your
+    /// own. An extension can switch itself off, never on. Only for something
+    /// the person did, and not while it is being uninstalled. Added in Lumi
+    /// 1.61.0.
+    switch-off: func() -> result<_, string>;
+
     /// Whether Lumi loads your panels ahead — those whose `[[window]]` says
     /// `preload = true` — as your extension is loaded: at launch, once
     /// installed or updated, when switched on. One switch, kept by Lumi — on
