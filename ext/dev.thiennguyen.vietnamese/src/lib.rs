@@ -252,6 +252,24 @@ const QUIT_ROW: &str = "quit";
 const SETTINGS_ICON: &str = "settings";
 const QUIT_ICON: &str = "power";
 
+/// The first version with an item of its own in the menu bar.
+const FIRST_WITH_ITEM: (u64, u64, u64) = (0, 1, 1);
+
+/// Whether `version` drew no item of its own, so its rows lived in Lumi's
+/// menu bar menu. Its rows leave that menu once the V or E holds them —
+/// the same switch twice over is one too many — through Lumi's own switch
+/// for them (`menu::set_shown`), moved once: at install, and on the update
+/// from such a version. Never on a later update, so rows the person put back
+/// from the Permissions sheet stay where they put them. A version that does
+/// not read as three numbers is left alone.
+fn drew_no_item(version: &str) -> bool {
+    let mut parts = version.split('.').map(|part| part.parse::<u64>().ok());
+    match (parts.next().flatten(), parts.next().flatten(), parts.next().flatten(), parts.next()) {
+        (Some(major), Some(minor), Some(patch), None) => (major, minor, patch) < FIRST_WITH_ITEM,
+        _ => false,
+    }
+}
+
 /// The menu bar item's icon: V while typing is on, E while it is off — the
 /// letters every Vietnamese input method shows — each a key with its letter
 /// cut out, shipped under `ui/` and drawn by Lumi in the menu bar's ink.
@@ -369,8 +387,16 @@ impl Guest for VietnameseTyping {
 
     fn on_lifecycle(event: Lifecycle) -> Result<(), String> {
         match event {
-            Lifecycle::Installed => welcome::on_install(),
-            Lifecycle::Updated(_) => draw_menu().and_then(|()| label_tabs()),
+            Lifecycle::Installed => {
+                menu::set_shown(false)?;
+                welcome::on_install()
+            }
+            Lifecycle::Updated(from) => {
+                if drew_no_item(&from) {
+                    menu::set_shown(false)?;
+                }
+                draw_menu().and_then(|()| label_tabs())
+            }
             Lifecycle::Uninstalling => Ok(()),
         }
     }
@@ -517,6 +543,21 @@ mod tests {
             Settings { vni: true, modern_tone: false, esc_restore: true, english_restore: true }
         );
         assert_eq!(Settings::from_json(&serde_json::json!({})), TELEX);
+    }
+
+    #[test]
+    fn the_rows_leave_lumis_menu_only_coming_from_a_version_without_an_item() {
+        assert!(drew_no_item("0.1.0"));
+        assert!(drew_no_item("0.0.9"));
+        // Its own item was there already: the person's choice stands.
+        assert!(!drew_no_item("0.1.1"));
+        assert!(!drew_no_item("0.2.0"));
+        assert!(!drew_no_item("1.0.0"));
+        // Not three numbers: left alone.
+        assert!(!drew_no_item("0.1.0-beta"));
+        assert!(!drew_no_item("0.1"));
+        assert!(!drew_no_item("0.1.0.1"));
+        assert!(!drew_no_item(""));
     }
 
     #[test]

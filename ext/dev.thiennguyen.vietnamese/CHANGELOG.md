@@ -14,6 +14,7 @@
 
 ### Changed
 
+- The switch leaves Lumi's menu bar menu: the V or E holds it now. Put it back from the extension's Permissions sheet in Lumi.
 - The Settings tab is laid out as rows, each with its control on the right: the typing method is a Telex/VNI switch, and placing tone marks the modern way (hoà, thuý) is a switch of its own.
 - A new icon: a V over a keyboard.
 - The extension's page in Settings opens on its Settings tab.
