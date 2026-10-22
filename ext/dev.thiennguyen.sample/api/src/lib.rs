@@ -1759,9 +1759,10 @@ pub mod menu {
 /// Lumi keeps the last item you set, across restarts and updates, and draws
 /// it with none of your code running; switching your extension off takes it
 /// away, uninstalling forgets it. A press on it opens a menu Lumi draws: your
-/// extension's name, then your [`menu`](crate::menu) tree when you declare
-/// `menu`, then a row onto your page in Settings — so a press on it means
-/// what your rows already say. The person can ⌘-drag it where they want it,
+/// extension's name (left out with `menu-bar-item-heading = false` in your
+/// manifest), then your [`menu`](crate::menu) tree when you declare `menu`,
+/// then a row onto your page in Settings — so a press on it means what your
+/// rows already say. The person can ⌘-drag it where they want it,
 /// and it keeps that place.
 ///
 /// A menu bar too full for every item hides the ones that do not fit, as

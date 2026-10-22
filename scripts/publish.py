@@ -451,6 +451,14 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"text-input-default = {start!r} is not true or false")
         if "text-input" not in ext.get("capabilities", []):
             fail(entry_id, "text-input-default says where the text-input switch starts, which needs the text-input capability — add it to capabilities")
+    # And `menu-bar-item-heading`, whether the menu bar item's menu starts
+    # with the extension's name — only beside the capability that draws one.
+    if "menu-bar-item-heading" in ext or "menu_bar_item_heading" in ext:
+        heading = ext.get("menu-bar-item-heading", ext.get("menu_bar_item_heading"))
+        if not isinstance(heading, bool):
+            fail(entry_id, f"menu-bar-item-heading = {heading!r} is not true or false")
+        if "menu-bar-item" not in ext.get("capabilities", []):
+            fail(entry_id, "menu-bar-item-heading says whether the menu bar item's menu starts with the extension's name, which needs the menu-bar-item capability — add it to capabilities")
     seen = set()
     for command in manifest.get("command", []):
         name = command.get("name", "")
