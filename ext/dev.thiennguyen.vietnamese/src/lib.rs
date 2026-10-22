@@ -546,16 +546,17 @@ const LANGUAGE_CHANGED: &str = "language";
 /// What the About tab sends when the person presses one of its links, and
 /// where each leads: the extension's page in the store (the manifest's
 /// `homepage`), its source, its author's mail, and the typing engine's
-/// repository — "Powered by the Gõ Nhanh engine", with a link to it, is the
-/// credit its author asked for. The page may not leave its
+/// repository and its author's page — "Powered by the Gõ Nhanh engine", with
+/// a link to it, is the credit its author asked for. The page may not leave its
 /// own files, so the component opens the address in the browser or the mail
 /// app — a press, which costs no capability — and only these addresses, never
 /// one the page names.
-const ABOUT_LINKS: [(&str, &str); 4] = [
+const ABOUT_LINKS: [(&str, &str); 5] = [
     ("homepage", "https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"),
     ("source", "https://github.com/thiennguyen93/lumi-store/tree/main/ext/dev.thiennguyen.vietnamese"),
     ("contact", "mailto:hi@thiennguyen.dev"),
     ("engine", "https://github.com/khaphanspace/gonhanh.org"),
+    ("engine-author", "https://github.com/khaphanspace"),
 ];
 
 /// Where an About tab link leads, by the word the page sends.
@@ -1048,6 +1049,7 @@ mod tests {
         assert_eq!(about_link("contact"), Some("mailto:hi@thiennguyen.dev"));
         assert!(about_link("source").is_some_and(|url| url.starts_with("https://github.com/")));
         assert_eq!(about_link("engine"), Some("https://github.com/khaphanspace/gonhanh.org"));
+        assert_eq!(about_link("engine-author"), Some("https://github.com/khaphanspace"));
         // Anything else the page sends opens nothing, a URL included.
         assert_eq!(about_link("https://example.com"), None);
         assert_eq!(about_link(""), None);
