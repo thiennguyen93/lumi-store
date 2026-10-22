@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.2"
+version = "0.1.3"
 description = "Type Vietnamese with Telex or VNI in every app, with no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
