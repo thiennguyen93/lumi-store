@@ -1,9 +1,15 @@
 <!doctype html>
-<!-- One of the texts that ship beside the About tab — the licence or the
-     third-party notices — read in a sheet over Lumi's window (`[[sheet]]`
-     licence and notices in the manifest). Lumi's frame above it already
-     shows the extension's icon and name, so this is the text's own title,
-     the text, and Done. In English, as the About tab is. -->
+<!-- The licence or the acknowledgements, read in a sheet over Lumi's window
+     (`[[sheet]]` licence and notices in the manifest), opened from the About
+     tab. Lumi's frame above it already shows the extension's icon and name,
+     so this is the sheet's own title, its content scrolled in a box of its
+     own, and Done. In English, as the About tab is.
+
+     The acknowledgements drill in, as macOS and iOS show them under Legal: a
+     list that stays put, each work a row with › that opens a page of its
+     own — its notice, its project, its licence — with a back button to the
+     list. Disclosed in place, a licence pushed the rows after it down out
+     of sight. The extension's own licence has a sheet of its own. -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -13,10 +19,48 @@
 </head>
 <body>
   <header>
+    <button type="button" class="back" id="back" hidden>
+      <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg><span>Acknowledgements</span>
+    </button>
     <h1 id="title"></h1>
     <p id="subtitle"></p>
   </header>
-  <pre id="text" tabindex="0" aria-labelledby="title"></pre>
+
+  <!-- The licence, LICENSE.txt, as paragraphs. -->
+  <section id="licence" class="scroll" hidden>
+    <div class="prose" id="licence-text" tabindex="0" aria-labelledby="title"></div>
+  </section>
+
+  <!-- The acknowledgements: each work the extension is built on, one row
+       each, opening its own page. The words are THIRD-PARTY-NOTICES.txt's,
+       which ships beside this page. -->
+  <section id="notices" class="scroll" hidden>
+    <div class="group">
+      <button type="button" class="row" data-work="engine">
+        <span class="name"><b>Gõ Nhanh</b><small>The typing engine · © 2025 Gõ Nhanh Contributors</small></span>
+        <span class="tag">BSD 3-Clause</span>
+        <span class="chev"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+      </button>
+      <button type="button" class="row" data-work="words">
+        <span class="name"><b>Vietnamese syllable list</b><small>Hồ Ngọc Đức's word list, via hunspell-vi</small></span>
+        <span class="tag">GPL</span>
+        <span class="chev"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- One page per work: why it is here, its project, its licence. -->
+  <section id="work-engine" class="scroll work" hidden data-title="Gõ Nhanh" data-subtitle="The typing engine · BSD 3-Clause">
+    <p class="note">Used under the licence below. The name Gõ Nhanh is its contributors'; this extension is not endorsed by them.</p>
+    <button type="button" class="out" data-open="engine">github.com/khaphanspace/gonhanh.org<svg viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></button>
+    <div class="prose" id="engine-licence" tabindex="0" aria-label="Gõ Nhanh's licence"></div>
+  </section>
+  <section id="work-words" class="scroll work" hidden data-title="Vietnamese syllable list" data-subtitle="Hồ Ngọc Đức's word list, via hunspell-vi · GPL">
+    <p class="note">The engine carries a list of Vietnamese syllables from the hunspell-vi dictionaries, converted by László Németh from the GNU Aspell Vietnamese dictionary, whose word list is by Hồ Ngọc Đức and is distributed under the GNU General Public License.</p>
+    <button type="button" class="out" data-open="hunspell">github.com/1ec5/hunspell-vi<svg viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></button>
+    <button type="button" class="out" data-open="aspell">ftp.gnu.org/gnu/aspell/dict/vi<svg viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></button>
+  </section>
+
   <footer><button type="button" class="primary" id="done">Done</button></footer>
   <script src="document.js"></script>
 </body>

@@ -1,12 +1,13 @@
 <!doctype html>
 <!-- The About tab under Settings → Extensions → Lumi Gõ tiếng Việt, drawn by
-     the extension in place of Lumi's own (`[tabs.about]` in the manifest), so
-     it is cards rather than Lumi's list. It reads in English whatever the
-     display language (`language`), which only the Settings tab and the menu
-     row follow. Lumi keeps its header around it: the name, what it does, the
-     version, the switch and Permissions. So the page is what is left to say:
-     what it can reach, who made it, where to find it, the engine it types
-     with, and its licence. -->
+     the extension in place of Lumi's own (`[tabs.about]` in the manifest). It
+     reads in English whatever the display language (`language`), which only
+     the Settings tab and the menu row follow. Lumi keeps its header around
+     it: the name, what it does, the version, the switch and Permissions. So
+     the page is what is left to say, after the HIG's macOS lists and the App
+     Store's own page for an app: what it does with the keys typed, first, as
+     an input method should say; then its information, a label and a value on
+     each row; then the engine it types with. -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -15,65 +16,87 @@
   <link rel="stylesheet" href="about.css">
 </head>
 <body>
-  <div class="about">
-    <section class="card">
-      <div class="head">
-        <span class="tile"><svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
-        <div><h2 class="eyebrow">Privacy</h2><p class="title">Vietnamese typing</p></div>
+  <main class="about">
+    <!-- What it does with the keys, no stronger than the manifest's summary:
+         three facts, each said in full in its help tag. -->
+    <section class="promise">
+      <div class="promise-head">
+        <span class="seal"><svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div>
+          <h2 class="promise-title">Your keys stay on this Mac</h2>
+          <p class="promise-says">Every key you type passes through this extension on its way to the app. Lumi lets it turn them into Vietnamese and nothing else.</p>
+        </div>
       </div>
-      <ul class="chips">
-        <li><svg viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></svg><span>No network</span></li>
-        <li><svg viewBox="0 0 24 24"><path d="M 20 4 A2 2 0 0 1 22 6"/><path d="M 22 6 L 22 16.41"/><path d="M 7 16 L 16 16"/><path d="M 9.69 4 L 20 4"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="m2 2 20 20"/><path d="M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2"/><path d="M6 8h.01"/><path d="M8 12h.01"/></svg><span>Keeps no keys</span></li>
-        <li><svg viewBox="0 0 24 24"><path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1"/><path d="M7 22h1a4 4 0 0 0 4-4"/><path d="M7 2h1a4 4 0 0 1 4 4"/></svg><span>Only the word you are typing</span></li>
+      <ul class="facts">
+        <li title="It has no access to the internet: everything happens on this Mac.">
+          <svg viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></svg>
+          <b>Works offline</b>
+        </li>
+        <li title="It keeps no record of what you type. Only on or off is remembered, for each app.">
+          <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+          <b>No typing history</b>
+        </li>
+        <li title="Its source is public under the GNU GPL, for anyone to read.">
+          <svg viewBox="0 0 24 24"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+          <b>Open source</b>
+        </li>
       </ul>
     </section>
 
-    <div class="pair">
-      <section class="card">
-        <h2 class="eyebrow">Author</h2>
-        <div class="person">
-          <span class="avatar" aria-hidden="true">TN</span>
-          <div><b>Thien Nguyen</b><button type="button" class="link" data-open="contact">hi@thiennguyen.dev</button></div>
-        </div>
-      </section>
-      <section class="card links">
-        <h2 class="eyebrow">Links</h2>
-        <button type="button" class="go" data-open="homepage">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-          <span class="grow"><b>Website</b><small>lumikeys.app</small></span>
-          <svg class="out" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-        </button>
-        <button type="button" class="go" data-open="source">
-          <svg viewBox="0 0 24 24"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
-          <span class="grow"><b>Source code</b><small>GitHub</small></span>
-          <svg class="out" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-        </button>
-      </section>
+    <h2 class="group-title">Information</h2>
+    <div class="group info">
+      <!-- The developer, and the ways to reach him as icon buttons at the
+           row's end; Website below is the extension's own page, not his. -->
+      <div class="cell">
+        <span class="label">Developer</span>
+        <span class="value">Thien Nguyen</span>
+        <span class="icons">
+          <button type="button" class="icon" data-open="contact" title="hi@thiennguyen.dev" aria-label="Email Thien Nguyen">
+            <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </button>
+          <button type="button" class="icon" data-open="developer-site" title="thiennguyen.dev" aria-label="Thien Nguyen's website">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          </button>
+          <button type="button" class="icon" data-open="developer-github" title="github.com/thiennguyen93" aria-label="Thien Nguyen on GitHub">
+            <svg viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          </button>
+        </span>
+      </div>
+      <button type="button" class="cell" data-open="homepage">
+        <span class="label">Website</span>
+        <span class="value">lumikeys.app</span>
+        <span class="go"><svg viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+      </button>
+      <button type="button" class="cell" data-open="source">
+        <span class="label">Source code</span>
+        <span class="value">GitHub</span>
+        <span class="go"><svg viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+      </button>
+      <button type="button" class="cell" data-sheet="licence" aria-haspopup="dialog">
+        <span class="label">Licence</span>
+        <span class="value">GNU GPL 2.0 or later</span>
+        <span class="go"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+      </button>
+      <button type="button" class="cell" data-sheet="notices" aria-haspopup="dialog">
+        <span class="label">Acknowledgements</span>
+        <span class="value">Third-party notices</span>
+        <span class="go"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+      </button>
     </div>
 
     <!-- The typing engine is Gõ Nhanh's core: the credit its author asked
-         for, in his words, with his repository one press away. -->
-    <section class="card engine">
-      <span class="tile plain"><svg viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span>
-      <div class="grow">
-        <h2 class="eyebrow">Engine</h2>
-        <p class="name">Powered by the Gõ Nhanh engine</p>
-        <small>By <button type="button" class="link inline" data-open="engine-author">Kha Phan</button> · BSD-3-Clause</small>
-      </div>
-      <button type="button" class="pill out-pill" data-open="engine" aria-label="Gõ Nhanh on GitHub"><svg viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg><span>GitHub</span><svg class="out" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></button>
-    </section>
-
-    <section class="card licence">
-      <span class="badge">GPL</span>
-      <div class="grow"><h2 class="name">GNU GPL 2.0 or later</h2><small>Free and open source.</small></div>
-      <div class="pills">
-        <button type="button" class="pill" data-sheet="licence" aria-haspopup="dialog">Licence</button>
-        <button type="button" class="pill" data-sheet="notices" aria-haspopup="dialog">Third-party</button>
-      </div>
-    </section>
+         for, in his words, with its repository one press away. A row of its
+         own rather than one fact among the others. -->
+    <div class="group powered">
+      <button type="button" class="cell" data-open="engine">
+        <span class="bolt"><svg viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span>
+        <span class="label">Powered by the Gõ Nhanh engine<small>Open source, by Kha Phan · BSD 3-Clause</small></span>
+        <span class="go"><svg viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+      </button>
+    </div>
 
     <p class="copyright">Copyright © 2026 Thien Nguyen.</p>
-  </div>
+  </main>
   <script src="about.js"></script>
 </body>
 </html>

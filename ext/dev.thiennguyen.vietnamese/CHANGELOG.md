@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.4] - 2026-10-22
+
+### Changed
+
+- The About tab is laid out as macOS lists its settings. It opens on what the extension does with the keys you type: **Works offline**, **No typing history** and **Open source**, each explained when you rest the pointer on it. Then the developer, with his mail, website and GitHub as buttons on his row, the extension's website, its source, its licence and its acknowledgements, a row each; and **Powered by the Gõ Nhanh engine** on a row of its own.
+- The licence reads as paragraphs, wrapped to the sheet, instead of text broken mid-sentence.
+- **Acknowledgements** replaces the third-party notices: a list of the work the engine is built on, each with a page of its own for its notice, a link to the project and its licence.
+- Both sheets are as tall as what they show.
+
 ## [0.1.3] - 2026-10-22
 
 ### Added

@@ -543,23 +543,32 @@ const APPEARANCE_CHANGED: &str = "appearance";
 /// in it.
 const LANGUAGE_CHANGED: &str = "language";
 
-/// What the About tab sends when the person presses one of its links, and
-/// where each leads: the extension's page in the store (the manifest's
-/// `homepage`), its source, its author's mail, and the typing engine's
-/// repository and its author's page — "Powered by the Gõ Nhanh engine", with
-/// a link to it, is the credit its author asked for. The page may not leave its
-/// own files, so the component opens the address in the browser or the mail
-/// app — a press, which costs no capability — and only these addresses, never
-/// one the page names.
-const ABOUT_LINKS: [(&str, &str); 5] = [
+/// What the About tab and its acknowledgements sheet send when the person
+/// presses one of their links, and where each leads: the extension's page in
+/// the store (the manifest's `homepage`), its source, its developer's mail,
+/// website and GitHub, the typing engine's repository — "Powered by the Gõ
+/// Nhanh engine", with a link to it, is the credit its author asked for — and
+/// the projects the engine's word list comes from. The pages may not leave
+/// their own files, so the component opens the address in the browser or the
+/// mail app — a press, which costs no capability — and only these addresses,
+/// never one a page names.
+const ABOUT_LINKS: [(&str, &str); 8] = [
     ("homepage", "https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"),
     ("source", "https://github.com/thiennguyen93/lumi-store/tree/main/ext/dev.thiennguyen.vietnamese"),
     ("contact", "mailto:hi@thiennguyen.dev"),
+    ("developer-site", "https://thiennguyen.dev"),
+    ("developer-github", "https://github.com/thiennguyen93"),
     ("engine", "https://github.com/khaphanspace/gonhanh.org"),
-    ("engine-author", "https://github.com/khaphanspace"),
+    ("hunspell", "https://github.com/1ec5/hunspell-vi"),
+    ("aspell", "https://ftp.gnu.org/gnu/aspell/dict/vi/"),
 ];
 
-/// Where an About tab link leads, by the word the page sends.
+/// The windows a link of [`ABOUT_LINKS`] may be asked from: the About tab,
+/// and the acknowledgements sheet it opens (`[[sheet]]` notices).
+const ABOUT_WINDOWS: [&str; 2] = [":about", ":sheet:notices"];
+
+/// Where an About tab or acknowledgements link leads, by the word the page
+/// sends.
 fn about_link(request: &str) -> Option<&'static str> {
     ABOUT_LINKS.iter().find(|(word, _)| *word == request).map(|(_, url)| *url)
 }
@@ -605,7 +614,7 @@ impl Guest for VietnameseTyping {
         if window == ":settings" && request == APPEARANCE_CHANGED {
             return apply_appearance().map(|()| String::new());
         }
-        if let Some(url) = about_link(&request).filter(|_| window == ":about") {
+        if let Some(url) = about_link(&request).filter(|_| ABOUT_WINDOWS.contains(&window.as_str())) {
             return lumi::open_url(url).map(|()| String::new());
         }
         Err("no window".to_string())
@@ -1047,12 +1056,44 @@ mod tests {
     fn the_about_tab_opens_only_its_own_links() {
         assert_eq!(about_link("homepage"), Some("https://lumikeys.app/extensions/dev.thiennguyen.vietnamese/"));
         assert_eq!(about_link("contact"), Some("mailto:hi@thiennguyen.dev"));
+        assert_eq!(about_link("developer-site"), Some("https://thiennguyen.dev"));
+        assert_eq!(about_link("developer-github"), Some("https://github.com/thiennguyen93"));
         assert!(about_link("source").is_some_and(|url| url.starts_with("https://github.com/")));
         assert_eq!(about_link("engine"), Some("https://github.com/khaphanspace/gonhanh.org"));
-        assert_eq!(about_link("engine-author"), Some("https://github.com/khaphanspace"));
-        // Anything else the page sends opens nothing, a URL included.
+        assert!(about_link("hunspell").is_some() && about_link("aspell").is_some());
+        // Anything else a page sends opens nothing, a URL included.
         assert_eq!(about_link("https://example.com"), None);
         assert_eq!(about_link(""), None);
+    }
+
+    /// Every link the About tab and its sheet send is one the component
+    /// opens, and every sheet the tab opens is one the manifest declares: a
+    /// word the component does not know would be a dead press.
+    #[test]
+    fn the_about_pages_ask_only_for_what_exists() {
+        let quoted = |page: &'static str, attribute: &str| -> Vec<&'static str> {
+            let marker = format!("{attribute}=\"");
+            page.match_indices(&marker)
+                .map(|(at, _)| {
+                    let rest = &page[at + marker.len()..];
+                    &rest[..rest.find('"').expect("a closing quote")]
+                })
+                .collect()
+        };
+        let about = include_str!("../ui/about.html");
+        let sheet = include_str!("../ui/document.html");
+        let opened: Vec<&str> = quoted(about, "data-open").into_iter().chain(quoted(sheet, "data-open")).collect();
+        assert!(opened.len() >= 7, "{opened:?}");
+        for word in opened {
+            assert!(about_link(word).is_some(), "a page opens {word:?}, which ABOUT_LINKS does not hold");
+        }
+        let manifest = include_str!("../manifest.toml");
+        for name in quoted(about, "data-sheet") {
+            assert!(manifest.contains(&format!("[[sheet]]\nname = \"{name}\"")), "the About tab opens the undeclared sheet {name:?}");
+        }
+        // The engine's licence is read from the notices file the sheet ships.
+        let notices = include_str!("../ui/THIRD-PARTY-NOTICES.txt");
+        assert!(notices.contains("BSD 3-Clause License") && notices.contains("SUCH DAMAGE."));
     }
 
     #[test]

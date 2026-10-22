@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.3"
+version = "0.1.4"
 description = "Type Vietnamese with Telex or VNI in every app, with no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
@@ -178,9 +178,9 @@ label = "Light"
 value = "dark"
 label = "Dark"
 
-# The licence and the third-party notices, each read in a sheet over Lumi's
-# window from the About tab's two buttons. One page for both
-# (ui/document.html), told by the About tab which text it shows; the title is
+# The licence and the acknowledgements, each read in a sheet over Lumi's
+# window from the About tab's Licence and Acknowledgements rows. One page for
+# both (ui/document.html), told by the About tab which it shows; the title is
 # each sheet's accessible name, under Lumi's frame naming the extension.
 [[sheet]]
 name = "licence"
@@ -194,7 +194,7 @@ name = "notices"
 path = "document.html"
 width = 486
 height = 480
-title = "Third-party notices"
+title = "Acknowledgements"
 
 # The tabs in the order the page draws them: Settings, About, then the
 # Changelog last, after About rather than before it as Lumi would. Lumi

@@ -1,22 +1,25 @@
 /* The About tab (about.html). Lumi embeds it in its Extensions pane with
-   lumi.css first — its fonts, its colours for both themes, its focus ring — on
-   a transparent page with no inset, the pane's column being the inset. So this
-   sheet adds only what the page draws: borderless cards tinted from the text
-   colour, so they follow either theme on their own, and the extension's red
-   (icon.svg) as the one accent. Type steps are the HIG's macOS ones: Title 3
-   15, Headline 13 semibold, Callout 12, Subheadline 11. */
+   lumi.css first — its fonts, its colours for both themes, its focus ring,
+   its scrollbar — on a transparent page with no inset, the pane's column
+   being the inset. So this sheet adds only what the page draws, after the
+   HIG's macOS lists: grouped inset lists tinted from the text colour, so they
+   follow either theme on their own, a label in the secondary colour and its
+   value in the primary one, ↗ on a row that leaves Lumi and › on one that
+   opens a sheet, the whole row the target. The extension's red (icon.svg) is
+   the one accent. Type steps are the HIG's macOS ones: Title 2 17 for the
+   promise, Headline 13 semibold for a group's title, Body 13 for a row,
+   Callout 12 for a second line, Subheadline 11 for the copyright. */
 
 .about {
-  --muted: color-mix(in srgb, CanvasText 58%, transparent);
-  --surface: color-mix(in srgb, CanvasText 4.5%, transparent);
-  --surface-up: color-mix(in srgb, CanvasText 7%, transparent);
-  --surface-hover: color-mix(in srgb, CanvasText 10%, transparent);
-  --brand-from: #ef4444;
-  --brand-to: #b91c1c;
-  --brand-ink: #c81e1e;
-  --tint: color-mix(in srgb, #dc2626 10%, transparent);
+  --muted: color-mix(in srgb, CanvasText 55%, transparent);
+  --faint: color-mix(in srgb, CanvasText 32%, transparent);
+  --group: color-mix(in srgb, CanvasText 4%, transparent);
+  --group-hover: color-mix(in srgb, CanvasText 7.5%, transparent);
+  --group-press: color-mix(in srgb, CanvasText 11%, transparent);
+  --hair: color-mix(in srgb, CanvasText 10%, transparent);
+  --brand: #dc2626;
+  --brand-ink: #b91c1c;
   --pick: var(--accent, #378add);
-  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   /* No inset below: Lumi already leaves 16pt between the page's frame and
      the window's bottom edge (`.content`'s padding). */
   padding: 4px 0 0;
@@ -24,107 +27,115 @@
   -webkit-user-select: none;
   cursor: default;
   /* At least as tall as the tab, so the copyright sits on its bottom edge
-     when the cards are shorter than the tab, and after them when they are
+     when the groups are shorter than the tab, and after them when they are
      not: the page is the webview's whole height, scrolled in itself. */
   box-sizing: border-box;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}/* Red read on a dark window: lighter, and a stronger tint behind it. */
-:root[data-theme="dark"] .about {
-  --brand-ink: #fb7185;
-  --tint: color-mix(in srgb, #f43f5e 16%, transparent);
 }
+/* Red read on a dark window: lighter. */
+:root[data-theme="dark"] .about { --brand-ink: #fb7185; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .about {
-    --brand-ink: #fb7185;
-    --tint: color-mix(in srgb, #f43f5e 16%, transparent);
-  }
+  :root:not([data-theme="light"]) .about { --brand-ink: #fb7185; }
 }
 
 /* Every control here draws itself. Under `:where()`, as lumi.css's rules are,
    so the classes below win over the reset rather than the other way round. */
 :where(.about button) { all: unset; box-sizing: border-box; cursor: default; }
 :where(.about button):focus-visible { outline: 2px solid var(--pick); outline-offset: -2px; }
-.about svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.about h2, .about p { margin: 0; }
-.grow { flex: 1; min-width: 0; }
 
-.card { background: var(--surface); border-radius: 14px; padding: 14px 16px; }
-.about > .card, .about > .pair { margin-top: 10px; }
-.about > :first-child { margin-top: 0; }
-.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
-.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); }
+/* ---- What it does with the keys --------------------------------------- */
 
-/* Privacy: the shield in the extension's red, one line, three facts. */
-.head { display: flex; align-items: center; gap: 12px; }
-.tile {
-  flex: none; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
-  color: #fff; background: linear-gradient(145deg, var(--brand-from), var(--brand-to));
-  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.25), 0 1px 3px rgba(185, 28, 28, 0.35);
+.promise {
+  padding: 14px 16px 16px;
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--brand) 9%, transparent), transparent 60%),
+    var(--group);
 }
-.tile svg { width: 18px; height: 18px; }
-.title { font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: -0.005em; }
-/* The facts start where the words above them do, past the tile (its 34 and
-   the head's 12 gap): the tile leads the card, as Engine's leads its own. */
-.chips { list-style: none; margin: 12px 0 0 46px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.chips li {
-  display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 8px;
-  border-radius: 999px; background: var(--surface-up); font-size: 12px; font-weight: 500;
+.promise-head { display: flex; gap: 12px; align-items: flex-start; }
+.seal {
+  flex: none; width: 36px; height: 36px; border-radius: 9px;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.2), 0 2px 6px -1px rgba(185, 28, 28, 0.35);
 }
-.chips svg { width: 14px; height: 14px; color: var(--brand-ink); }
+.promise-title { margin: 0; font-size: 17px; font-weight: 600; line-height: 22px; }
+.promise-says { margin: 2px 0 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
 
-/* Engine: the credit for the typing engine, the licence card's shape — a
-   tile, the words, one pill out to its repository. Its tile is the card's
-   neutral surface, not the red tint the author's initials and the licence
-   badge sit on: the engine is somebody else's work, so it does not wear this
-   extension's colour. */
-.engine { display: flex; align-items: center; gap: 12px; }
-.tile.plain { background: var(--surface-up); color: var(--brand-ink); box-shadow: none; }
-.engine .name { margin-top: 2px; font-size: 13px; font-weight: 600; }
-.engine small { display: block; font-size: 12px; color: var(--muted); }
-/* The engine's author, a link in the line, as the extension author's mail is. */
-.link.inline { display: inline; font-size: inherit; }
-.out-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; }
-.out-pill svg { width: 14px; height: 14px; }
-.out-pill .out { width: 12px; height: 12px; opacity: 0.5; }
-.out-pill:hover .out { opacity: 0.75; }
-
-/* Author: initials on the accent's tint, the address under the name. */
-.person { display: flex; align-items: center; gap: 11px; margin-top: 8px; }
-.person b { display: block; font-weight: 600; }
-.avatar {
-  flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--tint); color: var(--brand-ink); font-size: 13.5px; font-weight: 650; letter-spacing: 0.02em;
+/* Three facts side by side, each one line: its help tag says it in full. */
+.facts { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.facts li {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 34px; padding: 6px 10px; border-radius: 8px;
+  background: color-mix(in srgb, Canvas 70%, transparent);
+  box-shadow: 0 0 0 0.5px var(--hair);
 }
-.link { display: block; font-size: 12px; color: var(--accent-ink, var(--pick)); }
-.link:hover { text-decoration: underline; }
+.facts b { font-size: 12.5px; font-weight: 500; white-space: nowrap; }
 
-/* Links: each a row that leads out of Lumi, marked ↗. */
-.links { display: flex; flex-direction: column; }
-.go { display: flex; align-items: center; gap: 9px; padding: 6px 8px; margin: 0 -8px; border-radius: 8px; }
-.go:first-of-type { margin-top: 4px; }
-.go:hover { background: var(--surface-up); }
-.go > svg:first-child { flex: none; width: 16px; height: 16px; color: var(--brand-ink); }
-.go b { display: block; font-weight: 500; line-height: 1.3; }
-.go small { display: block; font-size: 11px; line-height: 1.3; color: var(--muted); }
-.go .out { flex: none; width: 13px; height: 13px; opacity: 0.45; }
-.go:hover .out { opacity: 0.75; }
-
-/* Licence: its short name as a badge, the two texts behind two pills, each
-   opening a sheet (document.html). */
-.licence { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.badge {
-  flex: none; padding: 6px 9px; border-radius: 9px; background: var(--tint); color: var(--brand-ink);
-  font: 700 12px/1 var(--mono); letter-spacing: 0.02em;
+.seal svg, .facts svg, .go svg, .icon svg, .bolt svg {
+  fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round;
 }
-.licence .name { font-size: 13px; font-weight: 600; }
-.licence small { display: block; font-size: 12px; color: var(--muted); }
-.pills { display: flex; gap: 6px; }
-.pill {
-  padding: 5px 12px; border-radius: 999px; background: var(--surface-up);
-  font-size: 12.5px; font-weight: 500; white-space: nowrap;
-}
-.pill:hover { background: var(--surface-hover); }
+.seal svg { width: 20px; height: 20px; stroke-width: 2; }
+.facts svg { flex: none; width: 15px; height: 15px; stroke-width: 1.8; color: var(--brand-ink); }
 
-.about .copyright { margin-top: auto; padding-top: 20px; text-align: center; font-size: 11px; line-height: 14px; color: var(--muted); }
+/* ---- A group: a title over a rounded inset list ----------------------- */
+
+.group-title { margin: 20px 0 6px 2px; font-size: 13px; font-weight: 600; }
+.group { border-radius: 10px; background: var(--group); overflow: hidden; }
+
+/* One row: the label, the value, then ↗ or ›. 36 px at least, the HIG's
+   height for a list row on macOS, and the whole row is the target. Rows are
+   parted by a hairline, as macOS's grouped lists draw it. */
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 7px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 13px;
+}
+.cell + .cell::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12px;
+  right: 0;
+  height: 1px;
+  background: var(--hair);
+}
+button.cell:hover { background: var(--group-hover); }
+button.cell:active { background: var(--group-press); }
+.label { flex: 1; min-width: 0; }
+.label small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); line-height: 1.35; }
+.info .label { flex: none; width: 128px; color: var(--muted); }
+.value { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.go { flex: none; display: grid; place-items: center; width: 14px; color: var(--faint); }
+.go svg { width: 13px; height: 13px; stroke-width: 2.2; }
+
+/* The developer's own links, as icon buttons at his row's end: the HIG's
+   borderless icon buttons, each with a help tag and a spoken name. */
+.icons { flex: none; display: flex; gap: 2px; margin: -4px -6px -4px 0; }
+.icon { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; color: var(--muted); }
+.icon:hover { background: var(--group-hover); color: CanvasText; }
+.icon:active { background: var(--group-press); }
+.icon svg { width: 15px; height: 15px; stroke-width: 1.8; }
+
+/* The engine's credit, a row of its own. */
+.powered { margin-top: 12px; }
+.powered .cell { min-height: 52px; gap: 12px; }
+.powered .label { font-weight: 500; }
+.bolt {
+  flex: none; width: 30px; height: 30px; border-radius: 8px;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.18);
+}
+.bolt svg { width: 16px; height: 16px; fill: currentColor; stroke: none; }
+
+/* The copyright, on the tab's bottom edge or after the groups. */
+.copyright { margin: auto 0 0; padding-top: 20px; text-align: center; font-size: 11px; line-height: 14px; color: var(--faint); }

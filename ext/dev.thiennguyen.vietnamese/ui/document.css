@@ -1,13 +1,21 @@
-/* The licence sheet (document.html), inside Lumi's sheet frame: lumi.css
-   paints the root in the frame's colour (`data-lumi-sheet`). The room is the
-   manifest's `width` × `height`, so the page fills it — title, the text
-   scrolled in its own box, Done — rather than sizing itself. */
+/* The sheet (document.html), inside Lumi's sheet frame: lumi.css paints the
+   root in the frame's colour (`data-lumi-sheet`). The room is the manifest's
+   `width` × `height`, so the page fills it — title, the content scrolled in
+   its own box, Done — rather than sizing itself, and to its edges: no inset
+   of its own (the owner's call, 2026-10-22). */
 
+:root {
+  --muted: color-mix(in srgb, CanvasText 55%, transparent);
+  --faint: color-mix(in srgb, CanvasText 32%, transparent);
+  --group: color-mix(in srgb, CanvasText 4.5%, transparent);
+  --group-hover: color-mix(in srgb, CanvasText 7.5%, transparent);
+  --hair: color-mix(in srgb, CanvasText 10%, transparent);
+}
 body {
   box-sizing: border-box;
   height: 100vh;
   margin: 0;
-  padding: 2px 16px 14px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -15,25 +23,67 @@ body {
   -webkit-user-select: none;
   cursor: default;
 }
-header h1 { margin: 0; font-size: 13px; font-weight: 600; }
-header p { margin: 1px 0 0; font-size: 12px; color: color-mix(in srgb, CanvasText 58%, transparent); }
-pre {
-  flex: 1;
-  min-height: 0;
-  margin: 0;
-  overflow: auto;
-  padding: 12px 14px;
+[hidden] { display: none !important; }
+/* Every control draws itself but Done, which keeps lumi.css's default look. */
+:where(button:not(.primary)) { all: unset; box-sizing: border-box; cursor: default; }
+:where(button):focus-visible { outline: 2px solid var(--accent, #378add); outline-offset: -2px; border-radius: 6px; }
+
+header h1 { margin: 0; font-size: 15px; font-weight: 600; }
+header p { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
+
+/* The content's own scroll box: pulled past its end, it bounces there, as a
+   scroll view does, rather than handing the scroll on to the sheet. */
+.scroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+
+/* A licence as prose: the body font, wrapped by its box, a paragraph's space
+   between paragraphs. Shipped as text wrapped at 78 columns, it broke
+   mid-sentence in a narrower box. Selectable, as text to quote is. */
+.prose {
+  padding: 12px 16px;
   border-radius: 10px;
-  background: color-mix(in srgb, CanvasText 5%, transparent);
-  font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
-  /* Pulled past its end, the text bounces in its own box, as a scroll view
-     does, rather than handing the scroll on to the sheet. */
-  overscroll-behavior: contain;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  background: var(--group);
+  font-size: 12px;
+  line-height: 1.55;
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
 }
+.prose p { margin: 0 0 8px; }
+.prose p:last-child { margin-bottom: 0; }
+.prose p.heading { font-weight: 600; margin-top: 12px; }
+.prose p.heading:first-child { margin-top: 0; }
+.prose p.heading + p.heading { margin-top: -6px; font-weight: 400; color: var(--muted); }
+
+/* The acknowledgements: an inset grouped list, each work a row that opens
+   its own page — its licence as the row's value, in the secondary colour,
+   and › on the trailing edge. */
+.group { border-radius: 10px; background: var(--group); overflow: hidden; }
+.row { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 8px 12px 8px 14px; font-size: 13px; }
+.row + .row::before { content: ""; position: absolute; top: 0; left: 14px; right: 0; height: 1px; background: var(--hair); }
+.row:hover { background: var(--group-hover); }
+.row:active { background: color-mix(in srgb, CanvasText 11%, transparent); }
+.name { flex: 1; min-width: 0; }
+.name b { display: block; font-weight: 600; }
+.name small { display: block; margin-top: 1px; font-size: 11.5px; color: var(--muted); }
+.tag { flex: none; font-size: 12px; color: var(--muted); }
+.chev { flex: none; width: 12px; display: grid; place-items: center; color: var(--faint); }
+.chev svg, .out svg, .back svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.chev svg { width: 12px; height: 12px; stroke-width: 2.4; }
+
+/* A work's page: why it is here, its project, then its licence. */
+.work { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.work .prose { align-self: stretch; margin-top: 4px; font-size: 11.5px; }
+.note { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.out { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--accent-ink, #2a6eb4); }
+.out:hover { text-decoration: underline; }
+.out svg { width: 10px; height: 10px; stroke-width: 2.4; }
+
+/* Back to the list, where a navigation bar keeps it: the leading edge,
+   above the title, in the accent, with the list's name. */
+.back { display: inline-flex; align-items: center; gap: 2px; margin: 0 0 6px -4px; padding: 2px 6px 2px 2px; border-radius: 6px; font-size: 13px; color: var(--accent-ink, #2a6eb4); }
+.back:hover { background: var(--group-hover); }
+.back svg { width: 15px; height: 15px; stroke-width: 2.2; }
+
+/* Done on the trailing edge, as a sheet's default button. */
 footer { display: flex; justify-content: flex-end; }
 footer button { min-width: 72px; }
