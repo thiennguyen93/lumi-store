@@ -165,8 +165,15 @@ const APPS: &str = "apps";
 /// The storage key holding the app last in front.
 const FRONT: &str = "front";
 /// The storage key holding that app's name, for the popover's "remembered
-/// for" line — the one app, never a list of them.
+/// for" line.
 const FRONT_NAME: &str = "front-name";
+/// The storage key holding the name of each app in [`APPS`], by id — for the
+/// popover's per-app tile, which draws those apps' icons and names them to
+/// VoiceOver and in a tooltip. Written for an app only once the switch is
+/// remembered there, never for every app that comes forward: the apps
+/// somebody moves between are a diary, and these are the ones they asked to
+/// have kept.
+const APP_NAMES: &str = "app-names";
 
 /// The app last in front, as `front-app` last told it.
 fn front() -> Option<String> {
@@ -178,14 +185,41 @@ fn front_name() -> Option<String> {
     lumi::storage::get(FRONT_NAME).ok().flatten().map(|entry| entry.value).filter(|name| !name.is_empty())
 }
 
-/// What the person left the switch at in each app.
-fn remembered() -> serde_json::Map<String, serde_json::Value> {
-    lumi::storage::get(APPS)
+/// A JSON object kept under `key`, or an empty one.
+fn stored_map(key: &str) -> serde_json::Map<String, serde_json::Value> {
+    lumi::storage::get(key)
         .ok()
         .flatten()
         .and_then(|entry| serde_json::from_str::<serde_json::Value>(&entry.value).ok())
         .and_then(|value| value.as_object().cloned())
         .unwrap_or_default()
+}
+
+/// Keep `map` under `key`, over whatever revision is there.
+fn store_map(key: &str, map: serde_json::Map<String, serde_json::Value>) -> Result<(), String> {
+    let rev = lumi::storage::get(key)?.map(|entry| entry.rev);
+    lumi::storage::put(key, &serde_json::Value::Object(map).to_string(), rev)
+        .map(|_| ())
+        .map_err(lumi::storage::PutError::into_message)
+}
+
+/// What the person left the switch at in each app.
+fn remembered() -> serde_json::Map<String, serde_json::Value> {
+    stored_map(APPS)
+}
+
+/// Keep `name` for `app`, unless it is kept already — so an app remembered
+/// before names were kept is named the next time it comes forward.
+fn name_app(app: &str, name: Option<String>) -> Result<(), String> {
+    let Some(name) = name.filter(|name| !name.is_empty()) else {
+        return Ok(());
+    };
+    let mut names = stored_map(APP_NAMES);
+    if names.get(app).and_then(serde_json::Value::as_str) == Some(name.as_str()) {
+        return Ok(());
+    }
+    names.insert(app.to_string(), serde_json::Value::String(name));
+    store_map(APP_NAMES, names)
 }
 
 fn per_app() -> bool {
@@ -198,11 +232,31 @@ fn remember(on: bool) -> Result<(), String> {
         return Ok(());
     };
     let mut apps = remembered();
-    apps.insert(app, serde_json::Value::Bool(on));
-    let rev = lumi::storage::get(APPS)?.map(|entry| entry.rev);
-    lumi::storage::put(APPS, &serde_json::Value::Object(apps).to_string(), rev)
-        .map(|_| ())
-        .map_err(lumi::storage::PutError::into_message)
+    apps.insert(app.clone(), serde_json::Value::Bool(on));
+    store_map(APPS, apps)?;
+    name_app(&app, front_name())
+}
+
+/// The other apps the switch is remembered at `on` for, as `(id, name)` by
+/// name — the popover's per-app tile shows them, beside a switch already
+/// naming the app in front, which is left out. An app remembered before
+/// names were kept goes by its id until it comes forward again.
+pub fn alike(
+    on: bool,
+    apps: &serde_json::Map<String, serde_json::Value>,
+    names: &serde_json::Map<String, serde_json::Value>,
+    front: Option<&str>,
+) -> Vec<(String, String)> {
+    let mut alike: Vec<(String, String)> = apps
+        .iter()
+        .filter(|(id, left)| left.as_bool() == Some(on) && Some(id.as_str()) != front)
+        .map(|(id, _)| {
+            let name = names.get(id).and_then(serde_json::Value::as_str).unwrap_or(id);
+            (id.clone(), name.to_string())
+        })
+        .collect();
+    alike.sort_by_cached_key(|(id, name)| (name.to_lowercase(), id.clone()));
+    alike
 }
 
 /// The menu row's words in the display language the person chose
@@ -304,23 +358,43 @@ const POPOVER: &str = "popover";
 
 /// What the popover shows, as JSON its page reads (popover.js): the switch,
 /// the typing method, the four switches by setting, the app the switch is
-/// remembered for — only while it is remembered per app — and the display
-/// language. Every value read as the menu reads it ([`menu_entries`]), so the
-/// two never disagree.
-pub fn popover_state(on: bool, settings: &serde_json::Value, app: Option<&str>) -> serde_json::Value {
+/// remembered for and the other apps it is remembered alike for ([`alike`],
+/// `{id, name}` each) — both only while it is remembered per app — and the
+/// display language. Every value read as the menu reads it
+/// ([`menu_entries`]), so the two never disagree.
+pub fn popover_state(
+    on: bool,
+    settings: &serde_json::Value,
+    app: Option<&str>,
+    alike: &[(String, String)],
+) -> serde_json::Value {
     let options: serde_json::Map<String, serde_json::Value> = OPTIONS
         .iter()
         .map(|(setting, default, ..)| (setting.to_string(), serde_json::Value::Bool(flag(settings, setting, *default))))
         .collect();
     let english = settings.get("language").and_then(|value| value.as_str()) == Some("en");
+    let per_app = flag(settings, "perApp", true);
+    let alike: Vec<serde_json::Value> = alike
+        .iter()
+        .filter(|_| per_app)
+        .map(|(id, name)| serde_json::json!({ "id": id, "name": name }))
+        .collect();
     serde_json::json!({
         "v": 1,
         "on": on,
         "method": if Settings::from_json(settings).vni { "vni" } else { "telex" },
         "options": options,
-        "app": app.filter(|_| flag(settings, "perApp", true)),
+        "app": app.filter(|_| per_app),
+        "alike": alike,
         "language": if english { "en" } else { "vi" },
     })
+}
+
+/// [`popover_state`] as it stands: the switch, the settings and the apps
+/// remembered, read now.
+fn popover_now(on: bool, settings: &serde_json::Value) -> serde_json::Value {
+    let alike = alike(on, &remembered(), &stored_map(APP_NAMES), front().as_deref());
+    popover_state(on, settings, front_name().as_deref(), &alike)
 }
 
 /// A request from the popover's page: `"state"` for what to show, `"close"`
@@ -332,8 +406,7 @@ fn popover_request(request: &str) -> Result<String, String> {
         "close" => return lumi::close_window(POPOVER).map(|()| String::new()),
         id => pressed(id)?,
     }
-    let state = popover_state(text_input::enabled()?, &lumi::settings(), front_name().as_deref());
-    Ok(state.to_string())
+    Ok(popover_now(text_input::enabled()?, &lumi::settings()).to_string())
 }
 
 /// What a press on a row of that menu does, read against the settings it was
@@ -437,7 +510,7 @@ fn draw_menu() -> Result<(), String> {
     // `set_rows`, not `set`: only it draws a row's icon.
     menu::set_rows(&menu_entries(on, &settings))?;
     // The popover, when it is up, shows the same; `false` when it is not.
-    let _ = lumi::post(POPOVER, &popover_state(on, &settings, front_name().as_deref()).to_string());
+    let _ = lumi::post(POPOVER, &popover_now(on, &settings).to_string());
     menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on)).tooltip(menu_bar_tooltip(on, language)))
 }
 
@@ -543,6 +616,7 @@ impl Guest for VietnameseTyping {
             lumi::storage::put(FRONT_NAME, &app_name, rev).map_err(lumi::storage::PutError::into_message)?;
             if per_app() {
                 if let Some(on) = remembered().get(&id).and_then(serde_json::Value::as_bool) {
+                    name_app(&id, Some(app_name))?;
                     if on != text_input::enabled()? {
                         text_input::set_enabled(on)?;
                     }
@@ -784,7 +858,8 @@ mod tests {
 
     #[test]
     fn the_popover_shows_what_is_saved_and_the_app_only_when_remembered_per_app() {
-        let state = popover_state(true, &serde_json::json!({}), Some("Slack"));
+        let notes = [("com.apple.Notes".to_string(), "Notes".to_string())];
+        let state = popover_state(true, &serde_json::json!({}), Some("Slack"), &notes);
         assert_eq!(
             state,
             serde_json::json!({
@@ -793,15 +868,50 @@ mod tests {
                 "method": "telex",
                 "options": { "modernTone": true, "escRestore": true, "englishRestore": false, "perApp": true },
                 "app": "Slack",
+                "alike": [{ "id": "com.apple.Notes", "name": "Notes" }],
                 "language": "vi",
             })
         );
-        let shared = popover_state(false, &serde_json::json!({ "perApp": "false", "language": "en", "method": "vni" }), Some("Slack"));
+        let shared = popover_state(false, &serde_json::json!({ "perApp": "false", "language": "en", "method": "vni" }), Some("Slack"), &notes);
         assert_eq!(shared["app"], serde_json::Value::Null, "the same in every app names none");
+        assert_eq!(shared["alike"], serde_json::json!([]), "and shows no other app");
         assert_eq!(shared["on"], false);
         assert_eq!(shared["method"], "vni");
         assert_eq!(shared["language"], "en");
-        assert_eq!(popover_state(true, &serde_json::json!({}), None)["app"], serde_json::Value::Null);
+        assert_eq!(popover_state(true, &serde_json::json!({}), None, &[])["app"], serde_json::Value::Null);
+    }
+
+    /// The per-app tile shows the other apps left as the switch is now, by
+    /// name, and an app nobody named yet by its id.
+    #[test]
+    fn the_apps_alike_are_the_others_left_the_same_way() {
+        let apps = serde_json::json!({
+            "com.tinyspeck.slackmacgap": true,
+            "com.apple.Notes": true,
+            "com.apple.Terminal": false,
+            "com.microsoft.VSCode": false,
+            "org.example.unnamed": true,
+            "com.apple.mail": "yes",
+        });
+        let names = serde_json::json!({
+            "com.tinyspeck.slackmacgap": "Slack",
+            "com.apple.Notes": "Notes",
+            "com.apple.Terminal": "Terminal",
+            "com.microsoft.VSCode": "Visual Studio Code",
+            "com.apple.mail": "Mail",
+        });
+        let (apps, names) = (apps.as_object().unwrap(), names.as_object().unwrap());
+        let ids = |list: Vec<(String, String)>| list.into_iter().map(|(id, name)| format!("{id}={name}")).collect::<Vec<_>>();
+        assert_eq!(
+            ids(alike(true, apps, names, Some("com.tinyspeck.slackmacgap"))),
+            ["com.apple.Notes=Notes", "org.example.unnamed=org.example.unnamed"],
+            "the app in front is the switch's own line, and a value that is not a switch is nobody's",
+        );
+        assert_eq!(
+            ids(alike(false, apps, names, None)),
+            ["com.apple.Terminal=Terminal", "com.microsoft.VSCode=Visual Studio Code"],
+        );
+        assert!(alike(true, &serde_json::Map::new(), names, None).is_empty());
     }
 
     /// The popover and the right-click menu are two drawings of one state.
@@ -812,7 +922,7 @@ mod tests {
             serde_json::json!({ "method": "vni", "modernTone": "false", "englishRestore": "true", "perApp": "false" }),
         ] {
             for on in [true, false] {
-                let state = popover_state(on, &settings, None);
+                let state = popover_state(on, &settings, None, &[]);
                 for entry in menu_entries(on, &settings) {
                     if let Some(setting) = entry.id.strip_prefix(OPTION_ROW) {
                         assert_eq!(state["options"][setting], entry.checked, "{setting}");

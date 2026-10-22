@@ -86,7 +86,7 @@ anchor = { at = "center" }
 material = "popover"
 arrow = true
 keep-alive = true
-width = 300
+width = 320
 height = 340
 
 # The language this extension's own pages are read in. Vietnamese first: it

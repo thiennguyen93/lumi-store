@@ -34,7 +34,7 @@
 
 html, body { margin: 0; background: transparent; overflow: hidden; }
 .pop {
-  box-sizing: border-box; width: 300px; padding: 12px;
+  box-sizing: border-box; width: 320px; padding: 12px;
   user-select: none; -webkit-user-select: none; cursor: default;
 }
 /* Every control here draws itself; under `:where()`, as lumi.css's rules
@@ -77,13 +77,27 @@ kbd {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
 }
 
-/* The four switches: a dot that takes the accent when on. */
-.mini { display: flex; flex-direction: column; gap: 6px; min-height: 70px; }
-.dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--off); color: CanvasText; }
+/* The four switches, as Control Center draws its own: a round symbol that
+   takes the accent when on, and beside it the name over what it does — one
+   line each, cut with an ellipsis rather than wrapped, so every tile is the
+   same height and its words line up with the symbol. */
+.mini { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 8px 10px; }
+.dot { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--off); color: CanvasText; }
 .dot svg { width: 15px; height: 15px; }
 .mini[aria-checked="true"] .dot { background: var(--pick); color: #fff; }
-.mini b { font-size: 12px; font-weight: 600; line-height: 1.25; }
-.mini small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+.mini .say { flex: 1; min-width: 0; }
+.mini b, .mini small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini b { font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+.mini small { font-size: 11px; color: var(--muted); font-weight: 400; line-height: 1.3; }
+
+/* Under "Per app", the other apps the switch is left the same way in: their
+   icons, at most four, or three and a count — a "+1" would take the room of
+   the icon it stands for. Words only when there are none to show. */
+.apps { display: flex; align-items: center; gap: 3px; height: 16px; margin-top: 1px; font-size: 11px; color: var(--muted); }
+.apps img { flex: none; width: 16px; height: 16px; }
+.apps .more { flex: none; padding-left: 1px; font-variant-numeric: tabular-nums; }
+.apps .none { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apps .said { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* Settings… and Quit. */
 .bar { display: flex; justify-content: space-between; margin-top: 10px; }
