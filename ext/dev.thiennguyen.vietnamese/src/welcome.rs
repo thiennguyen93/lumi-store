@@ -209,8 +209,9 @@ mod tests {
     #[test]
     fn the_window_is_declared_and_its_page_ships() {
         let manifest = include_str!("../manifest.toml");
+        // At the start of a line: a comment may name `[[window]]` too.
         let block = manifest
-            .split("[[window]]")
+            .split("\n[[window]]")
             .nth(1)
             .and_then(|rest| rest.split("\n[").next())
             .expect("no [[window]]");
