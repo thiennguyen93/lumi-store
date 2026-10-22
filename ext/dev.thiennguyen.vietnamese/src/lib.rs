@@ -402,11 +402,7 @@ fn popover_now(on: bool, settings: &serde_json::Value) -> serde_json::Value {
 /// a press on that row ([`pressed`]) — answered with what to show next.
 fn popover_request(request: &str) -> Result<String, String> {
     match request {
-        // Every showing asks: the look is put on before the answer is drawn.
-        // A look refused is no reason to show an empty popover.
-        "state" => {
-            let _ = apply_appearance();
-        }
+        "state" => {}
         "close" => return lumi::close_window(POPOVER).map(|()| String::new()),
         id => pressed(id)?,
     }
@@ -530,11 +526,9 @@ pub fn popover_appearance(settings: &serde_json::Value) -> &'static str {
 }
 
 /// Put the popover in the look its setting names (`lumi::set_theme`), at
-/// once if it is up. Lumi keeps the choice until it quits and nothing runs
-/// when it starts, so it is asked again wherever a run may change windows:
-/// installing or updating, the Settings tab saving it, and the popover's
-/// page asking what to show — which, the first time after a launch, is a
-/// moment after the popover opened in Lumi's own look.
+/// once if it is up. Lumi keeps the choice, a restart included, so it is
+/// asked only where the setting may have moved: installing or updating, and
+/// the Settings tab saving it.
 fn apply_appearance() -> Result<(), String> {
     lumi::set_theme(POPOVER, popover_appearance(&lumi::settings()))
 }
