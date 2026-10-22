@@ -42,16 +42,19 @@ pub struct Settings {
 impl Settings {
     /// From the settings object Lumi hands a run: strings, as every setting is.
     pub fn from_json(settings: &serde_json::Value) -> Self {
-        let on = |name: &str, default: bool| {
-            settings.get(name).and_then(|value| value.as_str()).map_or(default, |value| value != "false")
-        };
         Settings {
             vni: settings.get("method").and_then(|value| value.as_str()) == Some("vni"),
-            modern_tone: on("modernTone", true),
-            esc_restore: on("escRestore", true),
-            english_restore: on("englishRestore", false),
+            modern_tone: flag(settings, "modernTone", true),
+            esc_restore: flag(settings, "escRestore", true),
+            english_restore: flag(settings, "englishRestore", false),
         }
     }
+}
+
+/// One switch from the settings object: on unless it says `"false"`, and its
+/// manifest default where it says nothing.
+fn flag(settings: &serde_json::Value, name: &str, default: bool) -> bool {
+    settings.get(name).and_then(|value| value.as_str()).map_or(default, |value| value != "false")
 }
 
 /// The answer to the last of `keys`, the keys of the word so far — or `None`,
@@ -230,27 +233,110 @@ fn label_tabs() -> Result<(), String> {
     Ok(())
 }
 
-/// The rows of the menu the V or E opens, after the switch: the extension's
-/// own Settings… and, last, Quit — which switches the extension off in Lumi
-/// (`lumi::switch_off`), not Lumi — in the display language: Vietnamese
-/// unless it says English. Lumi's own heading and Settings row are left out
-/// (`menu-bar-item-heading`, `menu-bar-item-settings`): these say both.
-pub fn menu_rows(language: Option<&str>) -> (&'static str, &'static str) {
-    match language {
-        Some("en") => ("Settings…", "Quit"),
-        _ => ("Cài đặt…", "Thoát"),
+/// The menu the V or E opens: the switch, the typing method, the engine's
+/// switches, the extension's own Settings… and, last, Quit — which switches
+/// the extension off in Lumi (`lumi::switch_off`), not Lumi. The method and
+/// the switches are the Settings tab's own rows, put where a press reaches
+/// them, as UniKey's, EVKey's and Gõ Nhanh's menus put theirs; a press saves
+/// the setting as the tab would (`lumi::set_setting`). Lumi's own heading and
+/// Settings row are left out (`menu-bar-item-heading`,
+/// `menu-bar-item-settings`): these say both. Every word in the display
+/// language: Vietnamese unless it says English, as the Settings tab reads it.
+pub fn menu_entries(on: bool, settings: &serde_json::Value) -> Vec<menu::Entry> {
+    let language = settings.get("language").and_then(|value| value.as_str());
+    let words = |vi: &'static str, en: &'static str| if language == Some("en") { en } else { vi };
+    let vni = Settings::from_json(settings).vni;
+    let mut entries = vec![menu::Entry::check(TOGGLE_ROW, menu_label(language), on), menu::Entry::separator("s1")];
+    for (value, label) in METHODS {
+        entries.push(menu::Entry::check(&format!("{METHOD_ROW}{value}"), label, vni == (value == "vni")));
     }
+    entries.push(menu::Entry::separator("s2"));
+    for (setting, default, vi, en) in OPTIONS {
+        entries.push(menu::Entry::check(&format!("{OPTION_ROW}{setting}"), words(vi, en), flag(settings, setting, default)));
+    }
+    entries.push(menu::Entry::separator("s3"));
+    entries.push(menu::Entry::item(SETTINGS_ROW, words("Cài đặt…", "Settings…")).icon(SETTINGS_ICON));
+    entries.push(menu::Entry::separator("s4"));
+    entries.push(menu::Entry::item(QUIT_ROW, words("Thoát", "Quit")).icon(QUIT_ICON));
+    entries
 }
 
-/// The menu row ids a press comes back with.
+/// The typing methods, by the `method` setting's value, as the Settings tab
+/// names them.
+const METHODS: [(&str, &str); 2] = [("telex", "Telex"), ("vni", "VNI")];
+
+/// The engine's switches the menu holds: the setting, its manifest default,
+/// and its words — the Settings tab's own.
+const OPTIONS: [(&str, bool, &str, &str); 4] = [
+    ("modernTone", true, "Đặt dấu kiểu mới", "Place tone marks the modern way"),
+    ("escRestore", true, "Esc trả lại phím đã gõ", "Escape gives back the keys"),
+    ("englishRestore", false, "Giữ nguyên từ tiếng Anh", "Keep English words as typed"),
+    ("perApp", true, "Nhớ bật hay tắt cho từng ứng dụng", "Remember on or off for each app"),
+];
+
+/// The menu row ids a press comes back with: a method's row is
+/// `method:<value>`, a switch's `option:<setting>`.
+const TOGGLE_ROW: &str = "toggle";
+const METHOD_ROW: &str = "method:";
+const OPTION_ROW: &str = "option:";
 const SETTINGS_ROW: &str = "settings";
 const QUIT_ROW: &str = "quit";
 
-/// The glyphs beside those two rows, from Lumi's Lucide set: the gear and the
-/// power button Lumi's own menu draws beside its Settings… and Quit Lumi, so
-/// the rows read as the ones they stand in for.
+/// The glyphs beside the last two rows, from Lumi's Lucide set: the gear and
+/// the power button Lumi's own menu draws beside its Settings… and Quit Lumi,
+/// so the rows read as the ones they stand in for.
 const SETTINGS_ICON: &str = "settings";
 const QUIT_ICON: &str = "power";
+
+/// What a press on a row of that menu does, read against the settings it was
+/// drawn from.
+#[derive(Debug, PartialEq, Eq)]
+pub enum Press {
+    Toggle,
+    /// Save `method` as this value.
+    Method(&'static str),
+    /// Save this switch as the other of what its tick showed.
+    Option { setting: &'static str, on: bool },
+    Settings,
+    Quit,
+}
+
+/// The press on row `id`, or `None` for a row this build does not draw.
+pub fn press_of(id: &str, settings: &serde_json::Value) -> Option<Press> {
+    if let Some(value) = id.strip_prefix(METHOD_ROW) {
+        return METHODS.iter().find(|(known, _)| *known == value).map(|(known, _)| Press::Method(known));
+    }
+    if let Some(name) = id.strip_prefix(OPTION_ROW) {
+        return OPTIONS
+            .iter()
+            .find(|(setting, ..)| *setting == name)
+            .map(|(setting, default, ..)| Press::Option { setting, on: !flag(settings, setting, *default) });
+    }
+    match id {
+        TOGGLE_ROW => Some(Press::Toggle),
+        SETTINGS_ROW => Some(Press::Settings),
+        QUIT_ROW => Some(Press::Quit),
+        _ => None,
+    }
+}
+
+/// Carry out a press on the menu, and draw it again where a setting moved —
+/// Lumi rebuilt it before telling the press, so a tick shows what is saved,
+/// never what was clicked.
+fn pressed(id: &str) -> Result<(), String> {
+    match press_of(id, &lumi::settings()).ok_or_else(|| format!("no menu row {id}"))? {
+        Press::Toggle => toggle(),
+        Press::Method(value) => lumi::set_setting("method", value).and_then(|()| draw_menu()),
+        Press::Option { setting, on } => {
+            lumi::set_setting(setting, if on { "true" } else { "false" }).and_then(|()| draw_menu())
+        }
+        Press::Settings => lumi::open_settings(),
+        // Off in Lumi, as the switch under Extensions would put it: the item
+        // and the typing go, and nothing of this runs until the person
+        // switches it on again there.
+        Press::Quit => lumi::switch_off(),
+    }
+}
 
 /// The first version with an item of its own in the menu bar.
 const FIRST_WITH_ITEM: (u64, u64, u64) = (0, 1, 1);
@@ -298,18 +384,11 @@ pub fn menu_bar_tooltip(on: bool, language: Option<&str>) -> &'static str {
 /// both, and the same item again is no change.
 fn draw_menu() -> Result<(), String> {
     let on = text_input::enabled()?;
-    let language = lumi::setting("language");
-    let label = menu_label(language.as_deref());
-    let (settings, quit) = menu_rows(language.as_deref());
+    let settings = lumi::settings();
+    let language = settings.get("language").and_then(|value| value.as_str());
     // `set_rows`, not `set`: only it draws a row's icon.
-    menu::set_rows(&[
-        menu::Entry::check("toggle", label, on),
-        menu::Entry::separator("s1"),
-        menu::Entry::item(SETTINGS_ROW, settings).icon(SETTINGS_ICON),
-        menu::Entry::separator("s2"),
-        menu::Entry::item(QUIT_ROW, quit).icon(QUIT_ICON),
-    ])?;
-    menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on)).tooltip(menu_bar_tooltip(on, language.as_deref())))
+    menu::set_rows(&menu_entries(on, &settings))?;
+    menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on)).tooltip(menu_bar_tooltip(on, language)))
 }
 
 /// What the Settings tab sends (`POST /__lumi__/call`) after it saves a new
@@ -366,15 +445,7 @@ impl Guest for VietnameseTyping {
             return welcome::answer(ask);
         }
         if let Some(id) = menu::pressed(&window, &request) {
-            return match id.as_str() {
-                "toggle" => toggle().map(|()| String::new()),
-                SETTINGS_ROW => lumi::open_settings().map(|()| String::new()),
-                // Off in Lumi, as the switch under Extensions would put it:
-                // the item and the typing go, and nothing of this runs until
-                // the person switches it on again there.
-                QUIT_ROW => lumi::switch_off().map(|()| String::new()),
-                other => Err(format!("no menu row {other}")),
-            };
+            return pressed(&id).map(|()| String::new());
         }
         if window == ":settings" && request == LANGUAGE_CHANGED {
             return draw_menu().and_then(|()| label_tabs()).map(|()| String::new());
@@ -560,13 +631,132 @@ mod tests {
         assert!(!drew_no_item(""));
     }
 
+    /// Each row's id and tick, in order, separators as `-`.
+    fn drawn(entries: &[menu::Entry]) -> Vec<(String, bool)> {
+        entries
+            .iter()
+            .map(|entry| match entry.kind {
+                menu::Kind::Separator => ("-".to_string(), false),
+                _ => (entry.id.clone(), entry.checked),
+            })
+            .collect()
+    }
+
     #[test]
-    fn the_menu_rows_after_the_switch_read_in_the_display_language() {
-        assert_eq!(menu_rows(Some("en")), ("Settings…", "Quit"));
-        assert_eq!(menu_rows(Some("vi")), ("Cài đặt…", "Thoát"));
+    fn the_menu_holds_the_method_and_the_switches_the_settings_tab_holds() {
+        let rows = |pairs: &[(&str, bool)]| pairs.iter().map(|(id, on)| (id.to_string(), *on)).collect::<Vec<_>>();
+        // Never saved: every manifest default, Telex.
+        assert_eq!(
+            drawn(&menu_entries(true, &serde_json::json!({}))),
+            rows(&[
+                ("toggle", true),
+                ("-", false),
+                ("method:telex", true),
+                ("method:vni", false),
+                ("-", false),
+                ("option:modernTone", true),
+                ("option:escRestore", true),
+                ("option:englishRestore", false),
+                ("option:perApp", true),
+                ("-", false),
+                ("settings", false),
+                ("-", false),
+                ("quit", false),
+            ])
+        );
+        let saved = serde_json::json!({
+            "method": "vni", "modernTone": "false", "escRestore": "false",
+            "englishRestore": "true", "perApp": "false",
+        });
+        let ticks: Vec<(String, bool)> =
+            drawn(&menu_entries(false, &saved)).into_iter().filter(|(id, _)| id != "-").collect();
+        assert_eq!(
+            ticks,
+            rows(&[
+                ("toggle", false),
+                ("method:telex", false),
+                ("method:vni", true),
+                ("option:modernTone", false),
+                ("option:escRestore", false),
+                ("option:englishRestore", true),
+                ("option:perApp", false),
+                ("settings", false),
+                ("quit", false),
+            ])
+        );
+    }
+
+    #[test]
+    fn the_menu_reads_in_the_display_language() {
+        let labels = |language: serde_json::Value| -> Vec<String> {
+            menu_entries(true, &serde_json::json!({ "language": language }))
+                .into_iter()
+                .filter(|entry| entry.kind != menu::Kind::Separator)
+                .map(|entry| entry.label)
+                .collect()
+        };
+        assert_eq!(
+            labels(serde_json::json!("en")),
+            [
+                "Vietnamese typing",
+                "Telex",
+                "VNI",
+                "Place tone marks the modern way",
+                "Escape gives back the keys",
+                "Keep English words as typed",
+                "Remember on or off for each app",
+                "Settings…",
+                "Quit",
+            ]
+        );
+        let vietnamese = [
+            "Gõ tiếng Việt",
+            "Telex",
+            "VNI",
+            "Đặt dấu kiểu mới",
+            "Esc trả lại phím đã gõ",
+            "Giữ nguyên từ tiếng Anh",
+            "Nhớ bật hay tắt cho từng ứng dụng",
+            "Cài đặt…",
+            "Thoát",
+        ];
+        assert_eq!(labels(serde_json::json!("vi")), vietnamese);
         // Never chosen, or a value this build does not know: Vietnamese.
-        assert_eq!(menu_rows(None), ("Cài đặt…", "Thoát"));
-        assert_eq!(menu_rows(Some("fr")), ("Cài đặt…", "Thoát"));
+        assert_eq!(labels(serde_json::Value::Null), vietnamese);
+        assert_eq!(labels(serde_json::json!("fr")), vietnamese);
+    }
+
+    #[test]
+    fn a_press_saves_the_other_of_what_its_tick_showed() {
+        let none = serde_json::json!({});
+        assert_eq!(press_of("method:vni", &none), Some(Press::Method("vni")));
+        assert_eq!(press_of("method:telex", &none), Some(Press::Method("telex")));
+        // Defaults count as what the tick showed.
+        assert_eq!(press_of("option:modernTone", &none), Some(Press::Option { setting: "modernTone", on: false }));
+        assert_eq!(
+            press_of("option:englishRestore", &none),
+            Some(Press::Option { setting: "englishRestore", on: true })
+        );
+        let saved = serde_json::json!({ "perApp": "false" });
+        assert_eq!(press_of("option:perApp", &saved), Some(Press::Option { setting: "perApp", on: true }));
+        assert_eq!(press_of("toggle", &none), Some(Press::Toggle));
+        assert_eq!(press_of("settings", &none), Some(Press::Settings));
+        assert_eq!(press_of("quit", &none), Some(Press::Quit));
+        // Nothing this build draws: no method or setting it does not know.
+        assert_eq!(press_of("method:viqr", &none), None);
+        assert_eq!(press_of("option:language", &none), None);
+        assert_eq!(press_of("about", &none), None);
+    }
+
+    /// Every row the menu draws is one a press is understood on.
+    #[test]
+    fn every_row_drawn_is_one_a_press_reaches() {
+        let settings = serde_json::json!({});
+        for entry in menu_entries(true, &settings) {
+            if entry.kind != menu::Kind::Separator {
+                assert!(press_of(&entry.id, &settings).is_some(), "{}", entry.id);
+            }
+        }
     }
 
     #[test]
