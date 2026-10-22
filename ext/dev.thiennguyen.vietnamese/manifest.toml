@@ -74,7 +74,8 @@ maximizable = false
 # right-click — and VoiceOver, which presses the item rather than clicking it.
 # Kept loaded between openings, so it is up at once; its page fits the panel
 # to what it shows. Centred under the V or E, as a popover hangs — Lumi holds
-# it inside the display when the item stands near an edge.
+# it inside the display when the item stands near an edge — and pointing at
+# it with an arrow Lumi cuts into the glass.
 [[window]]
 name = "popover"
 title = "Lumi Gõ tiếng Việt"
@@ -83,6 +84,7 @@ kind = "panel"
 position = "menu-bar-item"
 anchor = { at = "center" }
 material = "popover"
+arrow = true
 keep-alive = true
 width = 300
 height = 340
