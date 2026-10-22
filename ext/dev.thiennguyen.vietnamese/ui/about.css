@@ -72,6 +72,20 @@
 }
 .chips svg { width: 14px; height: 14px; color: var(--brand-ink); }
 
+/* Engine: the credit for the typing engine, the licence card's shape — a
+   tile, the words, one pill out to its repository. Its tile is the card's
+   neutral surface, not the red tint the author's initials and the licence
+   badge sit on: the engine is somebody else's work, so it does not wear this
+   extension's colour. */
+.engine { display: flex; align-items: center; gap: 12px; }
+.tile.plain { background: var(--surface-up); color: var(--brand-ink); box-shadow: none; }
+.engine .name { margin-top: 2px; font-size: 13px; font-weight: 600; }
+.engine small { display: block; font-size: 12px; color: var(--muted); }
+.out-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; }
+.out-pill svg { width: 14px; height: 14px; }
+.out-pill .out { width: 12px; height: 12px; opacity: 0.5; }
+.out-pill:hover .out { opacity: 0.75; }
+
 /* Author: initials on the accent's tint, the address under the name. */
 .person { display: flex; align-items: center; gap: 11px; margin-top: 8px; }
 .person b { display: block; font-weight: 600; }
