@@ -136,6 +136,10 @@ CAPABILITIES = {
     # Lumi 1.60: the `front-app` event (which app is in front, as the person
     # moves between them).
     "front-app",
+    # Lumi 1.64: the `transcribe` interface (speech turned into text by the
+    # speech model the person set up in Lumi), and the two sources it hears
+    # live, each declared only beside `speech`.
+    "speech", "microphone", "system-audio",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -418,11 +422,18 @@ def check_manifest(entry_id: str, manifest: dict):
         if word not in CAPABILITIES:
             fail(entry_id, f"capability {word!r} is not one the host offers ({sorted(CAPABILITIES)})")
     # `manifest.rs`'s refusal, word for word: an extension that sees every
-    # key may hold no word that reaches past the Mac.
+    # key may hold no word that reaches past the Mac — nor `speech`, whose
+    # hints are text sent to a model (Lumi 1.64).
     if "text-input" in ext.get("capabilities", []):
-        for reaching in ("network", "ai"):
+        for reaching in ("network", "ai", "speech"):
             if reaching in ext.get("capabilities", []):
                 fail(entry_id, f"text-input cannot be declared with {reaching}: an extension that sees every key you type may not be able to send anything off this Mac")
+    # `manifest.rs` again: the microphone and what the Mac plays are what
+    # `speech` hears, and nothing else does.
+    for source in ("microphone", "system-audio"):
+        if source in ext.get("capabilities", []) and "speech" not in ext.get("capabilities", []):
+            fail(entry_id, f"{source} is what speech hears: declare speech beside it")
+            break
     for name in ext.get("events", []):
         if name not in EVENTS:
             fail(entry_id, f"unknown event {name!r} — Lumi sends {sorted(EVENTS)}")
