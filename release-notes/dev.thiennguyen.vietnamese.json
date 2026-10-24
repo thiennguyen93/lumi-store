@@ -1,0 +1,252 @@
+{
+  "0.1.12": {
+    "notesSha256": "8bfcce38995de5a2714dec93fb5cd4cce7a9894d75d4f6d93cc4f83f0e1b4939",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Updated description",
+          "items": [
+            "The extension description now highlights Telex and VNI support with no input method needed"
+          ]
+        },
+        "vi": {
+          "headline": "Cập nhật mô tả",
+          "items": [
+            "Mô tả tiện ích giờ là: Gõ tiếng Việt trên Mac với Telex hoặc VNI, không cần cài input method"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.11": {
+    "notesSha256": "d3d8d52adbcb5e620604700791df5c49c6dad8272f4adabccf15a1f4e3530ce5",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome screen now helps you set up the Vietnamese typing shortcut",
+          "items": [
+            "The Welcome screen includes a step for turning Vietnamese typing on and off with your chosen shortcut",
+            "You can see which key Lumi set at install, change it, or take it back from another shortcut that is using it",
+            "The About tab mentions the shortcut when describing what the tour covers"
+          ]
+        },
+        "vi": {
+          "headline": "Màn hình chào mừng giúp thiết lập phím tắt gõ tiếng Việt",
+          "items": [
+            "Màn hình chào mừng có bước bật tắt gõ tiếng Việt bằng phím tắt bạn chọn",
+            "Bạn có thể xem phím Lumi đã đặt khi cài đặt, đổi phím khác, hoặc lấy lại từ phím tắt đang dùng nó",
+            "Tab Giới thiệu nói đến phím tắt khi mô tả nội dung hướng dẫn"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.10": {
+    "notesSha256": "e19f1042f52a6410fe829f84a6f1cdeeaec0ef570729aeb5ec94b64ab60a8b5c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Demo video now available",
+          "items": [
+            "A short demo video shows how the extension works before you install it"
+          ]
+        },
+        "vi": {
+          "headline": "Video giới thiệu đã có",
+          "items": [
+            "Video ngắn giới thiệu cách tiện ích hoạt động trước khi bạn cài đặt"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.9": {
+    "notesSha256": "260aa0ead5b0ca5a07c3178da58121f8e77fc0924f7bae4b755ea2ef18d03841",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Streamlined About tab",
+          "items": [
+            "Removed the Source code row from the About tab"
+          ]
+        },
+        "vi": {
+          "headline": "Giao diện About gọn gàng hơn",
+          "items": [
+            "Đã xóa dòng Source code trong tab About"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.8": {
+    "notesSha256": "c95c0cf938cc5f2c0bda447938885030c48ef280c66c65e10e919be9b1aa931f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Getting started button to reopen the welcome tour",
+          "items": [
+            "The About tab now has a Getting started button to reopen the tour and choose your typing method"
+          ]
+        },
+        "vi": {
+          "headline": "Nút Bắt đầu để mở lại hướng dẫn chào mừng",
+          "items": [
+            "Tab Giới thiệu giờ có nút Bắt đầu để mở lại hướng dẫn chọn ngôn ngữ và phương thức gõ"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.7": {
+    "notesSha256": "168b5aa65cc34180a43c2abe7a6f2f5d72390df35fdb6268e733bb6b1fa5db91",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Help tags now appear in the About tab",
+          "items": [
+            "Help tags now appear when you hover over features or buttons in the About tab"
+          ]
+        },
+        "vi": {
+          "headline": "Giờ đã hiện chú thích trợ giúp trong thẻ Giới thiệu",
+          "items": [
+            "Giờ đã hiện chú thích trợ giúp khi rê chuột qua tính năng hoặc nút trong thẻ Giới thiệu"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.6": {
+    "notesSha256": "d0210cf37fa762c0cf9555b4aceebe72c1acffaf2f8522c57be250ea44a06ec6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Minor refinement",
+          "items": [
+            "The button to return to the acknowledgements list now reads Back"
+          ]
+        },
+        "vi": {
+          "headline": "Cải tiến nhỏ",
+          "items": [
+            "Nút quay lại danh sách ghi nhận giờ hiển thị là Quay lại"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.5": {
+    "notesSha256": "543b75edf3ad0776fbd78c61c3c54b7c1099a1f3f62fbcc427001b5beaff1d9a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Scrolling fix in Licence and Acknowledgements",
+          "items": [
+            "The grey box in Licence and Acknowledgements now stays in place while only the text scrolls"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa cuộn trong Giấy phép và Ghi nhận",
+          "items": [
+            "Hộp màu xám trong Giấy phép và Ghi nhận giờ đứng yên trong khi chỉ văn bản cuộn"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.4": {
+    "notesSha256": "f31ecfb554fad986e0fa7a10503e31d8b984c2435e0e335a96c873aa4e8572dd",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "About tab redesigned to match macOS settings",
+          "items": [
+            "About tab now follows macOS settings layout with privacy features up top",
+            "Privacy features explained when you hover over them",
+            "Developer and project links now appear as buttons in their own rows",
+            "License text wraps naturally instead of breaking mid-sentence",
+            "Acknowledgements replace third-party notices with dedicated pages for each project",
+            "Sheets resize to fit their content"
+          ]
+        },
+        "vi": {
+          "headline": "Tab Giới thiệu thiết kế lại theo kiểu cài đặt macOS",
+          "items": [
+            "Tab Giới thiệu bây giờ theo bố cục cài đặt macOS với tính năng riêng tư ở trên",
+            "Giải thích tính năng riêng tư khi bạn di chuột qua",
+            "Liên kết nhà phát triển và dự án hiện là nút trên từng hàng riêng",
+            "Văn bản giấy phép ngắt dòng tự nhiên thay vì cắt giữa câu",
+            "Ghi nhận thay thế thông báo bên thứ ba với trang riêng cho mỗi dự án",
+            "Bảng thay đổi kích thước vừa với nội dung"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.3": {
+    "notesSha256": "ed40e09ffc2c9448b2afb661f1da83c7ec82b79b9f39ade504ccb0fe2f3a0436",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome window, menu bar icon, and Vietnamese interface",
+          "items": [
+            "A welcome window appears on first install to choose your display language and typing method",
+            "A V or E icon in the menu bar opens quick settings when clicked or toggles typing when right-clicked",
+            "Switch Vietnamese typing on or off with fn and Shift pressed together, customizable in settings",
+            "The interface is now available in Vietnamese, set as the default display language",
+            "Settings are reorganized into clear rows with controls on the right side",
+            "An About tab shows what the extension can access, credits for the Gõ Nhanh engine, and licensing information"
+          ]
+        },
+        "vi": {
+          "headline": "Cửa sổ chào mừng, biểu tượng thanh menu và giao diện tiếng Việt",
+          "items": [
+            "Cửa sổ chào mừng xuất hiện khi cài đặt lần đầu để chọn ngôn ngữ hiển thị và phương thức gõ",
+            "Biểu tượng V hoặc E trên thanh menu mở cài đặt nhanh khi nhấp hoặc bật tắt gõ khi nhấp phải",
+            "Bật tắt gõ tiếng Việt bằng cách nhấn fn và Shift cùng lúc, có thể tùy chỉnh trong cài đặt",
+            "Giao diện hiện có sẵn bằng tiếng Việt, được đặt làm ngôn ngữ hiển thị mặc định",
+            "Cài đặt được sắp xếp lại thành các hàng rõ ràng với các điều khiển ở bên phải",
+            "Tab Giới thiệu hiển thị quyền truy cập của tiện ích, công nhận công cụ Gõ Nhanh và thông tin giấy phép"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "dfaae28f72afbdd7fdfaa5089c704330e4a0072b4ce9190227522889d1de7f1e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Type Vietnamese with Telex or VNI in every app",
+          "items": [
+            "Type Vietnamese in every app with Telex or VNI, switched on or off from the menu bar or a shortcut",
+            "The switch is remembered for each app, unless you turn that off in Settings",
+            "Escape gives back the keys as you typed them",
+            "English words can be kept as typed, controlled in Settings"
+          ]
+        },
+        "vi": {
+          "headline": "Gõ tiếng Việt bằng Telex hoặc VNI trong mọi ứng dụng",
+          "items": [
+            "Gõ tiếng Việt trong mọi ứng dụng bằng Telex hoặc VNI, bật tắt từ thanh menu hoặc phím tắt",
+            "Trạng thái bật tắt được nhớ riêng cho từng ứng dụng, trừ khi bạn tắt tính năng này trong Cài đặt",
+            "Nhấn Escape để lấy lại các phím bạn đã gõ",
+            "Từ tiếng Anh có thể được giữ nguyên, điều chỉnh trong Cài đặt"
+          ]
+        }
+      }
+    }
+  }
+}
