@@ -1,0 +1,58 @@
+[
+ {
+  "version": "0.5.1",
+  "date": "2026-10-22",
+  "notes": "### Thay đổi\n- Hình minh hoạ trong cửa sổ Chào mừng dùng ngày thật hôm nay: tờ lịch, dòng menu bar, số ngày đến Tết, và ngày dương sắp tới của các ngày giỗ ví dụ.",
+  "notesSha256": "d259a85c23df156427c066a683660b6fa750e4b4558fb9df49ffd4e028637a3c",
+  "summary": null
+ },
+ {
+  "version": "0.5.0",
+  "date": "2026-10-21",
+  "notes": "### Thay đổi\n- Cửa sổ Chào mừng làm lại thành một chuyến đi qua năm bước, có hình minh hoạ chuyển động: phím mở lịch (đổi được ngay tại đó), chọn kiểu lịch, lướt lịch bằng trackpad và phím, Ngày của tôi. Cuối cùng là nút Mở lịch.",
+  "notesSha256": "ea6a8650d93bf2731165b9a776b487b5fbb0a80b44c69994e2dd3479cb8bf095",
+  "summary": null
+ },
+ {
+  "version": "0.4.1",
+  "date": "2026-10-21",
+  "notes": "### Sửa\n- Theo trăng: tháng đang xem không còn ghi tên hai lần (tiêu đề và dòng ranh giới); tên tháng chỉ hiện ở tháng kế bên dưới.",
+  "notesSha256": "9b85ef145685364b82f7aca7d8990443f6bb1cd5401bcb45f6ded114a6693bc3",
+  "summary": null
+ },
+ {
+  "version": "0.4.0",
+  "date": "2026-10-21",
+  "notes": "### Thay đổi\n- Cuộn chuột hoặc vuốt trackpad thì lịch trượt theo tay, có quán tính như cuộn trang, thay vì nhảy từng trang: Tờ lịch và Lịch treo tường cuộn dọc qua các tuần, Theo trăng cuộn dọc qua các tháng âm, Canh giờ trượt ngang qua các tuần. Dừng tay thì lịch nằm gọn một hàng tuần (hay một tháng âm, một tuần).\n- Tiêu đề đổi theo tháng đang xem; ngày của tháng khác làm mờ, ngày mùng 1 ghi kèm tháng.\n- Nút ‹ ›, ⌥← ⌥→ và Hôm nay cuộn mượt tới nơi.",
+  "notesSha256": "17cacc94385f94e0d352aa64baf06bdd7353d142f2705fca25b09460fef5fdd3",
+  "summary": null
+ },
+ {
+  "version": "0.3.0",
+  "date": "2026-10-21",
+  "notes": "### Mới\n- Cuộn chuột hoặc vuốt trackpad trên lịch để lật trang: Tờ lịch, Lịch treo tường và Theo trăng cuộn dọc để đổi tháng, Canh giờ vuốt ngang để đổi tuần. Mỗi nấc chuột, mỗi lần vuốt là một trang.",
+  "notesSha256": "fb48fd1008f0983007d1be546b96fa5d4caf199675ad825b8c6539dc28ada8c3",
+  "summary": null
+ },
+ {
+  "version": "0.2.0",
+  "date": "2026-10-21",
+  "notes": "### Thay đổi\n- Qua 0 giờ, dòng ngày âm và số ngày đến Tết trên menu bar tự đổi sang ngày mới, lịch đang mở cũng vậy. Trước đây phải mở lịch hoặc Copy thì mới đổi.\n- Hôm nay tính theo múi giờ của máy Mac. Đổi múi giờ (đi nước ngoài chẳng hạn) thì menu bar và lệnh Copy đổi theo ngay, không cần mở lịch.\n- Cần Lumi 1.59.0 trở lên.",
+  "notesSha256": "be160f2db74335be26427bca12095e529311363c202a20fdd07d05e54b1e8123",
+  "summary": null
+ },
+ {
+  "version": "0.1.1",
+  "date": "2026-10-21",
+  "notes": "### Thay đổi\n- Lời giới thiệu trên store, trong cửa sổ Chào mừng và ảnh store viết lại cho tự nhiên, nói thẳng lịch làm được gì.",
+  "notesSha256": "516aeb519994ea1287b741daca71e8c52d7a28fc24da690bd1f4043220a2b355",
+  "summary": null
+ },
+ {
+  "version": "0.1.0",
+  "date": "2026-10-21",
+  "notes": "### Mới\n- Lịch âm Việt Nam trong một panel ở góc trên bên phải: bấm ⌃⌥⌘L, chọn trong danh sách lệnh, hoặc mở từ menu bar.\n- Bốn bố cục để chọn: Tờ lịch (mặc định), Lịch treo tường, Canh giờ và Theo trăng.\n- Tab Cài đặt ngay trên lịch (⌘4), cùng các cài đặt như trong Settings của Lumi.\n- Ngày âm trên từng ngày của tháng, đánh dấu Mùng 1, Rằm và các ngày lễ; chọn một ngày để xem Can Chi, giờ hoàng đạo và tiết khí.\n- Đổi ngày dương sang âm và ngược lại, kể cả tháng nhuận.\n- Ngày của tôi: ngày giỗ, sinh nhật âm lịch, tự tính ra ngày dương mỗi năm.\n- Giao diện: kính tối, kính sáng hoặc theo macOS, và độ trong của nền từ kính đến đặc (mặc định là đặc, để chữ dễ đọc).\n- Ngày âm hôm nay và số ngày đến Tết trong menu bar của Lumi, kèm lệnh Copy ngày âm hôm nay.",
+  "notesSha256": "eccacae38a95b47c5d683b51ad882bf52f454cc25f229fd4c659501435fa8bee",
+  "summary": null
+ }
+]

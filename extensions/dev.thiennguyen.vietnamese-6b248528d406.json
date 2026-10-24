@@ -1,0 +1,79 @@
+[
+ {
+  "version": "0.1.12",
+  "date": "2026-10-22",
+  "notes": "### Changed\n\n- The line that describes it in the Extension Store and in Lumi reads: *Vietnamese typing for your Mac, with Telex or VNI and no input method to install.*",
+  "notesSha256": "8bfcce38995de5a2714dec93fb5cd4cce7a9894d75d4f6d93cc4f83f0e1b4939",
+  "summary": null
+ },
+ {
+  "version": "0.1.11",
+  "date": "2026-10-22",
+  "notes": "### Added\n\n- The Welcome has a step for switching Vietnamese typing on and off. It shows the key Lumi set at install, **fn ⇧** unless something else already held it, and says who does when it is taken. Record another key right there, take one back from a shortcut that holds it, or go back to fn ⇧, as on the Settings tab. Right-clicking the V in the menu bar switches too.\n\n### Changed\n\n- **Getting started** on the About tab names the shortcut among what the tour shows.",
+  "notesSha256": "d3d8d52adbcb5e620604700791df5c49c6dad8272f4adabccf15a1f4e3530ce5",
+  "summary": null
+ },
+ {
+  "version": "0.1.10",
+  "date": "2026-10-22",
+  "notes": "### Added\n\n- A short demo video on Lumi Gõ tiếng Việt's page in the Extension Store and on lumikeys.app — typing in your apps, the V in the menu bar, fn ⇧ and Keep English — to watch before you install.",
+  "notesSha256": "e19f1042f52a6410fe829f84a6f1cdeeaec0ef570729aeb5ec94b64ab60a8b5c",
+  "summary": null
+ },
+ {
+  "version": "0.1.9",
+  "date": "2026-10-22",
+  "notes": "### Removed\n\n- The **Source code** row on the About tab.",
+  "notesSha256": "260aa0ead5b0ca5a07c3178da58121f8e77fc0924f7bae4b755ea2ef18d03841",
+  "summary": null
+ },
+ {
+  "version": "0.1.8",
+  "date": "2026-10-22",
+  "notes": "### Added\n\n- **Getting started** on the About tab, under what the extension does with your keys: it opens the welcome tour again, to choose the language and the typing method and see where your keys go.",
+  "notesSha256": "c95c0cf938cc5f2c0bda447938885030c48ef280c66c65e10e919be9b1aa931f",
+  "summary": null
+ },
+ {
+  "version": "0.1.7",
+  "date": "2026-10-22",
+  "notes": "### Fixed\n\n- The About tab's help tags show. Rest the pointer on **Works offline**, **No typing history** or **Open source** for what each means, or on the developer's mail, website and GitHub buttons for where each goes; tab to a button and its tag shows at once. They never showed before.",
+  "notesSha256": "168b5aa65cc34180a43c2abe7a6f2f5d72390df35fdb6268e733bb6b1fa5db91",
+  "summary": null
+ },
+ {
+  "version": "0.1.6",
+  "date": "2026-10-22",
+  "notes": "### Changed\n\n- On a work's page in the Acknowledgements sheet, the button back to the list reads **Back**.",
+  "notesSha256": "d0210cf37fa762c0cf9555b4aceebe72c1acffaf2f8522c57be250ea44a06ec6",
+  "summary": null
+ },
+ {
+  "version": "0.1.5",
+  "date": "2026-10-22",
+  "notes": "### Fixed\n\n- In the Licence and Acknowledgements sheets the grey box stays where it is and only the text inside it scrolls, as a text view does on the Mac, instead of the whole box moving.",
+  "notesSha256": "543b75edf3ad0776fbd78c61c3c54b7c1099a1f3f62fbcc427001b5beaff1d9a",
+  "summary": null
+ },
+ {
+  "version": "0.1.4",
+  "date": "2026-10-22",
+  "notes": "### Changed\n\n- The About tab is laid out as macOS lists its settings. It opens on what the extension does with the keys you type: **Works offline**, **No typing history** and **Open source**, each explained when you rest the pointer on it. Then the developer, with his mail, website and GitHub as buttons on his row, the extension's website, its source, its licence and its acknowledgements, a row each; and **Powered by the Gõ Nhanh engine** on a row of its own.\n- The licence reads as paragraphs, wrapped to the sheet, instead of text broken mid-sentence.\n- **Acknowledgements** replaces the third-party notices: a list of the work the engine is built on, each with a page of its own for its notice, a link to the project and its licence.\n- Both sheets are as tall as what they show.",
+  "notesSha256": "f31ecfb554fad986e0fa7a10503e31d8b984c2435e0e335a96c873aa4e8572dd",
+  "summary": null
+ },
+ {
+  "version": "0.1.3",
+  "date": "2026-10-22",
+  "notes": "### Added\n\n- A Welcome window when it is first installed, in Vietnamese or English: choose the display language and the typing method, and see where the keys you type go.\n- **Switch Vietnamese typing on or off** has a key of its own, **fn ⇧** — fn and ⇧ pressed together and let go — set at install when nothing else holds it. Change it on the Settings tab, under **Shortcut**, where a keyboard without fn takes any other key.\n- The Settings tab reads in Vietnamese or English: choose with **Display language** at its top. Vietnamese is the default.\n- **Popover appearance** on the Settings tab: the popover in Lumi's own look, or light or dark on its own.\n- The row in Lumi's menu bar menu follows the display language: **Gõ tiếng Việt**, or **Vietnamese typing** in English.\n- An About tab of its own, in English: what the extension can reach, who made it and how to get in touch, its page in the store, its source, the engine it types with — powered by the Gõ Nhanh engine, by Kha Phan, with a link to its repository — and its licence and third-party notices, each read in a sheet.\n- The Settings, About and Changelog tab names follow the display language: **Cài đặt**, **Giới thiệu** and **Nhật ký thay đổi** in Vietnamese.\n- A V or an E in the menu bar, beside Lumi's icon, says at a glance whether Vietnamese typing is on. Click it for a popover of tiles: the switch — with the app it is remembered for — Telex or VNI, the switches from the Settings tab — modern tone marks, Escape, English words, remembering each app, which shows the icons of the other apps typing is left the same way in — the extension's settings, and **Quit**, which switches the extension off in Lumi until you switch it on again under Extensions. Right-click it to switch Vietnamese typing on or off at once, as fn ⇧ does. Hide it from the extension's Permissions sheet in Lumi.\n- The popover is loaded as Lumi starts, so even the first click shows it at once. Turn that off with **Preload** on the extension's Permissions sheet in Lumi.\n\n### Changed\n\n- The switch leaves Lumi's menu bar menu: the V or E holds it now. Put it back from the extension's Permissions sheet in Lumi.\n- The Settings tab is laid out as rows, each with its control on the right: the typing method is a Telex/VNI switch, and placing tone marks the modern way (hoà, thuý) is a switch of its own.\n- A new icon: a V over a keyboard.\n- The extension's page in Settings opens on its Settings tab.\n- Its tabs come in the order Settings, About, Changelog: the Changelog last, after About.",
+  "notesSha256": "ed40e09ffc2c9448b2afb661f1da83c7ec82b79b9f39ade504ccb0fe2f3a0436",
+  "summary": null
+ },
+ {
+  "version": "0.1.0",
+  "date": "2026-10-21",
+  "notes": "### Added\n\n- Type Vietnamese in every app with Telex or VNI, switched on and off from Lumi's menu bar or a shortcut you choose for **Switch Vietnamese typing on or off**.\n- The switch is remembered for each app, unless you turn that off in Settings.\n- Escape gives back the keys as you typed them, and English words can be kept as typed — both in Settings.",
+  "notesSha256": "dfaae28f72afbdd7fdfaa5089c704330e4a0072b4ce9190227522889d1de7f1e",
+  "summary": null
+ }
+]
