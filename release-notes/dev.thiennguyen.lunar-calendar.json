@@ -1,0 +1,188 @@
+{
+  "0.5.1": {
+    "notesSha256": "d259a85c23df156427c066a683660b6fa750e4b4558fb9df49ffd4e028637a3c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome screen now shows today's real calendar",
+          "items": [
+            "Welcome screen illustrations now display today's actual date and upcoming events"
+          ]
+        },
+        "vi": {
+          "headline": "Màn hình Chào mừng hiện ngày thật hôm nay",
+          "items": [
+            "Hình minh hoạ trong cửa sổ Chào mừng giờ hiển thị ngày thật và sự kiện sắp tới"
+          ]
+        }
+      }
+    }
+  },
+  "0.5.0": {
+    "notesSha256": "ea6a8650d93bf2731165b9a776b487b5fbb0a80b44c69994e2dd3479cb8bf095",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome window redesigned as a five-step tour",
+          "items": [
+            "Welcome window redesigned as a five-step tour with animated illustrations",
+            "Tour covers keyboard shortcut, calendar style, trackpad and keyboard navigation, and My Day",
+            "Tour ends with a button to open the calendar"
+          ]
+        },
+        "vi": {
+          "headline": "Cửa sổ Chào mừng làm lại thành chuyến đi năm bước",
+          "items": [
+            "Cửa sổ Chào mừng làm lại thành chuyến đi năm bước với hình minh hoạ chuyển động",
+            "Chuyến đi giới thiệu phím mở lịch (đổi được ngay), kiểu lịch, lướt bằng trackpad và phím, Ngày của tôi",
+            "Chuyến đi kết thúc bằng nút Mở lịch"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.1": {
+    "notesSha256": "9b85ef145685364b82f7aca7d8990443f6bb1cd5401bcb45f6ded114a6693bc3",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Lunar calendar view refinement",
+          "items": [
+            "Month names in lunar view no longer repeat in both the header and separator line"
+          ]
+        },
+        "vi": {
+          "headline": "Cải tiến giao diện lịch âm",
+          "items": [
+            "Tên tháng âm không còn lặp lại ở cả tiêu đề và đường phân cách nữa"
+          ]
+        }
+      }
+    }
+  },
+  "0.4.0": {
+    "notesSha256": "17cacc94385f94e0d352aa64baf06bdd7353d142f2705fca25b09460fef5fdd3",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Smooth scrolling through weeks and months",
+          "items": [
+            "Calendar scrolls smoothly with your trackpad or mouse wheel instead of jumping between pages",
+            "Title updates to show the month you are viewing as you scroll",
+            "Days from other months appear dimmed and the first day shows its month name",
+            "Arrow buttons, Option-arrow keys, and Today button scroll smoothly to their destination"
+          ]
+        },
+        "vi": {
+          "headline": "Cuộn mượt qua các tuần và tháng",
+          "items": [
+            "Lịch cuộn mượt theo chuột hoặc trackpad thay vì nhảy từng trang",
+            "Tiêu đề cập nhật hiển thị tháng đang xem khi bạn cuộn",
+            "Ngày của tháng khác hiển thị mờ và ngày mùng 1 ghi kèm tên tháng",
+            "Nút mũi tên, phím Option-mũi tên và nút Hôm nay cuộn mượt đến đích"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.0": {
+    "notesSha256": "fb48fd1008f0983007d1be546b96fa5d4caf199675ad825b8c6539dc28ada8c3",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Scroll or swipe to flip calendar pages",
+          "items": [
+            "Scroll or swipe on the calendar to change pages: vertical for months, horizontal for weeks"
+          ]
+        },
+        "vi": {
+          "headline": "Cuộn chuột hoặc vuốt để lật trang lịch",
+          "items": [
+            "Cuộn hoặc vuốt trên lịch để đổi trang: dọc để đổi tháng, ngang để đổi tuần"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.0": {
+    "notesSha256": "be160f2db74335be26427bca12095e529311363c202a20fdd07d05e54b1e8123",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Menu bar updates at midnight and adapts to time zone changes",
+          "items": [
+            "The lunar date and days until Tết on the menu bar now update automatically at midnight",
+            "An open calendar window also refreshes at midnight without needing to reopen it",
+            "Today is now based on your Mac's time zone and updates immediately when you change it",
+            "Requires Lumi 1.59.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Menu bar tự đổi qua 0 giờ và theo múi giờ máy",
+          "items": [
+            "Ngày âm và số ngày đến Tết trên menu bar giờ tự đổi khi qua 0 giờ",
+            "Cửa sổ lịch đang mở cũng tự làm mới khi qua 0 giờ",
+            "Hôm nay giờ tính theo múi giờ của máy Mac và đổi ngay khi bạn thay đổi múi giờ",
+            "Cần Lumi từ phiên bản 1.59.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.1": {
+    "notesSha256": "516aeb519994ea1287b741daca71e8c52d7a28fc24da690bd1f4043220a2b355",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clearer introduction and store description",
+          "items": [
+            "The store description, welcome window, and screenshots now explain more directly what the calendar does"
+          ]
+        },
+        "vi": {
+          "headline": "Giới thiệu rõ ràng hơn",
+          "items": [
+            "Lời giới thiệu trên store, cửa sổ chào mừng và ảnh chụp màn hình giờ nói thẳng hơn về những gì lịch làm được"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "eccacae38a95b47c5d683b51ad882bf52f454cc25f229fd4c659501435fa8bee",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Vietnamese lunar calendar in a corner panel",
+          "items": [
+            "Open the calendar panel with ⌃⌥⌘L, from the command list, or the menu bar",
+            "Choose between four layouts: Calendar sheet, Wall calendar, Hour watch, and Moon phases",
+            "Lunar date on each day of the month, marking new moon, full moon, and holidays",
+            "Convert between solar and lunar dates, including leap months",
+            "Track memorial days and lunar birthdays that recalculate each year",
+            "Today's lunar date and days until Tết in the menu bar"
+          ]
+        },
+        "vi": {
+          "headline": "Lịch âm Việt Nam trong một panel góc màn hình",
+          "items": [
+            "Mở panel lịch bằng ⌃⌥⌘L, từ danh sách lệnh hoặc menu bar",
+            "Chọn giữa bốn bố cục: Tờ lịch, Lịch treo tường, Canh giờ và Theo trăng",
+            "Ngày âm trên từng ngày trong tháng, đánh dấu Mùng 1, Rằm và các ngày lễ",
+            "Đổi ngày dương sang âm và ngược lại, kể cả tháng nhuận",
+            "Theo dõi ngày giỗ và sinh nhật âm lịch tự tính ra ngày dương mỗi năm",
+            "Ngày âm hôm nay và số ngày đến Tết hiện trong menu bar"
+          ]
+        }
+      }
+    }
+  }
+}
