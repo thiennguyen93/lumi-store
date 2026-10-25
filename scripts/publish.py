@@ -138,8 +138,11 @@ CAPABILITIES = {
     "front-app",
     # Lumi 1.64: the `transcribe` interface (speech turned into text by the
     # speech model the person set up in Lumi), and the two sources it hears
-    # live, each declared only beside `speech`.
-    "speech", "microphone", "system-audio",
+    # live, each declared only beside `speech`; and `voices`, remembering
+    # who is speaking and naming them, declared only beside it too; and
+    # `audio-levels`, told how loud what is heard is, for drawing it —
+    # beside `speech` alone as well.
+    "speech", "microphone", "system-audio", "voices", "audio-levels",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -429,8 +432,9 @@ def check_manifest(entry_id: str, manifest: dict):
             if reaching in ext.get("capabilities", []):
                 fail(entry_id, f"text-input cannot be declared with {reaching}: an extension that sees every key you type may not be able to send anything off this Mac")
     # `manifest.rs` again: the microphone and what the Mac plays are what
-    # `speech` hears, and nothing else does.
-    for source in ("microphone", "system-audio"):
+    # `speech` hears, and nothing else does; the voices it remembers, and
+    # how loud it is, are speech's too.
+    for source in ("microphone", "system-audio", "voices", "audio-levels"):
         if source in ext.get("capabilities", []) and "speech" not in ext.get("capabilities", []):
             fail(entry_id, f"{source} is what speech hears: declare speech beside it")
             break
