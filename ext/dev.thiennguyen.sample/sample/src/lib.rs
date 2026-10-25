@@ -42,6 +42,15 @@ impl lumi::Guest for Sample {
                 lumi::open_window(&name)?;
                 Ok("{}".to_string())
             }
+            "remind" => remind(),
+            "hourly" => hourly(),
+            // The Transcribe window: the microphone, what the Mac plays or
+            // both, heard as it is said — its page hears `lumi:transcribe`.
+            "transcribe" => {
+                lumi::open_window("transcribe")?;
+                Ok("opened the Transcribe window".to_string())
+            }
+            "transcribe-file" => transcribe_file(),
             "configure" => {
                 // One line is the whole feature: the window is declared in
                 // the manifest, its files shipped in the package, and this
@@ -134,6 +143,10 @@ impl lumi::Guest for Sample {
                 _ => Err("the card asks for close-card, preload or set-preload".to_string()),
             };
         }
+        // The Transcribe window's buttons (`ui/transcribe.js`).
+        if window == "transcribe" {
+            return transcribe_ui(&request);
+        }
         // The peek panel's buttons — each a transform's id, or the one for
         // the snippet the selection is a trigger of — and its search field.
         if window == "peek" {
@@ -142,9 +155,12 @@ impl lumi::Guest for Sample {
             let id = parsed.get("id").and_then(|id| id.as_str());
             return match (parsed.get("kind").and_then(|k| k.as_str()), id) {
                 (Some("apply"), Some(id)) => peek_apply(id),
+                (Some("copy"), _) => peek_copy(),
                 (Some("snippet"), _) => peek_snippet(),
                 (Some("search"), _) => peek_search(parsed.get("query").and_then(|q| q.as_str()).unwrap_or("")),
                 (Some("translate"), _) => peek_translate(),
+                (Some("define"), _) => peek_define(),
+                (Some("dictionary-app"), _) => peek_show_dictionary(),
                 (Some("summarize"), _) => peek_summarize(),
                 (Some("stop"), _) => {
                     let id = parsed.get("call").and_then(|id| id.as_u64()).unwrap_or(0);
@@ -154,8 +170,11 @@ impl lumi::Guest for Sample {
                     let field = |name: &str| parsed.get(name).and_then(|v| v.as_str()).unwrap_or("").to_string();
                     peek_prepare(&field("source"), &field("target"))
                 }
-                _ => Err("the peek panel asks for apply, with a transform's id, snippet, search, translate, prepare, summarize or stop"
-                    .to_string()),
+                _ => Err(
+                    "the peek panel asks for apply, with a transform's id, copy, snippet, search, translate, prepare, \
+                     define, dictionary-app, summarize or stop"
+                        .to_string(),
+                ),
             };
         }
         if !["settings", ":settings", "welcome", "unified", "unified-tall"].contains(&window.as_str()) {
@@ -214,6 +233,42 @@ impl lumi::Guest for Sample {
                 let field = |name: &str| parsed.get(name).and_then(|v| v.as_str()).unwrap_or("").to_string();
                 let readiness = lumi::translation::prepare(&field("source"), &field("target"))?;
                 return Ok(serde_json::json!({ "readiness": readiness_word(readiness) }).to_string());
+            }
+            // The dictionaries, one call each, for the tests to drive: what
+            // is turned on, `text` looked up in `books`, its term at 0.
+            Some("dictionary") => {
+                let text = parsed.get("text").and_then(|t| t.as_str()).unwrap_or("");
+                let books: Vec<String> = parsed
+                    .get("books")
+                    .and_then(|books| books.as_array())
+                    .map(|books| books.iter().filter_map(|id| id.as_str().map(str::to_string)).collect())
+                    .unwrap_or_default();
+                let shelf: Vec<serde_json::Value> = lumi::dictionary::dictionaries()?
+                    .into_iter()
+                    .map(|book| serde_json::json!({ "id": book.id, "short": book.short_name, "looks-up": book.looks_up }))
+                    .collect();
+                let entries: Vec<serde_json::Value> = lumi::dictionary::lookup(text, &books)?
+                    .into_iter()
+                    .map(|entry| {
+                        let sense = entry.groups.first().and_then(|group| group.senses.first());
+                        serde_json::json!({
+                            "book": entry.book,
+                            "headword": entry.headword,
+                            "said": entry.pronunciations.first().map(|said| said.text.clone()),
+                            "ipa": entry.pronunciations.first().map(|said| said.notation == lumi::dictionary::Notation::Ipa),
+                            "heading": entry.groups.first().map(|group| group.heading.clone()),
+                            "definition": sense.map(|sense| sense.definition.clone()),
+                            "example": sense.and_then(|sense| sense.examples.first()).map(|example| example.text.clone()),
+                            "text": entry.text,
+                        })
+                    })
+                    .collect();
+                let term = lumi::dictionary::term(text, 0)?;
+                return Ok(serde_json::json!({ "shelf": shelf, "entries": entries, "term": term }).to_string());
+            }
+            Some("show-dictionary") => {
+                lumi::dictionary::show(parsed.get("text").and_then(|t| t.as_str()).unwrap_or(""))?;
+                return Ok("{}".to_string());
             }
             // The selection-watch switch, read, moved and shared — for the
             // tests to see what each costs.
@@ -473,6 +528,11 @@ impl lumi::Guest for Sample {
                 lumi::paste(&[vec![text_rep("pasted")]])?;
                 return Ok(serde_json::json!({ "pasted": true }).to_string());
             }
+            // The selection copied as the app in front copies it, for the
+            // tests to drive: whether the board changed.
+            Some("copy") => {
+                return Ok(serde_json::json!({ "copied": lumi::copy_selection()? }).to_string());
+            }
             // A press on an item that starts to move: one text item, and
             // the page's choice about closing after the drop.
             Some("drag") => {
@@ -556,10 +616,19 @@ impl lumi::Guest for Sample {
         }
     }
 
-    /// The sample asks for no events, so Lumi never calls this — except
-    /// Lumi's own tests, which hand it one and read back what it kept, and
-    /// try a paste from here to watch it refused.
+    /// The events the manifest asks for — and Lumi's own tests, which hand
+    /// it others and read back what it kept, and try a paste from here to
+    /// watch it refused.
     fn on_event(name: String, payload: String) -> Result<(), String> {
+        // One of the sample's own timers: said in an alert — the one thing
+        // a timer's run may show, since no window opens from it — and kept
+        // below like every other event, for the tests to read back.
+        if let Some(fired) = lumi::timers::fired(&name, &payload) {
+            lumi::alert(&reminded(&fired))?;
+        }
+        if let Some(fired) = lumi::schedules::fired(&name, &payload) {
+            lumi::alert(&on_the_hour(&fired))?;
+        }
         // The person moved the Preload switch on the Permissions
         // sheet: the card is told, kept and loaded ahead or not, so its own
         // switch follows.
@@ -569,8 +638,21 @@ impl lumi::Guest for Sample {
         if name == "selection" {
             return peek_beside(&payload);
         }
+        // A key never answered, for Lumi's test that the run is ended at the
+        // key's budget (`runtime`'s `a_key_never_answered_is_ended_at_its_budget`):
+        // nothing but compute, as `spin` does for a command.
+        if let Some(keys) = lumi::text_input::keys(&name, &payload) {
+            if keys.first().is_some_and(|key| key.text == "spin") {
+                loop {
+                    std::hint::black_box(0u64);
+                }
+            }
+        }
         if name == "paste" {
             return lumi::paste(&[vec![text_rep(&payload)]]);
+        }
+        if name == "copy" {
+            return lumi::copy_selection().map(|_| ());
         }
         if name == "capture" {
             return lumi::screen::capture(lumi::screen::Target::Display).map(|_| ());
@@ -590,7 +672,10 @@ impl lumi::Guest for Sample {
             let source = lumi::ocr::Source::Screen(lumi::screen::Target::Display);
             return lumi::ocr::read(&source, &lumi::ocr::Options::default()).map(|_| ());
         }
-        lumi::storage::put("last-event", &format!("{name} {payload}"), None)
+        // Over whatever the last one kept: a timer, or any event, is told
+        // again and again, and only the newest is worth keeping.
+        let rev = lumi::storage::get("last-event")?.map(|entry| entry.rev);
+        lumi::storage::put("last-event", &format!("{name} {payload}"), rev)
             .map(|_| ())
             .map_err(lumi::storage::PutError::into_message)
     }
@@ -686,6 +771,11 @@ fn draw_menu() -> Result<(), String> {
         entries.push(Entry::check(&format!("to.{code}"), name, *code == target).under("to"));
     }
     entries.push(Entry::separator("s2"));
+    entries.push(Entry::item("remind", "Remind Me in a Minute").icon("alarm-clock"));
+    // Ticked while the schedule is set: read back from Lumi, which keeps it.
+    // A manifest without `timers` cannot ask, and draws it unticked.
+    let hourly = lumi::schedules::list().is_ok_and(|all| all.iter().any(|s| s.name == HOURLY));
+    entries.push(Entry::check("hourly", "Remind Me Every Hour", hourly));
     entries.push(Entry::item("settings", "Sample Settings…").icon("settings"));
     lumi::menu::set_rows(&entries)
 }
@@ -703,6 +793,8 @@ fn menu_pressed(id: &str) -> Result<(), String> {
             peek(&serde_json::json!({ "at": at, "side": side }).to_string()).map(|_| ())
         }
         "settings" => lumi::open_window("settings"),
+        "remind" => remind().map(|_| ()),
+        "hourly" => hourly().map(|_| ()),
         _ => {
             let Some(code) = id.strip_prefix("to.") else {
                 return Err(format!("the sample has no {id} row"));
@@ -712,6 +804,69 @@ fn menu_pressed(id: &str) -> Result<(), String> {
             draw_menu()
         }
     }
+}
+
+/// The `remind` command, and its menu bar row: a timer a minute from now,
+/// set again under the same name if one is already waiting. Lumi keeps it,
+/// across a restart too, and runs `on_event("timer", …)` when it comes due.
+fn remind() -> Result<String, String> {
+    use lumi::timers::{Repeat, When};
+    lumi::timers::set(REMINDER, When::After(60_000), Repeat::Once)?;
+    Ok("reminding you in a minute".to_string())
+}
+
+/// The name the sample sets its one timer under — its own word, which Lumi
+/// hands back as written and never reads.
+const REMINDER: &str = "a-minute";
+
+/// The name of the sample's one schedule, the same kind of word.
+const HOURLY: &str = "on-the-hour";
+
+/// The `hourly` command and its menu bar row: a schedule on the hour, every
+/// hour (`0 * * * *`), set if there is none and cancelled if there is — and
+/// the row's tick drawn again to say which.
+fn hourly() -> Result<String, String> {
+    let said = if lumi::schedules::cancel(HOURLY)? {
+        "no more reminders on the hour"
+    } else {
+        lumi::schedules::set(HOURLY, "0 * * * *")?;
+        "reminding you every hour, on the hour"
+    };
+    // Rows only where the manifest has them; the schedule stands either way.
+    let _ = draw_menu();
+    Ok(said.to_string())
+}
+
+/// What the alert says on the hour, with the time on the person's clock when
+/// the extension may know their time zone.
+fn on_the_hour(fired: &lumi::timers::Fired) -> String {
+    let said = if fired.late { "An hour went by while the Mac slept or Lumi was quit" } else { "Another hour" };
+    match lumi::time_zone::offset_at(fired.at) {
+        Ok(offset) => format!("{said}. It is {} here.", clock_at(fired.at, offset)),
+        Err(_) => said.to_string(),
+    }
+}
+
+/// What the alert says when the timer fires: on time, or late, because the
+/// Mac slept or Lumi was quit while it was due — and the time it fired on
+/// the person's clock, when the extension may know their time zone.
+fn reminded(fired: &lumi::timers::Fired) -> String {
+    let said = if fired.late {
+        "A minute has passed — and more: the Mac slept or Lumi was quit since"
+    } else {
+        "A minute has passed"
+    };
+    match lumi::time_zone::offset_at(fired.at) {
+        Ok(offset) => format!("{said}. It is {} here.", clock_at(fired.at, offset)),
+        Err(_) => said.to_string(),
+    }
+}
+
+/// `at`, in milliseconds since the Unix epoch, as the person's clock shows
+/// it `offset` minutes east of UTC: `14:05`.
+fn clock_at(at: u64, offset: i32) -> String {
+    let minutes = (i64::try_from(at / 60_000).unwrap_or(0) + i64::from(offset)).rem_euclid(24 * 60);
+    format!("{:02}:{:02}", minutes / 60, minutes % 60)
 }
 
 /// The `peek` command: the selection, told to the peek panel's page and
@@ -760,11 +915,16 @@ fn peek_message(text: &str, how: &str, editable: Option<bool>) -> Result<String,
     // Whether this Mac translates at all — macOS 26 — so the panel offers
     // Translate only where pressing it can do something.
     let translates = lumi::translation::languages().is_ok_and(|languages| !languages.is_empty());
-    // Whether the person set up a model this extension may ask — so the
-    // panel offers Summarize only where there is something to ask. The list,
-    // not `ready`: nothing on the Mac is asked whether it answers just to
-    // draw a button.
-    let summarizes = lumi::ai::models().is_ok_and(|models| !models.is_empty());
+    // Whether this extension may ask the AI at all — the person has not
+    // switched it off — so the panel offers Summarize where a press can do
+    // something: run on a model set up, or have Lumi offer to download one
+    // (`peek_summarize`). The list, not `ready`: nothing on the Mac is asked
+    // whether it answers just to draw a button.
+    let summarizes = lumi::ai::models().is_ok();
+    // Whether a word or a phrase is selected and the person has a dictionary
+    // turned on — so the panel offers Define only where it can find something.
+    let short = !text.contains('\n') && text.trim().chars().count() <= 64 && text.chars().any(char::is_alphabetic);
+    let defines = short && lumi::dictionary::dictionaries().is_ok_and(|books| !books.is_empty());
     Ok(serde_json::json!({
         "text": text.chars().take(60).collect::<String>(),
         "chars": text.chars().count(),
@@ -774,6 +934,7 @@ fn peek_message(text: &str, how: &str, editable: Option<bool>) -> Result<String,
         "snippet": snippet,
         "translates": translates,
         "summarizes": summarizes,
+        "defines": defines,
     })
     .to_string())
 }
@@ -974,6 +1135,11 @@ fn peek_summarize() -> Result<String, String> {
         lumi::alert("Nothing is selected any more")?;
         return Ok(serde_json::json!({ "how": "nothing" }).to_string());
     }
+    // Nothing answers yet: Lumi offers the person a model to download, in
+    // its own panel, and comes back once it is here or they said not now.
+    if !lumi::ai::ready()? && !lumi::ai::prepare(None)? {
+        return Ok(serde_json::json!({ "how": "nothing" }).to_string());
+    }
     let request = lumi::ai::Request {
         system: "Summarize the text in one or two sentences. Answer with the summary only.".to_string(),
         input: found.text,
@@ -990,6 +1156,194 @@ fn peek_summarize() -> Result<String, String> {
                 let _ = lumi::alert(&failure.message);
             }
             Ok(serde_json::json!({ "failed": failure.message }).to_string())
+        }
+    }
+}
+
+/// The Transcribe window's half of the dialect. What is heard reaches the
+/// page by itself, as `lumi:transcribe` events carrying the recording's id;
+/// this answers with that id, or why there is none. Which speech model runs,
+/// which app is heard, and whether the microphone may be used are Lumi's to
+/// settle with the person — the sample says only what to hear.
+fn transcribe_ui(request: &str) -> Result<String, String> {
+    use lumi::transcribe::{self, Playing, Source, Speakers};
+    use lumi::voices;
+    let parsed: serde_json::Value = serde_json::from_str(request).map_err(|err| format!("request: {err}"))?;
+    let text = |name: &str| parsed.get(name).and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let id = parsed.get("id").and_then(|id| id.as_u64()).unwrap_or(0);
+    let language = text("language");
+    // Whether the voices are told apart, and named where this extension
+    // remembered them — the window's own choice, sent with every request.
+    let speakers = match text("speakers").as_str() {
+        "apart" => Speakers::Apart,
+        "named" => Speakers::Named,
+        _ => Speakers::Off,
+    };
+    let voice_json = |voice: &voices::Voice| serde_json::json!({ "id": voice.id, "name": voice.name, "rememberedAt": voice.remembered_at, "recognizedAt": voice.recognized_at });
+    match text("kind").as_str() {
+        "status" => {
+            let models: Vec<serde_json::Value> = transcribe::models()?
+                .into_iter()
+                .map(|m| serde_json::json!({ "id": m.id, "name": m.name, "default": m.is_default, "partials": m.partials }))
+                .collect();
+            Ok(serde_json::json!({ "readiness": readiness_word(transcribe::status(&language, speakers)?), "models": models }).to_string())
+        }
+        "prepare" => Ok(serde_json::json!({ "readiness": readiness_word(transcribe::prepare(&language, speakers)?) }).to_string()),
+        "start" => {
+            let playing = if parsed.get("oneApp").and_then(|v| v.as_bool()) == Some(true) { Playing::OneApp } else { Playing::Everything };
+            let source = match text("source").as_str() {
+                "microphone" => Source::Microphone,
+                "system-audio" => Source::SystemAudio(playing),
+                "call" => Source::Call(playing),
+                other => return Err(format!("the Transcribe window hears microphone, system-audio or call, not {other:?}")),
+            };
+            Ok(started(transcribe::start(&hearing(source, &language, true, speakers))))
+        }
+        // A file the person picks, heard as it is read, its segments told
+        // the way a recording's are; the page keeps its blob to hear again.
+        "file" => {
+            let Some(opened) = lumi::files::open(&["public.audio", "public.movie"], false, "Choose a recording to turn into text.")?.into_iter().next() else {
+                return Ok(serde_json::json!({ "cancelled": true }).to_string());
+            };
+            let mut answer: serde_json::Value = serde_json::from_str(&started(transcribe::start(&hearing(Source::Blob(opened.blob.clone()), &language, false, speakers))))
+                .map_err(|err| err.to_string())?;
+            answer["blob"] = opened.blob.into();
+            answer["name"] = opened.name.into();
+            Ok(answer.to_string())
+        }
+        // A recording already in storage, heard whole and answered at once:
+        // `complete`, which waits.
+        "again" => match transcribe::complete(&hearing(Source::Blob(text("blob")), &language, false, speakers)) {
+            Ok(transcript) => Ok(serde_json::json!({ "transcript": transcript_json(&transcript) }).to_string()),
+            Err(failure) => Ok(serde_json::json!({ "failure": failure_word(failure.kind), "message": failure.message }).to_string()),
+        },
+        "stop" => Ok(serde_json::json!({ "stopped": transcribe::stop(id)? }).to_string()),
+        "cancel" => Ok(serde_json::json!({ "cancelled": transcribe::cancel(id)? }).to_string()),
+        // The voices this extension asked Lumi to remember: listed, and one
+        // remembered from a recording's speaker — Lumi asks the person, with
+        // the voice to play — renamed or forgotten. The page gets ids and
+        // names; the voice itself stays Lumi's.
+        "voices" => Ok(serde_json::json!({ "voices": voices::list()?.iter().map(voice_json).collect::<Vec<_>>() }).to_string()),
+        "remember" => {
+            let label = parsed.get("label").and_then(|label| label.as_u64()).unwrap_or(0) as u32;
+            Ok(match voices::remember(id, label, &text("name"))? {
+                voices::Answer::Remembered(voice) => serde_json::json!({ "remembered": voice_json(&voice) }),
+                voices::Answer::Already(voice) => serde_json::json!({ "already": voice_json(&voice) }),
+                voices::Answer::Cancelled => serde_json::json!({ "cancelled": true }),
+            }
+            .to_string())
+        }
+        "rename" => Ok(serde_json::json!({ "renamed": voices::rename(&text("voice"), &text("name"))? }).to_string()),
+        "forget" => Ok(serde_json::json!({ "forgot": voices::forget(&text("voice"))? }).to_string()),
+        _ => Err("the Transcribe window asks for status, prepare, start, file, again, stop, cancel, voices, remember, rename or forget".to_string()),
+    }
+}
+
+/// What to hear, in the person's `language` (empty for any), with text
+/// while it is said when `live`, its voices told apart as `speakers` says —
+/// and how loud it is, for the Transcribe window to draw: every band Lumi
+/// gives with each reading of a live source, and a file summed into enough
+/// points to draw under its transcript.
+fn hearing(source: lumi::transcribe::Source, language: &str, live: bool, speakers: lumi::transcribe::Speakers) -> lumi::transcribe::Request {
+    lumi::transcribe::Request {
+        source,
+        languages: if language.is_empty() { Vec::new() } else { vec![language.to_string()] },
+        model: None,
+        speakers,
+        hints: Vec::new(),
+        partials: live,
+        words: false,
+        max_seconds: None,
+        levels: Some(lumi::transcribe::Levels { bands: 16, overview: 480 }),
+    }
+}
+
+/// A recording begun, or why not, as the page reads it.
+fn started(result: Result<u64, lumi::transcribe::Failure>) -> String {
+    match result {
+        Ok(id) => serde_json::json!({ "id": id }),
+        Err(failure) => serde_json::json!({ "failure": failure_word(failure.kind), "message": failure.message }),
+    }
+    .to_string()
+}
+
+fn failure_word(kind: lumi::transcribe::FailureKind) -> &'static str {
+    use lumi::transcribe::FailureKind;
+    match kind {
+        FailureKind::Declined => "declined",
+        FailureKind::Stopped => "stopped",
+        FailureKind::Warning => "warning",
+        FailureKind::Fault => "fault",
+        FailureKind::Unprepared => "unprepared",
+        FailureKind::NotPermitted => "not-permitted",
+        FailureKind::Busy => "busy",
+        FailureKind::Unsupported => "unsupported",
+    }
+}
+
+/// A transcript as the page draws it — every field Lumi hands over, so a
+/// field the WIT has is one the page can show.
+fn transcript_json(transcript: &lumi::transcribe::Transcript) -> serde_json::Value {
+    use lumi::transcribe::Heard;
+    let segments: Vec<serde_json::Value> = transcript
+        .segments
+        .iter()
+        .map(|s| {
+            serde_json::json!({
+                "id": s.id,
+                "revision": s.revision,
+                "text": s.text,
+                "startMs": s.start_ms,
+                "endMs": s.end_ms,
+                "partial": s.partial,
+                "heard": match s.heard { Heard::Microphone => "microphone", Heard::SystemAudio => "system-audio", Heard::Recording => "recording" },
+                "language": s.language,
+                "speaker": s.speaker.as_ref().map(|p| serde_json::json!({ "label": p.label, "voice": p.voice, "name": p.name, "confidence": p.confidence })),
+                "words": s.words.iter().map(|w| serde_json::json!({ "text": w.text, "startMs": w.start_ms, "endMs": w.end_ms, "confidence": w.confidence })).collect::<Vec<_>>(),
+                "confidence": s.confidence,
+            })
+        })
+        .collect();
+    serde_json::json!({
+        "id": transcript.id,
+        "text": transcript.text,
+        "segments": segments,
+        "model": transcript.model,
+        "modelName": transcript.model_name,
+        "where": match transcript.place { lumi::transcribe::Place::OnDevice => "on-device", lumi::transcribe::Place::Online => "online" },
+        "fellBack": transcript.fell_back,
+        "speakersModel": transcript.speakers_model,
+        "durationMs": transcript.duration_ms,
+        "cutShort": transcript.cut_short,
+        "notes": transcript.notes,
+        "ms": transcript.ms,
+        "overview": transcript.overview,
+    })
+}
+
+/// Transcribe an Audio File: a recording the person picks, heard whole by
+/// `complete` — a command has no window to stream into — and its text said
+/// in an alert. No model ready: Lumi offers one, and the command says to try
+/// again once it is in.
+fn transcribe_file() -> Result<String, String> {
+    use lumi::transcribe::{self, FailureKind, Source, Speakers};
+    let Some(opened) = lumi::files::open(&["public.audio", "public.movie"], false, "Choose a recording to turn into text.")?.into_iter().next() else {
+        return Ok("cancelled".to_string());
+    };
+    match transcribe::complete(&hearing(Source::Blob(opened.blob), "", false, Speakers::Off)) {
+        Ok(transcript) => {
+            let said: String = transcript.text.chars().take(240).collect();
+            lumi::alert(if said.is_empty() { "Nothing was said in it." } else { &said })?;
+            Ok(format!("heard {} segments", transcript.segments.len()))
+        }
+        Err(failure) if failure.kind == FailureKind::Unprepared => {
+            transcribe::prepare("", Speakers::Off)?;
+            Ok("offered a speech model".to_string())
+        }
+        Err(failure) if failure.kind == FailureKind::Stopped => Ok("stopped".to_string()),
+        Err(failure) => {
+            lumi::alert(&failure.message)?;
+            Ok(failure.message)
         }
     }
 }
@@ -1021,6 +1375,74 @@ fn readiness_word(readiness: lumi::translation::Readiness) -> &'static str {
         lumi::translation::Readiness::Downloadable => "downloadable",
         lumi::translation::Readiness::Unsupported => "unsupported",
     }
+}
+
+/// The peek panel's Define button: the selection as it is now, looked up in
+/// the dictionaries the person turned on, in their order. The page is told
+/// the first entry's headword, how it is said, and its first sense — its
+/// definition, or in a bilingual dictionary its translations, or in a
+/// thesaurus its synonyms; nothing found is said in an alert.
+fn peek_define() -> Result<String, String> {
+    let found = lumi::selection()?;
+    let word = found.text.trim();
+    if word.is_empty() {
+        lumi::alert("Nothing is selected any more")?;
+        return Ok(serde_json::json!({ "how": "nothing" }).to_string());
+    }
+    let entries = lumi::dictionary::lookup(word, &[])?;
+    let Some(entry) = entries.first() else {
+        lumi::alert("Not in your dictionaries")?;
+        return Ok(serde_json::json!({ "how": "none" }).to_string());
+    };
+    // Said for the whole word, or else for its first part of speech.
+    let said = entry
+        .pronunciations
+        .iter()
+        .chain(entry.groups.iter().flat_map(|group| &group.pronunciations))
+        .next()
+        .map(|said| said.text.clone())
+        .unwrap_or_default();
+    let first = entry.groups.iter().find_map(|group| group.senses.first().map(|sense| (group.heading.clone(), sense)));
+    let (heading, meaning) = match first {
+        Some((heading, sense)) if !sense.definition.is_empty() => (heading, sense.definition.clone()),
+        Some((heading, sense)) if !sense.translations.is_empty() => (heading, sense.translations.join(", ")),
+        Some((heading, sense)) => (heading, sense.synonyms.join(", ")),
+        None => (String::new(), entry.text.clone()),
+    };
+    lumi::post(
+        "peek",
+        &serde_json::json!({
+            "defined": entry.headword,
+            "said": said,
+            "heading": heading,
+            "meaning": meaning.chars().take(140).collect::<String>(),
+            "long": meaning.chars().count() > 140,
+        })
+        .to_string(),
+    )?;
+    Ok(serde_json::json!({ "entries": entries.len() }).to_string())
+}
+
+/// The peek panel's Copy button: the selection copied the way the app in
+/// front copies it — its formatting and links with it, which the text
+/// `selection()` reads would not carry — and the panel put away once it
+/// has, as a copy from the app's own menu leaves nothing up.
+fn peek_copy() -> Result<String, String> {
+    let copied = lumi::copy_selection()?;
+    if copied {
+        lumi::close_window("peek")?;
+    } else {
+        lumi::alert("Nothing was copied")?;
+    }
+    Ok(serde_json::json!({ "copied": copied }).to_string())
+}
+
+/// The peek panel's More in Dictionary button: the Dictionary app at the
+/// selection as it is now, with every dictionary's whole entry.
+fn peek_show_dictionary() -> Result<String, String> {
+    let found = lumi::selection()?;
+    lumi::dictionary::show(found.text.trim())?;
+    Ok("{}".to_string())
 }
 
 /// The peek panel's search field, typed in once its page asked for the

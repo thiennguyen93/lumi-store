@@ -6,9 +6,17 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.28.0"
-# 1.52.0: the floor is the newest thing this manifest names or the component
-# calls — the `ai` capability and the peek panel's Summarize button.
+version = "0.36.0"
+# 1.64.0: the floor is the newest thing this manifest names or the component
+# calls — the `speech`, `microphone`, `system-audio` and `audio-levels`
+# capabilities and the Transcribe window's `transcribe` calls. Before it, 1.60.0: the `schedule`
+# event below and the `schedules` calls behind Remind Me
+# Every Hour. Before it, 1.59.0: the `timers` and `time-zone` capabilities and
+# the `timer` event, and the peek panel's Copy button and its
+# `selection.copy` call. Before it, 1.55.0: the
+# peek panel's Define and More in Dictionary buttons and their `dictionary`
+# calls.
+# Before it, 1.52.0: the `ai` capability and the peek panel's Summarize button.
 # Before it, 1.51.0: the peek panel's Translate and Download… buttons and their
 # `translation` calls.
 # Before it, 1.48.0: the peek panel's `side = "pointer"`, which an older Lumi refuses as
@@ -22,7 +30,7 @@ version = "0.28.0"
 # older Lumi refuses. (Before it,
 # `input-hold` set the floor at 1.38. [tabs] below is the other direction: an
 # older Lumi ignores the table and draws its own tabs, so it sets no floor.)
-min-lumi-version = "1.52.0"
+min-lumi-version = "1.64.0"
 description = "The reference extension: reads the selection, answers through the alert."
 author = "Thien Nguyen"
 # The longer text Lumi's own About page leads with. `description` is the one
@@ -73,13 +81,26 @@ menu = "auto"
 # `ai` for the peek panel's Summarize button, which asks the AI the person
 # set up in Lumi (`peek_summarize` in src/lib.rs) — Lumi asks the person
 # before the text leaves the Mac (Lumi 1.52).
-capabilities = ["accessibility", "ai", "applications", "clipboard", "input", "input-hold", "menu", "network", "preload", "screen", "selection-watch", "snippets"]
+# `timers` for Remind Me in a Minute — the `remind` command and its menu bar
+# row — which sets a timer and says so when it fires, with every window
+# closed (Lumi 1.59). `time-zone` for the time that alert names, on the
+# person's clock rather than the component's UTC one (Lumi 1.59).
+# `speech` for the Transcribe window and Transcribe an Audio File, which turn
+# what is said into text with the speech model the person set up in Lumi;
+# `microphone` and `system-audio` for what the window hears live — a call is
+# both (Lumi 1.64). The sample gets text, never the sound. `voices` for the
+# window's Name a Speaker and its list of the voices remembered, and for
+# naming them in what it hears (Lumi 1.64) — Lumi keeps each voice and asks
+# the person first; the sample gets ids and names.
+capabilities = ["accessibility", "ai", "applications", "clipboard", "input", "input-hold", "menu", "microphone", "network", "preload", "screen", "selection-watch", "snippets", "speech", "system-audio", "time-zone", "timers", "voices", "audio-levels"]
 # `preload-enabled`: the Preload switch moved on the sample's
 # Permissions sheet, which the background card's own switch follows (Lumi
 # 1.45.0 — the floor above).
 # `selection`: a selection made with the mouse in any app, which opens the
 # peek panel beside it — the one window an event may open (Lumi 1.47.0).
-events = ["preload-enabled", "selection"]
+# `timer`: one of the sample's own timers coming due (Lumi 1.59.0).
+# `schedule`: its schedule on the hour coming due (Lumi 1.60.0).
+events = ["preload-enabled", "schedule", "selection", "timer"]
 
 # Pictures for this extension's page in Lumi's Extension Store: its About
 # page and its Settings page. The store publishes them beside the package;
@@ -413,6 +434,48 @@ height = 360
 name = "configure"
 label = "Open sample settings"
 icon = "sliders-horizontal"
+
+# What is said, heard as text (`transcribe`, Lumi 1.64): the Transcribe
+# window records the microphone, what this Mac plays, or both at once in a
+# call, and hears a file picked there — its page hears `lumi:transcribe` as
+# the words come. Lumi asks the person which app, what the microphone is for
+# and whether to download a speech model; the menu bar shows the recording
+# with a Stop. With `audio-levels`, the page also hears how loud it is and
+# draws it three ways — the loudness over time, over pitch, and as an orb.
+[[window]]
+name = "transcribe"
+title = "Transcribe"
+path = "transcribe.html"
+width = 520
+height = 560
+
+[[command]]
+name = "transcribe"
+label = "Transcribe"
+icon = "mic"
+
+# A recording the person picks, heard whole by `transcribe.complete` — a
+# command has no window to stream into — and said in an alert.
+[[command]]
+name = "transcribe-file"
+label = "Transcribe an audio file"
+icon = "file-audio"
+
+# A timer a minute from now (`timers.set`): Lumi runs the sample's
+# `on_event("timer", …)` when it comes due, whether or not any of its windows
+# is open, and the sample says so in an alert.
+[[command]]
+name = "remind"
+label = "Remind me in a minute"
+icon = "alarm-clock"
+
+# A schedule on the hour (`schedules.set`, `0 * * * *`), set by one press and
+# cancelled by the next: Lumi runs the sample's `on_event("schedule", …)`
+# every hour, windows or no windows.
+[[command]]
+name = "hourly"
+label = "Remind me every hour"
+icon = "clock"
 
 # macOS's "is it you?" dialog from a command, which has no page to ask from
 # (`owner.authenticate`). No capability: the person pressing is the grant,

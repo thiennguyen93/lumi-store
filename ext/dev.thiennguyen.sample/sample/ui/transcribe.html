@@ -1,0 +1,80 @@
+<!doctype html>
+<!-- The sample's Transcribe window: the microphone, what this Mac plays or
+     both at once, heard by the speech model the person chose in Lumi, and a
+     file picked here heard the same way — its voices told apart, and the
+     people the sample asked Lumi to remember named. Every word of it comes from the
+     `lumi:transcribe` events Lumi sends this page; the extension's code only
+     starts and stops (`transcribe_ui` in src/lib.rs). -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Transcribe</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="transcribe.css">
+</head>
+<body class="dialog transcribe">
+  <div class="bar">
+    <label>Hear
+      <select id="source">
+        <option value="microphone">The microphone</option>
+        <option value="system-audio">What this Mac plays</option>
+        <option value="call">A call (both)</option>
+      </select>
+    </label>
+    <label id="whose-row" hidden>From
+      <select id="whose">
+        <option value="everything">Every app</option>
+        <option value="one">One app, chosen in Lumi</option>
+      </select>
+    </label>
+    <label>Speakers
+      <select id="speakers">
+        <option value="off">Not told apart</option>
+        <option value="apart">Told apart</option>
+        <option value="named">Named, when remembered</option>
+      </select>
+    </label>
+    <span class="grow"></span>
+    <button type="button" id="file">Choose a File…</button>
+    <button type="button" class="primary" id="record">Record</button>
+  </div>
+
+  <p class="muted" id="status" role="status"></p>
+  <!-- How loud it is, drawn from the `level` events: the same readings drawn
+       three ways, chosen here. A file's loudness is drawn under it from its
+       `overview` event. -->
+  <div class="meter">
+    <canvas id="meter" aria-label="How loud it is"></canvas>
+    <div class="meter-kinds" role="radiogroup" aria-label="Draw it as">
+      <button type="button" role="radio" data-kind="wave" aria-checked="true">Over Time</button>
+      <button type="button" role="radio" data-kind="spectrum" aria-checked="false">Over Pitch</button>
+      <button type="button" role="radio" data-kind="orb" aria-checked="false">Orb</button>
+    </div>
+  </div>
+  <canvas id="overview" class="overview" aria-label="The file's loudness" hidden></canvas>
+  <div id="said" class="said" role="log" aria-label="What was heard"></div>
+  <p class="warn" id="problem" role="alert"></p>
+
+  <form class="name-row" id="name-row" hidden>
+    <label><span id="name-who"></span>
+      <input type="text" id="name" maxlength="64" autocomplete="off">
+    </label>
+    <button type="button" id="name-cancel">Cancel</button>
+    <button type="submit" class="primary" id="name-go">Remember</button>
+  </form>
+
+  <div class="actions">
+    <button type="button" id="again" hidden>Hear Again, Whole</button>
+    <button type="button" id="prepare" hidden>Download a Speech Model…</button>
+    <button type="button" id="clear">Clear</button>
+  </div>
+
+  <section class="voices" id="voices-section" hidden>
+    <h3>Voices remembered</h3>
+    <ul id="voices"></ul>
+  </section>
+
+  <script src="transcribe.js"></script>
+</body>
+</html>

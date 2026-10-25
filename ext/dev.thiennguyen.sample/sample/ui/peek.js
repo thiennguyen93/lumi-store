@@ -35,6 +35,33 @@ function translateButton() {
   return button;
 }
 
+// The Copy button, offered on any selection: the app in front copies it
+// itself, so what is pasted keeps what the app keeps — its formatting, its
+// links — which the text this panel was told would not.
+function copyButton() {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Copy";
+  button.addEventListener("click", () => {
+    fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "copy" }) }).catch(() => {});
+  });
+  return button;
+}
+
+// The Define button, offered for a word or a phrase when the person has a
+// dictionary turned on — on text that can't be edited too, since a
+// definition is read. The selection is read again and looked up on the
+// extension's side.
+function defineButton() {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Define";
+  button.addEventListener("click", () => {
+    fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "define" }) }).catch(() => {});
+  });
+  return button;
+}
+
 // The panel as tall as what it shows: a row of buttons that wraps, a summary
 // over several lines. Asked of Lumi whenever the page's height changes, never
 // below the 104 points the manifest declares.
@@ -119,7 +146,23 @@ window.addEventListener("lumi:message", (event) => {
     where.textContent = "";
     return;
   }
-  const { text: shown, chars, editable, transforms, snippet, translates, summarizes } = event.detail ?? {};
+  // A definition of the selection: the headword, how it is said, and its
+  // first sense, with a button into the Dictionary app for the rest.
+  if (event.detail?.defined !== undefined) {
+    const { defined, said, heading, meaning, long } = event.detail;
+    text.classList.add("long");
+    text.textContent = `${defined}${said ? ` /${said}/` : ""} — ${heading ? `${heading}: ` : ""}${meaning}${long ? "…" : ""}`;
+    where.textContent = "";
+    const more = document.createElement("button");
+    more.type = "button";
+    more.textContent = "More in Dictionary";
+    more.addEventListener("click", () => {
+      fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "dictionary-app" }) }).catch(() => {});
+    });
+    actions.replaceChildren(more);
+    return;
+  }
+  const { text: shown, chars, editable, transforms, snippet, translates, summarizes, defines } = event.detail ?? {};
   text.classList.remove("long");
   text.textContent = chars > 0 ? `“${shown}${chars > shown.length ? "…" : ""}”` : "Nothing is selected.";
   where.textContent = chars > 0 ? `${chars} chars` : "";
@@ -146,7 +189,9 @@ window.addEventListener("lumi:message", (event) => {
     actions.append(button);
     return;
   }
+  actions.append(copyButton());
   if (editable === false) {
+    if (defines) actions.append(defineButton());
     if (translates) actions.append(translateButton());
     if (summarizes) actions.append(summarizeButton());
     const note = document.createElement("span");
@@ -167,6 +212,7 @@ window.addEventListener("lumi:message", (event) => {
     });
     actions.append(button);
   }
+  if (defines) actions.append(defineButton());
   if (translates) actions.append(translateButton());
   if (summarizes) actions.append(summarizeButton());
 });

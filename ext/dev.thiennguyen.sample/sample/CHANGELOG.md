@@ -1,5 +1,66 @@
 # Changelog
 
+## [0.36.0] - 2026-10-25
+
+### Added
+
+- **How loud**, in Transcribe: what is being heard drawn three ways while it records — the loudness over time, over pitch, and as an orb that swells with it — and a file's loudness drawn under its transcript. Lumi tells the sample how loud, never the sound.
+- Needs Lumi 1.64.0.
+
+## [0.35.0] - 2026-10-24
+
+### Changed
+
+- **Summarize**, in the peek panel, is offered wherever the sample may ask the AI, and when no model answers yet Lumi offers to download one first — on this Mac, in its own panel — then summarizes.
+- Needs Lumi 1.64.0.
+
+## [0.34.0] - 2026-10-24
+
+### Added
+
+- **Who is speaking**, in Transcribe: tell the voices apart, or name the people you asked Lumi to remember. Name… beside a speaker asks Lumi to remember their voice — Lumi asks you first, with a few seconds of them to play — and the window lists the voices remembered, to rename or forget.
+- Lumi keeps each voice on this Mac; the sample gets a name and an id, never the sound.
+- Needs Lumi 1.64.0.
+
+## [0.33.0] - 2026-10-24
+
+### Added
+
+- **Transcribe**, a window that turns what is said into text as it is said: the microphone, what your Mac plays — every app, or the one you choose when it starts — or both at once in a call, each line saying which. Choose a File… hears a recording the same way, and Hear Again, Whole hears it in one go.
+- **Transcribe an audio file**, a command that hears a recording you pick and says its text in an alert.
+- Lumi turns the speech into text with the speech model you set up in it, on this Mac; the sample gets the text, never the sound. Lumi asks you which app to hear, says what the microphone is for, and offers a speech model when none is downloaded.
+- Needs Lumi 1.64.0.
+
+## [0.32.0] - 2026-10-21
+
+### Added
+
+- **Remind me every hour**, a command and a tick in Lumi's menu bar menu: on the hour, every hour, the sample says so in an alert with the time on your clock, windows or no windows. Press it again to stop.
+- Needs Lumi 1.60.0.
+
+## [0.31.0] - 2026-10-21
+
+### Added
+
+- **Remind me in a minute**, a command and a row in Lumi's menu bar menu. A minute later the sample says so in an alert, with the time on your clock, whether or not any of its windows is open — and if the Mac slept or Lumi was quit meanwhile, it says so as soon as it can after, and that it is late.
+- Needs Lumi 1.59.0.
+
+## [0.30.0] - 2026-10-21
+
+### Added
+
+- The peek panel has a **Copy** button. The app you selected in copies the selection itself, so what you paste keeps what that app keeps — its formatting, its links — and the panel goes away once it has. If nothing was copied, Lumi says so.
+- Needs Lumi 1.59.0.
+
+## [0.29.0] - 2026-10-19
+
+### Added
+
+- The peek panel has a **Define** button. It looks up the word or phrase you selected in the dictionaries you turned on in the Dictionary app, in their order, and shows the headword, how it is said, and its first sense. Looked up on your Mac: nothing leaves it.
+- **More in Dictionary** then opens the Dictionary app at the word, with every dictionary's whole entry.
+- The panel offers Define for a word or a phrase of one line, when at least one dictionary is turned on — on text you can't edit too, since a definition is only read.
+- Needs Lumi 1.55.0.
+
 ## [0.28.0] - 2026-10-15
 
 ### Added

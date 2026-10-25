@@ -1,0 +1,122 @@
+/* The Transcribe window: a bar of what to hear, then what was heard, a line
+   per segment — a partial in grey until its final takes its place. */
+body.transcribe .bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.transcribe .bar .grow {
+  flex: 1;
+}
+
+body.transcribe .said {
+  flex: 1;
+  min-height: 180px;
+  max-height: 260px;
+  overflow-y: auto;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: var(--card, rgba(127, 127, 127, 0.08));
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+body.transcribe .said p {
+  margin: 0 0 6px;
+}
+
+body.transcribe .said .partial {
+  opacity: 0.55;
+}
+
+body.transcribe .said .from {
+  display: block;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+/* The name field for a speaker to remember, or a voice to rename. */
+body.transcribe .name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+body.transcribe .name-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+body.transcribe .name-row input {
+  flex: 1;
+}
+
+/* The voices remembered: a name, and its two links. */
+body.transcribe .voices h3 {
+  margin: 14px 0 6px;
+  font-size: 12px;
+}
+
+body.transcribe .voices ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.transcribe .voices li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  font-size: 13px;
+}
+
+body.transcribe .voices .grow {
+  flex: 1;
+}
+
+/* How loud: one canvas the readings are drawn on three ways, and the three
+   ways under it. */
+body.transcribe .meter {
+  position: relative;
+  margin-top: 8px;
+}
+
+body.transcribe .meter canvas {
+  display: block;
+  width: 100%;
+  height: 84px;
+  border-radius: 7px;
+  background: var(--card, rgba(127, 127, 127, 0.08));
+}
+
+body.transcribe .meter-kinds {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+body.transcribe .meter-kinds button {
+  font-size: 11px;
+  padding: 2px 10px;
+}
+
+body.transcribe .meter-kinds button[aria-checked="true"] {
+  background: var(--accent, #0a84ff);
+  color: #fff;
+}
+
+/* A file's loudness, the whole of it, drawn once it is read. */
+body.transcribe .overview {
+  display: block;
+  width: 100%;
+  height: 28px;
+  margin-top: 6px;
+}
