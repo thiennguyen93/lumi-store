@@ -501,6 +501,13 @@ interface ai {
     /// Whether a model answers now. Asks the engines on this Mac.
     ready: func() -> result<bool, string>;
 
+    /// Make a model ready to answer: when none is, Lumi offers the person the
+    /// text model it would download for `language` (none for any) — in its
+    /// own panel at the pointer, with its size and licence — and answers
+    /// once it is installed or they said not now: true when a model answers
+    /// then. Only from a press. Added in Lumi 1.64.0.
+    prepare: func(language: option<string>) -> result<bool, string>;
+
     /// The models this extension may ask for, the person's default first.
     models: func() -> result<list<model>, string>;
 
@@ -519,6 +526,331 @@ interface ai {
     /// Stop call `id` wherever it is: waiting on the person, on the model,
     /// or answering. False when no call of yours has that id.
     cancel: func(id: u64) -> result<bool, string>;
+}
+
+/// Speech to text: what is said into the microphone, what this Mac plays,
+/// both at once in a call, or a recording in your extension's storage, heard
+/// by the speech model the person chose in Settings › AI. Your extension gets
+/// text, and never the sound.
+///
+/// Every function costs `speech`. Hearing the microphone costs
+/// `microphone`, what this Mac plays `system-audio`, and a call both; the
+/// manifest declares those two only beside `speech`. The person can switch
+/// an extension's AI off in Settings › AI, which switches its speech off
+/// too: then `models` is empty and every recording is refused or ended.
+///
+/// **One recording at a time** per extension, live: a second `start` of a
+/// live source while one runs is `busy`. Several extensions may record at
+/// once; Lumi hears the source once and tells each its own segments.
+///
+/// **Lumi asks the person, never you.** One app's sound is the person's to
+/// pick, in Lumi's own panel at the pointer, and you are never told which.
+/// Lumi says what the microphone is for before macOS asks for it. A model
+/// to download is offered by `prepare`, in the same panel.
+///
+/// **It ends for every reason.** `stop`, `cancel`, the person's longest
+/// recording, the person pressing Stop beside your name in the menu bar
+/// (which shows every recording), your extension switched off or
+/// uninstalled, AI switched off, no window of yours left to hear it, or the
+/// Mac going to sleep or its screen locking. A recording ended by `stop`,
+/// the longest recording or the Mac going away is still heard to its end.
+///
+/// **What a model is sent.** The sound, your `hints` and `languages`, and
+/// nothing else of the person's. Every speech model in this version runs on
+/// this Mac. An extension declaring `text-input` may not declare `speech`.
+///
+/// Added to 0.3 in Lumi 1.64.0 without a new world version.
+interface transcribe {
+    use translation.{readiness};
+    use ai.{place};
+
+    /// Whose sound the system audio is. One app is the person's to pick, in
+    /// Lumi's own panel, and your extension is never told which they picked.
+    enum playing {
+        /// Everything this Mac plays but Lumi.
+        everything,
+        /// One app, picked by the person when the recording starts.
+        one-app,
+    }
+
+    /// What to hear.
+    variant source {
+        /// The microphone. Costs `microphone`.
+        microphone,
+        /// What this Mac plays, on macOS 14.4 or later. Costs `system-audio`.
+        system-audio(playing),
+        /// The microphone and what this Mac plays, as two streams heard
+        /// apart: each segment's `heard` says which. Costs both.
+        call(playing),
+        /// A recording in this extension's storage, by its blob id: an audio
+        /// file (wav, m4a, mp3, flac, caf, aiff, ogg, opus, or a video's
+        /// sound). Its bytes never reach your extension again.
+        blob(string),
+    }
+
+    /// The stream a segment was heard in.
+    enum heard {
+        microphone,
+        system-audio,
+        /// A recording from storage.
+        recording,
+    }
+
+    /// Whether the speakers are told apart, by a speakers model on this
+    /// Mac.
+    enum speakers {
+        off,
+        /// A label per voice within the recording.
+        apart,
+        /// A label per voice, and the voices this extension remembered
+        /// (`voices`) named where they speak. Costs `voices`.
+        named,
+    }
+
+    /// How loud what is heard is, told as it is heard, for drawing it — a
+    /// waveform, a spectrum, or a shape that swells with the loudness.
+    /// Costs `audio-levels`. Lumi bounds it whatever is asked, so it can
+    /// never be the sound: a reading every 128 ms, at most 16 bands, each
+    /// band eased and told in one of 16 steps.
+    record levels {
+        /// Frequency bands with each reading of a live source, 0 for the
+        /// loudness alone; at most 16. Your pages hear each reading as a
+        /// `level` event of `lumi:transcribe`.
+        bands: u8,
+        /// For a recording from storage: the points its loudness is summed
+        /// into once it is read, 0 for none; at most 4096. Your pages hear
+        /// it as an `overview` event, and the transcript keeps it.
+        overview: u32,
+    }
+
+    /// One request.
+    record request {
+        source: source,
+        /// BCP 47 ids, most likely first ("vi", "en-GB"); none to let the
+        /// model tell.
+        languages: list<string>,
+        /// `provider:model` from `models`, or none for the person's default.
+        model: option<string>,
+        speakers: speakers,
+        /// Names and words the speech is likely to hold.
+        hints: list<string>,
+        /// Text while it is being said, each partial settling into its
+        /// final. Live sources only.
+        partials: bool,
+        /// Each word's times, where the model gives them.
+        words: bool,
+        /// A shorter longest recording than the person's; never longer.
+        max-seconds: option<u32>,
+        /// How loud it is, for drawing it; none for nothing of it.
+        levels: option<levels>,
+    }
+
+    /// One word and when it was said, in milliseconds from the start.
+    record word {
+        text: string,
+        start-ms: u64,
+        end-ms: u64,
+        confidence: option<f32>,
+    }
+
+    /// Who said a segment, when speakers are told apart.
+    record speaker {
+        /// The voice within this recording, from 0: what `voices.remember`
+        /// names.
+        label: u32,
+        /// A voice this extension remembered, by id, where `named` found it.
+        voice: option<string>,
+        /// Its name.
+        name: option<string>,
+        /// How alike the voice is to the one remembered, where it is one.
+        confidence: option<f32>,
+    }
+
+    /// A stretch of speech: said again with a higher `revision` while it is
+    /// partial, and once more as its final, under the same `id`.
+    record segment {
+        id: u64,
+        revision: u32,
+        text: string,
+        /// Milliseconds from the start of the recording.
+        start-ms: u64,
+        end-ms: u64,
+        partial: bool,
+        /// The stream it was heard in: a call's two sides are two voices.
+        heard: heard,
+        /// The language it was heard in, where the model says.
+        language: option<string>,
+        speaker: option<speaker>,
+        /// Empty unless `request.words` asked and the model gave them.
+        words: list<word>,
+        confidence: option<f32>,
+    }
+
+    /// One speech model this extension may ask for.
+    record model {
+        /// `provider:model`, what `request.model` takes.
+        id: string,
+        name: string,
+        /// Its provider's name.
+        provider: string,
+        place: place,
+        /// The languages it hears well, as BCP 47 ids; empty when its list
+        /// does not say.
+        languages: list<string>,
+        /// Whether it gives text while speech is being said.
+        partials: bool,
+        /// The model the person chose to run when a request names none.
+        is-default: bool,
+    }
+
+    /// What a recording came to.
+    record transcript {
+        /// The recording's id — `start`'s, for a recording started — what
+        /// `voices.remember` names.
+        id: u64,
+        /// Every final's text, in time order.
+        text: string,
+        /// The finals, in time order.
+        segments: list<segment>,
+        /// `provider:model` that heard it.
+        model: string,
+        model-name: string,
+        place: place,
+        /// Why the model asked for did not run, and which one did, in a
+        /// sentence for the person. None when it ran as asked.
+        fell-back: option<string>,
+        /// The model that told the speakers apart, when one did.
+        speakers-model: option<string>,
+        /// How long the audio was, in milliseconds.
+        duration-ms: u64,
+        /// The longest recording cut it short.
+        cut-short: bool,
+        /// Sentences for the person: a stream that heard nothing at all, a
+        /// recording stopped by the Mac going to sleep.
+        notes: list<string>,
+        /// How long hearing it took, in milliseconds.
+        ms: u64,
+        /// A recording's loudness summed into the points `levels` asked
+        /// for, each 0 to 100; empty for a live source or none asked.
+        overview: list<u8>,
+    }
+
+    /// Why a call gave no transcript, and what to do about it.
+    enum failure-kind {
+        /// The person chose not to let what is said leave this Mac. Nothing
+        /// to show.
+        declined,
+        /// Stopped by `cancel`, or by the person. Nothing to show.
+        stopped,
+        /// Lumi did what it is set to do: AI off, this extension's AI
+        /// switched off, a limit. Show the sentence.
+        warning,
+        /// Something failed on the way. Show the sentence.
+        fault,
+        /// No speech model is ready: `prepare` offers one.
+        unprepared,
+        /// macOS does not let Lumi hear the source. Show the sentence, which
+        /// names where to allow it.
+        not-permitted,
+        /// This extension is already recording: one at a time.
+        busy,
+        /// Not in this version of Lumi, or not on this Mac.
+        unsupported,
+    }
+
+    /// A call that gave no transcript.
+    record failure {
+        /// A sentence for the person, in Lumi's words.
+        message: string,
+        kind: failure-kind,
+    }
+
+    /// How ready this Mac is to hear `language` (or any, when empty) with
+    /// `speakers`: `installed` when a model runs now, `downloadable` when
+    /// Lumi can download one, `unsupported` otherwise.
+    status: func(language: string, speakers: speakers) -> result<readiness, string>;
+
+    /// The speech models this extension may ask for, the person's default
+    /// first.
+    models: func() -> result<list<model>, string>;
+
+    /// Make a model ready for `language`: Lumi asks the person, in its own
+    /// panel, whether to download the one it would pick, and answers once it
+    /// is installed or they said no. Only from a press.
+    prepare: func(language: string, speakers: speakers) -> result<readiness, string>;
+
+    /// Hear a recording from storage and wait for the whole transcript: for
+    /// a command, which has no window to stream into. A blob only. Only from
+    /// a press.
+    complete: func(request: request) -> result<transcript, failure>;
+
+    /// Start hearing, and have what is heard streamed to this extension's
+    /// own windows as `lumi:transcribe` events, returning the recording's id
+    /// at once. Any source; a live one runs until `stop`, the person's
+    /// longest recording, or the person stopping it from the menu bar. Only
+    /// from a press.
+    start: func(request: request) -> result<u64, failure>;
+
+    /// Stop recording `id`: what was said up to now is still heard, and its
+    /// transcript told. False when no recording of yours has that id.
+    stop: func(id: u64) -> result<bool, string>;
+
+    /// Throw recording `id` away: nothing more of it is heard or told.
+    /// False when no recording of yours has that id.
+    cancel: func(id: u64) -> result<bool, string>;
+}
+
+/// The voices this extension asked Lumi to remember, which a recording with
+/// `speakers: named` names where they speak. Lumi keeps each one — a print
+/// of how the person sounds and a few seconds of them speaking, encrypted,
+/// on this Mac only — and your extension is handed its id and name, never
+/// the sound or the print. No other extension recognizes a voice you
+/// remember, and the person can rename or forget any of them on your
+/// extension's page in Settings › AI › Extensions & Privacy, which your
+/// pages hear as `lumi:voices`. Every call costs
+/// `voices`, declared beside `speech`. Added to 0.3 in Lumi 1.64.0 without a
+/// new world version.
+interface voices {
+    /// A remembered voice.
+    record voice {
+        /// Lumi's id for it: what a segment's `speaker.voice` names.
+        id: string,
+        name: string,
+        /// Milliseconds since 1970.
+        remembered-at: u64,
+        /// When a recording last named it, if one has.
+        recognized-at: option<u64>,
+    }
+
+    /// What asking to remember a voice came to.
+    variant answer {
+        /// The person agreed: the voice is kept, as this.
+        remembered(voice),
+        /// The voice is one this extension already keeps: nothing was asked.
+        already(voice),
+        /// The person said no.
+        cancelled,
+    }
+
+    /// The voices this extension keeps, in the order they were remembered.
+    %list: func() -> result<list<voice>, string>;
+
+    /// Ask to remember voice `label` of recording `recording` — a
+    /// `transcribe.start` id, or a transcript's — as `name`. Lumi asks the
+    /// person in its own panel, with the voice's seconds to play first. It
+    /// needs at least five seconds of the voice, from a recording that told
+    /// speakers apart, while Lumi still keeps what it heard: as it records
+    /// and for ten minutes after, while your pages are open. Only from a
+    /// press.
+    remember: func(recording: u64, label: u32, name: string) -> result<answer, string>;
+
+    /// Call voice `id` `name`. False when there is no such voice. Only from
+    /// a press.
+    rename: func(id: string, name: string) -> result<bool, string>;
+
+    /// Forget voice `id`: its print, its seconds and its name. False when
+    /// there is no such voice.
+    forget: func(id: string) -> result<bool, string>;
 }
 
 /// The general pasteboard. Costs `clipboard`, both directions — and
@@ -1004,13 +1336,17 @@ interface ui {
     /// pointer is at, below after a drag down and above otherwise; the
     /// manifest's own `anchor` words, for a setting that lets the person
     /// choose. Words only: Lumi still measures the selection and places the
-    /// panel. A panel at any other position is refused. Added in Lumi 1.47.
+    /// panel. For a panel at `position = "menu-bar-item"`, `at` is which of
+    /// the item's edges it lines up with and `side` "below" or "" (Lumi
+    /// 1.61). A panel at any other position is refused. Added in Lumi 1.47.
     set-anchor: func(name: string, at: string, side: string) -> result<_, string>;
 
     /// Choose light or dark for one of your panels: "light", "dark", or
     /// "system" to follow macOS again — for a theme setting. The panel's
     /// glass and its page's `prefers-color-scheme` both follow. Takes effect
-    /// at once if the panel is up, and every time it is shown. Added in 0.3.
+    /// at once if the panel is up, and every time it is shown; Lumi keeps
+    /// the choice across a restart and an update (Lumi 1.61), so the first
+    /// showing after a launch is already in it. Added in 0.3.
     set-theme: func(name: string, theme: string) -> result<_, string>;
 
     /// Pin one of your panels, or let it go: a pinned panel stays up while
@@ -2072,8 +2408,8 @@ interface time-zone {
 /// `set-enabled`.
 ///
 /// Needs the `text-input` capability and `events = ["text-input"]`, and the
-/// manifest may not declare `network` or `ai` beside it. Added to 0.3 in Lumi
-/// 1.61.0 without a new world version.
+/// manifest may not declare `network`, `ai` or `speech` beside it (`speech`
+/// since 1.64.0). Added to 0.3 in Lumi 1.61.0 without a new world version.
 interface text-input {
     /// How the text before the caret changes for the key this run was told
     /// of. Counts are Unicode scalar values, and only ever of text your own
@@ -2132,6 +2468,8 @@ world extension {
     import translation;
     import dictionary;
     import ai;
+    import transcribe;
+    import voices;
     import clipboard;
     import alert;
     import open;

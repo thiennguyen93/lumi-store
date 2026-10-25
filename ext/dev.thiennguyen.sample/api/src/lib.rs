@@ -462,6 +462,15 @@ pub mod ai {
         wit::ready()
     }
 
+    /// Make a model ready to answer. When none answers, Lumi offers the
+    /// person the text model it would download for `language` (`None` for
+    /// any), in its own panel with the model's size and licence, and
+    /// answers once it is installed or the person said not now — `true`
+    /// when a model answers then. Only from a press. Lumi 1.64.0.
+    pub fn prepare(language: Option<&str>) -> Result<bool, String> {
+        wit::prepare(language)
+    }
+
     /// The models your extension may ask for now, the person's default
     /// first. `Model::id` is what `Request::model` takes.
     pub fn models() -> Result<Vec<Model>, String> {
@@ -484,6 +493,150 @@ pub mod ai {
     /// Stop call `id` wherever it is. False when no call of yours has it.
     pub fn cancel(id: u64) -> Result<bool, String> {
         wit::cancel(id)
+    }
+}
+
+/// Speech to text: the microphone, what the Mac plays, both at once in a
+/// call, or a recording in your storage, heard by the speech model the
+/// person chose in Settings › AI. You get text, never the sound. Costs
+/// `speech`; hearing the microphone costs `microphone` too, what the Mac
+/// plays `system-audio`, and a call both. Needs Lumi 1.64.0.
+///
+/// One live recording at a time: `start` returns its id, and what is heard
+/// comes to your own windows as `lumi:transcribe` events — each segment said
+/// again as it grows (`partial`) and once more as its final, under one id —
+/// until `stop`, the person's longest recording, or the person pressing
+/// Stop beside your name in the menu bar. One app's sound is the person's
+/// to pick, in Lumi's own panel; you are never told which.
+///
+/// ```ignore
+/// use lumi_extension_api::{alert, transcribe};
+///
+/// // From a command: a recording in storage, heard whole.
+/// let heard = transcribe::complete(&transcribe::Request {
+///     source: transcribe::Source::Blob(blob),
+///     languages: vec!["vi".into()],
+///     model: None,
+///     speakers: transcribe::Speakers::Off,
+///     hints: vec![],
+///     partials: false,
+///     words: false,
+///     max_seconds: None,
+/// });
+/// match heard {
+///     Ok(transcript) => alert(&transcript.text)?,
+///     Err(failure) if failure.kind == transcribe::FailureKind::Unprepared => {
+///         transcribe::prepare("vi", transcribe::Speakers::Off)?;
+///     }
+///     Err(failure) if failure.kind == transcribe::FailureKind::Stopped => {}
+///     Err(failure) => alert(&failure.message)?,
+/// }
+/// ```
+pub mod transcribe {
+    use super::lumi::ext::transcribe as wit;
+
+    pub use super::lumi::ext::translation::Readiness;
+    pub use wit::{Failure, FailureKind, Heard, Levels, Model, Place, Playing, Request, Segment, Source, Speaker, Speakers, Transcript, Word};
+
+    /// How ready this Mac is to hear `language` (`""` for any) with
+    /// `speakers`: `Installed` when a model runs now, `Downloadable` when
+    /// Lumi can download one, `Unsupported` otherwise. With speakers told
+    /// apart or named, as ready as the less ready of the speech model and
+    /// the speakers model; `Speakers::Named` costs `voices`.
+    pub fn status(language: &str, speakers: Speakers) -> Result<Readiness, String> {
+        wit::status(language, speakers)
+    }
+
+    /// The speech models you may ask for, the person's default first.
+    /// `Model::id` is what `Request::model` takes.
+    pub fn models() -> Result<Vec<Model>, String> {
+        wit::models()
+    }
+
+    /// Have Lumi offer the person the speech model it would pick for
+    /// `language`, in its own panel, and answer once it is installed or they
+    /// said not now. Only from a press.
+    pub fn prepare(language: &str, speakers: Speakers) -> Result<Readiness, String> {
+        wit::prepare(language, speakers)
+    }
+
+    /// Hear a recording in your storage (`Source::Blob`) and wait for the
+    /// whole transcript — for a command, with no window to stream into.
+    /// Only from a press.
+    pub fn complete(request: &Request) -> Result<Transcript, Failure> {
+        wit::complete(request)
+    }
+
+    /// Start hearing any source, what is heard streamed to your own windows
+    /// as `lumi:transcribe` events; returns the recording's id at once. Only
+    /// from a press.
+    pub fn start(request: &Request) -> Result<u64, Failure> {
+        wit::start(request)
+    }
+
+    /// Stop recording `id`: what was said up to now is still heard, and its
+    /// transcript told. False when no recording of yours has it.
+    pub fn stop(id: u64) -> Result<bool, String> {
+        wit::stop(id)
+    }
+
+    /// Throw recording `id` away: nothing more of it is heard or told.
+    /// False when no recording of yours has it.
+    pub fn cancel(id: u64) -> Result<bool, String> {
+        wit::cancel(id)
+    }
+}
+
+/// The people your recordings name by their voice. Lumi keeps each voice —
+/// a print of how they sound and a few seconds of them speaking, encrypted,
+/// on this Mac only — and you get its id and name, never the sound or the
+/// print. A recording with `Speakers::Named` names a remembered voice in
+/// each segment's `speaker`; no other extension recognizes the voices you
+/// remember, and the person can rename or forget any of them on your
+/// extension's page in Settings › AI › Extensions & Privacy, which your
+/// windows hear as `lumi:voices`. Costs `voices`,
+/// declared beside `speech`. Needs Lumi 1.64.0.
+///
+/// ```ignore
+/// use lumi_extension_api::voices;
+///
+/// // From a press in your window, beside "Speaker 2" of recording `id`:
+/// match voices::remember(id, 1, "Linh")? {
+///     voices::Answer::Remembered(voice) | voices::Answer::Already(voice) => keep(voice.id),
+///     voices::Answer::Cancelled => {}
+/// }
+/// ```
+pub mod voices {
+    use super::lumi::ext::voices as wit;
+
+    pub use wit::{Answer, Voice};
+
+    /// The voices you keep, in the order they were remembered.
+    pub fn list() -> Result<Vec<Voice>, String> {
+        wit::list()
+    }
+
+    /// Ask to remember voice `label` of recording `recording` — a
+    /// `transcribe::start` id, or a transcript's — as `name`. Lumi asks the
+    /// person in its own panel, with the voice's seconds to play first; it
+    /// needs at least five seconds of the voice, from a recording that told
+    /// speakers apart, while Lumi still keeps what it heard: as it records
+    /// and for ten minutes after, while your windows are open. A voice you
+    /// already keep answers `Already`, unasked. Only from a press.
+    pub fn remember(recording: u64, label: u32, name: &str) -> Result<Answer, String> {
+        wit::remember(recording, label, name)
+    }
+
+    /// Call voice `id` `name`. False when you keep no such voice. Only from
+    /// a press.
+    pub fn rename(id: &str, name: &str) -> Result<bool, String> {
+        wit::rename(id, name)
+    }
+
+    /// Forget voice `id`: its print, its seconds and its name. False when
+    /// you keep no such voice.
+    pub fn forget(id: &str) -> Result<bool, String> {
+        wit::forget(id)
     }
 }
 
@@ -804,15 +957,19 @@ pub fn set_position(name: &str, position: &str) -> Result<(), String> {
 /// `"below"` or `"pointer"` (the side of the selection the pointer is at,
 /// Lumi 1.48.0), the manifest's `anchor` words — for a setting that lets the
 /// person choose. Call it before `open_window`. Words only: Lumi measures the
-/// selection and places the panel against the part of it named. A panel at
-/// any other position is refused. Needs Lumi 1.47.0 or later — say so with
-/// `min-lumi-version`.
+/// selection and places the panel against the part of it named. For a panel
+/// at `position = "menu-bar-item"`, `at` is which of the item's edges it
+/// lines up with, and `side` `"below"` or `""` — it always goes below (Lumi
+/// 1.61.0). A panel at any other position is refused. Needs Lumi 1.47.0 or
+/// later — say so with `min-lumi-version`.
 pub fn set_anchor(name: &str, at: &str, side: &str) -> Result<(), String> {
     lumi::ext::ui::set_anchor(name, at, side)
 }
 
 /// Choose light or dark for one of your panels — "light", "dark" or
-/// "system" — for a theme setting. Applies at once if the panel is up.
+/// "system" — for a theme setting. Applies at once if the panel is up, and
+/// Lumi keeps it across a restart and an update (Lumi 1.61.0), so set it
+/// when the setting changes, not before every showing.
 pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
     lumi::ext::ui::set_theme(name, theme)
 }
