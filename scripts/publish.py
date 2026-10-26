@@ -644,24 +644,21 @@ def check_manifest(entry_id: str, manifest: dict):
         if "listed" in window and not isinstance(window["listed"], bool):
             fail(entry_id, f"the window {name}'s listed = {window['listed']!r} is not true or false")
         # `manifest.rs`'s keep-alive and preload rules, same sentences: a
-        # panel's alone, one page per declaration, and loaded ahead only
-        # when kept (Lumi 1.45).
+        # window's or a panel's (a window's since Lumi 1.65), one page per
+        # declaration, and loaded ahead only when kept (Lumi 1.45).
+        what = "window" if kind == "window" else "panel"
         if "keep-alive" in window:
-            if kind == "window":
-                fail(entry_id, f"the window {name} sets keep-alive, which only a panel has — a window's page lives until it is closed")
             if not isinstance(window["keep-alive"], bool):
-                fail(entry_id, f"the panel {name}'s keep-alive = {window['keep-alive']!r} is not true or false")
+                fail(entry_id, f"the {what} {name}'s keep-alive = {window['keep-alive']!r} is not true or false")
             if window["keep-alive"] is True and "copies" in window:
-                fail(entry_id, f"the panel {name} has copies and says keep-alive = true; a kept page is one panel's — leave copies out")
+                fail(entry_id, f"the {what} {name} has copies and says keep-alive = true; a kept page is one {what}'s — leave copies out")
         if "preload" in window:
-            if kind == "window":
-                fail(entry_id, f"the window {name} sets preload, which only a panel has — a window's page loads when it is opened")
             if not isinstance(window["preload"], bool):
-                fail(entry_id, f"the panel {name}'s preload = {window['preload']!r} is not true or false")
+                fail(entry_id, f"the {what} {name}'s preload = {window['preload']!r} is not true or false")
             if window["preload"] is True and window.get("keep-alive") is not True:
-                fail(entry_id, f"the panel {name} asks to be loaded ahead, which needs keep-alive = true — a page loaded ahead is a page kept")
+                fail(entry_id, f"the {what} {name} asks to be loaded ahead, which needs keep-alive = true — a page loaded ahead is a page kept")
             if window["preload"] is True and "preload" not in ext.get("capabilities", []):
-                fail(entry_id, f"the panel {name} asks to be loaded ahead, which needs the preload capability — add it to capabilities")
+                fail(entry_id, f"the {what} {name} asks to be loaded ahead, which needs the preload capability — add it to capabilities")
         # `manifest.rs`'s copies rule, same sentences: 2 to 32, never listed.
         if "copies" in window:
             copies = window["copies"]
