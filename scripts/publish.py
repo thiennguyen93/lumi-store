@@ -140,9 +140,11 @@ CAPABILITIES = {
     # speech model the person set up in Lumi), and the two sources it hears
     # live, each declared only beside `speech`; and `voices`, remembering
     # who is speaking and naming them, declared only beside it too; and
-    # `audio-levels`, told how loud what is heard is, for drawing it —
-    # beside `speech` alone as well.
-    "speech", "microphone", "system-audio", "voices", "audio-levels",
+    # `audio-levels`, told how loud what is heard is, for drawing it; and
+    # `keep-audio` (Lumi 1.65), what a source hears made into an audio file
+    # of the extension's own — with no `speech` needed, so the two sources
+    # and `audio-levels` stand beside either.
+    "speech", "microphone", "system-audio", "voices", "audio-levels", "keep-audio",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -431,13 +433,20 @@ def check_manifest(entry_id: str, manifest: dict):
         for reaching in ("network", "ai", "speech"):
             if reaching in ext.get("capabilities", []):
                 fail(entry_id, f"text-input cannot be declared with {reaching}: an extension that sees every key you type may not be able to send anything off this Mac")
-    # `manifest.rs` again: the microphone and what the Mac plays are what
-    # `speech` hears, and nothing else does; the voices it remembers, and
-    # how loud it is, are speech's too.
-    for source in ("microphone", "system-audio", "voices", "audio-levels"):
-        if source in ext.get("capabilities", []) and "speech" not in ext.get("capabilities", []):
-            fail(entry_id, f"{source} is what speech hears: declare speech beside it")
+    # `manifest.rs` again: the microphone and what the Mac plays are heard by
+    # `speech`, as words, or by `keep-audio`, as a recording kept, and by
+    # nothing else; how loud goes with either; the voices it remembers are
+    # named from words, so speech's alone; and `keep-audio` keeps a source.
+    declared = ext.get("capabilities", [])
+    hears = "speech" in declared or "keep-audio" in declared
+    for source in ("microphone", "system-audio", "audio-levels"):
+        if source in declared and not hears:
+            fail(entry_id, f"{source} needs something that hears it: declare speech or keep-audio beside it")
             break
+    if "voices" in declared and "speech" not in declared:
+        fail(entry_id, "voices are named from what speech hears: declare speech beside it")
+    if "keep-audio" in declared and "microphone" not in declared and "system-audio" not in declared:
+        fail(entry_id, "keep-audio keeps what the microphone or the system audio hears: declare one of them beside it")
     for name in ext.get("events", []):
         if name not in EVENTS:
             fail(entry_id, f"unknown event {name!r} — Lumi sends {sorted(EVENTS)}")
