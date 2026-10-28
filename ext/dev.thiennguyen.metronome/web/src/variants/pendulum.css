@@ -1,0 +1,240 @@
+/* The Classic theme — the pendulum and its column. */
+
+.pd {
+  --pd-body-top: color-mix(in srgb, CanvasText 6%, Canvas);
+  --pd-body-bottom: color-mix(in srgb, CanvasText 11%, Canvas);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 12px 2px 10px;
+}
+
+/* Centred in the tab's height, as Orbit is, with the pendulum drawn as
+   tall as that height allows rather than at a fixed 330. */
+.pd-main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  align-content: center;
+  align-items: center;
+  gap: 28px;
+}
+
+.pd-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* As tall as the tab's height leaves room for (vh is that height, the
+   page being a child webview of it), its width following: 236 wide is
+   354 tall, and under the Start button that is more than a short tab. */
+.pd-svg {
+  width: clamp(190px, calc((100vh - 130px) * 0.667), 236px);
+  height: auto;
+  overflow: visible;
+}
+
+.pd-body {
+  stroke: var(--border);
+  stroke-width: 1;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.12));
+}
+
+.pd-slot {
+  fill: color-mix(in srgb, CanvasText 7%, transparent);
+  stroke: var(--border);
+}
+
+.pd-scale line {
+  stroke: CanvasText;
+  stroke-opacity: 0.35;
+  stroke-width: 1;
+}
+
+.pd-scale text {
+  font-size: 10px;
+  fill: CanvasText;
+  fill-opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.pd-rod {
+  stroke: color-mix(in srgb, CanvasText 70%, transparent);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.pd-weight {
+  fill: var(--raised);
+  stroke: color-mix(in srgb, CanvasText 45%, transparent);
+  stroke-width: 1.2;
+  cursor: ns-resize;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+}
+
+.pd-weight-mark {
+  stroke: CanvasText;
+  stroke-opacity: 0.5;
+  stroke-width: 1.4;
+  pointer-events: none;
+}
+
+.pd-weight.hit {
+  animation: pd-flash 0.22s ease-out;
+}
+
+.pd-weight.hit-accent {
+  animation: pd-flash-accent 0.32s ease-out;
+}
+
+@keyframes pd-flash {
+  from {
+    fill: var(--accent);
+  }
+}
+
+@keyframes pd-flash-accent {
+  from {
+    fill: var(--beat-accent);
+  }
+}
+
+.pd-pivot {
+  fill: color-mix(in srgb, CanvasText 60%, Canvas);
+}
+
+.pd-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.pd-tempo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pd-marking {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+}
+
+.pd-tempo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pd-bpm-unit {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.45;
+  margin-top: 14px;
+}
+
+.pd-dots {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.pd-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--border);
+  transition:
+    background 0.18s,
+    transform 0.18s;
+}
+
+/* An accented beat is a ring round its dot as well as a colour, so it
+   reads without the colour. */
+.pd-dot.accent {
+  box-shadow:
+    0 0 0 2px Canvas,
+    0 0 0 3.5px color-mix(in srgb, var(--beat-accent) 70%, transparent);
+}
+
+.pd-dot.mute {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--border);
+}
+
+.pd-dot.on {
+  background: var(--accent);
+  transform: scale(1.25);
+  transition: none;
+}
+
+.pd-dot.accent.on {
+  background: var(--beat-accent);
+}
+
+.pd-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.pd-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 10px;
+}
+
+.pd-label {
+  font-weight: 500;
+}
+
+.pd .m-row:first-of-type {
+  border-top: 1px solid var(--border);
+}
+
+
+/* Reduce Motion: no swing (Pendulum.tsx), and the lit dot does not grow. */
+@media (prefers-reduced-motion: reduce) {
+  .pd-dot,
+  .pd-dot.on {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Thirteen beats or more: smaller dots, on one line rather than two. */
+.pd-dots:has(> :nth-child(13)) {
+  gap: 6px;
+}
+
+.pd-dots:has(> :nth-child(13)) .pd-dot {
+  width: 10px;
+  height: 10px;
+}
+
+/* A short tab (controls.css says how short): the column a little tighter. */
+@media (max-height: 545px) {
+  .pd-side {
+    gap: 10px;
+  }
+
+  .pd-tempo {
+    gap: 3px;
+  }
+
+  .pd-dots {
+    margin-top: 2px;
+  }
+
+  .pd-block {
+    padding-bottom: 6px;
+  }
+}

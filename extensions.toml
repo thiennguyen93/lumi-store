@@ -55,6 +55,17 @@ subdir = "."
 category = "Utilities"
 
 
+# First-party and in-tree, for the sample's reason. Its React front end
+# under web/ is built by the store; web/mock.html is the dev server's
+# stand-in for Lumi's Settings window and is never built.
+[[extension]]
+id = "dev.thiennguyen.metronome"
+path = "ext/dev.thiennguyen.metronome"
+subdir = "."
+web = "web"
+category = "Utilities"
+
+
 # First-party and closed source: a private repo, `update = none` in
 # .gitmodules and fetched with a read-only deploy key by
 # scripts/fetch-private.sh. Its React editor under web/ is built by the store.

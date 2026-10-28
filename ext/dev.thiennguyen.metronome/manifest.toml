@@ -1,0 +1,63 @@
+# Metronome's manifest. One tab of its own, the metronome; a Settings tab of
+# its own page; and no capability at all — the beat is Web Audio in the
+# page, and what it keeps between openings goes to the extension's own
+# storage, which costs none.
+[extension]
+id = "dev.thiennguyen.metronome"
+name = "Metronome"
+version = "0.1.0"
+description = "A steady beat to practise with: tempo, time signature, sound and an accented first beat."
+author = "Thien Nguyen"
+summary = "Opens a Metronome tab here in Lumi. Set a tempo from 20 to 300 beats a minute — or tap it in — a time signature, extra clicks inside each beat, a sound and a volume, and accent the first beat of every bar or any other, or leave a beat silent. Keep what you set as a preset and come back to it with one click. Four ways to see the beat: a wind-up pendulum, a ring, a row of pads or plain settings rows. The beat is kept on the Mac's audio clock, so it stays steady however busy the Mac is, and nothing leaves this Mac."
+homepage = "https://lumikeys.app/docs/extensions"
+# Built and tried on 1.64.0. Nothing it uses is newer — `[tabs]` is 1.32.0,
+# `[[page]]` and the bridge's `call` older still — but no older Lumi has been
+# tried, so none is claimed.
+min-lumi-version = "1.64.0"
+# Pictures for this extension's page in Lumi's Extension Store, one theme
+# each: Classic playing with a preset lit, Orbit mid-bar in 7/8 in dark,
+# Beat Pads with an accent, a silent beat and sixteenths, and Simple in
+# dark with a preset's own menu open. The store publishes them beside the
+# package; Lumi's installer ignores it.
+screenshots = ["shots/1-classic.png", "shots/2-orbit.png", "shots/3-beat-pads.png", "shots/4-presets.png"]
+
+# The metronome. Keys are half of it — Space to start and stop, the arrows
+# for the tempo, T to tap it — so the tab takes the keyboard as it opens.
+[[page]]
+name = "metronome"
+label = "Metronome"
+path = "metronome.html"
+focus = true
+
+# Settings is the extension's own page: the one setting there is, the
+# theme, chosen from a picture of each. Lumi's form would put the field's
+# label under the section's heading — a field there always has one — and
+# say Appearance and Theme one under the other.
+[tabs.settings]
+page = "settings.html"
+
+# How the Metronome tab draws the beat. Kept by Lumi, chosen on the
+# Settings tab's page and from the Metronome tab's foot; both read and save
+# it through the bridge's settings (`GET`/`PUT /__lumi__/settings`). The
+# values are wire values (web/src/looks.ts keeps the list).
+[[settings]]
+name = "look"
+label = "Theme"
+kind = "select"
+default = "classic"
+
+[[settings.options]]
+value = "classic"
+label = "Classic"
+
+[[settings.options]]
+value = "orbit"
+label = "Orbit"
+
+[[settings.options]]
+value = "pads"
+label = "Beat Pads"
+
+[[settings.options]]
+value = "simple"
+label = "Simple"

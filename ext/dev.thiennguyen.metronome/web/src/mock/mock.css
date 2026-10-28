@@ -1,0 +1,194 @@
+/* The mock's own frame: a desktop-coloured ground, the variant switcher,
+   and the Settings window at its real size. App.css (loaded first) draws
+   everything inside the window with Lumi's own classes. */
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1200px 700px at 15% 0%, #8fb3e8 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 100%, #e4a1c4 0%, transparent 60%),
+    #b9c4d8;
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(1200px 700px at 15% 0%, #23365a 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 100%, #4a2340 0%, transparent 60%),
+    #15171d;
+}
+
+.mk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 16px 40px;
+}
+
+.mk-bar {
+  width: 820px;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, Canvas 80%, transparent);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+}
+
+.mk-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  flex: 1;
+  min-width: 160px;
+}
+
+.mk-title span {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.mk-variants {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--card);
+}
+
+.mk-variants button {
+  border: none;
+  background: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  opacity: 0.7;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mk-variants button.on {
+  opacity: 1;
+  background: var(--raised);
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.mk-window {
+  width: 820px;
+  height: 817px;
+  flex: none;
+  display: grid;
+  grid-template-columns: 172px minmax(0, 1fr);
+  grid-template-rows: var(--titlebar, 28px) minmax(0, 1fr);
+  border-radius: 12px;
+  overflow: hidden;
+  background: Canvas;
+  color: CanvasText;
+  box-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.3),
+    0 24px 60px -12px rgba(0, 0, 0, 0.45);
+  position: relative;
+}
+
+.mk-titlebar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.mk-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.mk-light.red {
+  background: #ff5f57;
+}
+
+.mk-light.yellow {
+  background: #febc2e;
+}
+
+.mk-light.green {
+  background: #28c840;
+}
+
+.mk-sidebar {
+  grid-row: 2 !important;
+}
+
+.mk-content {
+  grid-row: 2;
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 10px 16px 16px;
+}
+
+.mk-back {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  margin: 0 var(--gutter, 14px) 4px 2px;
+}
+
+.mk-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: none;
+  background: none;
+  padding: 4px 6px 4px 0;
+  color: var(--accent-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.mk-detail {
+  flex: 1;
+  min-height: 0;
+}
+
+.mk-page {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: none;
+  background: transparent;
+  color-scheme: normal;
+}
+
+.mk-page.off {
+  opacity: 0.5;
+  filter: grayscale(0.7);
+  pointer-events: none;
+}
+
+.mk-about {
+  padding-top: 12px;
+  overflow-y: auto;
+}
+
+.mk-note {
+  margin-top: 20px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--card);
+}

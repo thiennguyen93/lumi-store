@@ -1,0 +1,261 @@
+/* The Beat Pads theme. */
+
+.pads {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 100%;
+  padding: 12px 2px 10px;
+}
+
+/* As the Simple theme's column: nothing gives up height, what does not
+   fit scrolls. A pad clips its flash, which would otherwise let a row of
+   them be squeezed rather than the page scroll. */
+.pads > * {
+  flex-shrink: 0;
+}
+
+.pads h3 {
+  margin: 0 0 7px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.pads-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pads-head .m-range {
+  flex: 1;
+}
+
+.pads-tempo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.pads-tempo .m-bpm {
+  font-size: 32px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  min-width: 2.6ch;
+}
+
+.pads-marking {
+  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.pads-grid {
+  display: grid;
+  gap: 8px;
+}
+
+/* As tall as the tab leaves room for, and no taller than they were drawn:
+   the page is a child webview the height of what is under Lumi's tab bar,
+   so vh is that height — 566 in a bare Settings window, ~505 with Lumi's
+   update banner over it, where the fixed 118 made the page scroll. */
+.pad {
+  position: relative;
+  overflow: hidden;
+  height: clamp(64px, calc(100vh - 400px), 118px);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  transition:
+    transform 0.12s ease-out,
+    border-color 0.15s,
+    background 0.2s;
+}
+
+/* Two rows of pads (seven beats or more) share the one row's height, so
+   the page still fits with Other's line open under the signatures. */
+.pads-grid:has(> :nth-child(7)) .pad {
+  height: clamp(46px, calc((100vh - 410px) / 2), 66px);
+}
+
+.pads-grid:has(> :nth-child(7)) .pad-number {
+  font-size: 24px;
+}
+
+.pads-grid:has(> :nth-child(7)) .pad-subs {
+  margin-top: 3px;
+}
+
+.pad:hover:not(:disabled) {
+  background: var(--row-hover);
+}
+
+.pad-number {
+  font-size: 30px;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.pad-word {
+  height: 15px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* An accented beat wears its colour at rest, a stripe along its top, so the
+   pattern reads before it plays. */
+.pad.accent {
+  border-color: color-mix(in srgb, var(--beat-accent) 55%, var(--border));
+}
+
+.pad.accent::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--beat-accent);
+}
+
+.pad.accent .pad-word {
+  color: var(--beat-accent);
+}
+
+.pad.mute {
+  background: none;
+  border-style: dashed;
+}
+
+.pad.mute .pad-number {
+  opacity: 0.35;
+}
+
+.pad.mute .pad-word {
+  opacity: 0.5;
+}
+
+.pad.on {
+  transform: scale(0.965);
+  border-color: var(--accent);
+}
+
+.pad.accent.on {
+  border-color: var(--beat-accent);
+}
+
+/* The strike: a fill that fades, and a ring leaving the pad's centre. */
+.pad-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--accent);
+  animation: pad-flash 0.42s ease-out forwards;
+}
+
+.pad.accent .pad-flash {
+  background: var(--beat-accent);
+}
+
+.pad-flash::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  animation: pad-ring 0.42s ease-out forwards;
+}
+
+@keyframes pad-flash {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pad-ring {
+  from {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+.pad-number,
+.pad-word,
+.pad-subs {
+  position: relative;
+}
+
+.pad-subs {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.pad-subs span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.15s;
+}
+
+.pad-subs span.lit {
+  background: CanvasText;
+  transition: none;
+}
+
+.pads-hint {
+  margin: -4px 0 0;
+}
+
+.pads-settings {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.pads-volume-head {
+  margin-top: 12px !important;
+}
+
+
+/* Reduce Motion: a pad lights and fades where it stands — no press inward,
+   no ring leaving it. */
+@media (prefers-reduced-motion: reduce) {
+  .pad,
+  .pad.on {
+    transform: none;
+    transition: none;
+  }
+
+  .pad-flash::after {
+    display: none;
+  }
+}

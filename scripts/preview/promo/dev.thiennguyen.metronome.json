@@ -1,0 +1,75 @@
+{
+  "color": "#f5863e",
+  "shots": [
+    {
+      "headline": "A steady beat to practise with",
+      "sub": "Tempo, time signature, sound and accents, in a tab of its own in Lumi.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Metronome",
+      "page": "metronome.html?look=classic",
+      "theme": "light",
+      "width": 648,
+      "height": 600,
+      "top": 210,
+      "left": 150,
+      "callout": {
+        "title": "Metronome",
+        "label": "Classic",
+        "body": "A wind-up pendulum. Drag its <b>weight</b> to change the tempo."
+      }
+    },
+    {
+      "headline": "See the whole bar go round",
+      "sub": "Orbit draws the bar as a ring, with a hand sweeping round it.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Metronome",
+      "page": "metronome.html?look=orbit",
+      "theme": "dark",
+      "width": 648,
+      "height": 600,
+      "top": 210,
+      "left": 482,
+      "callout": {
+        "title": "Metronome",
+        "label": "Steady",
+        "body": "Kept on the Mac's <b>audio clock</b>, however busy the Mac is.",
+        "side": "left"
+      }
+    },
+    {
+      "headline": "Accent any beat, or leave one out",
+      "sub": "Beat Pads gives every beat a pad of its own.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Metronome",
+      "page": "metronome.html?look=pads",
+      "theme": "light",
+      "width": 648,
+      "height": 600,
+      "top": 210,
+      "left": 150,
+      "callout": {
+        "title": "Metronome",
+        "label": "Click a pad to change it",
+        "body": "<b>Accent</b>, normal or <b>silent</b>. The clicks inside each beat light up as dots."
+      }
+    },
+    {
+      "headline": "Come back to it in one click",
+      "sub": "Keep what you set as a preset. The one you are on lights up.",
+      "window": "Lumi Settings",
+      "tab": "Extensions › Metronome",
+      "page": "metronome.html?look=simple",
+      "theme": "dark",
+      "width": 648,
+      "height": 600,
+      "top": 210,
+      "left": 482,
+      "callout": {
+        "title": "Metronome",
+        "label": "Right-click a preset",
+        "body": "<b>Rename</b> it, replace it with what is set now, or delete it. A delete can be undone.",
+        "side": "left"
+      }
+    }
+  ]
+}

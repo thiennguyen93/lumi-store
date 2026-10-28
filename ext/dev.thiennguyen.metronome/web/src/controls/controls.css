@@ -1,0 +1,617 @@
+/* The shared controls, drawn as App.css draws Lumi's own (`.switch`,
+   `.segmented`), from lumi.css's tokens, so the page reads as the tab it
+   sits in whichever variant is chosen. */
+
+:root {
+  --beat-hit: var(--accent);
+  --beat-accent: #f08a24;
+}
+
+:root[data-theme="dark"] {
+  --beat-accent: #ffa149;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+.m-switch {
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: var(--border);
+  padding: 0;
+  position: relative;
+  flex: none;
+  transition: background 0.12s;
+}
+
+.m-switch:hover:not(:disabled) {
+  background: var(--border);
+}
+
+.m-switch.on,
+.m-switch.on:hover:not(:disabled) {
+  background: var(--accent);
+}
+
+.m-switch span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: left 0.12s;
+}
+
+.m-switch.on span {
+  left: 18px;
+}
+
+/* Segments of one width, as AppKit draws them: a wider segment for a
+   longer word ("More") read as a different kind of choice. */
+.m-segmented {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--card);
+}
+
+.m-segmented button {
+  border: none;
+  background: none;
+  padding: 4px 11px;
+  border-radius: 6px;
+  opacity: 0.62;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.m-segmented button:hover:not(:disabled) {
+  background: none;
+  opacity: 1;
+}
+
+.m-segmented button.on,
+.m-segmented button.on:hover {
+  opacity: 1;
+  background: var(--raised);
+  box-shadow:
+    0 0.5px 1px rgba(0, 0, 0, 0.18),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.m-subs button {
+  padding: 3px 9px;
+}
+
+.m-subglyph,
+.m-noteglyph {
+  display: block;
+}
+
+.m-units button {
+  padding: 3px 9px;
+}
+
+.m-icon-button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  flex: none;
+}
+
+/* −10 / +10 in a −/+ button while Shift is held: the glyph's place, in
+   figures that keep their width. */
+.m-step-ten {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Dimmed, and still under the pointer for its help tag (aria-disabled). */
+.m-icon-button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.m-icon-button[aria-disabled="true"]:hover {
+  background: Canvas;
+}
+
+.m-icon-button.bare {
+  border-color: transparent;
+  background: none;
+}
+
+.m-icon-button:active {
+  background: var(--row-hover);
+}
+
+.m-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.m-stepper output {
+  min-width: 2.4ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.m-stepper .m-bpm {
+  font-size: 22px;
+  min-width: 3ch;
+}
+
+.m-stepper.big .m-icon-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.m-stepper.big .m-bpm {
+  font-size: 44px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.m-stepper.small .m-icon-button {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+
+/* A slider drawn as macOS draws one: a thin track, filled in the accent up
+   to the knob, and a white knob with a shadow. */
+.m-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  margin: 0;
+}
+
+.m-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--accent) var(--fill, 0%), var(--border) var(--fill, 0%));
+}
+
+.m-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 0 0 0.5px rgba(0, 0, 0, 0.05);
+}
+
+.m-range::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.m-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.m-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.m-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.m-volume .m-range {
+  flex: 1;
+  min-width: 60px;
+}
+
+.m-volume-value {
+  width: 3ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.62;
+  font-size: 12px;
+}
+
+.m-tap {
+  position: relative;
+  overflow: hidden;
+  min-width: 64px;
+  font-weight: 500;
+}
+
+.m-tap-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--accent);
+  opacity: 0;
+  animation: m-tap 0.35s ease-out;
+  pointer-events: none;
+}
+
+.m-tap-ring:first-child:only-child {
+  animation-name: m-tap;
+}
+
+@keyframes m-tap {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.m-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  background: var(--accent-fill);
+  color: #fff;
+  font-weight: 600;
+  min-width: 96px;
+  height: 30px;
+  transition:
+    background 0.15s,
+    transform 0.08s;
+}
+
+.m-play:hover:not(:disabled) {
+  background: var(--accent);
+}
+
+.m-play:active {
+  transform: scale(0.97);
+}
+
+/* Running, it stays the page's one accent button and says Stop: the label
+   and the square are the state. Turned into black (white in dark) it read
+   as another control appearing in the Start button's place. */
+.m-play.on {
+  background: var(--accent-fill);
+}
+
+.m-play.large {
+  height: 40px;
+  min-width: 140px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.m-play.round {
+  width: 64px;
+  height: 64px;
+  min-width: 0;
+  border-radius: 50%;
+  padding: 0;
+  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.m-play.round.on {
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.5);
+}
+
+.m-play.round svg {
+  margin-left: 2px;
+}
+
+.m-play.round.on svg {
+  margin-left: 0;
+}
+
+.m-sound-select {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.m-sound-select select {
+  width: 150px;
+}
+
+/* A pop-up button (Popup): the browser's arrow off, the page's chevrons on,
+   inset from the right as the text is from the left. */
+.m-popup {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.m-popup select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-left: 9px;
+  padding-right: 26px;
+}
+
+.m-popup-mark {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.m-sound-cards {
+  display: grid;
+  gap: 6px;
+}
+
+.m-sound-cards button {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid transparent;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.m-sound-cards button.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.m-signatures {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.m-sig-chips {
+  display: grid;
+  gap: 5px;
+}
+
+.m-sig {
+  min-width: 0;
+  height: 38px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.m-sig.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.m-sig.other {
+  font-size: 12px;
+}
+
+.m-fraction {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.m-fraction span:first-child {
+  border-bottom: 1.5px solid currentColor;
+  padding: 0 2px 1px;
+  margin-bottom: 1px;
+}
+
+.m-sig-custom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+/* In a narrow column (Orbit's, four chips across) the beats, "beats of"
+   and the notes still stand on one line: the stepper and the segments a
+   little tighter, rather than the notes dropping to a line of their own. */
+.m-signatures.narrow .m-sig-custom {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.m-signatures.narrow .m-sig-custom .m-stepper {
+  gap: 4px;
+}
+
+.m-signatures.narrow .m-sig-custom > .muted {
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+/* The notes take what the line has left, so they end flush with the chips
+   above rather than a point past the column. */
+.m-signatures.narrow .m-units {
+  flex: 1;
+  min-width: 0;
+}
+
+.m-signatures.narrow .m-units button {
+  padding: 3px 0;
+}
+
+.m-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  padding: 7px 0;
+  border-top: 1px solid var(--border);
+}
+
+.m-row:first-child {
+  border-top: none;
+}
+
+.m-row-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.m-row-label small {
+  font-size: 11px;
+}
+
+.m-row-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.m-row.stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.m-row.stacked .m-row-control {
+  flex: auto;
+}
+
+.m-row.stacked .m-segmented {
+  width: 100%;
+}
+
+.m-row.stacked .m-sound-select .m-popup {
+  flex: 1;
+}
+
+.m-row.stacked .m-sound-select select {
+  width: 100%;
+}
+
+/* The help tag (tip.ts): small, raised, after a rest. */
+.m-tip {
+  position: fixed;
+  z-index: 10;
+  max-width: 240px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: var(--raised);
+  border: 0.5px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+  font-size: 11px;
+  line-height: 1.35;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.m-tip.shown {
+  opacity: 1;
+}
+
+/* Increase Contrast: rules, fields and quiet words a step stronger. */
+@media (prefers-contrast: more) {
+  :root {
+    --border: rgba(128, 128, 128, 0.6);
+    --card: rgba(128, 128, 128, 0.16);
+  }
+
+  .muted,
+  .m-volume-value {
+    opacity: 0.85;
+  }
+}
+
+/* Reduce Motion (motion.ts says why the beat is still shown): the shared
+   controls' own movement — the press that scales, the tap's wash. */
+@media (prefers-reduced-motion: reduce) {
+  .m-play:active {
+    transform: none;
+  }
+
+  .m-tap-ring {
+    animation: none;
+  }
+
+  .m-switch,
+  .m-switch span {
+    transition: none;
+  }
+}
+
+/* A short tab — Lumi's update banner over Settings, or a smaller window —
+   is about 505 points under the tab bar where a bare window is 566. Below
+   545 the shared rows and the big tempo draw a little tighter, so the
+   themes fit without scrolling; above it they keep the room they were
+   approved with. */
+@media (max-height: 545px) {
+  .m-row {
+    min-height: 38px;
+    padding: 5px 0;
+  }
+
+  .m-stepper.big .m-bpm {
+    font-size: 40px;
+    line-height: 1.1;
+  }
+
+  .m-stepper.big .m-icon-button {
+    width: 32px;
+    height: 32px;
+  }
+}

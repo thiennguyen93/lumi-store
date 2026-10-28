@@ -1,0 +1,248 @@
+/* The Orbit theme. */
+
+/* The dial and its column, centred in the height the tab leaves them and
+   as large as the width allows; the keys stand at the foot. Top-aligned
+   at 300 pt, a third of the tab was empty under them. */
+.dial {
+  /* The dial as large as the tab's height leaves room for — the page is
+     the height of what is under Lumi's tab bar, so vh is that — between
+     260 and the 330 it was drawn at. */
+  --dial-size: clamp(260px, calc(100vh - 180px), 330px);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 12px 2px 10px;
+}
+
+.dial-main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--dial-size) minmax(0, 1fr);
+  align-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.dial-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.dial-svg {
+  width: var(--dial-size);
+  height: var(--dial-size);
+  cursor: grab;
+  touch-action: none;
+}
+
+.dial-svg:active {
+  cursor: grabbing;
+}
+
+.dial-svg:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.dial-num {
+  font-size: 11px;
+  font-weight: 500;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: CanvasText;
+  fill-opacity: 0.45;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  transition: fill-opacity 0.3s;
+}
+
+.dial-num.accent {
+  font-weight: 700;
+  fill: var(--beat-accent);
+  fill-opacity: 0.9;
+}
+
+.dial-num.mute {
+  text-decoration: line-through;
+  fill-opacity: 0.3;
+}
+
+.dial-num.on {
+  fill-opacity: 1;
+  font-weight: 700;
+  transition: none;
+}
+
+.dial-track {
+  fill: none;
+  stroke: var(--card);
+  stroke-width: 18;
+}
+
+.dial-seg {
+  fill: none;
+  stroke: color-mix(in srgb, CanvasText 16%, transparent);
+  stroke-width: 14;
+  /* Square ends: each arc stops on a line through the centre, so two
+     beats meet at a straight cut (GAP in Dial.tsx). */
+  stroke-linecap: butt;
+  transition:
+    stroke 0.35s ease-out,
+    stroke-width 0.35s ease-out;
+}
+
+.dial-seg.accent {
+  stroke: color-mix(in srgb, var(--beat-accent) 45%, transparent);
+}
+
+/* A silent beat is its place in the ring and nothing in it: a thin line
+   along the ring's middle, an empty slot. (Dashed, with square ends, it
+   was a row of hatching.) */
+.dial-seg.mute {
+  stroke: color-mix(in srgb, CanvasText 22%, transparent);
+  stroke-width: 2;
+}
+
+.dial-seg.on {
+  stroke: var(--accent);
+  stroke-width: 18;
+  transition: none;
+  animation: dial-glow 0.4s ease-out;
+}
+
+.dial-seg.accent.on {
+  stroke: var(--beat-accent);
+}
+
+.dial-seg.mute.on {
+  stroke: color-mix(in srgb, CanvasText 45%, transparent);
+  stroke-width: 3;
+  animation: none;
+}
+
+@keyframes dial-glow {
+  from {
+    filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 90%, transparent));
+  }
+  to {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+.dial-trail {
+  fill: none;
+  stroke: CanvasText;
+  stroke-opacity: 0.35;
+  stroke-width: 3;
+  stroke-linecap: butt;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.dial-dot {
+  fill: #fff;
+  stroke: color-mix(in srgb, CanvasText 30%, transparent);
+  stroke-width: 1;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.dial-face {
+  fill: var(--raised);
+  stroke: var(--border);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+}
+
+.dial-center text {
+  text-anchor: middle;
+  fill: CanvasText;
+}
+
+.dial-marking {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  fill-opacity: 0.5;
+}
+
+.dial-bpm {
+  font-size: 58px;
+  font-weight: 250;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.dial-unit {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  fill-opacity: 0.45;
+}
+
+.dial-transport {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: -2px;
+}
+
+.m-icon-button.round {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.dial-hint {
+  margin: 0;
+}
+
+.dial-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dial-label {
+  font-weight: 500;
+}
+
+.dial-side .m-sound-select select {
+  width: 118px;
+}
+
+.dial-rows {
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.dial-rows .m-row:first-child {
+  border-top: none;
+}
+
+.dial-volume {
+  width: 150px;
+}
+
+
+/* Reduce Motion: the arcs light and fade in place — no glow spreading, no
+   hand going round (Dial.tsx). */
+@media (prefers-reduced-motion: reduce) {
+  .dial-seg,
+  .dial-seg.on,
+  .dial-num {
+    animation: none;
+    transition: none;
+  }
+
+  .dial-trail,
+  .dial-dot {
+    display: none;
+  }
+}

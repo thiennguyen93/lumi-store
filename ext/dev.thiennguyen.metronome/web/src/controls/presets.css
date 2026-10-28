@@ -1,0 +1,298 @@
+/* The page's foot (PresetMenu.tsx): ＋, the presets as a row of chips that
+   scrolls along when it is longer than the foot, the theme's pop-up and the
+   keys' help tag. One line, the height of a small button. */
+
+/* The page's frame (page/main.tsx): the theme's body scrolls when it is
+   taller than the tab, and the foot stays at the bottom with a hairline
+   over it, as a window's bottom bar does. */
+.m-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.m-page-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.m-footer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  padding: 7px 2px 9px;
+  border-top: 1px solid var(--border);
+}
+
+.m-presets {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.m-preset-add {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 12px;
+}
+
+/* With no preset yet, ＋ says what it does: the one time it cannot be
+   learned from the row beside it. */
+.m-preset-add.labelled {
+  width: auto;
+  padding: 0 10px 0 8px;
+}
+
+.m-preset-add[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.m-preset-add[aria-disabled="true"]:hover {
+  background: Canvas;
+}
+
+/* The row scrolls sideways with no bar drawn; its end fades where there is
+   more to see. */
+.m-preset-strip {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 0;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
+}
+
+.m-preset-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.m-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.m-chip-title {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.m-chip-facts {
+  font-size: 11px;
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The preset holding what is set now: the toolbar's "on" look. */
+.m-chip.on,
+.m-chip.on:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 16%, Canvas);
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.m-chip.on .m-chip-facts {
+  opacity: 0.8;
+}
+
+.m-chip.undo {
+  align-items: center;
+  border-style: dashed;
+  color: var(--accent-ink);
+  gap: 4px;
+}
+
+.m-chip-field {
+  flex: none;
+  width: auto;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 12px;
+  border-color: var(--accent);
+}
+
+.m-keys {
+  position: relative;
+  flex: none;
+}
+
+.m-keys-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-color: transparent;
+  background: none;
+  color: color-mix(in srgb, CanvasText 60%, transparent);
+}
+
+.m-keys-button:hover:not(:disabled),
+.m-keys-button.on {
+  background: var(--row-hover);
+  color: CanvasText;
+}
+
+/* The shortcuts, over the foot's right end: keys in caps on the left,
+   what each does on the right. */
+.m-shortcuts {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 5;
+  width: 260px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--raised);
+  border: 0.5px solid var(--border);
+  border-radius: 9px;
+  box-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.08),
+    0 10px 30px -6px rgba(0, 0, 0, 0.3);
+}
+
+.m-shortcuts strong {
+  font-size: 13px;
+}
+
+.m-shortcuts dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.m-shortcut {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.m-shortcut dt {
+  display: flex;
+  gap: 3px;
+}
+
+.m-shortcut dd {
+  margin: 0;
+  font-size: 12px;
+}
+
+.m-shortcut kbd {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid var(--border);
+  border-bottom-width: 1.5px;
+  border-radius: 4px;
+  background: Canvas;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* The theme's pop-up: macOS's own menu, sized to the foot's buttons. */
+.m-theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 12px;
+  opacity: 1;
+  flex: none;
+}
+
+.m-theme svg {
+  opacity: 0.6;
+}
+
+.m-theme .m-popup select {
+  width: auto;
+  height: 24px;
+  padding: 0 23px 0 9px;
+  font-size: 12px;
+}
+
+.m-theme .m-popup-mark {
+  right: 7px;
+}
+
+/* A chip's context menu, as macOS draws one: rows of one height, the row
+   under the pointer or the keyboard in the accent. */
+.m-menu {
+  position: fixed;
+  z-index: 5;
+  min-width: 210px;
+  padding: 5px;
+  background: var(--raised);
+  border: 0.5px solid var(--border);
+  border-radius: 9px;
+  box-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.08),
+    0 10px 30px -6px rgba(0, 0, 0, 0.3);
+}
+
+.m-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 24px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.m-menu-item:hover:not(:disabled),
+.m-menu-item:focus {
+  background: var(--accent-fill);
+  color: #fff;
+  outline: none;
+}
+
+.m-menu-item:disabled {
+  opacity: 0.35;
+}
+
+.m-menu-rule {
+  height: 1px;
+  margin: 5px 8px;
+  background: var(--border);
+}
