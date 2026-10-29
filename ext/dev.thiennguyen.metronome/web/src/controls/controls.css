@@ -171,6 +171,23 @@ body {
   min-width: 3ch;
 }
 
+/* The tempo typed in (a double-click on the number), in the number's own
+   box — its type is `.m-bpm`'s, its size set as it opens — so nothing
+   round it moves; ringed outside, as the box has no room for a border.
+   Never narrower than 300. */
+.m-stepper .m-bpm-field {
+  flex: none;
+  min-width: 3ch;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
 .m-stepper.big .m-icon-button {
   width: 36px;
   height: 36px;

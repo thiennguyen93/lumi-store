@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - 2026-10-29
+
+### Added
+
+- Type the tempo in: double-click the number, in any theme, type a tempo and press Return. Escape leaves it as it was, and ↑ and ↓ step what you typed (hold ⇧ for 10). In Orbit, Return on the ring does the same.
+
 ## [0.1.0] - 2026-10-29
 
 ### Added

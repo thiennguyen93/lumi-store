@@ -2,12 +2,12 @@
 // the variants differ in how the beat is drawn and how the controls are
 // laid out, not in what a switch or a stepper is.
 
-import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type SelectHTMLAttributes } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type SelectHTMLAttributes } from "react";
 import { ChevronsUpDown, Minus, Play, Plus, Square, Volume1, Volume2, VolumeX } from "lucide-react";
 import type { MetronomeApi } from "../engine/useMetronome";
 import { VOICES } from "../engine/sounds";
 import { SIGNATURES, SUBDIVISIONS } from "../engine/tempo";
-import type { Settings } from "../engine/metronome";
+import { clampBpm, type Settings } from "../engine/metronome";
 import { bpmStep, useShiftHeld } from "./shift";
 import "./tip";
 import "./controls.css";
@@ -138,13 +138,73 @@ export function BpmStep({ m, by, size = 14, className = "" }: { m: MetronomeApi;
   );
 }
 
+/** The tempo typed in where it is shown, opened by a double-click on the
+ *  number. Return or leaving the field sets it, 20 to 300 as every other
+ *  way of setting it; Escape leaves it as it was. Digits only, and the
+ *  arrows step what is typed (⇧ for ten), as they step the tempo outside
+ *  it. `onDone` is told whether the keyboard closed it, so focus goes back
+ *  only then and never away from what a click went to. */
+export function BpmField({ m, onDone, className = "", style }: { m: MetronomeApi; onDone(byKey: boolean): void; className?: string; style?: CSSProperties }) {
+  const [typed, setTyped] = useState(String(m.engine.settings.bpm));
+  const field = useRef<HTMLInputElement>(null);
+  const done = useRef(false);
+  useLayoutEffect(() => {
+    field.current?.focus();
+    field.current?.select();
+  }, []);
+  const finish = (keep: boolean, byKey: boolean) => {
+    if (done.current) return;
+    done.current = true;
+    if (keep && typed !== "") m.setBpm(Number(typed));
+    onDone(byKey);
+  };
+  return (
+    <input
+      ref={field}
+      className={`m-bpm-field ${className}`}
+      style={style}
+      value={typed}
+      inputMode="numeric"
+      maxLength={3}
+      aria-label="Tempo in beats a minute"
+      onChange={(event) => setTyped(event.target.value.replace(/\D/g, ""))}
+      onPointerDown={(event) => event.stopPropagation()}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") finish(true, true);
+        else if (event.key === "Escape") finish(false, true);
+        else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          event.preventDefault();
+          const by = (event.key === "ArrowUp" ? 1 : -1) * (event.shiftKey ? 10 : 1);
+          setTyped(String(clampBpm((Number(typed) || m.engine.settings.bpm) + by)));
+        }
+      }}
+      onBlur={() => finish(true, false)}
+    />
+  );
+}
+
 export function BpmStepper({ m, big = false }: { m: MetronomeApi; big?: boolean }) {
+  // The number's box, measured as the field opens, is the field's: nothing
+  // round it moves.
+  const [typing, setTyping] = useState<{ width: number; height: number } | null>(null);
   return (
     <div className={`m-stepper${big ? " big" : ""}`}>
       <BpmStep m={m} by={-1} size={big ? 18 : 14} />
-      <output className="m-bpm" aria-live="polite">
-        {m.s.bpm}
-      </output>
+      {typing ? (
+        <BpmField m={m} className="m-bpm" style={typing} onDone={() => setTyping(null)} />
+      ) : (
+        <output
+          className="m-bpm"
+          aria-live="polite"
+          data-tip="Double-click to type a tempo"
+          onDoubleClick={(event) => {
+            const { width, height } = event.currentTarget.getBoundingClientRect();
+            setTyping({ width, height });
+          }}
+        >
+          {m.s.bpm}
+        </output>
+      )}
       <BpmStep m={m} by={1} size={big ? 18 : 14} />
     </div>
   );

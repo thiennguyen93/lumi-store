@@ -2,7 +2,7 @@ A steady beat to practise with, right inside Lumi. Pick a tempo, a time signatur
 
 ## Set the beat
 
-- **Tempo** from 20 to 300 beats a minute: − and + (hold **⇧** for 10), the slider, the **←** and **→** keys, or tap it in with **Tap** or **T**.
+- **Tempo** from 20 to 300 beats a minute: − and + (hold **⇧** for 10), the slider, the **←** and **→** keys, a double-click on the number to type it in, or tap it in with **Tap** or **T**.
 - **Time signature**: 2/4, 3/4, 4/4, 5/4, 6/8, 7/8 and 12/8, or one of your own — any number of beats of half, quarter, eighth or sixteenth notes.
 - **Subdivision**: two, three or four clicks inside each beat.
 - **Accent** the first beat of every bar, louder and higher. With Beat Pads, accent any beat or leave it silent.

@@ -2,14 +2,15 @@
 // around it, a dot sweeping round once a bar, and each arc lighting as its
 // beat sounds. The circle is also the tempo knob — turned with the pointer,
 // or scrolled — with the tempo in its middle and Start under it, like a
-// practice app's.
+// practice app's. A double-click in the middle, or Return on the knob,
+// types the tempo in.
 
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { MetronomeApi } from "../engine/useMetronome";
 import { useNotes } from "../engine/useMetronome";
 import { useReducedMotion } from "../controls/motion";
 import { marking } from "../engine/tempo";
-import { BpmStep, PlayButton, Row, SignaturePicker, SoundSelect, SubdivisionPicker, Switch, TapButton, VolumeSlider } from "../controls/controls";
+import { BpmField, BpmStep, PlayButton, Row, SignaturePicker, SoundSelect, SubdivisionPicker, Switch, TapButton, VolumeSlider } from "../controls/controls";
 import "./dial.css";
 
 const SIZE = 300;
@@ -35,6 +36,8 @@ function arc(from: number, to: number, r = R): string {
 export function Dial({ m }: { m: MetronomeApi }) {
   const dot = useRef<SVGCircleElement>(null);
   const trail = useRef<SVGPathElement>(null);
+  const knob = useRef<SVGSVGElement>(null);
+  const [typing, setTyping] = useState(false);
   const [lit, setLit] = useState<{ beat: number; seq: number } | null>(null);
 
   const beats = m.s.beats;
@@ -97,6 +100,7 @@ export function Dial({ m }: { m: MetronomeApi }) {
               pointer: Tab reaches it, the arrows (⇧ for ten) move it — the
               page's own keys — and it says the tempo in words. */}
           <svg
+            ref={knob}
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             className="dial-svg"
             role="slider"
@@ -121,6 +125,15 @@ export function Dial({ m }: { m: MetronomeApi }) {
               m.setBpm(turn.bpm);
             }}
             onPointerUp={() => (turning.current = null)}
+            onDoubleClick={(event) => {
+              // Inside the face, where the number is; the ring stays a knob.
+              const box = event.currentTarget.getBoundingClientRect();
+              const r = (Math.hypot(event.clientX - (box.left + box.width / 2), event.clientY - (box.top + box.height / 2)) * SIZE) / box.width;
+              if (r < R - 34) setTyping(true);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && event.target === event.currentTarget) setTyping(true);
+            }}
             onWheel={(event) => {
             // macOS turns a scroll with Shift held into a sideways one, so
             // read whichever axis moved; Shift is ten a notch, as on −/+.
@@ -162,13 +175,27 @@ export function Dial({ m }: { m: MetronomeApi }) {
               <text x={C} y={C - 32} className="dial-marking">
                 {marking(m.s.bpm).toUpperCase()}
               </text>
-              <text x={C} y={C + 18} className="dial-bpm">
-                {m.s.bpm}
-              </text>
+              {!typing && (
+                <text x={C} y={C + 18} className="dial-bpm">
+                  {m.s.bpm}
+                </text>
+              )}
               <text x={C} y={C + 42} className="dial-unit">
                 BPM
               </text>
             </g>
+            {typing && (
+              <foreignObject x={C - 62} y={C - 26} width={124} height={54}>
+                <BpmField
+                  m={m}
+                  className="dial-bpm-field"
+                  onDone={(byKey) => {
+                    setTyping(false);
+                    if (byKey) knob.current?.focus();
+                  }}
+                />
+              </foreignObject>
+            )}
           </svg>
           <div className="dial-transport">
             <BpmStep m={m} by={-1} size={16} className="round" />
