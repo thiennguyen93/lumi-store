@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] - 2026-10-29
+
+### Fixed
+
+- In Orbit, the blue ring round the dial when it has the keyboard is whole again; its left side was cut off.
+
 ## [0.2.0] - 2026-10-29
 
 ### Added
