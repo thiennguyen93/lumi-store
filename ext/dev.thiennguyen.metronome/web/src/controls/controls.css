@@ -168,16 +168,32 @@ body {
 
 .m-stepper .m-bpm {
   font-size: 22px;
-  min-width: 3ch;
+}
+
+/* The tempo's readout as wide as its widest tempo, 300, laid under it and
+   never seen, whatever it shows: the −/+ beside it, and what follows them,
+   never move as the tempo gains or loses a figure. A width in ch guessed
+   it per theme, and Beat Pads' guess was a figure short. */
+.m-stepper output.m-bpm {
+  display: inline-grid;
+  min-width: 0;
+}
+
+.m-bpm > span {
+  grid-area: 1 / 1;
+}
+
+.m-bpm-widest {
+  visibility: hidden;
 }
 
 /* The tempo typed in (a double-click on the number), in the number's own
    box — its type is `.m-bpm`'s, its size set as it opens — so nothing
-   round it moves; ringed outside, as the box has no room for a border.
-   Never narrower than 300. */
+   round it moves (300 fits it, as the readout is 300's width); ringed
+   outside, as the box has no room for a border. */
 .m-stepper .m-bpm-field {
   flex: none;
-  min-width: 3ch;
+  min-width: 0;
   padding: 0;
   border: 0;
   border-radius: 6px;

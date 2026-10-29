@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3] - 2026-10-29
+
+### Fixed
+
+- Beat Pads: − and + and the tempo slider stay where they are as the tempo goes from two figures to three, from 99 to 100 or 20 to 250. In every theme the tempo now keeps the width of 300, the widest it can be.
+
 ## [0.2.2] - 2026-10-29
 
 ### Changed

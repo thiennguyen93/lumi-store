@@ -7,7 +7,7 @@ import { ChevronsUpDown, Minus, Play, Plus, Square, Volume1, Volume2, VolumeX } 
 import type { MetronomeApi } from "../engine/useMetronome";
 import { VOICES } from "../engine/sounds";
 import { SIGNATURES, SUBDIVISIONS } from "../engine/tempo";
-import { clampBpm, type Settings } from "../engine/metronome";
+import { clampBpm, MAX_BPM, type Settings } from "../engine/metronome";
 import { bpmStep, useShiftHeld } from "./shift";
 import "./tip";
 import "./controls.css";
@@ -202,7 +202,12 @@ export function BpmStepper({ m, big = false }: { m: MetronomeApi; big?: boolean 
             setTyping({ width, height });
           }}
         >
-          {m.s.bpm}
+          <span>{m.s.bpm}</span>
+          {/* Never seen: the widest tempo, under the one shown, holding the
+              readout at its width. */}
+          <span className="m-bpm-widest" aria-hidden="true">
+            {MAX_BPM}
+          </span>
         </output>
       )}
       <BpmStep m={m} by={1} size={big ? 18 : 14} />
