@@ -82,13 +82,17 @@ export function Pads({ m }: { m: MetronomeApi }) {
         <section>
           <h3>Subdivision</h3>
           <SubdivisionPicker m={m} />
-          <h3 className="pads-volume-head">Volume</h3>
-          <VolumeSlider m={m} />
         </section>
       </div>
 
+      {/* The volume is the sound's, so it trails Sound's heading. In a row
+          of its own under Subdivision it stood alone beside an empty half
+          of the signatures' column. */}
       <section>
-        <h3>Sound</h3>
+        <div className="pads-sound-head">
+          <h3>Sound</h3>
+          <VolumeSlider m={m} />
+        </div>
         <SoundCards m={m} columns={4} />
       </section>
     </div>

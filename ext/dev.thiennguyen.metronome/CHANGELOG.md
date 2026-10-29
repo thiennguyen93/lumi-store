@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2] - 2026-10-29
+
+### Changed
+
+- Beat Pads: the volume now sits at the end of the Sound heading, beside the sounds it sets, instead of in a row of its own. Time signature and Subdivision share one row.
+
 ## [0.2.1] - 2026-10-29
 
 ### Fixed

@@ -241,8 +241,29 @@
   gap: 20px;
 }
 
-.pads-volume-head {
-  margin-top: 12px !important;
+/* Subdivision as wide as its column, its right edge on the sounds' and the
+   volume's below it. */
+.pads-settings .m-segmented {
+  display: grid;
+  width: 100%;
+}
+
+/* Sound's heading, its volume at the trailing end. */
+.pads-sound-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+}
+
+.pads-sound-head h3 {
+  margin: 0;
+}
+
+.pads-sound-head .m-volume {
+  width: 220px;
+  height: 18px;
 }
 
 
