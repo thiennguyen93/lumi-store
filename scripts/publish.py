@@ -630,6 +630,25 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f"the panel {name} sets capturable, which only a window has — Lumi's captures leave every panel out already")
             if not isinstance(window["capturable"], bool):
                 fail(entry_id, f"the window {name}'s capturable = {window['capturable']!r} is not true or false")
+        # `manifest.rs`'s all-desktops rule (Lumi 1.65), same sentences: a
+        # panel's that stands on its own — not a window's, which has the
+        # desktop macOS gives it, and not one beside the selection or under
+        # its menu bar item, which goes when the person moves on — and a
+        # boolean. An older Lumi ignores the key, and the panel stays on the
+        # desktop it opened on.
+        for key in ("all-desktops", "all_desktops"):
+            if key not in window:
+                continue
+            if kind != "panel":
+                fail(entry_id, f"the window {name} sets all-desktops, which only a panel has — a window has the desktop macOS gives it")
+            elif position in ("selection", "menu-bar-item"):
+                fail(
+                    entry_id,
+                    f"the window {name} sets all-desktops, which a panel beside the selection or under its "
+                    "menu bar item does not have — it goes when the person moves on",
+                )
+            elif not isinstance(window[key], bool):
+                fail(entry_id, f"the panel {name}'s all-desktops = {window[key]!r} is not true or false")
         # `manifest.rs`'s remember-frame rule: every kind's, and a boolean —
         # Lumi refuses anything else as a manifest that does not parse.
         if "remember-frame" in window and not isinstance(window["remember-frame"], bool):

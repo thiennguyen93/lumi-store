@@ -83,6 +83,20 @@ class Copies(unittest.TestCase):
         self.assertIn("two windows answer to card-2", refusal("copies = 3" + clash))
 
 
+class AllDesktops(unittest.TestCase):
+    def test_a_panel_of_its_own_says_it(self):
+        check('kind = "panel"\nall-desktops = true')
+        check('kind = "panel"\nposition = "top-right"\nfocus = false\nall-desktops = false')
+        check('kind = "panel"\nall_desktops = true')
+
+    def test_a_window_and_a_tied_panel_have_none(self):
+        self.assertIn("only a panel has", refusal("all-desktops = true"))
+        self.assertIn("beside the selection", refusal('kind = "panel"\nposition = "selection"\nall-desktops = true'))
+
+    def test_it_is_true_or_false(self):
+        self.assertIn("is not true or false", refusal('kind = "panel"\nall-desktops = "yes"'))
+
+
 class RememberFrame(unittest.TestCase):
     def test_it_is_true_or_false(self):
         check("remember-frame = true")
