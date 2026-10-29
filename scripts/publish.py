@@ -678,6 +678,16 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f"the {what} {name} asks to be loaded ahead, which needs keep-alive = true — a page loaded ahead is a page kept")
             if window["preload"] is True and "preload" not in ext.get("capabilities", []):
                 fail(entry_id, f"the {what} {name} asks to be loaded ahead, which needs the preload capability — add it to capabilities")
+        # `manifest.rs`'s keep-sites rule (Lumi 1.65), same sentence: a kept
+        # page's alone, and true or false. An older Lumi ignores the key and
+        # blanks the sites as before.
+        for key in ("keep-sites", "keep_sites"):
+            if key not in window:
+                continue
+            if not isinstance(window[key], bool):
+                fail(entry_id, f"the {what} {name}'s keep-sites = {window[key]!r} is not true or false")
+            elif window[key] is True and window.get("keep-alive") is not True:
+                fail(entry_id, f"the {what} {name} asks to keep its sites while it is put away, which needs keep-alive = true — only a kept page has sites left to keep")
         # `manifest.rs`'s copies rule, same sentences: 2 to 32, never listed.
         if "copies" in window:
             copies = window["copies"]

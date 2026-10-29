@@ -115,6 +115,20 @@ class KeepAlive(unittest.TestCase):
         self.assertIn("one window's — leave copies out", refusal("copies = 3\nkeep-alive = true"))
 
 
+class KeepSites(unittest.TestCase):
+    def test_a_kept_page_keeps_its_sites(self):
+        check('kind = "panel"\nkeep-alive = true\nkeep-sites = true')
+        check("keep-alive = true\nkeep-sites = true")
+        check('kind = "panel"\nkeep-sites = false')
+
+    def test_without_keep_alive_it_is_refused(self):
+        self.assertIn("needs keep-alive = true", refusal('kind = "panel"\nkeep-sites = true'))
+        self.assertIn("needs keep-alive = true", refusal("keep-sites = true"))
+
+    def test_it_is_true_or_false(self):
+        self.assertIn("is not true or false", refusal('kind = "panel"\nkeep-alive = true\nkeep-sites = "yes"'))
+
+
 class SelectionWatch(unittest.TestCase):
     def manifest(self, capabilities: str, line: str):
         return tomllib.loads(
