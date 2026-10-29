@@ -83,6 +83,22 @@ class Copies(unittest.TestCase):
         self.assertIn("two windows answer to card-2", refusal("copies = 3" + clash))
 
 
+class AppName(unittest.TestCase):
+    def test_a_window_names_its_menu_bar_in_its_own_words(self):
+        check('app-name = "Notes"')
+        check('app-name = "  Ghi chú nhanh "')
+        check(f'app-name = "{"x" * publish.MAX_APP_NAME}"')
+
+    def test_a_panel_has_none(self):
+        self.assertIn("only a window has", refusal('kind = "panel"\napp-name = "Notes"'))
+
+    def test_it_is_one_line_of_something_and_short(self):
+        self.assertIn("empty app-name", refusal('app-name = "  "'))
+        self.assertIn("one line", refusal('app-name = "Two\\nlines"'))
+        self.assertIn("longer than 32", refusal(f'app-name = "{"x" * (publish.MAX_APP_NAME + 1)}"'))
+        self.assertIn("not text", refusal("app-name = 1"))
+
+
 class AllDesktops(unittest.TestCase):
     def test_a_panel_of_its_own_says_it(self):
         check('kind = "panel"\nall-desktops = true')
@@ -243,6 +259,60 @@ class Preload(unittest.TestCase):
         with self.assertRaises(SystemExit) as caught:
             publish.check_manifest("dev.you.thing", starts('"preload"', 'preload-default = "off"'))
         self.assertIn("is not true or false", str(caught.exception.code))
+
+
+class LongestRecording(unittest.TestCase):
+    """`longest-recording-minutes`: Lumi's `manifest.rs` refuses it without
+    a live source to record and outside 1 to 480 minutes, and so does the
+    store, so a package Lumi would refuse is never built."""
+
+    def starts(self, capabilities: str, line: str) -> dict:
+        return tomllib.loads(
+            BASE.replace('version = "1.0.0"', f'version = "1.0.0"\ncapabilities = [{capabilities}]\n{line}').format(fields="")
+        )
+
+    def test_a_live_source_starts_it_inside_its_bounds(self):
+        live = '"microphone", "keep-audio"'
+        for minutes in (1, 120, 480):
+            publish.check_manifest("dev.you.thing", self.starts(live, f"longest-recording-minutes = {minutes}"))
+        publish.check_manifest("dev.you.thing", self.starts('"system-audio", "keep-audio"', "longest-recording-minutes = 120"))
+        publish.check_manifest("dev.you.thing", self.starts(live, ""))
+
+    def test_it_needs_a_live_source(self):
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", self.starts('"speech"', "longest-recording-minutes = 120"))
+        self.assertIn("needs microphone or system-audio", str(caught.exception.code))
+
+    def test_it_is_a_whole_number_of_minutes_inside_its_bounds(self):
+        for wild in ("0", "481", "120.5", '"120"', "true"):
+            with self.assertRaises(SystemExit) as caught:
+                publish.check_manifest("dev.you.thing", self.starts('"microphone", "keep-audio"', f"longest-recording-minutes = {wild}"))
+            self.assertIn("it may be 1 to 480 minutes", str(caught.exception.code), wild)
+
+
+class MicrophoneUse(unittest.TestCase):
+    """`microphone-use`, `microphone-sites` and `offer` (Lumi 1.65): the
+    words Lumi's `manifest.rs` takes, its event under its own word, and the
+    site reader only beside the set it reads from — same sentences."""
+
+    def starts(self, capabilities: str, line: str = "") -> dict:
+        return tomllib.loads(
+            BASE.replace('version = "1.0.0"', f'version = "1.0.0"\ncapabilities = [{capabilities}]\n{line}').format(fields="")
+        )
+
+    def test_the_words_and_the_event_are_taken(self):
+        publish.check_manifest("dev.you.thing", self.starts('"microphone-use"', 'events = ["microphone-use"]'))
+        publish.check_manifest("dev.you.thing", self.starts('"microphone-use", "microphone-sites", "offer"'))
+
+    def test_the_event_needs_its_word(self):
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", self.starts('"speech", "microphone"', 'events = ["microphone-use"]'))
+        self.assertIn("needs the microphone-use capability", str(caught.exception.code))
+
+    def test_the_site_reader_stands_beside_the_set(self):
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", self.starts('"microphone-sites"'))
+        self.assertIn("declare microphone-use beside it", str(caught.exception.code))
 
 
 if __name__ == "__main__":

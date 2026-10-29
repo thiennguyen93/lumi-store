@@ -81,6 +81,7 @@ import subprocess
 import sys
 import tarfile
 import tomllib
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -145,6 +146,12 @@ CAPABILITIES = {
     # of the extension's own — with no `speech` needed, so the two sources
     # and `audio-levels` stand beside either.
     "speech", "microphone", "system-audio", "voices", "audio-levels", "keep-audio",
+    # Lumi 1.65: the `microphone-use` interface and event (which apps have a
+    # microphone open, never what they hear), `microphone-sites` (the site an
+    # app using one shows, by host — declared only beside `microphone-use`),
+    # and the `offer` interface (a line and a button Lumi draws, from a run
+    # nobody pressed, the press running one of the extension's commands).
+    "microphone-use", "microphone-sites", "offer",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -165,6 +172,8 @@ EVENTS = {
     # Lumi 1.61: the extension's own item in the menu bar shown or hidden on
     # its Permissions sheet — `menu-shown`'s twin.
     "menu-bar-item-shown": "menu-bar-item",
+    # Lumi 1.65: the apps using a microphone changing, the whole set each time.
+    "microphone-use": "microphone-use",
     # Lumi 1.45: loading the extension's panels ahead turned on or off on its
     # Permissions sheet.
     "preload-enabled": "preload",
@@ -196,6 +205,8 @@ PARAM_KINDS = {
 CHOICE_KINDS = {"select", "segmented", "multiselect"}
 # `manifest::MAX_COPIES`: the most copies one `[[window]]` may have.
 MAX_COPIES = 32
+# `manifest::MAX_APP_NAME`: the most characters a window's `app-name` holds.
+MAX_APP_NAME = 32
 # Lowercase only, as Lumi's `manifest::is_valid_id` is: the id is a
 # directory name on a case-insensitive filesystem, and a second spelling of
 # an installed id was a takeover of its directory.
@@ -447,6 +458,21 @@ def check_manifest(entry_id: str, manifest: dict):
         fail(entry_id, "voices are named from what speech hears: declare speech beside it")
     if "keep-audio" in declared and "microphone" not in declared and "system-audio" not in declared:
         fail(entry_id, "keep-audio keeps what the microphone or the system audio hears: declare one of them beside it")
+    # `manifest.rs`: the site an app using a microphone shows is asked of an
+    # app in the set `microphone-use` tells, and of no other.
+    if "microphone-sites" in declared and "microphone-use" not in declared:
+        fail(entry_id, "microphone-sites reads the site an app using a microphone shows: declare microphone-use beside it")
+    # `manifest.rs`'s `longest-recording-minutes`: where the person's longest
+    # recording starts — a whole number of minutes inside the bounds the
+    # Permissions sheet holds to (`manifest::RECORDING_MINUTES`), said only
+    # beside a source with no end of its own. Refused, not moved, as Lumi
+    # refuses it: what a developer wrote is what runs.
+    if "longest-recording-minutes" in ext or "longest_recording_minutes" in ext:
+        minutes = ext.get("longest-recording-minutes", ext.get("longest_recording_minutes"))
+        if "microphone" not in declared and "system-audio" not in declared:
+            fail(entry_id, "longest-recording-minutes says how long a recording runs, which needs microphone or system-audio — add one to capabilities")
+        if isinstance(minutes, bool) or not isinstance(minutes, int) or not 1 <= minutes <= 480:
+            fail(entry_id, f"longest-recording-minutes is {minutes!r}; it may be 1 to 480 minutes")
     for name in ext.get("events", []):
         if name not in EVENTS:
             fail(entry_id, f"unknown event {name!r} — Lumi sends {sorted(EVENTS)}")
@@ -630,6 +656,23 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f"the panel {name} sets capturable, which only a window has — Lumi's captures leave every panel out already")
             if not isinstance(window["capturable"], bool):
                 fail(entry_id, f"the window {name}'s capturable = {window['capturable']!r} is not true or false")
+        # `manifest.rs`'s app-name rule (Lumi 1.65), same sentences: a
+        # window's alone — a panel never brings Lumi's menu bar forward — and
+        # one line of 1 to 32 characters once trimmed. An older Lumi ignores
+        # the key, and its menu bar reads Lumi there.
+        if "app-name" in window:
+            app_name = window["app-name"]
+            if kind == "panel":
+                fail(entry_id, f"the panel {name} sets app-name, which only a window has: a panel never brings Lumi's menu bar forward")
+            elif not isinstance(app_name, str):
+                fail(entry_id, f"the window {name}'s app-name = {app_name!r} is not text")
+            elif not app_name.strip():
+                fail(entry_id, f"the window {name} sets an empty app-name")
+            # Rust's `char::is_control`: Unicode's Cc, a line break among them.
+            elif any(unicodedata.category(c) == "Cc" for c in app_name.strip()):
+                fail(entry_id, f"the window {name}'s app-name has to be one line")
+            elif len(app_name.strip()) > MAX_APP_NAME:
+                fail(entry_id, f"the window {name}'s app-name is longer than {MAX_APP_NAME} characters")
         # `manifest.rs`'s all-desktops rule (Lumi 1.65), same sentences: a
         # panel's that stands on its own — not a window's, which has the
         # desktop macOS gives it, and not one beside the selection or under
