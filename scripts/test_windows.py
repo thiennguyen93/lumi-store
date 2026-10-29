@@ -91,11 +91,14 @@ class RememberFrame(unittest.TestCase):
 
 
 class KeepAlive(unittest.TestCase):
-    def test_a_panels_alone_and_one_page(self):
+    # A window's as well as a panel's since Lumi 1.65.
+    def test_a_window_or_a_panel_and_one_page(self):
         check('kind = "panel"\nkeep-alive = true')
-        self.assertIn("only a panel has", refusal("keep-alive = true"))
-        self.assertIn("not true or false", refusal('kind = "panel"\nkeep-alive = "yes"'))
-        self.assertIn("leave copies out", refusal('kind = "panel"\ncopies = 3\nkeep-alive = true'))
+        check("keep-alive = true")
+        self.assertIn("the panel card's keep-alive = 'yes' is not true or false", refusal('kind = "panel"\nkeep-alive = "yes"'))
+        self.assertIn("the window card's keep-alive = 'yes' is not true or false", refusal('keep-alive = "yes"'))
+        self.assertIn("one panel's — leave copies out", refusal('kind = "panel"\ncopies = 3\nkeep-alive = true'))
+        self.assertIn("one window's — leave copies out", refusal("copies = 3\nkeep-alive = true"))
 
 
 class SelectionWatch(unittest.TestCase):
@@ -181,12 +184,16 @@ class Preload(unittest.TestCase):
     def granted(self, fields: str) -> None:
         publish.check_manifest("dev.you.thing", tomllib.loads(self.GRANTED.format(fields=fields)))
 
-    def test_a_kept_panels_with_its_permission(self):
+    # A window's as well as a panel's since Lumi 1.65.
+    def test_a_kept_window_or_panel_with_its_permission(self):
         self.granted('kind = "panel"\nkeep-alive = true\npreload = true')
+        self.granted("keep-alive = true\npreload = true")
         check('kind = "panel"\npreload = false')
-        self.assertIn("only a panel has", refusal("preload = true"))
-        self.assertIn("needs keep-alive", refusal('kind = "panel"\npreload = true'))
+        check("preload = false")
+        self.assertIn("the panel card asks to be loaded ahead, which needs keep-alive", refusal('kind = "panel"\npreload = true'))
+        self.assertIn("the window card asks to be loaded ahead, which needs keep-alive", refusal("preload = true"))
         self.assertIn("needs the preload capability", refusal('kind = "panel"\nkeep-alive = true\npreload = true'))
+        self.assertIn("needs the preload capability", refusal("keep-alive = true\npreload = true"))
 
     def test_its_event_needs_the_permission(self):
         heard = BASE.replace('version = "1.0.0"', 'version = "1.0.0"\nevents = ["preload-enabled"]')
