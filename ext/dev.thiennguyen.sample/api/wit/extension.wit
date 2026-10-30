@@ -1246,6 +1246,12 @@ interface ui {
     /// until `show-window` puts it back. Allowed wherever `post` is,
     /// `on-event` included, and costs no capability: it reaches only your
     /// own window. Added in Lumi 1.36.
+    ///
+    /// A window showing web pages stays where it is instead, see-through
+    /// and letting every click through, so its sites play on: one whose
+    /// window leaves the screen is told its page is hidden, and some stop
+    /// for that. `window-state` says `hidden` for it all the same (Lumi
+    /// 1.65.0).
     hide-window: func(name: string) -> result<bool, string>;
 
     /// Put back one of your windows `hide-window` took off screen: where it
