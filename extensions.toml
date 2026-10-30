@@ -142,3 +142,19 @@ web = "web"
 category = "Utilities"
 private = true
 follow = true
+
+
+# Floating Browser, a small browser over every app. First-party and closed
+# source, Screenshot's arrangement: a private repo, `update = none` in
+# .gitmodules, fetched with a read-only deploy key of its own
+# (FLOATING_BROWSER_DEPLOY_KEY) by scripts/fetch-private.sh. Its pages under
+# ui/ are plain HTML, so nothing is built beside the component. Needs Lumi
+# 1.67.0 (what a site plays, its artwork and `web/play`, on top of 1.65.0's
+# sites in a window and their new windows).
+[[extension]]
+id = "dev.thiennguyen.floating-browser"
+path = "ext/dev.thiennguyen.floating-browser"
+subdir = "."
+category = "Utilities"
+private = true
+follow = true
