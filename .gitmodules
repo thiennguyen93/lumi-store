@@ -18,3 +18,7 @@
 	path = ext/dev.thiennguyen.lunar-calendar
 	url = git@github.com:thiennguyen93/lumi-lunar-calendar.git
 	update = none
+[submodule "ext/dev.thiennguyen.floating-browser"]
+	path = ext/dev.thiennguyen.floating-browser
+	url = git@github.com:thiennguyen93/lumi-floating-browser.git
+	update = none

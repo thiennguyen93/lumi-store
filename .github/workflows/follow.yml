@@ -68,6 +68,7 @@ jobs:
           SELECTION_BAR_DEPLOY_KEY: ${{ secrets.SELECTION_BAR_DEPLOY_KEY }}
           LUNAR_CALENDAR_DEPLOY_KEY: ${{ secrets.LUNAR_CALENDAR_DEPLOY_KEY }}
           CLIPBOARD_DEPLOY_KEY: ${{ secrets.CLIPBOARD_DEPLOY_KEY }}
+          FLOATING_BROWSER_DEPLOY_KEY: ${{ secrets.FLOATING_BROWSER_DEPLOY_KEY }}
         run: python3 scripts/follow.py look >> "$GITHUB_OUTPUT"
 
   check:
@@ -97,6 +98,7 @@ jobs:
           SELECTION_BAR_DEPLOY_KEY: ${{ secrets.SELECTION_BAR_DEPLOY_KEY }}
           LUNAR_CALENDAR_DEPLOY_KEY: ${{ secrets.LUNAR_CALENDAR_DEPLOY_KEY }}
           CLIPBOARD_DEPLOY_KEY: ${{ secrets.CLIPBOARD_DEPLOY_KEY }}
+          FLOATING_BROWSER_DEPLOY_KEY: ${{ secrets.FLOATING_BROWSER_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
 
       - name: Toolchain
