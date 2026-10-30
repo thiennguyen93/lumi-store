@@ -767,19 +767,20 @@ def check_manifest(entry_id: str, manifest: dict):
             for side, points in sides.items():
                 if isinstance(points, bool) or not isinstance(points, (int, float)) or not points >= 0:
                     fail(entry_id, f"the panel {name}'s overhang{' ' + side if side else ''} is not a distance in points")
-        # `manifest.rs`'s arrow rule (Lumi 1.61), same sentences: a panel's
-        # under the menu bar item, cut into its glass, and never beside an
-        # overhang, whose band above it would share.
+        # `manifest.rs`'s arrow rule (Lumi 1.61; beside a window 1.67), same
+        # sentences: a panel's under the menu bar item or beside another
+        # window, cut into its glass, and never beside an overhang, whose
+        # band it would share.
         if "arrow" in window:
             arrow = window["arrow"]
             if not isinstance(arrow, bool):
                 fail(entry_id, f"the window {name}'s arrow = {arrow!r} is not true or false")
-            if arrow and (kind != "panel" or position != "menu-bar-item"):
-                fail(entry_id, f'the window {name} sets arrow, which only a panel at position = "menu-bar-item" has')
+            if arrow and (kind != "panel" or position not in ("menu-bar-item", "window")):
+                fail(entry_id, f'the window {name} sets arrow, which only a panel at position = "menu-bar-item" or "window" has')
             if arrow and material in ("", "clear"):
                 fail(entry_id, f'the panel {name} points an arrow, which is cut into its glass — give it a material other than "clear"')
             if arrow and "overhang" in window:
-                fail(entry_id, f"the panel {name} sets arrow and overhang; the arrow stands in the band above the panel, so leave overhang out")
+                fail(entry_id, f"the panel {name} sets arrow and overhang; the arrow stands in a band beside the panel, so leave overhang out")
         # `manifest.rs`'s title bar rule, same sentences.
         titlebar = str(window.get("titlebar", "")).strip()
         if titlebar == "unified" and kind == "panel":

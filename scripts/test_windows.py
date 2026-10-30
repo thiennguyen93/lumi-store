@@ -487,6 +487,11 @@ class BesideAnotherWindow(unittest.TestCase):
         for key in ("remember-frame = true", "restore = true", "copies = 4"):
             self.assertIn("beside another of the extension's windows", beside_pill_refusal(f'anchor = {{ window = "pill" }}\n{key}'))
 
+    def test_it_may_point_an_arrow_cut_into_its_glass(self):
+        beside_pill('anchor = { window = "pill" }\nmaterial = "popover"\narrow = true')
+        self.assertIn("cut into its glass", beside_pill_refusal('anchor = { window = "pill" }\narrow = true'))
+        self.assertIn("leave overhang out", beside_pill_refusal('anchor = { window = "pill" }\nmaterial = "popover"\narrow = true\noverhang = 10'))
+
     def test_the_window_is_its_positions_alone(self):
         self.assertIn('only a panel at position = "window"', refusal('kind = "panel"\nposition = "selection"\nanchor = { window = "card" }'))
         self.assertIn("only a panel has", refusal('position = "window"'))
