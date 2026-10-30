@@ -1263,6 +1263,29 @@ interface ui {
     /// Lumi 1.36.
     show-window: func(name: string) -> result<bool, string>;
 
+    /// `show-window`, on the display your window `beside` stands on now:
+    /// the window comes back at the place it had on its own display — as
+    /// far from the same edges — held inside that one. On the same display,
+    /// or with `beside` not on screen, it is `show-window`. For a window
+    /// stepped aside in favour of a smaller one the person can carry to
+    /// another display, which it should come back beside. `false` for a
+    /// window `hide-window` did not take away. Both are names your manifest
+    /// declares. Added in Lumi 1.65.0.
+    show-window-on: func(name: string, beside: string) -> result<bool, string>;
+
+    /// `open-window`, on the display your window `beside` stands on now: a
+    /// window that opens where it was left (`remember-frame`) opens at that
+    /// place carried there — as far from the same edges, held inside — and
+    /// one that opens at a corner or in the middle opens at that one of this
+    /// display; one that opens at the pointer or a selection opens there,
+    /// as ever. One already up is focused where it stands, as `open-window`
+    /// does; with `beside` not on screen, or on the same display, it is
+    /// `open-window`. For a smaller window that stands in for a bigger one —
+    /// opened as the bigger one is put away — and should appear where the
+    /// person was looking. Both are names your manifest declares. Added in
+    /// Lumi 1.65.0.
+    open-window-on: func(name: string, beside: string) -> result<_, string>;
+
     /// Bring up Lumi's Settings on this extension's own Settings tab — a
     /// panel's "Settings…". Only for something the person did. Added in 0.3.
     open-settings: func() -> result<_, string>;

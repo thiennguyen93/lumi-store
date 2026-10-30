@@ -861,6 +861,50 @@ pub fn show_window(name: &str) -> Result<bool, String> {
     lumi::ext::ui::show_window(name)
 }
 
+/// [`show_window`], on the display your window `beside` stands on now: the
+/// window comes back at the place it had on its own display — as far from
+/// the same edges — held inside that one. On the same display, or with
+/// `beside` not on screen, it is [`show_window`]. For a window stepped aside
+/// in favour of a smaller one the person can carry to another display — a
+/// browser minimized to a pill — which should come back where that one is:
+///
+/// ```no_run
+/// // The pill pressed: the browser back on the pill's display, the pill gone.
+/// lumi_extension_api::show_window_on("browser", "pill")?;
+/// lumi_extension_api::close_window("pill")?;
+/// # Ok::<(), String>(())
+/// ```
+///
+/// `false` for a window [`hide_window`] did not take away, which does not
+/// move. Both are names your manifest declares. Works from
+/// [`Guest::on_event`]. Needs Lumi 1.65.0 or later.
+pub fn show_window_on(name: &str, beside: &str) -> Result<bool, String> {
+    lumi::ext::ui::show_window_on(name, beside)
+}
+
+/// [`open_window`], on the display your window `beside` stands on now. A
+/// window that opens where it was left (`remember-frame`) opens at that place
+/// carried to this display — as far from the same edges, held inside — and
+/// one that opens at a corner or in the middle opens at that one of this
+/// display; one that opens at the pointer or a selection opens there, as
+/// ever. For a smaller window standing in for a bigger one, opened as the
+/// bigger one is put away — a browser minimized to a pill — which should
+/// appear on the display the person was looking at:
+///
+/// ```no_run
+/// // Minimize: the pill on the browser's display, then the browser away.
+/// lumi_extension_api::open_window_on("pill", "browser")?;
+/// lumi_extension_api::hide_window("browser")?;
+/// # Ok::<(), String>(())
+/// ```
+///
+/// One already up is focused where it stands, as [`open_window`] does; with
+/// `beside` not on screen, or on the same display, it is [`open_window`].
+/// Both are names your manifest declares. Needs Lumi 1.65.0 or later.
+pub fn open_window_on(name: &str, beside: &str) -> Result<(), String> {
+    lumi::ext::ui::open_window_on(name, beside)
+}
+
 /// Bring up Lumi's Settings on your extension's Settings tab — for a
 /// "Settings…" in one of your windows. Only for a press.
 pub fn open_settings() -> Result<(), String> {
