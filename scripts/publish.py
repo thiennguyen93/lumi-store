@@ -258,7 +258,8 @@ MAX_SHEETS = 4
 # `ext::manifest`'s MAX_FOLDERS, MAX_FOLDER_NAME and MAX_FOLDER_LABEL.
 # `ext::manifest::PanelPosition::parse`'s words.
 PANEL_POSITIONS = (
-    "", "cursor", "center", "top-left", "top-right", "bottom-left", "bottom-right", "selection", "menu-bar-item"
+    "", "cursor", "center", "top-left", "top-right", "bottom-left", "bottom-right", "selection", "menu-bar-item",
+    "window",
 )
 MAX_FOLDERS = 8
 MAX_FOLDER_NAME = 64
@@ -577,7 +578,7 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(
                 entry_id,
                 f'the panel {name} asks for position {position!r}; a panel opens at "cursor", "center", '
-                '"top-left", "top-right", "bottom-left", "bottom-right", "selection" or "menu-bar-item"',
+                '"top-left", "top-right", "bottom-left", "bottom-right", "selection", "menu-bar-item" or "window"',
             )
         # `manifest.rs`'s rule for a panel under the extension's own item in
         # the menu bar (Lumi 1.61): what a click on that item opens, so it
@@ -590,21 +591,35 @@ def check_manifest(entry_id: str, manifest: dict):
                 "menu-bar-item capability — add it to capabilities",
             )
         # `manifest.rs`'s anchor rule (Lumi 1.47; side "pointer" 1.48): a
-        # panel beside the selection's, or under the menu bar item's (Lumi
-        # 1.61), its words or nothing, same sentences. Under the item it is
-        # an edge alone: there is no side above the menu bar.
+        # panel beside the selection's, under the menu bar item's (Lumi
+        # 1.61), or beside another of its windows' (Lumi 1.66), its words or
+        # nothing, same sentences. Under the item it is an edge alone: there
+        # is no side above the menu bar. Beside a window it names the window,
+        # which no other position has, and goes above or below it.
+        beside_window = position == "window" and kind == "panel"
+        anchor = window.get("anchor", {}) if beside_window else window.get("anchor")
+        if beside_window:
+            named = str(anchor.get("window", "")).strip() if isinstance(anchor, dict) else ""
+            if not named:
+                fail(entry_id, f'the panel {name} opens beside another window and names none; add anchor = {{ window = "…" }}')
+        elif isinstance(anchor, dict) and str(anchor.get("window", "")).strip():
+            fail(entry_id, f'the window {name} sets anchor window, which only a panel at position = "window" has')
         if "anchor" in window:
-            anchor = window["anchor"]
-            if position not in ("selection", "menu-bar-item") or kind != "panel":
+            if position not in ("selection", "menu-bar-item", "window") or kind != "panel":
                 fail(
                     entry_id,
-                    f'the window {name} sets an anchor, which only a panel at position = "selection" or '
-                    '"menu-bar-item" has',
+                    f'the window {name} sets an anchor, which only a panel at position = "selection", '
+                    '"menu-bar-item" or "window" has',
                 )
-            if not isinstance(anchor, dict) or not set(anchor) <= {"at", "side"}:
+            if not isinstance(anchor, dict) or not set(anchor) <= {"at", "side", "window"}:
                 fail(entry_id, f"the panel {name}'s anchor is a table of at and side")
             at = str(anchor.get("at", "")).strip()
             side = str(anchor.get("side", "")).strip()
+            if beside_window:
+                if at not in ("", "start", "end", "center", "pointer"):
+                    fail(entry_id, f'the panel {name} asks for anchor at {at!r}; a panel beside a window stands at "start", "end", "center" or "pointer"')
+                if side not in ("", "above", "below"):
+                    fail(entry_id, f'the panel {name} asks for anchor side {side!r}; a panel beside a window goes "above" or "below"')
             if under_item:
                 if side:
                     fail(
@@ -630,12 +645,11 @@ def check_manifest(entry_id: str, manifest: dict):
         # `manifest.rs`'s rule for a panel beside the selection (Lumi 1.47),
         # and under the menu bar item (Lumi 1.61): it has no place of its
         # own, so no key about one, same sentence.
-        if position in ("selection", "menu-bar-item") and kind == "panel":
-            opens, placed_by = (
-                ("beside the selection", "the selection")
-                if position == "selection"
-                else ("under the extension's item in the menu bar", "that item")
-            )
+        if position in ("selection", "menu-bar-item", "window") and kind == "panel":
+            opens, placed_by = {
+                "selection": ("beside the selection", "the selection"),
+                "window": ("beside another of the extension's windows", "that window"),
+            }.get(position, ("under the extension's item in the menu bar", "that item"))
             for key in ("remember-frame", "restore", "copies"):
                 if key in window and window[key] not in (False, None):
                     fail(
@@ -802,6 +816,22 @@ def check_manifest(entry_id: str, manifest: dict):
             if one in answering:
                 fail(entry_id, f"two windows answer to {one}")
             answering.add(one)
+    # `manifest.rs`'s rule for a panel beside another of its windows (Lumi
+    # 1.66): the window it names is one the manifest declares, and not
+    # itself, same sentences.
+    for window in manifest.get("window", []):
+        if str(window.get("position", "")).strip() != "window":
+            continue
+        if (str(window.get("kind", "")).strip() or "window") != "panel":
+            continue
+        own = window.get("name", "")
+        beside = str((window.get("anchor") or {}).get("window", "")).strip()
+        copies = window.get("copies")
+        own_names = [f"{own}-{k}" for k in range(1, copies + 1)] if isinstance(copies, int) else [own]
+        if beside in own_names:
+            fail(entry_id, f"the panel {own} stands beside itself; anchor window names another window")
+        if beside not in answering:
+            fail(entry_id, f"the panel {own} stands beside {beside!r}, which the manifest declares no window as")
     # `manifest.rs`'s rule that one item opens one panel (Lumi 1.61): a
     # second would leave which one a click opens to the order they are listed
     # in, same sentence.

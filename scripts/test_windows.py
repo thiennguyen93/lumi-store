@@ -427,6 +427,71 @@ class UnderTheMenuBarItem(unittest.TestCase):
         self.assertIn("both open under the extension's item", under_item_refusal(second))
 
 
+BESIDE_BASE = """
+[extension]
+id = "dev.you.thing"
+name = "Thing"
+version = "1.0.0"
+
+[[command]]
+name = "open"
+label = "Open"
+
+[[window]]
+name = "pill"
+path = "pill.html"
+kind = "panel"
+position = "bottom-right"
+
+[[window]]
+name = "menu"
+path = "menu.html"
+kind = "panel"
+position = "window"
+{fields}
+"""
+
+
+def beside_pill(fields: str) -> None:
+    publish.check_manifest("dev.you.thing", tomllib.loads(BESIDE_BASE.format(fields=fields)))
+
+
+def beside_pill_refusal(fields: str) -> str:
+    with unittest.TestCase().assertRaises(SystemExit) as caught:
+        beside_pill(fields)
+    return str(caught.exception.code)
+
+
+class BesideAnotherWindow(unittest.TestCase):
+    """`position = "window"` (Lumi 1.66): a panel's word that names another
+    window the manifest declares and never itself, an edge and above or
+    below for its anchor, and no place of its own — `manifest.rs`'s
+    refusals, same sentences."""
+
+    def test_a_panel_may_stand_beside_another_window(self):
+        beside_pill('anchor = { window = "pill" }')
+        beside_pill('anchor = { window = "pill", at = "end", side = "above" }')
+        beside_pill('anchor = { window = "pill", at = "center", side = "below" }\nfocus = false')
+
+    def test_it_names_a_window_the_manifest_declares_and_not_itself(self):
+        self.assertIn("names none", beside_pill_refusal(""))
+        self.assertIn("names none", beside_pill_refusal('anchor = { at = "end" }'))
+        self.assertIn("declares no window as", beside_pill_refusal('anchor = { window = "nope" }'))
+        self.assertIn("beside itself", beside_pill_refusal('anchor = { window = "menu" }'))
+
+    def test_it_goes_above_or_below(self):
+        self.assertIn('goes "above" or "below"', beside_pill_refusal('anchor = { window = "pill", side = "pointer" }'))
+        self.assertIn("beside a window stands at", beside_pill_refusal('anchor = { window = "pill", at = "middle" }'))
+
+    def test_it_has_no_place_of_its_own(self):
+        for key in ("remember-frame = true", "restore = true", "copies = 4"):
+            self.assertIn("beside another of the extension's windows", beside_pill_refusal(f'anchor = {{ window = "pill" }}\n{key}'))
+
+    def test_the_window_is_its_positions_alone(self):
+        self.assertIn('only a panel at position = "window"', refusal('kind = "panel"\nposition = "selection"\nanchor = { window = "card" }'))
+        self.assertIn("only a panel has", refusal('position = "window"'))
+
+
 class PanelFloor(unittest.TestCase):
     """A panel's floor is a panel's (`PANEL_*_MIN`, Lumi 1.47): a one-row
     panel may say how small it can be made; a window keeps its own floor."""
