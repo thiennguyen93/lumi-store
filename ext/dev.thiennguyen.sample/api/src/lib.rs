@@ -57,8 +57,9 @@
 //! asked about — `screen` for Screen Recording, [`menu`] needs `menu`,
 //! [`timers`] and [`schedules`] need `timers`, [`time_zone`] needs
 //! `time-zone`, [`text_input`] needs `text-input` — and works only from the
-//! `text-input` run, the one told a key — and [`front_app`] needs
-//! `front-app`. `alert`, `settings`, `profiles`, [`storage`],
+//! `text-input` run, the one told a key —, [`front_app`] needs
+//! `front-app`, [`microphone_use`] needs `microphone-use` — its `sites`
+//! `microphone-sites` too — and [`offer`] needs `offer`. `alert`, `settings`, `profiles`, [`storage`],
 //! [`owner`] and [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
@@ -560,6 +561,20 @@ pub mod transcribe {
         wit::prepare(language, speakers)
     }
 
+    /// [`status`] for a recording heard among `languages` (none for any),
+    /// as a `Request` with those `languages` is: Apple Speech, which hears
+    /// one language at a time, counts only when there is one. Ask it with
+    /// the list you will start with. Lumi 1.65.0 or later.
+    pub fn status_for(languages: &[&str], speakers: Speakers) -> Result<Readiness, String> {
+        wit::status_for(&languages.iter().map(|l| l.to_string()).collect::<Vec<_>>(), speakers)
+    }
+
+    /// [`prepare`] for a recording heard among `languages`: the model Lumi
+    /// offers hears them all. Only from a press. Lumi 1.65.0 or later.
+    pub fn prepare_for(languages: &[&str], speakers: Speakers) -> Result<Readiness, String> {
+        wit::prepare_for(&languages.iter().map(|l| l.to_string()).collect::<Vec<_>>(), speakers)
+    }
+
     /// Hear a recording in your storage (`Source::Blob`) and wait for the
     /// whole transcript — for a command, with no window to stream into.
     /// Only from a press.
@@ -574,6 +589,15 @@ pub mod transcribe {
         wit::start(request)
     }
 
+    /// [`start`], going on from the voices of `previous`, an earlier
+    /// recording of yours: a voice heard there keeps its label, a new one is
+    /// numbered after them. Live, with speakers told apart, and within ten
+    /// minutes of `previous` ending; otherwise as [`start`]. The `started`
+    /// event says `continues` when it went on. Only from a press.
+    pub fn start_after(request: &Request, previous: u64) -> Result<u64, Failure> {
+        wit::start_after(request, previous)
+    }
+
     /// Stop recording `id`: what was said up to now is still heard, and its
     /// transcript told. False when no recording of yours has it.
     pub fn stop(id: u64) -> Result<bool, String> {
@@ -584,6 +608,18 @@ pub mod transcribe {
     /// False when no recording of yours has it.
     pub fn cancel(id: u64) -> Result<bool, String> {
         wit::cancel(id)
+    }
+
+    /// Go on hearing live recording `id` with `model` — an id from
+    /// [`models`], or the person's default for `None` — without stopping
+    /// it. The model hearing now goes on until the new one is ready, then
+    /// every utterance after is the new model's; your windows hear
+    /// `switched`. Answers the model hearing now. Refused, the model before
+    /// goes on: [`FailureKind::Unprepared`] for one that cannot hear now,
+    /// [`FailureKind::Declined`] where the person kept the voice on this
+    /// Mac. Only from a press.
+    pub fn switch(id: u64, model: Option<&str>) -> Result<Model, Failure> {
+        wit::switch(id, model)
     }
 }
 
@@ -609,7 +645,7 @@ pub mod transcribe {
 pub mod voices {
     use super::lumi::ext::voices as wit;
 
-    pub use wit::{Answer, Voice};
+    pub use wit::{Answer, HeldVoice, Voice};
 
     /// The voices you keep, in the order they were remembered.
     pub fn list() -> Result<Vec<Voice>, String> {
@@ -627,6 +663,16 @@ pub mod voices {
         wit::remember(recording, label, name)
     }
 
+    /// The voices of `recording`, one of yours, that [`remember`] could take
+    /// now — each with how much of it Lumi keeps and whether that is
+    /// `enough` — so you offer to save a voice only where it would work.
+    /// Empty once Lumi keeps nothing of the recording: ten minutes after it
+    /// ended, when your windows closed, or when Lumi restarted. Lumi 1.65.0
+    /// or later.
+    pub fn held(recording: u64) -> Result<Vec<HeldVoice>, String> {
+        wit::held(recording)
+    }
+
     /// Call voice `id` `name`. False when you keep no such voice. Only from
     /// a press.
     pub fn rename(id: &str, name: &str) -> Result<bool, String> {
@@ -637,6 +683,76 @@ pub mod voices {
     /// you keep no such voice.
     pub fn forget(id: &str) -> Result<bool, String> {
         wit::forget(id)
+    }
+}
+
+/// Recordings made into files of your own: what Lumi hears, compressed and
+/// written as an M4A blob in your storage when the recording ends. Needs the
+/// `keep-audio` capability, beside `microphone` or `system-audio` — and
+/// nothing of `speech`; [`longest_minutes`](recordings::longest_minutes) and
+/// [`set_longest_minutes`](recordings::set_longest_minutes) need only the
+/// source, since they cap a transcription too.
+pub mod recordings {
+    use super::lumi::ext::recordings as wit;
+
+    pub use super::lumi::ext::transcribe::{Failure, FailureKind, Playing};
+    pub use wit::{Kept, Request, Source};
+
+    /// Record what `request` hears, answering at once the id of the blob it
+    /// becomes in your [`storage`](super::storage) once it ends — an M4A
+    /// file, yours to read, play from `/__lumi__/blob/<id>`, save, write
+    /// into a folder or delete like any blob. Your pages hear
+    /// `recording-started`, `level` where asked, and `recorded` or
+    /// `recording-failed` (`lumi:recordings`). It records until you stop it,
+    /// the person stops it from the menu bar, it reaches `max_seconds` or the
+    /// person's longest recording, no page of yours is left, the Mac sleeps
+    /// or locks, or you are switched off. One recording at a time, a transcription included. Costs
+    /// `keep-audio` and the source's own word. Only from a press.
+    pub fn start(request: &Request) -> Result<String, Failure> {
+        wit::start(*request)
+    }
+
+    /// Stop recording `id`, keeping what it heard. False when it is not
+    /// going.
+    pub fn stop(id: &str) -> Result<bool, String> {
+        wit::stop(id)
+    }
+
+    /// Stop recording `id` and keep nothing of it. False when it is not
+    /// going.
+    pub fn cancel(id: &str) -> Result<bool, String> {
+        wit::cancel(id)
+    }
+
+    /// Keep what live transcription `recording` — a `transcribe::start` id —
+    /// hears, on the transcript's own clock, answering at once the ids of the
+    /// blobs it becomes when the transcription ends: [`Kept::audio`], every
+    /// stream mixed into one channel, and for a call [`Kept::sides`], its
+    /// two sides apart in a file of two channels — the microphone in the
+    /// first, what the Mac played in the second. Call it in the same run as
+    /// the start. Refused for a transcription that is not yours, not live or
+    /// over. Only from a press.
+    pub fn keep(recording: u64) -> Result<Kept, String> {
+        wit::keep(recording)
+    }
+
+    /// How long a live recording of yours may run, in minutes — this
+    /// module's and a live `transcribe::start` alike: one number kept by
+    /// Lumi, starting at your manifest's `longest-recording-minutes` (30
+    /// where it says none), that the Longest recording field on your
+    /// Permissions sheet and [`set_longest_minutes`] both move. Your pages
+    /// hear `lumi:longest-recording` whenever it moves. Needs `microphone`
+    /// or `system-audio`, not `keep-audio`. Lumi 1.65.0.
+    pub fn longest_minutes() -> Result<u32, String> {
+        wit::longest_minutes()
+    }
+
+    /// Set your longest recording, 1 to 480 minutes — for a Longest
+    /// recording in your own settings. A recording already going keeps the
+    /// length it started with. Needs `microphone` or `system-audio`. Lumi
+    /// 1.65.0.
+    pub fn set_longest_minutes(minutes: u32) -> Result<(), String> {
+        wit::set_longest_minutes(minutes)
     }
 }
 
@@ -947,7 +1063,7 @@ pub fn preload_enabled() -> Result<bool, String> {
 }
 
 /// Turn loading ahead on or off — the switch [`preload_enabled`] reads, for a
-/// "Load when Lumi starts" in your own settings. On, your panels are loaded
+/// "Start when Lumi opens" in your own settings. On, your panels are loaded
 /// ahead now; off, a page loaded ahead and not opened yet is let go. From any
 /// run but an uninstall. Needs the `preload` capability, and is refused for an
 /// extension none of whose panels says `preload`. Needs Lumi 1.45.0 or later.
@@ -1004,8 +1120,10 @@ pub fn set_position(name: &str, position: &str) -> Result<(), String> {
 /// selection and places the panel against the part of it named. For a panel
 /// at `position = "menu-bar-item"`, `at` is which of the item's edges it
 /// lines up with, and `side` `"below"` or `""` — it always goes below (Lumi
-/// 1.61.0). A panel at any other position is refused. Needs Lumi 1.47.0 or
-/// later — say so with `min-lumi-version`.
+/// 1.61.0). For a panel at `position = "window"`, `at` is which of the other
+/// window's edges it lines up with and `side` `"above"` or `"below"`; the
+/// window stays the manifest's (Lumi 1.66.0). A panel at any other position
+/// is refused. Needs Lumi 1.47.0 or later — say so with `min-lumi-version`.
 pub fn set_anchor(name: &str, at: &str, side: &str) -> Result<(), String> {
     lumi::ext::ui::set_anchor(name, at, side)
 }
@@ -2008,6 +2126,16 @@ pub mod menu_bar_item {
         pub icon: Option<String>,
         pub text: Option<String>,
         pub tooltip: Option<String>,
+        /// A loop for the icon to play: [`Item::frames`].
+        pub frames: Option<Frames>,
+    }
+
+    /// A loop for the item's icon: its frames in order, each spelled as
+    /// [`Item::icon`] is, and how many a second.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Frames {
+        pub icons: Vec<String>,
+        pub per_second: u8,
     }
 
     impl Item {
@@ -2043,17 +2171,45 @@ pub mod menu_bar_item {
             self.tooltip = Some(tooltip.to_string());
             self
         }
+
+        /// Play the icon as a loop, to show that something is going on:
+        /// `icons` in order, each spelled as [`Item::icon`] is, `per_second`
+        /// of them a second — 2 to 24 frames, 1 to 12 a second. Lumi plays
+        /// it with nothing asked of you per frame, and draws [`Item::icon`]
+        /// still while Reduce Motion is on (the first frame without one). An
+        /// item set again with the same frames and other text keeps the loop
+        /// going where it was. Needs Lumi 1.65.0.
+        pub fn frames(mut self, icons: &[&str], per_second: u8) -> Self {
+            self.frames = Some(Frames {
+                icons: icons.iter().map(|icon| icon.to_string()).collect(),
+                per_second,
+            });
+            self
+        }
     }
 
     /// Draw your item, or change it. The same item again is no change, so
     /// you may set it from every run — an event that may or may not have
     /// changed what it shows.
+    ///
+    /// An item with [`Item::frames`] plays them (`set-animated`); one
+    /// without stops a loop set before.
     pub fn set(item: &Item) -> Result<(), String> {
-        wit::set(&wit::Item {
+        let still = wit::Item {
             icon: item.icon.clone(),
             text: item.text.clone(),
             tooltip: item.tooltip.clone(),
-        })
+        };
+        match &item.frames {
+            Some(frames) => wit::set_animated(
+                &still,
+                &wit::Frames {
+                    icons: frames.icons.clone(),
+                    per_second: frames.per_second,
+                },
+            ),
+            None => wit::set(&still),
+        }
     }
 
     /// Take your item out of the menu bar.
@@ -2508,6 +2664,176 @@ pub mod front_app {
         let value: serde_json::Value = serde_json::from_str(payload).ok()?;
         let text = |field: &str| value.get(field).and_then(serde_json::Value::as_str).map(str::to_string);
         Some(App { id: text("app"), name: text("name"), at: value.get("at")?.as_u64()? })
+    }
+}
+
+/// Which apps are using a microphone now — every process capturing from any
+/// input device, named by the app responsible for it (a browser for its tabs,
+/// an app for its helpers), one entry per app. Lumi itself is never in it.
+/// What an app does with the microphone is not told: a call, dictation and a
+/// voice memo look the same, and what a use means is yours to decide.
+///
+/// Read it with [`apps`]. Hear it with `events = ["microphone-use"]` to be
+/// told the whole set whenever it changes — and once as it stands when your
+/// extension starts hearing — read with [`changed`]: always the whole set,
+/// never a change, so compare it with the last you were told.
+///
+/// Needs the `microphone-use` capability, macOS 14 and Lumi 1.65.0; say so
+/// with `min-lumi-version`.
+///
+/// ```ignore
+/// fn on_event(name: String, payload: String) -> Result<(), String> {
+///     if let Some(apps) = lumi::microphone_use::changed(&name, &payload) {
+///         for app in &apps {
+///             // app.id, app.name, app.since
+///         }
+///     }
+///     Ok(())
+/// }
+/// ```
+pub mod microphone_use {
+    use super::lumi::ext::microphone_use as wit;
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name the set arrives
+    /// as.
+    pub const EVENT: &str = "microphone-use";
+
+    /// One app using a microphone.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct AppUsing {
+        /// Its bundle id — `None` for a process that has none.
+        pub id: Option<String>,
+        /// The name macOS shows for it, or its process's name.
+        pub name: String,
+        /// When Lumi first saw it using a microphone this time, in
+        /// milliseconds since the Unix epoch.
+        pub since: u64,
+    }
+
+    /// Every app using a microphone now, by name.
+    pub fn apps() -> Result<Vec<AppUsing>, String> {
+        Ok(wit::apps()?
+            .into_iter()
+            .map(|app| AppUsing { id: app.app, name: app.name, since: app.since })
+            .collect())
+    }
+
+    /// The hosts of the web pages the windows of `app` show now — the
+    /// window in front first, at most 16 — for `app`, a bundle id from
+    /// [`apps`], while it is using a microphone; refused for any other.
+    /// Hosts only, never a path or a title. Needs the `microphone-sites`
+    /// capability, declared beside `microphone-use`.
+    pub fn sites(app: &str) -> Result<Vec<String>, String> {
+        wit::sites(app)
+    }
+
+    /// The whole set, when [`Guest::on_event`](crate::Guest::on_event) was
+    /// called with it.
+    pub fn changed(name: &str, payload: &str) -> Option<Vec<AppUsing>> {
+        if name != EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        value
+            .get("apps")?
+            .as_array()?
+            .iter()
+            .map(|app| {
+                Some(AppUsing {
+                    id: app.get("app").and_then(serde_json::Value::as_str).map(str::to_string),
+                    name: app.get("name")?.as_str()?.to_string(),
+                    since: app.get("since")?.as_u64()?,
+                })
+            })
+            .collect()
+    }
+}
+
+/// An offer: one line of your words and one button, drawn by Lumi at the top
+/// right of the display, whose press runs one of your `[[command]]`s as the
+/// person's press — the one way a run nobody pressed, an event or a timer,
+/// puts something in front of the person. Lumi decides where and for how
+/// long (15 seconds, held while the pointer is over it), puts it away on its
+/// ✕, its button, its time or [`withdraw`], and limits how often you may ask.
+///
+/// The command's params carry `"offer": {"id", "data"}` beside its declared
+/// defaults — [`pressed`] reads them — `data` handed back exactly as you gave
+/// it.
+///
+/// Needs the `offer` capability and Lumi 1.65.0. The person may turn it off
+/// on your Permissions sheet; [`allowed`] says whether they have.
+///
+/// ```ignore
+/// let offer = lumi::offer::Offer {
+///     text: "Your timer is up.".into(),
+///     command: "again".into(),
+///     button: Some("Again".into()),
+///     data: None,
+///     after: 0,
+/// };
+/// if lumi::offer::show(&offer).is_err() {
+///     lumi::alert("Your timer is up.")?;
+/// }
+/// ```
+pub mod offer {
+    use super::lumi::ext::offer as wit;
+
+    /// What to offer.
+    #[derive(Debug, Clone, PartialEq, Eq, Default)]
+    pub struct Offer {
+        /// One line, at most 120 characters.
+        pub text: String,
+        /// One of your `[[command]]`s, by name: what the button runs.
+        pub command: String,
+        /// The button's label, at most 24 characters; `None` for the
+        /// command's own label.
+        pub button: Option<String>,
+        /// At most 256 bytes, handed back to the command as it was.
+        pub data: Option<String>,
+        /// Milliseconds to wait before it shows, at most 10000.
+        pub after: u32,
+    }
+
+    /// What the button press hands the command it runs.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Pressed {
+        /// What [`show`] answered.
+        pub id: u64,
+        /// The data you gave, as you gave it.
+        pub data: Option<String>,
+    }
+
+    /// Show `offer`, replacing yours that is up or waiting. Answers its id.
+    pub fn show(offer: &Offer) -> Result<u64, String> {
+        wit::show(&wit::Offer {
+            text: offer.text.clone(),
+            command: offer.command.clone(),
+            button: offer.button.clone(),
+            data: offer.data.clone(),
+            after: offer.after,
+        })
+    }
+
+    /// Take back offer `id`, up or waiting; true when it was still there.
+    pub fn withdraw(id: u64) -> Result<bool, String> {
+        wit::withdraw(id)
+    }
+
+    /// Whether the person lets you offer from the background — the switch
+    /// on your Permissions sheet.
+    pub fn allowed() -> Result<bool, String> {
+        wit::allowed()
+    }
+
+    /// The offer a command's run was pressed from, read from the run's
+    /// `params` — `None` for a run that came from anywhere else.
+    pub fn pressed(params: &str) -> Option<Pressed> {
+        let value: serde_json::Value = serde_json::from_str(params).ok()?;
+        let offer = value.get("offer")?;
+        Some(Pressed {
+            id: offer.get("id")?.as_u64()?,
+            data: offer.get("data").and_then(serde_json::Value::as_str).map(str::to_string),
+        })
     }
 }
 

@@ -627,7 +627,12 @@ interface transcribe {
     record request {
         source: source,
         /// BCP 47 ids, most likely first ("vi", "en-GB"); none to let the
-        /// model tell.
+        /// model tell. Several, from Lumi 1.65.0, are heard among them —
+        /// each utterance in the one it was said in, where the model tells
+        /// them apart (Lumi's own models, and online ones that take several);
+        /// a model that takes one language is left to tell for itself, and
+        /// Apple Speech, which hears one at a time, is passed over. Ask
+        /// `status-for` with the same list. At most eight.
         languages: list<string>,
         /// `provider:model` from `models`, or none for the person's default.
         model: option<string>,
@@ -680,6 +685,9 @@ interface transcribe {
         heard: heard,
         /// The language it was heard in, where the model says.
         language: option<string>,
+        /// Who said it, where speakers are told apart. On a partial it is a
+        /// guess from what was heard of the utterance so far, which its
+        /// final answers.
         speaker: option<speaker>,
         /// Empty unless `request.words` asked and the model gave them.
         words: list<word>,
@@ -717,7 +725,9 @@ interface transcribe {
         model-name: string,
         place: place,
         /// Why the model asked for did not run, and which one did, in a
-        /// sentence for the person. None when it ran as asked.
+        /// sentence for the person — and, for a model that hears only its
+        /// own languages, that the language spoken is not one of them
+        /// (it ran anyway). None when it ran as asked and hears it.
         fell-back: option<string>,
         /// The model that told the speakers apart, when one did.
         speakers-model: option<string>,
@@ -779,6 +789,16 @@ interface transcribe {
     /// is installed or they said no. Only from a press.
     prepare: func(language: string, speakers: speakers) -> result<readiness, string>;
 
+    /// `status` for a recording heard among `languages` (or any, when
+    /// empty), as a request with those `languages` is: a model that hears
+    /// one language at a time — Apple Speech — counts for one language
+    /// only. Since Lumi 1.65.0.
+    status-for: func(languages: list<string>, speakers: speakers) -> result<readiness, string>;
+
+    /// `prepare` for a recording heard among `languages`: the model Lumi
+    /// offers hears them all. Only from a press. Since Lumi 1.65.0.
+    prepare-for: func(languages: list<string>, speakers: speakers) -> result<readiness, string>;
+
     /// Hear a recording from storage and wait for the whole transcript: for
     /// a command, which has no window to stream into. A blob only. Only from
     /// a press.
@@ -791,6 +811,19 @@ interface transcribe {
     /// from a press.
     start: func(request: request) -> result<u64, failure>;
 
+    /// `start`, going on from the voices of `previous`, an earlier recording
+    /// of this extension's: a voice heard there keeps its label, and a new
+    /// one is numbered after them, so one meeting heard as several
+    /// recordings — after the longest recording, a pause, the Mac asleep —
+    /// labels its people alike in all. Only for a live source with speakers
+    /// told apart, and only while Lumi keeps `previous`'s voices: for ten
+    /// minutes after it ended — stopped, cut at the longest recording or the
+    /// Mac gone away — while your pages are open, and told apart by the same
+    /// speakers model. Otherwise it starts as `start` does. The `started`
+    /// event says `continues` with `previous`'s id when it went on. Only
+    /// from a press.
+    start-after: func(request: request, previous: u64) -> result<u64, failure>;
+
     /// Stop recording `id`: what was said up to now is still heard, and its
     /// transcript told. False when no recording of yours has that id.
     stop: func(id: u64) -> result<bool, string>;
@@ -798,6 +831,17 @@ interface transcribe {
     /// Throw recording `id` away: nothing more of it is heard or told.
     /// False when no recording of yours has that id.
     cancel: func(id: u64) -> result<bool, string>;
+
+    /// Go on hearing live recording `id` with `model` — an id from `models`,
+    /// or the person's default for none — without stopping it: the model
+    /// hearing now goes on until the new one is ready (asked about first
+    /// where it hears online), then every utterance after is the new
+    /// model's, and the one being said finishes on the model before. Your
+    /// windows hear `switched`. Answers the model hearing now; the model it
+    /// already has answers at once. Refused — `unprepared` for a model that
+    /// cannot hear now, `declined` where the person kept the voice on this
+    /// Mac — the model before goes on. Only from a press.
+    switch: func(id: u64, model: option<string>) -> result<model, failure>;
 }
 
 /// The voices this extension asked Lumi to remember, which a recording with
@@ -844,6 +888,24 @@ interface voices {
     /// press.
     remember: func(recording: u64, label: u32, name: string) -> result<answer, string>;
 
+    /// A voice of a recording that Lumi still keeps seconds of.
+    record held-voice {
+        /// The speaker's label in the recording.
+        label: u32,
+        /// How much of the voice is kept, in milliseconds: at most ten
+        /// seconds, its longest stretches.
+        ms: u32,
+        /// Enough to `remember`.
+        enough: bool,
+    }
+
+    /// The voices of `recording`, one of yours, that `remember` could take
+    /// now: before anybody presses, so a Save Voice Profile is offered only
+    /// where it would work. Empty once Lumi keeps nothing of it — ten
+    /// minutes after it ended, when your pages closed, when Lumi restarted —
+    /// or where it did not tell speakers apart. Since Lumi 1.65.0.
+    held: func(recording: u64) -> result<list<held-voice>, string>;
+
     /// Call voice `id` `name`. False when there is no such voice. Only from
     /// a press.
     rename: func(id: string, name: string) -> result<bool, string>;
@@ -851,6 +913,106 @@ interface voices {
     /// Forget voice `id`: its print, its seconds and its name. False when
     /// there is no such voice.
     forget: func(id: string) -> result<bool, string>;
+}
+
+/// Recordings made into files of this extension's own. Lumi hears a source
+/// — the microphone, what the Mac plays, or both, as a call — compresses it,
+/// and when the recording ends writes it as an M4A file among your blobs,
+/// under the id it answered when the recording began. From then on it is an
+/// ordinary blob: read it with `storage.blob-read`, play it in a page from
+/// `/__lumi__/blob/<id>` (which answers ranges, so an `<audio>` can seek),
+/// save it where the person chooses with `storage.blob-save`, write it into a
+/// folder with `folders.write`, delete it with `storage.blob-delete`. It
+/// counts in your storage like every blob. Every function costs
+/// `keep-audio` but the two about your longest recording, which any
+/// extension hearing a live source asks; recording needs nothing of
+/// `speech`.
+interface recordings {
+    use transcribe.{playing, failure};
+
+    /// What a recording hears: the microphone, the system audio —
+    /// everything the Mac plays, or one app the person picks in Lumi's
+    /// panel, and you are never told which — or both, as a call's two sides.
+    variant source {
+        microphone,
+        system-audio(playing),
+        call(playing),
+    }
+
+    /// A recording to make of what Lumi hears, and nothing more: no words
+    /// heard, no model, nothing sent anywhere.
+    record request {
+        source: source,
+        /// The longest it may be, in seconds; none to record until it is
+        /// stopped. Never longer than your longest recording — the
+        /// person's, on your Permissions sheet, starting at your manifest's
+        /// `longest-recording-minutes` — nor than one blob holds.
+        max-seconds: option<u32>,
+        /// How loud it is, told to your pages as it is heard (`level` on
+        /// `lumi:recordings`) with this many frequency bands — 0 for the
+        /// loudness alone, at most 16; none for nothing of it. Costs
+        /// `audio-levels`.
+        levels: option<u8>,
+    }
+
+    /// Record what `request` hears: answers, straight away, the id of the
+    /// blob it becomes once it ends — keep it with whatever the recording
+    /// belongs to. Lumi may still ask the person which app, or about the
+    /// microphone, and your pages hear `recording-started` once it hears. It
+    /// records until you stop it, the person stops it from the menu bar, it
+    /// reaches `max-seconds` or your longest recording, no page of
+    /// yours is left, the Mac sleeps or locks, or you are switched off; your
+    /// pages hear `recorded` once the blob is written, or `recording-failed`.
+    /// One recording of yours at a time, a transcription included — to keep
+    /// a transcription's audio, `keep` it. Costs the source's own word too:
+    /// `microphone`, `system-audio`, both for a call. Only from a press.
+    start: func(request: request) -> result<string, failure>;
+
+    /// Stop recording `id`, keeping what it heard. False when it is not
+    /// going.
+    stop: func(id: string) -> result<bool, string>;
+
+    /// Stop recording `id` and keep nothing of it. False when it is not
+    /// going.
+    cancel: func(id: string) -> result<bool, string>;
+
+    /// The files a kept transcription becomes, by blob id.
+    record kept {
+        /// What was heard, every stream mixed into one channel: the file to
+        /// play anywhere and to hand out.
+        audio: string,
+        /// For a call, its two sides apart in a file of two channels — the
+        /// microphone in the first, what the Mac played in the second —
+        /// for a player that treats them apart, muting one side say. None
+        /// for a source of one stream.
+        sides: option<string>,
+    }
+
+    /// Keep what live transcription `recording` — a `transcribe.start` id —
+    /// hears, from its first sample, until it ends, on the transcript's own
+    /// clock, so a line said 61.25 s in is 61.25 s into the file; answers the
+    /// ids of the blobs it becomes. Call it in the same run as the start.
+    /// Asked again for the same transcription, the same ids. Refused for one
+    /// that is not yours, not live — a file you had heard is yours already —
+    /// or over. Only from a press.
+    keep: func(recording: u64) -> result<kept, string>;
+
+    /// How long a live recording of yours may run, in minutes — a `start`
+    /// here and a live `transcribe.start` alike: one number, kept by Lumi,
+    /// starting at your manifest's `longest-recording-minutes` (30 where it
+    /// says none), that the Longest recording field on your Permissions
+    /// sheet and `set-longest-minutes` both move. Your pages hear
+    /// `lumi:longest-recording` whenever it moves, from either side. From
+    /// any run. Needs `microphone` or `system-audio`, not `keep-audio`.
+    /// Added in Lumi 1.65.0.
+    longest-minutes: func() -> result<u32, string>;
+
+    /// Set your longest recording, 1 to 480 minutes — for a Longest
+    /// recording in your own settings; the field on your Permissions sheet
+    /// reads it too. A recording already going keeps the length it
+    /// started with. From any run but an uninstall. Needs `microphone` or
+    /// `system-audio`. Added in Lumi 1.65.0.
+    set-longest-minutes: func(minutes: u32) -> result<_, string>;
 }
 
 /// The general pasteboard. Costs `clipboard`, both directions — and
@@ -1321,7 +1483,7 @@ interface ui {
     /// it. Added in Lumi 1.45.0.
     preload-enabled: func() -> result<bool, string>;
     /// Turn loading ahead on or off: the switch `preload-enabled` reads — for
-    /// a "Load when Lumi starts" in your own settings. On, your panels are
+    /// a "Start when Lumi opens" in your own settings. On, your panels are
     /// loaded ahead now; off, a page loaded ahead and not opened yet is let
     /// go. From any run but an uninstall. Needs the `preload` capability,
     /// and refused for an extension none of whose panels says `preload`.
@@ -1367,7 +1529,10 @@ interface ui {
     /// choose. Words only: Lumi still measures the selection and places the
     /// panel. For a panel at `position = "menu-bar-item"`, `at` is which of
     /// the item's edges it lines up with and `side` "below" or "" (Lumi
-    /// 1.61). A panel at any other position is refused. Added in Lumi 1.47.
+    /// 1.61). For a panel at `position = "window"`, `at` is which of the
+    /// other window's edges it lines up with and `side` "above" or "below";
+    /// the window stays the manifest's (Lumi 1.66). A panel at any other
+    /// position is refused. Added in Lumi 1.47.
     set-anchor: func(name: string, at: string, side: string) -> result<_, string>;
 
     /// Choose light or dark for one of your panels: "light", "dark", or
@@ -2204,12 +2369,32 @@ interface menu-bar-item {
     }
 
     /// Draw your item, or change it. It needs an icon, text, or both. The
-    /// same item again is no change, so you may set it from every run.
+    /// same item again is no change, so you may set it from every run. A
+    /// loop `set-animated` started stops, and `item.icon` is drawn still.
     set: func(item: item) -> result<_, string>;
+
+    /// A loop for the item's icon to play: its frames in order, each spelled
+    /// as `item.icon` is and drawn the same way, and how many a second. From
+    /// 2 to 24 frames, from 1 to 12 a second.
+    record frames {
+        icons: list<string>,
+        per-second: u8,
+    }
+
+    /// `set`, with the icon played as a loop — to show that something is
+    /// going on, never to show what: Lumi plays the frames on its own, with
+    /// nothing asked of you per frame. `item.icon` is the still frame, drawn
+    /// while Reduce Motion is on; without one, the first frame is. The same
+    /// item and frames again is no change, and an item set again with other
+    /// text keeps the loop going where it was, so you may set it from every
+    /// run. Kept until `set` or `clear`, or until Lumi quits: the item comes
+    /// back still after a restart, until you set the loop again. Added to
+    /// 0.3 in Lumi 1.65.0 without a new world version.
+    set-animated: func(item: item, frames: frames) -> result<_, string>;
     /// Take your item out of the menu bar.
     clear: func() -> result<_, string>;
     /// Whether your item shows: one switch, kept by Lumi, that your own
-    /// settings and the "Show its own item in the menu bar" switch on your
+    /// settings and the "Show its icon in the menu bar" switch on your
     /// Permissions sheet both move — `set-shown` from your side. Off, `set` goes on keeping your
     /// item, and it comes back as you left it when the switch is on again.
     /// Hear `"menu-bar-item-shown"` to be told when the person moves it.
@@ -2397,6 +2582,96 @@ interface time-zone {
     offset-at: func(at: u64) -> result<s32, string>;
 }
 
+/// Which apps are using a microphone now: every process capturing from any
+/// input device, named by the app responsible for it — a browser for its
+/// audio helper and its tabs, an app for its helpers — so one app is one
+/// entry however many of its processes capture. Lumi itself is never in
+/// it, its own recordings included. What an app does with the microphone
+/// is not told and not known: a call, dictation and a voice memo look the
+/// same, and deciding what a use means is the extension's.
+///
+/// Hear `microphone-use` (`events = ["microphone-use"]`) to be told the
+/// whole set whenever it changes: `{"v":1, "apps":[{"app", "name",
+/// "since"}], "at"}` — every app using a microphone then, by name, never a
+/// change, so a missed or merged event cannot leave an extension believing
+/// a use goes on. Told once too when the extension starts hearing it
+/// (installed, switched on, Lumi launched), whatever the set is then.
+/// Changes within a quarter of a second are told as one.
+///
+/// Needs the `microphone-use` capability: which apps somebody has a
+/// microphone open in is a diary of their calls. Needs macOS 14; below it
+/// every call is refused. Every call costs budget. Added to 0.3 in Lumi
+/// 1.65.0 without a new world version.
+interface microphone-use {
+    record app-using {
+        /// The app's bundle id; none for a process that has none.
+        app: option<string>,
+        /// The name macOS shows for it, or its process's name.
+        name: string,
+        /// When Lumi first saw it using a microphone this time, in
+        /// milliseconds since the Unix epoch.
+        since: u64,
+    }
+
+    /// Every app using a microphone now, by name.
+    apps: func() -> result<list<app-using>, string>;
+
+    /// The hosts of the web pages the windows of `app` show now — each
+    /// window's page as Accessibility gives it, the window in front first,
+    /// at most 16 — for `app`, a bundle id from `apps`, while it is using a
+    /// microphone; refused for any other app. Hosts only (`meet.example.com`),
+    /// never a path, a query or a title: which site, not which page. An app
+    /// that shows no web page answers none. Needs the `microphone-sites`
+    /// capability, declared beside `microphone-use`, and Lumi's
+    /// Accessibility grant.
+    sites: func(app: string) -> result<list<string>, string>;
+}
+
+/// An offer: one line of your words and one button, drawn by Lumi at the top
+/// right of the display — the press runs one of your `[[command]]`s as the
+/// person's press, so that run may open your windows. The one way a run
+/// nobody pressed — an event, a timer — puts something in front of the
+/// person. Lumi decides where and how long: up for 15 seconds, held while
+/// the pointer is over it, never taking the keyboard, put away by its own ✕,
+/// its button, its time running out, or `withdraw` — not by a press
+/// elsewhere. One card per extension (a new one replaces your last), at most
+/// three up from every extension together, the rest waiting their turn. You
+/// may show one at most every 5 seconds and six in 10 minutes.
+///
+/// The press runs `command` with `{"offer": {"id", "data"}}` in its params
+/// beside the defaults it declares: `id` what `show` answered, `data` what
+/// you gave, handed back as it was — never rendered, so `{{$…}}` in it stays
+/// as written.
+///
+/// Needs the `offer` capability. The person can turn it off on your
+/// Permissions sheet ("May ask you from the background"); `show` is then
+/// refused, and `allowed` says so. Every call costs budget. Added to 0.3 in
+/// Lumi 1.65.0 without a new world version.
+interface offer {
+    record offer {
+        /// One line, at most 120 characters: what you are offering.
+        text: string,
+        /// One of your `[[command]]`s, by name: what the button runs.
+        command: string,
+        /// The button's label, at most 24 characters; none for the
+        /// command's own label.
+        button: option<string>,
+        /// At most 256 bytes, handed back to the command as it was.
+        data: option<string>,
+        /// Milliseconds to wait before it shows, at most 10000; `withdraw`
+        /// within them and it never shows.
+        after: u32,
+    }
+
+    /// Show `offer`, replacing yours that is up or waiting. Answers its id.
+    show: func(offer: offer) -> result<u64, string>;
+    /// Take back offer `id`, up or waiting; true when it was still there.
+    withdraw: func(id: u64) -> result<bool, string>;
+    /// Whether the person lets you offer from the background — the switch
+    /// on your Permissions sheet.
+    allowed: func() -> result<bool, string>;
+}
+
 /// Typing through the extension: it stands between the keyboard and the
 /// text as a transducer — the keys of the word being typed in, how the text
 /// before the caret changes out. A way to type a language whose letters the
@@ -2499,6 +2774,7 @@ world extension {
     import ai;
     import transcribe;
     import voices;
+    import recordings;
     import clipboard;
     import alert;
     import open;
@@ -2518,6 +2794,8 @@ world extension {
     import timers;
     import schedules;
     import time-zone;
+    import microphone-use;
+    import offer;
     import text-input;
     import folders;
     import files;
@@ -2620,5 +2898,9 @@ world extension {
     /// `front-app` (Lumi 1.61.0, the `front-app` capability) is the app in
     /// front changing: `{"v":1, "app", "name", "at"}`, its bundle id — `null`
     /// for a process without one — and the name macOS shows for it.
+    ///
+    /// `microphone-use` (Lumi 1.65.0, the `microphone-use` capability) is
+    /// the apps using a microphone changing — the whole set each time; see
+    /// `microphone-use`.
     export on-event: func(name: string, payload: string) -> result<_, string>;
 }
