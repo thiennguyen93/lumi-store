@@ -1,0 +1,191 @@
+[
+ {
+  "version": "0.3.0",
+  "date": "2026-10-31",
+  "notes": "### Changed\n\n- The tempo counts the beat you hear, the time signature's bottom note: 7/8 at 132 is now 132 eighth notes a minute, where it was 264. Tapping along with the clicks sets the tempo they are at, and going from 4/4 to 6/8 keeps the clicks at the same speed. What you had set and your presets are carried over so they sound as they did, up to 300.\n- Allegro, Andante and the rest are judged in quarter notes, so 6/8 at 240 reads Moderato.\n\n### Fixed\n\n- A new tempo is heard from the next click. Going from 20 to 120 in 2/2 used to wait for the click already planned, seconds away.\n- Changing the clicks in a beat while it plays keeps the beat where it is: it is no longer struck again halfway through, and the rest of the beat falls on the new clicks.\n- Taking beats out of the bar while it plays lets the beat finish before the next bar's first beat, instead of accenting halfway through it.",
+  "notesSha256": "aab1ae43b6c7ad62cdc51daea806a4dd0d1d7f31f0a71ebe8f6bc7812dbf0638",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Tempo now counts the beat you hear",
+     "items": [
+      "Tempo counts the time signature's bottom note: 7/8 at 132 is now 132 eighth notes a minute",
+      "Tapping along with the clicks sets the tempo they are at, not double or half speed",
+      "Changing time signature keeps the clicks at the same speed: 4/4 to 6/8 sounds the same",
+      "Tempo markings like Allegro are judged in quarter notes, so 6/8 at 240 reads Moderato",
+      "A new tempo is heard from the next click, not after waiting for the one already planned",
+      "Changing clicks in a beat or taking beats out keeps the beat where it is"
+     ]
+    },
+    "vi": {
+     "headline": "Nhịp độ giờ đếm theo nhịp bạn nghe",
+     "items": [
+      "Nhịp độ đếm theo nốt dưới của nhịp: 7/8 ở 132 giờ là 132 nốt tám mỗi phút",
+      "Gõ theo tiếng click đặt nhịp độ đúng bằng tốc độ của chúng, không gấp đôi hay giảm nửa",
+      "Đổi nhịp giữ tốc độ click như cũ: từ 4/4 sang 6/8 nghe không đổi",
+      "Ký hiệu nhịp như Allegro được tính theo nốt tư, nên 6/8 ở 240 hiện Moderato",
+      "Nhịp độ mới được nghe từ tiếng click kế tiếp, không phải đợi tiếng đã định trước",
+      "Đổi số click trong nhịp hoặc bớt nhịp trong ô giữ nhịp đúng chỗ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.4",
+  "date": "2026-10-31",
+  "notes": "### Fixed\n\n- Your presets are no longer lost when the Metronome tab opens while Lumi is busy or Settings is behind another app. The tab waits for what you kept, instead of starting empty and saving that over it.\n- A change made while Settings is behind another app, such as turning Orbit's ring, is kept: it is sent again until Lumi takes it, instead of being dropped.",
+  "notesSha256": "b14acd321fb5455b7b1d35b22a6fc55566327853bae2a9d7f2a5066e326cf5a0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Your presets and changes are kept more reliably",
+     "items": [
+      "Your presets are no longer lost when the Metronome tab opens while Lumi is busy or Settings is hidden",
+      "Changes made while Settings is behind another app are now kept instead of being dropped"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt sẵn và thay đổi được giữ lại đáng tin cậy hơn",
+     "items": [
+      "Cài đặt sẵn không còn bị mất khi mở tab Metronome trong lúc Lumi đang bận hoặc cửa sổ Cài đặt bị che khuất",
+      "Thay đổi thực hiện khi cửa sổ Cài đặt bị che khuất giờ được giữ lại thay vì bị bỏ qua"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.3",
+  "date": "2026-10-29",
+  "notes": "### Fixed\n\n- Beat Pads: − and + and the tempo slider stay where they are as the tempo goes from two figures to three, from 99 to 100 or 20 to 250. In every theme the tempo now keeps the width of 300, the widest it can be.",
+  "notesSha256": "a947e63ae89fd386fd4235bc0272636026a7522711d873159a2f3004d7e0557b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Beat Pads layout stays steady as tempo changes",
+     "items": [
+      "Beat Pads controls no longer shift when tempo changes between 99 and 100 or 20 and 250"
+     ]
+    },
+    "vi": {
+     "headline": "Bố cục Beat Pads giữ nguyên khi nhịp độ thay đổi",
+     "items": [
+      "Các nút điều khiển Beat Pads không còn dịch chuyển khi nhịp độ chuyển từ 99 sang 100 hoặc 20 sang 250"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.2",
+  "date": "2026-10-29",
+  "notes": "### Changed\n\n- Beat Pads: the volume now sits at the end of the Sound heading, beside the sounds it sets, instead of in a row of its own. Time signature and Subdivision share one row.",
+  "notesSha256": "60151f62ad6db1c98c0d9df506dfdc63717ecb7a3433d666f024ba9ba422b4fb",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Tidier Beat Pads layout",
+     "items": [
+      "Beat Pads: volume moved next to the sounds it controls, time signature and subdivision now share a row"
+     ]
+    },
+    "vi": {
+     "headline": "Bố cục Beat Pads gọn gàng hơn",
+     "items": [
+      "Beat Pads: âm lượng được chuyển đến cạnh các âm thanh mà nó điều chỉnh, nhịp và phân nhịp giờ cùng một hàng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.1",
+  "date": "2026-10-29",
+  "notes": "### Fixed\n\n- In Orbit, the blue ring round the dial when it has the keyboard is whole again; its left side was cut off.",
+  "notesSha256": "f5970e4e1bd1e75707943b038a65224edc5af792181f96fa4a48290f2f9799e2",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed the keyboard focus ring in Orbit",
+     "items": [
+      "The blue ring around the dial when it has keyboard focus is whole again"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa vòng tròn lấy nét bàn phím trong Orbit",
+     "items": [
+      "Vòng tròn màu xanh quanh mặt số khi có lấy nét bàn phím đã trọn vẹn trở lại"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.0",
+  "date": "2026-10-29",
+  "notes": "### Added\n\n- Type the tempo in: double-click the number, in any theme, type a tempo and press Return. Escape leaves it as it was, and ↑ and ↓ step what you typed (hold ⇧ for 10). In Orbit, Return on the ring does the same.",
+  "notesSha256": "7856aafbae840427a514c62e6bc81e8d3c30d675a712082d656db1d98d28d064",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Type the tempo directly",
+     "items": [
+      "Double-click the tempo number to type a new value and press Return to set it",
+      "Press Escape to cancel or use arrow keys to adjust the typed value",
+      "Hold Shift with arrow keys to change by 10 instead of 1",
+      "In Orbit theme, press Return on the ring to start typing the tempo"
+     ]
+    },
+    "vi": {
+     "headline": "Nhập tempo trực tiếp",
+     "items": [
+      "Nhấp đúp vào số tempo để nhập giá trị mới và nhấn Return để đặt",
+      "Nhấn Escape để hủy hoặc dùng phím mũi tên để điều chỉnh giá trị đã nhập",
+      "Giữ Shift cùng phím mũi tên để thay đổi 10 đơn vị thay vì 1",
+      "Trong giao diện Orbit, nhấn Return trên vòng tròn để bắt đầu nhập tempo"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.0",
+  "date": "2026-10-29",
+  "notes": "### Added\n\n- A metronome in a tab of its own here in Lumi. Set the tempo from 20 to 300 beats a minute with − and + (hold ⇧ for 10), the slider, the arrow keys, or by tapping it in.\n- Time signatures from 2/4 to 12/8, or one of your own: any number of beats of half, quarter, eighth or sixteenth notes.\n- Subdivisions: two, three or four clicks inside each beat.\n- Eight sounds — Click, Woodblock, Beep, Wind-up, Cowbell, Hi-hat, Sticks and Clave — heard as you pick one when the metronome is stopped, and simply from the next click when it is playing.\n- An accent on the first beat, louder and higher. With Beat Pads, any beat can be accented or left silent.\n- Presets: save what is set now with one click and come back to it with another. Name one by double-clicking it; rename, replace or delete one from its menu, and undo a delete.\n- Four themes, chosen in the Settings tab or at the foot of the Metronome tab: Classic, a wind-up pendulum; Orbit, a ring; Beat Pads; and Simple.\n- Space starts and stops, T taps the tempo, and Reduce Motion and Increase Contrast are followed.",
+  "notesSha256": "d668e0cead8681633443772b066beaed89d32eda63666741ee2ff0d57b30eb8b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "A metronome to practise with",
+     "items": [
+      "Set the tempo from 20 to 300 beats per minute with buttons, a slider, arrow keys or by tapping",
+      "Choose a time signature from common ones or make your own with any number of beats",
+      "Add subdivisions of two, three or four clicks inside each beat",
+      "Pick from eight sounds and hear the first beat accented louder and higher",
+      "Save presets to return to your settings with one click, and name or organise them as you like",
+      "Switch between four themes: a pendulum, a ring, beat pads or a simple display"
+     ]
+    },
+    "vi": {
+     "headline": "Máy nhịp để luyện tập",
+     "items": [
+      "Đặt nhịp độ từ 20 đến 300 nhịp mỗi phút bằng nút, thanh trượt, phím mũi tên hoặc gõ nhịp",
+      "Chọn nhịp từ các loại phổ biến hoặc tự tạo với số phách bất kỳ",
+      "Thêm phân chia nhịp thành hai, ba hoặc bốn tiếng trong mỗi phách",
+      "Chọn từ tám âm thanh và nghe phách đầu nhấn mạnh to hơn, cao hơn",
+      "Lưu cài đặt sẵn để quay lại với một cú nhấp, đặt tên và sắp xếp theo ý muốn",
+      "Chuyển đổi giữa bốn giao diện: con lắc, vòng tròn, bảng phách hoặc hiển thị đơn giản"
+     ]
+    }
+   }
+  }
+ }
+]

@@ -1,0 +1,285 @@
+[
+ {
+  "version": "0.1.12",
+  "date": "2026-10-22",
+  "notes": "### Changed\n\n- The line that describes it in the Extension Store and in Lumi reads: *Vietnamese typing for your Mac, with Telex or VNI and no input method to install.*",
+  "notesSha256": "8bfcce38995de5a2714dec93fb5cd4cce7a9894d75d4f6d93cc4f83f0e1b4939",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Updated description",
+     "items": [
+      "The extension description now highlights Telex and VNI support with no input method needed"
+     ]
+    },
+    "vi": {
+     "headline": "Cập nhật mô tả",
+     "items": [
+      "Mô tả tiện ích giờ là: Gõ tiếng Việt trên Mac với Telex hoặc VNI, không cần cài input method"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.11",
+  "date": "2026-10-22",
+  "notes": "### Added\n\n- The Welcome has a step for switching Vietnamese typing on and off. It shows the key Lumi set at install, **fn ⇧** unless something else already held it, and says who does when it is taken. Record another key right there, take one back from a shortcut that holds it, or go back to fn ⇧, as on the Settings tab. Right-clicking the V in the menu bar switches too.\n\n### Changed\n\n- **Getting started** on the About tab names the shortcut among what the tour shows.",
+  "notesSha256": "d3d8d52adbcb5e620604700791df5c49c6dad8272f4adabccf15a1f4e3530ce5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome screen now helps you set up the Vietnamese typing shortcut",
+     "items": [
+      "The Welcome screen includes a step for turning Vietnamese typing on and off with your chosen shortcut",
+      "You can see which key Lumi set at install, change it, or take it back from another shortcut that is using it",
+      "The About tab mentions the shortcut when describing what the tour covers"
+     ]
+    },
+    "vi": {
+     "headline": "Màn hình chào mừng giúp thiết lập phím tắt gõ tiếng Việt",
+     "items": [
+      "Màn hình chào mừng có bước bật tắt gõ tiếng Việt bằng phím tắt bạn chọn",
+      "Bạn có thể xem phím Lumi đã đặt khi cài đặt, đổi phím khác, hoặc lấy lại từ phím tắt đang dùng nó",
+      "Tab Giới thiệu nói đến phím tắt khi mô tả nội dung hướng dẫn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.10",
+  "date": "2026-10-22",
+  "notes": "### Added\n\n- A short demo video on Lumi Gõ tiếng Việt's page in the Extension Store and on lumikeys.app — typing in your apps, the V in the menu bar, fn ⇧ and Keep English — to watch before you install.",
+  "notesSha256": "e19f1042f52a6410fe829f84a6f1cdeeaec0ef570729aeb5ec94b64ab60a8b5c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Demo video now available",
+     "items": [
+      "A short demo video shows how the extension works before you install it"
+     ]
+    },
+    "vi": {
+     "headline": "Video giới thiệu đã có",
+     "items": [
+      "Video ngắn giới thiệu cách tiện ích hoạt động trước khi bạn cài đặt"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.9",
+  "date": "2026-10-22",
+  "notes": "### Removed\n\n- The **Source code** row on the About tab.",
+  "notesSha256": "260aa0ead5b0ca5a07c3178da58121f8e77fc0924f7bae4b755ea2ef18d03841",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Streamlined About tab",
+     "items": [
+      "Removed the Source code row from the About tab"
+     ]
+    },
+    "vi": {
+     "headline": "Giao diện About gọn gàng hơn",
+     "items": [
+      "Đã xóa dòng Source code trong tab About"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.8",
+  "date": "2026-10-22",
+  "notes": "### Added\n\n- **Getting started** on the About tab, under what the extension does with your keys: it opens the welcome tour again, to choose the language and the typing method and see where your keys go.",
+  "notesSha256": "c95c0cf938cc5f2c0bda447938885030c48ef280c66c65e10e919be9b1aa931f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Getting started button to reopen the welcome tour",
+     "items": [
+      "The About tab now has a Getting started button to reopen the tour and choose your typing method"
+     ]
+    },
+    "vi": {
+     "headline": "Nút Bắt đầu để mở lại hướng dẫn chào mừng",
+     "items": [
+      "Tab Giới thiệu giờ có nút Bắt đầu để mở lại hướng dẫn chọn ngôn ngữ và phương thức gõ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.7",
+  "date": "2026-10-22",
+  "notes": "### Fixed\n\n- The About tab's help tags show. Rest the pointer on **Works offline**, **No typing history** or **Open source** for what each means, or on the developer's mail, website and GitHub buttons for where each goes; tab to a button and its tag shows at once. They never showed before.",
+  "notesSha256": "168b5aa65cc34180a43c2abe7a6f2f5d72390df35fdb6268e733bb6b1fa5db91",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Help tags now appear in the About tab",
+     "items": [
+      "Help tags now appear when you hover over features or buttons in the About tab"
+     ]
+    },
+    "vi": {
+     "headline": "Giờ đã hiện chú thích trợ giúp trong thẻ Giới thiệu",
+     "items": [
+      "Giờ đã hiện chú thích trợ giúp khi rê chuột qua tính năng hoặc nút trong thẻ Giới thiệu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.6",
+  "date": "2026-10-22",
+  "notes": "### Changed\n\n- On a work's page in the Acknowledgements sheet, the button back to the list reads **Back**.",
+  "notesSha256": "d0210cf37fa762c0cf9555b4aceebe72c1acffaf2f8522c57be250ea44a06ec6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Minor refinement",
+     "items": [
+      "The button to return to the acknowledgements list now reads Back"
+     ]
+    },
+    "vi": {
+     "headline": "Cải tiến nhỏ",
+     "items": [
+      "Nút quay lại danh sách ghi nhận giờ hiển thị là Quay lại"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.5",
+  "date": "2026-10-22",
+  "notes": "### Fixed\n\n- In the Licence and Acknowledgements sheets the grey box stays where it is and only the text inside it scrolls, as a text view does on the Mac, instead of the whole box moving.",
+  "notesSha256": "543b75edf3ad0776fbd78c61c3c54b7c1099a1f3f62fbcc427001b5beaff1d9a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Scrolling fix in Licence and Acknowledgements",
+     "items": [
+      "The grey box in Licence and Acknowledgements now stays in place while only the text scrolls"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa cuộn trong Giấy phép và Ghi nhận",
+     "items": [
+      "Hộp màu xám trong Giấy phép và Ghi nhận giờ đứng yên trong khi chỉ văn bản cuộn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.4",
+  "date": "2026-10-22",
+  "notes": "### Changed\n\n- The About tab is laid out as macOS lists its settings. It opens on what the extension does with the keys you type: **Works offline**, **No typing history** and **Open source**, each explained when you rest the pointer on it. Then the developer, with his mail, website and GitHub as buttons on his row, the extension's website, its source, its licence and its acknowledgements, a row each; and **Powered by the Gõ Nhanh engine** on a row of its own.\n- The licence reads as paragraphs, wrapped to the sheet, instead of text broken mid-sentence.\n- **Acknowledgements** replaces the third-party notices: a list of the work the engine is built on, each with a page of its own for its notice, a link to the project and its licence.\n- Both sheets are as tall as what they show.",
+  "notesSha256": "f31ecfb554fad986e0fa7a10503e31d8b984c2435e0e335a96c873aa4e8572dd",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "About tab redesigned to match macOS settings",
+     "items": [
+      "About tab now follows macOS settings layout with privacy features up top",
+      "Privacy features explained when you hover over them",
+      "Developer and project links now appear as buttons in their own rows",
+      "License text wraps naturally instead of breaking mid-sentence",
+      "Acknowledgements replace third-party notices with dedicated pages for each project",
+      "Sheets resize to fit their content"
+     ]
+    },
+    "vi": {
+     "headline": "Tab Giới thiệu thiết kế lại theo kiểu cài đặt macOS",
+     "items": [
+      "Tab Giới thiệu bây giờ theo bố cục cài đặt macOS với tính năng riêng tư ở trên",
+      "Giải thích tính năng riêng tư khi bạn di chuột qua",
+      "Liên kết nhà phát triển và dự án hiện là nút trên từng hàng riêng",
+      "Văn bản giấy phép ngắt dòng tự nhiên thay vì cắt giữa câu",
+      "Ghi nhận thay thế thông báo bên thứ ba với trang riêng cho mỗi dự án",
+      "Bảng thay đổi kích thước vừa với nội dung"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.3",
+  "date": "2026-10-22",
+  "notes": "### Added\n\n- A Welcome window when it is first installed, in Vietnamese or English: choose the display language and the typing method, and see where the keys you type go.\n- **Switch Vietnamese typing on or off** has a key of its own, **fn ⇧** — fn and ⇧ pressed together and let go — set at install when nothing else holds it. Change it on the Settings tab, under **Shortcut**, where a keyboard without fn takes any other key.\n- The Settings tab reads in Vietnamese or English: choose with **Display language** at its top. Vietnamese is the default.\n- **Popover appearance** on the Settings tab: the popover in Lumi's own look, or light or dark on its own.\n- The row in Lumi's menu bar menu follows the display language: **Gõ tiếng Việt**, or **Vietnamese typing** in English.\n- An About tab of its own, in English: what the extension can reach, who made it and how to get in touch, its page in the store, its source, the engine it types with — powered by the Gõ Nhanh engine, by Kha Phan, with a link to its repository — and its licence and third-party notices, each read in a sheet.\n- The Settings, About and Changelog tab names follow the display language: **Cài đặt**, **Giới thiệu** and **Nhật ký thay đổi** in Vietnamese.\n- A V or an E in the menu bar, beside Lumi's icon, says at a glance whether Vietnamese typing is on. Click it for a popover of tiles: the switch — with the app it is remembered for — Telex or VNI, the switches from the Settings tab — modern tone marks, Escape, English words, remembering each app, which shows the icons of the other apps typing is left the same way in — the extension's settings, and **Quit**, which switches the extension off in Lumi until you switch it on again under Extensions. Right-click it to switch Vietnamese typing on or off at once, as fn ⇧ does. Hide it from the extension's Permissions sheet in Lumi.\n- The popover is loaded as Lumi starts, so even the first click shows it at once. Turn that off with **Preload** on the extension's Permissions sheet in Lumi.\n\n### Changed\n\n- The switch leaves Lumi's menu bar menu: the V or E holds it now. Put it back from the extension's Permissions sheet in Lumi.\n- The Settings tab is laid out as rows, each with its control on the right: the typing method is a Telex/VNI switch, and placing tone marks the modern way (hoà, thuý) is a switch of its own.\n- A new icon: a V over a keyboard.\n- The extension's page in Settings opens on its Settings tab.\n- Its tabs come in the order Settings, About, Changelog: the Changelog last, after About.",
+  "notesSha256": "ed40e09ffc2c9448b2afb661f1da83c7ec82b79b9f39ade504ccb0fe2f3a0436",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome window, menu bar icon, and Vietnamese interface",
+     "items": [
+      "A welcome window appears on first install to choose your display language and typing method",
+      "A V or E icon in the menu bar opens quick settings when clicked or toggles typing when right-clicked",
+      "Switch Vietnamese typing on or off with fn and Shift pressed together, customizable in settings",
+      "The interface is now available in Vietnamese, set as the default display language",
+      "Settings are reorganized into clear rows with controls on the right side",
+      "An About tab shows what the extension can access, credits for the Gõ Nhanh engine, and licensing information"
+     ]
+    },
+    "vi": {
+     "headline": "Cửa sổ chào mừng, biểu tượng thanh menu và giao diện tiếng Việt",
+     "items": [
+      "Cửa sổ chào mừng xuất hiện khi cài đặt lần đầu để chọn ngôn ngữ hiển thị và phương thức gõ",
+      "Biểu tượng V hoặc E trên thanh menu mở cài đặt nhanh khi nhấp hoặc bật tắt gõ khi nhấp phải",
+      "Bật tắt gõ tiếng Việt bằng cách nhấn fn và Shift cùng lúc, có thể tùy chỉnh trong cài đặt",
+      "Giao diện hiện có sẵn bằng tiếng Việt, được đặt làm ngôn ngữ hiển thị mặc định",
+      "Cài đặt được sắp xếp lại thành các hàng rõ ràng với các điều khiển ở bên phải",
+      "Tab Giới thiệu hiển thị quyền truy cập của tiện ích, công nhận công cụ Gõ Nhanh và thông tin giấy phép"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.0",
+  "date": "2026-10-21",
+  "notes": "### Added\n\n- Type Vietnamese in every app with Telex or VNI, switched on and off from Lumi's menu bar or a shortcut you choose for **Switch Vietnamese typing on or off**.\n- The switch is remembered for each app, unless you turn that off in Settings.\n- Escape gives back the keys as you typed them, and English words can be kept as typed — both in Settings.",
+  "notesSha256": "dfaae28f72afbdd7fdfaa5089c704330e4a0072b4ce9190227522889d1de7f1e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Type Vietnamese with Telex or VNI in every app",
+     "items": [
+      "Type Vietnamese in every app with Telex or VNI, switched on or off from the menu bar or a shortcut",
+      "The switch is remembered for each app, unless you turn that off in Settings",
+      "Escape gives back the keys as you typed them",
+      "English words can be kept as typed, controlled in Settings"
+     ]
+    },
+    "vi": {
+     "headline": "Gõ tiếng Việt bằng Telex hoặc VNI trong mọi ứng dụng",
+     "items": [
+      "Gõ tiếng Việt trong mọi ứng dụng bằng Telex hoặc VNI, bật tắt từ thanh menu hoặc phím tắt",
+      "Trạng thái bật tắt được nhớ riêng cho từng ứng dụng, trừ khi bạn tắt tính năng này trong Cài đặt",
+      "Nhấn Escape để lấy lại các phím bạn đã gõ",
+      "Từ tiếng Anh có thể được giữ nguyên, điều chỉnh trong Cài đặt"
+     ]
+    }
+   }
+  }
+ }
+]

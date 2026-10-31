@@ -1,0 +1,137 @@
+[
+ {
+  "version": "0.2.3",
+  "date": "",
+  "notes": "- Prioritize Now Playing Tab, in Settings: on, as before, the minimized pill shows the tab playing audio or video; off, it always shows the tab you were looking at, while the other plays on.",
+  "notesSha256": "d675d696dac3878da07378dd009defb94f930d6bf467484f223fcd1f7bbaa027",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Choose whether the mini player follows what's playing or your last tab",
+     "items": [
+      "A new setting lets you keep the mini player on your last viewed tab even when another tab plays audio or video"
+     ]
+    },
+    "vi": {
+     "headline": "Chọn trình phát mini theo dõi nội dung đang phát hay tab cuối",
+     "items": [
+      "Cài đặt mới giữ trình phát mini ở tab bạn xem cuối ngay cả khi tab khác đang phát âm thanh hoặc video"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.2",
+  "date": "",
+  "notes": "- Floating Browser's page in the Extension Store says what it does: what you get, how your browsing stays private, and how to start.",
+  "notesSha256": "7e25181cbd5176c745fa8866224f41d0c04f9bbe0f37003496a3a2b76f27f43e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Extension Store page now explains what Floating Browser does",
+     "items": [
+      "The Extension Store page now describes what you get, how browsing stays private, and how to start"
+     ]
+    },
+    "vi": {
+     "headline": "Trang Extension Store giờ giải thích Floating Browser làm gì",
+     "items": [
+      "Trang Extension Store giờ mô tả Floating Browser làm gì, cách giữ riêng tư khi duyệt web, và cách bắt đầu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.1",
+  "date": "",
+  "notes": "- A short demo video on Floating Browser's page in the Extension Store and on lumikeys.app — the browser over your work, Compact Mode, the pill playing on in the corner — to watch before you install.",
+  "notesSha256": "f198dabbd97c1fd76106b40d7ee415145b385bdf1949d041dfb182b6ee6c9994",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Demo video added to the Extension Store",
+     "items": [
+      "A demo video now shows how Floating Browser works before you install it"
+     ]
+    },
+    "vi": {
+     "headline": "Thêm video giới thiệu vào Cửa hàng Tiện ích",
+     "items": [
+      "Video giới thiệu giờ cho thấy Floating Browser hoạt động như thế nào trước khi cài đặt"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.0",
+  "date": "",
+  "notes": "- ⌘W on the last tab leaves a new tab, so the browser stays open; ⌘W again on that new tab closes the browser, as × does, without asking.\n- What plays on the pill: the track's title over its artist, a band along the pill's foot that fills as it plays — press or drag it to go to another place — and on a hover the time played and a button to pause it or play it on. Paused, a play triangle stands where the bars dance (Lumi 1.67.0).\n- Artwork in the pill: where a site gives what it plays a cover, the minimized pill shows it in place of the site's icon, the site's icon a small badge on its corner (Lumi 1.67.0).\n- Settings (⌘,), in the icon's menu, opens as a tab of its own, as History does — one such tab at a time. It sets the cover's shape on the pill — Spinning Record, which turns while the track plays, Circle or Square — and Tint with Artwork Colour, which washes the pill and its band in the cover's colour, with a preview of the pill as set. The pill follows a change at once, and the choice is kept on this Mac.\n- Appearance, in Settings: Light, Dark or System, as in Lumi's own Settings. The browser, its pill, its menus and the tip change at once and stay that way after Lumi restarts; the Welcome tour follows macOS.\n- History and Settings stand at an address of their own, as Chrome's pages do: the address bar shows `lumi://history` or `lumi://settings` while one is in front, and typing either in any tab opens it.\n- In Compact Mode, History and Settings have a Done button, since no tab is drawn to close them.\n- The menu bar icon's last row says Quit, which is what it does: every tab closed and the icon taken away until the shortcut brings it back.\n- × closes the browser and its tabs, as closing a window does, and it opens on a new tab next time. It asks first while a tab holds a page; tick Don't ask again to stop it, and Ask Before Closing in Settings to have it ask again. The shortcut still puts it away with your tabs kept.\n- YouTube opens on its desktop layout, whose player shows the pointer and its controls as you move the mouse; its phone layout hid both over a playing video until you clicked.\n- A site you switch between its phone and desktop layouts stays as you switched it: it opens that way every time, in any tab, after Lumi restarts too.\n- Close in the pill's menu is the browser's ×: while a tab holds a page the browser comes back from the pill and asks first, as the × does.\n- The shortcuts swap places: ⌃⌥⌘H opens Floating Browser and puts it away, and ⌃⌥⌘B minimizes it to its pill and brings it back. The tip over the pill names the key Minimize has, and leaves it out when it has none.",
+  "notesSha256": "2c99d428e1ca75782dfb31873df8b69ce9a4dca505323325070e78acb6e34152",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Close tabs, mini player controls, settings panel, and more",
+     "items": [
+      "Closing the last tab with ⌘W leaves a new tab open; press ⌘W again to close the browser",
+      "The mini player shows track title, artist, progress bar you can click or drag, and play/pause on hover",
+      "Album artwork appears on the mini player when available, with the site icon as a small badge",
+      "Settings panel lets you choose album art shape, enable color tinting, and set light or dark appearance",
+      "History and Settings open as tabs at lumi://history and lumi://settings addresses",
+      "YouTube now opens in desktop layout so controls appear when you move the mouse over the video"
+     ]
+    },
+    "vi": {
+     "headline": "Đóng thẻ, điều khiển trình phát nhỏ, bảng cài đặt và nhiều hơn nữa",
+     "items": [
+      "Đóng thẻ cuối bằng ⌘W để lại một thẻ mới; nhấn ⌘W lần nữa để đóng trình duyệt",
+      "Trình phát nhỏ hiển thị tên bài, nghệ sĩ, thanh tiến trình kéo được và nút phát/tạm dừng khi di chuột",
+      "Ảnh bìa album xuất hiện trên trình phát nhỏ khi có sẵn, với biểu tượng trang web làm huy hiệu nhỏ",
+      "Bảng cài đặt cho phép chọn hình dạng ảnh bìa, bật tô màu theo ảnh bìa và đặt giao diện sáng hoặc tối",
+      "Lịch sử và Cài đặt mở dưới dạng thẻ tại địa chỉ lumi://history và lumi://settings",
+      "YouTube giờ mở ở bố cục máy tính để các nút điều khiển hiện ra khi di chuột qua video"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.0",
+  "date": "",
+  "notes": "- A small browser that floats over every app, at the top-right corner of the screen, opened and put away by ⌃⌥⌘B — minimized to its pill too, the pill with it — and opened again the way you put it away, as the browser or as its pill.\n- It goes with you to every desktop, and stays over apps in full screen (Lumi 1.65.0).\n- Up to four tabs along the top, the one in front holding the address bar, as in Chrome. Drag a tab along the strip to put it somewhere else.\n- An address bar that also searches, with Back, Forward and Reload. A lock at its start, as in Chrome, says the page's connection is secure; press it to read so.\n- The address bar suggests as you type, from your history and well-known sites, and completes the address in place, as in Chrome.\n- Your browsing history, kept on this Mac: History (⌘Y), in the icon's menu, lists the pages you visited by day, to search, open again or remove one by one, or clear.\n- ⌘-click or middle-click a link to open it in a new tab behind this one — with ⇧, in front — and a link that opens a new window opens in a new tab. With four tabs open it offers this tab or your browser instead (Lumi 1.65.0).\n- A new tab opens on a search box under Lumi's mark, as in Chrome, with the address bar's suggestions and shortcuts to Google, YouTube, Facebook, Outlook, Wikipedia and GitHub; you type straight into it.\n- The start page's shortcuts are yours, as in Chrome: drag one to move it, use its ⋮ (or right-click it) to edit or remove it, Add Shortcut for up to ten, and Restore Default Shortcuts for the first six. They stay after Lumi restarts.\n- Phone or desktop layouts, per tab: phone by default, since the window is narrow. Switch with the toolbar's button or Desktop Site in the icon's menu.\n- Open in your browser, for anything more.\n- An icon of its own in the menu bar: your tabs, Compact Mode, Mute All, Close All Tabs, and Close, which puts it away until you call it again.\n- Its menu shows each tab with its site's icon and a speaker while it makes sound, and works as any Mac menu, keys included. Right-click the icon for the Mac's own menu.\n- The icon at the left of the tab strip lists your tabs, with Compact Mode, Desktop Site and History.\n- Compact Mode, from that icon or the menu bar: one slim bar instead of the tabs and the toolbar, with the page's title and Close. Click the title to type an address; point at the bar for Back and Reload, ⇧ making Back go forward.\n- Each tab shows its site's own icon, as in Chrome, fetched from the site itself; those of Google's and Microsoft's apps, YouTube, Facebook, Wikipedia, GitHub and GitLab come with the browser, so they show at once, signed in or not.\n- A speaker on a tab making sound, as in Chrome: press it to mute that tab. The menu bar menu marks it too (Lumi 1.65.0).\n- Drag it by its tab strip or toolbar, resize it by its edges; it opens where you left it. Pages run to its edges, as in Chrome.\n- Minimize (− beside Close, or ⌘M) moves it to a small pill in the corner of the screen, with the page's title, how many tabs are open and a ring while a page loads; whatever plays in it plays on, bars dancing on the pill to say so (a muted speaker when it is silenced). Click the pill to bring the browser back, drag it to another corner, or click the icon at its left for your tabs or Close. The first time after the Welcome tour, a tip over the pill points at it.\n- Its tabs stay as they were while it is put away, and show at once when it comes back; anything playing in them pauses until then (Lumi 1.65.0).\n- Your tabs are still there after Lumi restarts. Sites remember you between openings, kept apart from your other browsers.\n- ⌃⌥⌘H minimizes it from any app, and brings it back from the pill; with the browser away, it opens it.\n- A Welcome tour when it is installed or updated, a step for each thing it does, where its shortcut can be recorded again. Its About page in Lumi opens it again.",
+  "notesSha256": "cb4a160d1c1b2036ed340caa55cae722a18b58f7734dc305627a251230ebe865",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "A small browser that floats over every app",
+     "items": [
+      "A floating browser at the top-right corner, opened with ⌃⌥⌘B, that goes with you to every desktop",
+      "Up to four tabs along the top, with an address bar that searches and suggests as you type",
+      "Browsing history kept on this Mac, searchable by day in History from the menu",
+      "Compact Mode shrinks the browser to one slim bar with the page title and controls",
+      "Minimize moves it to a small pill in the corner, with audio still playing",
+      "Your tabs and sign-ins stay after Lumi restarts, kept apart from other browsers"
+     ]
+    },
+    "vi": {
+     "headline": "Trình duyệt nhỏ nổi trên mọi ứng dụng",
+     "items": [
+      "Trình duyệt nổi ở góc trên bên phải, mở bằng ⌃⌥⌘B, theo bạn đến mọi desktop",
+      "Tối đa bốn tab trên cùng, với thanh địa chỉ tìm kiếm và gợi ý khi bạn gõ",
+      "Lịch sử duyệt web lưu trên Mac này, tìm theo ngày trong History từ menu",
+      "Chế độ Thu gọn biến trình duyệt thành một thanh mỏng với tiêu đề trang và nút điều khiển",
+      "Thu nhỏ chuyển thành viên thuốc ở góc màn hình, âm thanh vẫn phát",
+      "Tab và đăng nhập của bạn giữ nguyên sau khi khởi động lại Lumi, tách biệt với trình duyệt khác"
+     ]
+    }
+   }
+  }
+ }
+]
