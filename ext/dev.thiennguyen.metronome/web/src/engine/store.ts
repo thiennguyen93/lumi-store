@@ -20,7 +20,7 @@
 // Nothing is saved until the load has been answered: a page that could not
 // read the presets and saved anyway would put none over all of them.
 
-import { DEFAULTS, fitLevels, type Settings } from "./metronome";
+import { clampBpm, DEFAULTS, fitLevels, type Settings } from "./metronome";
 
 export interface Preset {
   id: string;
@@ -36,12 +36,14 @@ export interface Preset {
 export type Practice = Omit<Settings, "volume">;
 
 export interface Saved {
-  v: 1;
+  /** 2 since the tempo counts the signature's own beats; 1 counted quarter
+   *  notes whatever the signature (`inBeats`). */
+  v: 2;
   current: Settings;
   presets: Preset[];
 }
 
-export const EMPTY: Saved = { v: 1, current: DEFAULTS, presets: [] };
+export const EMPTY: Saved = { v: 2, current: DEFAULTS, presets: [] };
 
 /** `pnpm dev` only: `?store=` keeps a test's state apart from the
  *  person's. Folded away in a build. */
@@ -73,14 +75,22 @@ function settingsOf(raw: unknown): Settings {
 
 function savedOf(raw: unknown): Saved {
   if (!raw || typeof raw !== "object") return EMPTY;
-  const given = raw as Partial<Saved>;
-  const presets = (Array.isArray(given.presets) ? given.presets : [])
+  const given = raw as { v?: unknown; current?: unknown; presets?: unknown };
+  const kept = given.v === 2 ? <T>(s: T) => s : inBeats;
+  const presets = (Array.isArray(given.presets) ? (given.presets as Partial<Preset>[]) : [])
     .filter((p): p is Preset => !!p && typeof p.id === "string")
     .map((p) => {
-      const { volume: _volume, ...practice } = settingsOf(p.practice);
+      const { volume: _volume, ...practice } = kept(settingsOf(p.practice));
       return { id: p.id, name: nameOf(p.name), practice };
     });
-  return { v: 1, current: settingsOf(given.current), presets };
+  return { v: 2, current: kept(settingsOf(given.current)), presets };
+}
+
+/** A v1 practice in the signature's own beats, at the speed it was heard:
+ *  v1's tempo counted quarter notes, so 7/8 at 132 was 264 eighths a
+ *  minute, and is kept as 264. Past 300, the fastest there is, it is 300. */
+function inBeats<T extends { bpm: number; unit: Settings["unit"] }>(s: T): T {
+  return { ...s, bpm: clampBpm((s.bpm * s.unit) / 4) };
 }
 
 /** A stored name, or null for none. The first presets were always named,
@@ -151,7 +161,7 @@ export async function load(): Promise<Saved> {
 function fromTheOldMock(): Saved {
   try {
     const old = store ? null : localStorage.getItem("metronome.mock.settings");
-    if (old) return { ...EMPTY, current: settingsOf(JSON.parse(old)) };
+    if (old) return { ...EMPTY, current: inBeats(settingsOf(JSON.parse(old))) };
   } catch {
     // Nothing there.
   }

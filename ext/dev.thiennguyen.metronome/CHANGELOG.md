@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0] - 2026-10-31
+
+### Changed
+
+- The tempo counts the beat you hear, the time signature's bottom note: 7/8 at 132 is now 132 eighth notes a minute, where it was 264. Tapping along with the clicks sets the tempo they are at, and going from 4/4 to 6/8 keeps the clicks at the same speed. What you had set and your presets are carried over so they sound as they did, up to 300.
+- Allegro, Andante and the rest are judged in quarter notes, so 6/8 at 240 reads Moderato.
+
+### Fixed
+
+- A new tempo is heard from the next click. Going from 20 to 120 in 2/2 used to wait for the click already planned, seconds away.
+- Changing the clicks in a beat while it plays keeps the beat where it is: it is no longer struck again halfway through, and the rest of the beat falls on the new clicks.
+- Taking beats out of the bar while it plays lets the beat finish before the next bar's first beat, instead of accenting halfway through it.
+
 ## [0.2.4] - 2026-10-31
 
 ### Fixed

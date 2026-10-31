@@ -109,7 +109,7 @@ export function Dial({ m }: { m: MetronomeApi }) {
             aria-valuemin={20}
             aria-valuemax={300}
             aria-valuenow={m.s.bpm}
-            aria-valuetext={`${m.s.bpm} beats a minute, ${marking(m.s.bpm)}`}
+            aria-valuetext={`${m.s.bpm} beats a minute, ${marking(m.s.bpm, m.s.unit)}`}
             onPointerDown={(event) => {
               event.currentTarget.setPointerCapture(event.pointerId);
               turning.current = { angle: angleOf(event), bpm: m.engine.settings.bpm };
@@ -173,7 +173,7 @@ export function Dial({ m }: { m: MetronomeApi }) {
             })}
             <g className="dial-center" pointerEvents="none">
               <text x={C} y={C - 32} className="dial-marking">
-                {marking(m.s.bpm).toUpperCase()}
+                {marking(m.s.bpm, m.s.unit).toUpperCase()}
               </text>
               {!typing && (
                 <text x={C} y={C + 18} className="dial-bpm">

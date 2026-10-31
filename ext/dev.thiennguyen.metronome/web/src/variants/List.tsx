@@ -46,7 +46,7 @@ export function List({ m }: { m: MetronomeApi }) {
             <BpmStepper m={m} big />
             <div className="ls-tempo-words">
               <span>BPM</span>
-              <span className="muted">{marking(m.s.bpm)}</span>
+              <span className="muted">{marking(m.s.bpm, m.s.unit)}</span>
             </div>
           </div>
           {/* The tempo's slider in the card with its number, not a section

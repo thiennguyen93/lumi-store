@@ -85,6 +85,9 @@ export class Metronome {
   private bar = 0;
   /** Beats placed since Start, whatever the bar — what alternates a swing. */
   private count = 0;
+  /** The last click placed, and where it fell — what a change of tempo or
+   *  of clicks in a beat carries on from (`replan`). */
+  private placed: { at: number; beat: number; bar: number; count: number; sub: number; subs: number } | undefined;
   /** Placed, not yet drawn. */
   private pending: Note[] = [];
   /** The last beat (sub 0) heard, for `position()`. */
@@ -143,12 +146,43 @@ export class Metronome {
     if (this.master && this.ctx && before.volume !== settings.volume) {
       this.master.gain.setTargetAtTime(curve(settings.volume), this.ctx.currentTime, 0.02);
     }
-    if (settings.beats !== before.beats && this.beat >= settings.beats) {
+    if (this.running && this.placed && (settings.bpm !== before.bpm || settings.sub !== before.sub)) this.replan();
+    // A bar cut short under the beat about to start: that beat is the next
+    // bar's first. Mid-beat, the beat plays out and `schedule` wraps after.
+    if (settings.beats !== before.beats && this.beat >= settings.beats && this.subIndex === 0) {
       this.beat = 0;
-      this.subIndex = 0;
       this.bar++;
     }
-    if (settings.sub !== before.sub) this.subIndex = 0;
+  }
+
+  /** The next click after the tempo or the clicks in a beat change, on from
+   *  the last one placed: the rest of its beat at the new length, on the
+   *  new subdivision's grid. So a new tempo is heard from the next click,
+   *  not after one already planned at the old spacing — six seconds away
+   *  at 20 in 2/2 — and a new subdivision keeps the beat where it was
+   *  instead of striking it again mid-beat. */
+  private replan() {
+    const last = this.placed!;
+    const s = this.settings;
+    const frac = last.sub / last.subs;
+    const next = Math.floor(frac * s.sub + 1e-9) + 1;
+    const at = last.at + (next / s.sub - frac) * beatLength(s);
+    this.bar = last.bar;
+    if (next < s.sub) {
+      this.beat = last.beat;
+      this.count = last.count;
+      this.subIndex = next;
+    } else {
+      this.beat = last.beat + 1;
+      this.count = last.count + 1;
+      this.subIndex = 0;
+      if (this.beat >= s.beats) {
+        this.beat = 0;
+        this.bar++;
+      }
+    }
+    // Much faster all at once, the next click may already be due.
+    this.at = Math.max(at, this.now() + 0.02);
   }
 
   async start() {
@@ -161,6 +195,7 @@ export class Metronome {
     this.subIndex = 0;
     this.bar = 0;
     this.count = 0;
+    this.placed = undefined;
     this.pending = [];
     this.upcoming = [];
     this.lastBeat = undefined;
@@ -239,7 +274,7 @@ export class Metronome {
     if (!this.running) return;
     const { ctx, master } = this.audio();
     const s = this.settings;
-    const beatLength = (60 / s.bpm) * (4 / s.unit);
+    const length = beatLength(s);
     const latency = this.latency();
     // A tab left in the background can wake late; a click placed in the
     // past would all sound at once, so skip ahead instead.
@@ -255,11 +290,12 @@ export class Metronome {
         bar: this.bar,
         count: this.count,
         level,
-        length: beatLength,
+        length,
       };
       this.pending.push(note);
       if (this.subIndex === 0) this.upcoming.push(note);
-      this.at += beatLength / s.sub;
+      this.placed = { at: this.at, beat: this.beat, bar: this.bar, count: this.count, sub: this.subIndex, subs: s.sub };
+      this.at += length / s.sub;
       this.subIndex++;
       if (this.subIndex >= s.sub) {
         this.subIndex = 0;
@@ -291,6 +327,13 @@ export class Metronome {
     const frac = Math.min(1, Math.max(0, (this.now() - last.heard) / last.length));
     return { beat: last.beat, bar: last.bar, frac, count: last.count };
   }
+}
+
+/** How long one beat lasts, in seconds. The tempo counts the beats heard,
+ *  the signature's bottom note: 7/8 at 132 is 132 eighths a minute, and
+ *  tapping along with the clicks gives back the tempo they are at. */
+function beatLength(s: Settings): number {
+  return 60 / s.bpm;
 }
 
 /** Volume as the ear hears it: a slider's middle should sound like half. */

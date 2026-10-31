@@ -33,7 +33,7 @@ export function Pads({ m }: { m: MetronomeApi }) {
         <div className="pads-tempo">
           <BpmStepper m={m} />
           <span className="pads-marking">
-            BPM · <span>{marking(m.s.bpm)}</span>
+            BPM · <span>{marking(m.s.bpm, m.s.unit)}</span>
           </span>
         </div>
         <TempoSlider m={m} />

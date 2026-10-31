@@ -15,8 +15,11 @@ const MARKINGS: [number, string][] = [
   [Infinity, "Prestissimo"],
 ];
 
-export function marking(bpm: number): string {
-  return MARKINGS.find(([below]) => bpm < below)![1];
+/** The marking for `bpm` beats of `unit` notes a minute, judged in quarter
+ *  notes as the bands are: 6/8 at 240 eighths is Moderato, not Prestissimo. */
+export function marking(bpm: number, unit: 2 | 4 | 8 | 16): string {
+  const quarters = (bpm * 4) / unit;
+  return MARKINGS.find(([below]) => quarters < below)![1];
 }
 
 /** Presses averaged into a tempo: the last four gaps, forgotten after two

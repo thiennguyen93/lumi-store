@@ -126,7 +126,7 @@ export function Pendulum({ m }: { m: MetronomeApi }) {
 
         <div className="pd-side">
           <div className="pd-tempo">
-            <span className="pd-marking">{marking(m.s.bpm)}</span>
+            <span className="pd-marking">{marking(m.s.bpm, m.s.unit)}</span>
             <div className="pd-tempo-row">
               <BpmStepper m={m} big />
               <span className="pd-bpm-unit">BPM</span>
