@@ -1,0 +1,62 @@
+{
+  "0.2.0": {
+    "notesSha256": "2c99d428e1ca75782dfb31873df8b69ce9a4dca505323325070e78acb6e34152",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Close tabs, mini player controls, settings panel, and more",
+          "items": [
+            "Closing the last tab with ⌘W leaves a new tab open; press ⌘W again to close the browser",
+            "The mini player shows track title, artist, progress bar you can click or drag, and play/pause on hover",
+            "Album artwork appears on the mini player when available, with the site icon as a small badge",
+            "Settings panel lets you choose album art shape, enable color tinting, and set light or dark appearance",
+            "History and Settings open as tabs at lumi://history and lumi://settings addresses",
+            "YouTube now opens in desktop layout so controls appear when you move the mouse over the video"
+          ]
+        },
+        "vi": {
+          "headline": "Đóng thẻ, điều khiển trình phát nhỏ, bảng cài đặt và nhiều hơn nữa",
+          "items": [
+            "Đóng thẻ cuối bằng ⌘W để lại một thẻ mới; nhấn ⌘W lần nữa để đóng trình duyệt",
+            "Trình phát nhỏ hiển thị tên bài, nghệ sĩ, thanh tiến trình kéo được và nút phát/tạm dừng khi di chuột",
+            "Ảnh bìa album xuất hiện trên trình phát nhỏ khi có sẵn, với biểu tượng trang web làm huy hiệu nhỏ",
+            "Bảng cài đặt cho phép chọn hình dạng ảnh bìa, bật tô màu theo ảnh bìa và đặt giao diện sáng hoặc tối",
+            "Lịch sử và Cài đặt mở dưới dạng thẻ tại địa chỉ lumi://history và lumi://settings",
+            "YouTube giờ mở ở bố cục máy tính để các nút điều khiển hiện ra khi di chuột qua video"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "cb4a160d1c1b2036ed340caa55cae722a18b58f7734dc305627a251230ebe865",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "A small browser that floats over every app",
+          "items": [
+            "A floating browser at the top-right corner, opened with ⌃⌥⌘B, that goes with you to every desktop",
+            "Up to four tabs along the top, with an address bar that searches and suggests as you type",
+            "Browsing history kept on this Mac, searchable by day in History from the menu",
+            "Compact Mode shrinks the browser to one slim bar with the page title and controls",
+            "Minimize moves it to a small pill in the corner, with audio still playing",
+            "Your tabs and sign-ins stay after Lumi restarts, kept apart from other browsers"
+          ]
+        },
+        "vi": {
+          "headline": "Trình duyệt nhỏ nổi trên mọi ứng dụng",
+          "items": [
+            "Trình duyệt nổi ở góc trên bên phải, mở bằng ⌃⌥⌘B, theo bạn đến mọi desktop",
+            "Tối đa bốn tab trên cùng, với thanh địa chỉ tìm kiếm và gợi ý khi bạn gõ",
+            "Lịch sử duyệt web lưu trên Mac này, tìm theo ngày trong History từ menu",
+            "Chế độ Thu gọn biến trình duyệt thành một thanh mỏng với tiêu đề trang và nút điều khiển",
+            "Thu nhỏ chuyển thành viên thuốc ở góc màn hình, âm thanh vẫn phát",
+            "Tab và đăng nhập của bạn giữ nguyên sau khi khởi động lại Lumi, tách biệt với trình duyệt khác"
+          ]
+        }
+      }
+    }
+  }
+}

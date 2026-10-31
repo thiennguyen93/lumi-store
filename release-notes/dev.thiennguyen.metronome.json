@@ -1,0 +1,118 @@
+{
+  "0.2.3": {
+    "notesSha256": "a947e63ae89fd386fd4235bc0272636026a7522711d873159a2f3004d7e0557b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Beat Pads layout stays steady as tempo changes",
+          "items": [
+            "Beat Pads controls no longer shift when tempo changes between 99 and 100 or 20 and 250"
+          ]
+        },
+        "vi": {
+          "headline": "Bố cục Beat Pads giữ nguyên khi nhịp độ thay đổi",
+          "items": [
+            "Các nút điều khiển Beat Pads không còn dịch chuyển khi nhịp độ chuyển từ 99 sang 100 hoặc 20 sang 250"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.2": {
+    "notesSha256": "60151f62ad6db1c98c0d9df506dfdc63717ecb7a3433d666f024ba9ba422b4fb",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Tidier Beat Pads layout",
+          "items": [
+            "Beat Pads: volume moved next to the sounds it controls, time signature and subdivision now share a row"
+          ]
+        },
+        "vi": {
+          "headline": "Bố cục Beat Pads gọn gàng hơn",
+          "items": [
+            "Beat Pads: âm lượng được chuyển đến cạnh các âm thanh mà nó điều chỉnh, nhịp và phân nhịp giờ cùng một hàng"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.1": {
+    "notesSha256": "f5970e4e1bd1e75707943b038a65224edc5af792181f96fa4a48290f2f9799e2",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed the keyboard focus ring in Orbit",
+          "items": [
+            "The blue ring around the dial when it has keyboard focus is whole again"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa vòng tròn lấy nét bàn phím trong Orbit",
+          "items": [
+            "Vòng tròn màu xanh quanh mặt số khi có lấy nét bàn phím đã trọn vẹn trở lại"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.0": {
+    "notesSha256": "7856aafbae840427a514c62e6bc81e8d3c30d675a712082d656db1d98d28d064",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Type the tempo directly",
+          "items": [
+            "Double-click the tempo number to type a new value and press Return to set it",
+            "Press Escape to cancel or use arrow keys to adjust the typed value",
+            "Hold Shift with arrow keys to change by 10 instead of 1",
+            "In Orbit theme, press Return on the ring to start typing the tempo"
+          ]
+        },
+        "vi": {
+          "headline": "Nhập tempo trực tiếp",
+          "items": [
+            "Nhấp đúp vào số tempo để nhập giá trị mới và nhấn Return để đặt",
+            "Nhấn Escape để hủy hoặc dùng phím mũi tên để điều chỉnh giá trị đã nhập",
+            "Giữ Shift cùng phím mũi tên để thay đổi 10 đơn vị thay vì 1",
+            "Trong giao diện Orbit, nhấn Return trên vòng tròn để bắt đầu nhập tempo"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "d668e0cead8681633443772b066beaed89d32eda63666741ee2ff0d57b30eb8b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "A metronome to practise with",
+          "items": [
+            "Set the tempo from 20 to 300 beats per minute with buttons, a slider, arrow keys or by tapping",
+            "Choose a time signature from common ones or make your own with any number of beats",
+            "Add subdivisions of two, three or four clicks inside each beat",
+            "Pick from eight sounds and hear the first beat accented louder and higher",
+            "Save presets to return to your settings with one click, and name or organise them as you like",
+            "Switch between four themes: a pendulum, a ring, beat pads or a simple display"
+          ]
+        },
+        "vi": {
+          "headline": "Máy nhịp để luyện tập",
+          "items": [
+            "Đặt nhịp độ từ 20 đến 300 nhịp mỗi phút bằng nút, thanh trượt, phím mũi tên hoặc gõ nhịp",
+            "Chọn nhịp từ các loại phổ biến hoặc tự tạo với số phách bất kỳ",
+            "Thêm phân chia nhịp thành hai, ba hoặc bốn tiếng trong mỗi phách",
+            "Chọn từ tám âm thanh và nghe phách đầu nhấn mạnh to hơn, cao hơn",
+            "Lưu cài đặt sẵn để quay lại với một cú nhấp, đặt tên và sắp xếp theo ý muốn",
+            "Chuyển đổi giữa bốn giao diện: con lắc, vòng tròn, bảng phách hoặc hiển thị đơn giản"
+          ]
+        }
+      }
+    }
+  }
+}

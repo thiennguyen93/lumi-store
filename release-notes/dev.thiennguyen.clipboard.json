@@ -1,4 +1,48 @@
 {
+  "0.89.1": {
+    "notesSha256": "21591240f0ce418bf447b46beec11cf7fed083161093699534bf7c0101de7ebb",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Under-the-hood improvements",
+          "items": [
+            "Internal updates to marketing materials and documentation"
+          ]
+        },
+        "vi": {
+          "headline": "Cải tiến nội bộ",
+          "items": [
+            "Cập nhật tài liệu và hình ảnh quảng bá"
+          ]
+        }
+      }
+    }
+  },
+  "0.89.0": {
+    "notesSha256": "7f6f2e4f84801ae7c1c30d2cb7055fb98cbab48ded68248738859b7a96472888",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Control how much the background shows through the panel",
+          "items": [
+            "A new slider in Settings lets you adjust panel transparency from glass to solid",
+            "The more solid you make it, the less windows behind the panel show through",
+            "Works with all panel styles and themes, and updates live as you drag the slider"
+          ]
+        },
+        "vi": {
+          "headline": "Điều chỉnh độ trong suốt của bảng điều khiển",
+          "items": [
+            "Thanh trượt mới trong Cài đặt cho phép điều chỉnh độ trong suốt từ kính sang đặc",
+            "Càng đặc thì cửa sổ phía sau càng ít hiện qua bảng điều khiển",
+            "Hoạt động với mọi kiểu bảng và chủ đề, cập nhật trực tiếp khi kéo thanh trượt"
+          ]
+        }
+      }
+    }
+  },
   "0.88.0": {
     "notesSha256": "aff2cdf22c0ce22b9cd4739cda48c1c503540e5d88e1ca2d68f88c6c64f55ca2",
     "summary": {
@@ -410,56 +454,6 @@
             "Tắt chế độ riêng tư giờ yêu cầu xác nhận trước, dù từ Cài đặt, thanh menu hay phím tắt",
             "Người khác không thể tắt chế độ riêng tư để xem nội dung clipboard mà không xác nhận danh tính",
             "Bật chế độ riêng tư vẫn hoạt động ngay lập tức mà không cần hỏi"
-          ]
-        }
-      }
-    }
-  },
-  "0.79.0": {
-    "notesSha256": "6dfd5337ec7826d333d593929a02aae860cdbc0e9f387a8fa9d617a12fb2f0d7",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Cover and lock timers now count from when the panel closes",
-          "items": [
-            "Cover again after panel closes now counts from when you close the panel, not from when you showed an item",
-            "Reopen the panel within the timer and what you showed is still shown",
-            "Lock again after panel closes now counts from when you close the panel, not from when you unlocked",
-            "While the panel is open, nothing is covered or locked by itself",
-            "Requires Lumi 1.37.0 or later"
-          ]
-        },
-        "vi": {
-          "headline": "Bộ đếm che và khóa giờ tính từ khi đóng bảng điều khiển",
-          "items": [
-            "Che lại sau khi đóng bảng điều khiển giờ tính từ khi bạn đóng bảng, không phải từ khi hiển thị mục",
-            "Mở lại bảng điều khiển trong thời gian đếm và nội dung đã hiển thị vẫn còn đó",
-            "Khóa lại sau khi đóng bảng điều khiển giờ tính từ khi bạn đóng bảng, không phải từ khi mở khóa",
-            "Khi bảng điều khiển đang mở, không có gì tự động bị che hoặc khóa",
-            "Yêu cầu Lumi 1.37.0 trở lên"
-          ]
-        }
-      }
-    }
-  },
-  "0.78.1": {
-    "notesSha256": "71ce351adbe6b7c3ac2bea53603b0d68d16105005bec6e5faefd0ce6bc2edf0d",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Settings now show when privacy features are available",
-          "items": [
-            "Privacy settings are greyed out when privacy mode is off and show when they work",
-            "Settings keep their values and become available again when privacy mode is on"
-          ]
-        },
-        "vi": {
-          "headline": "Cài đặt hiện rõ khi nào tính năng riêng tư hoạt động",
-          "items": [
-            "Các cài đặt riêng tư bị mờ khi chế độ riêng tư tắt và hiển thị khi nào chúng hoạt động",
-            "Cài đặt giữ nguyên giá trị và khả dụng trở lại khi bật chế độ riêng tư"
           ]
         }
       }
