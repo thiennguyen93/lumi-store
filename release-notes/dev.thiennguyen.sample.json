@@ -1,4 +1,210 @@
 {
+  "0.36.0": {
+    "notesSha256": "535c4f0961e0ad74769830ee2b37d63bedfc1327ed2d0f4495e1b4815b6a4a36",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Visualize loudness while recording and in transcripts",
+          "items": [
+            "Transcribe now shows three live visualizations of loudness while recording",
+            "See loudness over time, across pitch ranges, and as a pulsing orb",
+            "Transcripts display the loudness of the recording underneath the text",
+            "Requires Lumi 1.64.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Hiển thị độ lớn khi ghi âm và trong bản ghi chép",
+          "items": [
+            "Transcribe giờ hiển thị ba dạng trực quan độ lớn khi đang ghi",
+            "Xem độ lớn theo thời gian, theo dải cao độ và dạng hình cầu nhịp động",
+            "Bản ghi chép hiển thị độ lớn của đoạn ghi âm bên dưới văn bản",
+            "Yêu cầu Lumi 1.64.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.35.0": {
+    "notesSha256": "68722463c285a309079ce6b697e5761e3bda4b4593713530c87bfee49107542d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Summarize now works in the peek panel",
+          "items": [
+            "Summarize is now available in the peek panel wherever you can ask the AI",
+            "When no model is installed, Lumi offers to download one before summarizing",
+            "Requires Lumi 1.64.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Tóm tắt giờ hoạt động trong bảng xem nhanh",
+          "items": [
+            "Tóm tắt giờ có sẵn trong bảng xem nhanh ở mọi nơi bạn có thể hỏi AI",
+            "Khi chưa cài mô hình nào, Lumi đề nghị tải về trước khi tóm tắt",
+            "Yêu cầu Lumi 1.64.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.34.0": {
+    "notesSha256": "7f3c12dc1ac335803ddbbe2d55c36e9713f0cfcdb9a655ba486b400c7c0f5f9f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Speaker identification in Transcribe",
+          "items": [
+            "Transcribe now shows who is speaking in conversations",
+            "You can teach Lumi to recognize and name individual voices",
+            "Lumi remembers voices on this Mac without storing audio samples",
+            "Requires Lumi 1.64.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Nhận diện người nói trong Transcribe",
+          "items": [
+            "Transcribe giờ hiển thị ai đang nói trong cuộc hội thoại",
+            "Bạn có thể dạy Lumi nhận diện và đặt tên cho từng giọng nói",
+            "Lumi ghi nhớ giọng nói trên máy Mac này mà không lưu trữ âm thanh",
+            "Yêu cầu Lumi 1.64.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.33.0": {
+    "notesSha256": "995a81a374126db3cd0dc97974abec9cc84f891bd9caa9b265152e3455fe6012",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Transcribe speech and audio files into text",
+          "items": [
+            "Transcribe window turns speech into text as it happens from microphone or apps",
+            "Each line shows whether it came from the microphone or which app played it",
+            "Choose a File hears a recording live, Hear Again Whole processes it at once",
+            "Transcribe an audio file command processes a recording and shows the text",
+            "Requires Lumi 1.64.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Chuyển giọng nói và file âm thanh thành văn bản",
+          "items": [
+            "Cửa sổ Transcribe chuyển lời nói thành chữ ngay khi nghe từ micro hoặc ứng dụng",
+            "Mỗi dòng ghi rõ nguồn từ micro hay ứng dụng nào phát ra",
+            "Choose a File nghe file ghi âm trực tiếp, Hear Again Whole xử lý một lượt",
+            "Lệnh Transcribe an audio file xử lý file ghi âm và hiển thị văn bản",
+            "Yêu cầu Lumi 1.64.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.32.0": {
+    "notesSha256": "a9249e6d66f1850c1c7df362d3958c8004b0aa4e515fc25cdb4fee434b619a1a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Hourly reminders arrive on the hour",
+          "items": [
+            "Remind me every hour shows an alert with the current time each hour",
+            "Toggle the reminder on or off from the menu bar or by running the command",
+            "Requires Lumi 1.60.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Nhắc nhở theo giờ đến đúng giờ",
+          "items": [
+            "Nhắc tôi mỗi giờ hiển thị thông báo với thời gian hiện tại mỗi giờ",
+            "Bật hoặc tắt nhắc nhở từ thanh menu hoặc bằng cách chạy lệnh",
+            "Yêu cầu Lumi 1.60.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.31.0": {
+    "notesSha256": "1da61913e5630e0fe9d393b75d9a936961814e5d452ee5cbf4e681d5e0288634",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Remind me in a minute",
+          "items": [
+            "Added a command to set a one-minute reminder that alerts you when time is up",
+            "The alert shows the exact time and notes if your Mac was asleep or Lumi was quit",
+            "Works even when Sample's windows are closed",
+            "Requires Lumi 1.59.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Nhắc tôi sau một phút",
+          "items": [
+            "Thêm lệnh đặt nhắc nhở một phút, sẽ thông báo khi hết giờ",
+            "Thông báo hiển thị giờ chính xác và ghi chú nếu Mac đang ngủ hoặc Lumi đã thoát",
+            "Hoạt động ngay cả khi cửa sổ Sample đóng",
+            "Yêu cầu Lumi 1.59.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.30.0": {
+    "notesSha256": "cdeab13bc917f4c14b1c6601d9174e43953b59d0476e73fd38c3d553d4a6d713",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Copy button in the peek panel",
+          "items": [
+            "The peek panel now has a Copy button that copies the selection with its original formatting and links",
+            "The panel closes automatically after copying",
+            "If nothing was copied, you see a message letting you know",
+            "Requires Lumi 1.59.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Nút Sao chép trong bảng xem nhanh",
+          "items": [
+            "Bảng xem nhanh giờ có nút Sao chép để sao chép vùng chọn với định dạng và liên kết gốc",
+            "Bảng tự động đóng sau khi sao chép",
+            "Nếu không sao chép được gì, bạn sẽ thấy thông báo",
+            "Yêu cầu Lumi 1.59.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.29.0": {
+    "notesSha256": "214024d552bc01c6d1ccb19652a5210edd700b6e57037a10433ce64b5237fce3",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Look up words in Dictionary without leaving what you're reading",
+          "items": [
+            "The peek panel now has a Define button that shows the word's pronunciation and first meaning",
+            "More in Dictionary opens the full entry in the Dictionary app",
+            "Define works on single words or short phrases using your enabled dictionaries",
+            "Works on text you can't edit since you're only reading the definition"
+          ]
+        },
+        "vi": {
+          "headline": "Tra từ trong Dictionary mà không cần rời khỏi nội dung đang đọc",
+          "items": [
+            "Bảng peek giờ có nút Define hiển thị cách phát âm và nghĩa đầu tiên của từ",
+            "Mở Thêm trong Dictionary để xem toàn bộ mục từ trong ứng dụng Dictionary",
+            "Define hoạt động với từ đơn hoặc cụm từ ngắn dùng các từ điển bạn đã bật",
+            "Hoạt động trên văn bản không chỉnh sửa được vì chỉ cần đọc định nghĩa"
+          ]
+        }
+      }
+    }
+  },
   "0.28.0": {
     "notesSha256": "15dcf8618dd391041e5a6cab18de247a13fbccb0de594f7163e2096aa7578512",
     "summary": {
@@ -306,176 +512,6 @@
           "headline": "Thẻ nền nhớ vị trí và kích thước",
           "items": [
             "Thẻ nền mở lại đúng vị trí và kích thước bạn đã đặt, nếu bạn dùng Lumi 1.40.0 trở lên"
-          ]
-        }
-      }
-    }
-  },
-  "0.16.1": {
-    "notesSha256": "34f41c17906df6f478e33315f819e4fc5fc1509e73e9a3d6e20eb395f8ab8eb5",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Improved rename sheet",
-          "items": [
-            "The rename sheet now tells you when the name is empty",
-            "The rename sheet grows to fit its message"
-          ]
-        },
-        "vi": {
-          "headline": "Cải thiện hộp thoại đổi tên",
-          "items": [
-            "Hộp thoại đổi tên giờ báo khi tên để trống",
-            "Hộp thoại đổi tên tự mở rộng để vừa nội dung"
-          ]
-        }
-      }
-    }
-  },
-  "0.16.0": {
-    "notesSha256": "b4ccb4a293128565c72b2462174581669e9d9dcdfcfb3b4981e73e7472ad71cd",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Rename through a dialog over Lumi's window",
-          "items": [
-            "You can now rename through a dialog that appears over Lumi's window"
-          ]
-        },
-        "vi": {
-          "headline": "Đổi tên qua hộp thoại trên cửa sổ Lumi",
-          "items": [
-            "Giờ bạn có thể đổi tên qua hộp thoại hiện trên cửa sổ Lumi"
-          ]
-        }
-      }
-    }
-  },
-  "0.15.0": {
-    "notesSha256": "f4a578628a3c08cdbfdc9df329bd67963ce2bf259d17ffc2cc1825760868e0b9",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Hold input to see what keys you press",
-          "items": [
-            "Hold input from a window or panel to see every key pressed for ten seconds",
-            "A second button also holds trackpad input"
-          ]
-        },
-        "vi": {
-          "headline": "Giữ đầu vào để xem phím bạn nhấn",
-          "items": [
-            "Giữ đầu vào từ cửa sổ hoặc bảng để xem mọi phím nhấn trong mười giây",
-            "Nút thứ hai cũng giữ đầu vào từ trackpad"
-          ]
-        }
-      }
-    }
-  },
-  "0.14.1": {
-    "notesSha256": "ca74812f01c33bfbbf30890bcd7f071f90b295a1a7a603bda49e15a59e08cee7",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "New icon",
-          "items": [
-            "The icon now uses a translation symbol instead of the A and 文 characters"
-          ]
-        },
-        "vi": {
-          "headline": "Biểu tượng mới",
-          "items": [
-            "Biểu tượng giờ dùng ký hiệu dịch thuật thay vì chữ A và 文"
-          ]
-        }
-      }
-    }
-  },
-  "0.14.0": {
-    "notesSha256": "475da3c90016ecbe5e5cc8ce12d0c5c9280f903b30a7fdc14c55e2b9d0d0e159",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Menu bar integration and translation controls",
-          "items": [
-            "Adds its own rows to Lumi's menu: Translate Selection, a Translate To submenu, and Sample Settings",
-            "The Translate To submenu shows which language is currently selected"
-          ]
-        },
-        "vi": {
-          "headline": "Tích hợp thanh menu và điều khiển dịch thuật",
-          "items": [
-            "Thêm các mục riêng vào menu Lumi: Dịch Vùng Chọn, menu con Dịch Sang và Cài Đặt Sample",
-            "Menu con Dịch Sang hiển thị ngôn ngữ đang được chọn"
-          ]
-        }
-      }
-    }
-  },
-  "0.13.0": {
-    "notesSha256": "37577ff45ab541f32ee923f6311ed3cf62c203e5555716206807c95c161ad7df",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Screen Recording permission controls in settings",
-          "items": [
-            "Added a Permissions section in settings to manage Screen Recording access",
-            "You can now check permission status, request it, or open System Settings directly"
-          ]
-        },
-        "vi": {
-          "headline": "Điều khiển quyền Ghi màn hình trong cài đặt",
-          "items": [
-            "Thêm phần Quyền trong cài đặt để quản lý quyền Ghi màn hình",
-            "Bạn có thể kiểm tra trạng thái quyền, yêu cầu cấp quyền hoặc mở Cài đặt Hệ thống"
-          ]
-        }
-      }
-    }
-  },
-  "0.12.0": {
-    "notesSha256": "bcac4053e282bf1ee94a39d0088c3973bed1dd8ed1201e6581201778a7a42a17",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "New windows and a renamed tab",
-          "items": [
-            "The Changelog tab is now called What's new",
-            "Added two example windows with unified title bars"
-          ]
-        },
-        "vi": {
-          "headline": "Cửa sổ mới và tab được đổi tên",
-          "items": [
-            "Tab Changelog giờ có tên là What's new",
-            "Thêm hai cửa sổ mẫu với thanh tiêu đề tích hợp"
-          ]
-        }
-      }
-    }
-  },
-  "0.11.1": {
-    "notesSha256": "feb938b90b420b2b44db9dcb5bc5a6941a3cdea78af38b77b6ca2bdf0eb6db19",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Extension Store screenshots added",
-          "items": [
-            "Screenshots of the About and Settings pages now appear in the Extension Store"
-          ]
-        },
-        "vi": {
-          "headline": "Thêm ảnh chụp màn hình cho Cửa hàng Tiện ích",
-          "items": [
-            "Trang Giới thiệu và Cài đặt giờ có ảnh chụp màn hình trong Cửa hàng Tiện ích"
           ]
         }
       }
