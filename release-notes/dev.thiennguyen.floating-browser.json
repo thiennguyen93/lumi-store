@@ -1,4 +1,64 @@
 {
+  "0.2.3": {
+    "notesSha256": "d675d696dac3878da07378dd009defb94f930d6bf467484f223fcd1f7bbaa027",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Choose whether the mini player follows what's playing or your last tab",
+          "items": [
+            "A new setting lets you keep the mini player on your last viewed tab even when another tab plays audio or video"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn trình phát mini theo dõi nội dung đang phát hay tab cuối",
+          "items": [
+            "Cài đặt mới giữ trình phát mini ở tab bạn xem cuối ngay cả khi tab khác đang phát âm thanh hoặc video"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.2": {
+    "notesSha256": "7e25181cbd5176c745fa8866224f41d0c04f9bbe0f37003496a3a2b76f27f43e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Extension Store page now explains what Floating Browser does",
+          "items": [
+            "The Extension Store page now describes what you get, how browsing stays private, and how to start"
+          ]
+        },
+        "vi": {
+          "headline": "Trang Extension Store giờ giải thích Floating Browser làm gì",
+          "items": [
+            "Trang Extension Store giờ mô tả Floating Browser làm gì, cách giữ riêng tư khi duyệt web, và cách bắt đầu"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.1": {
+    "notesSha256": "f198dabbd97c1fd76106b40d7ee415145b385bdf1949d041dfb182b6ee6c9994",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Demo video added to the Extension Store",
+          "items": [
+            "A demo video now shows how Floating Browser works before you install it"
+          ]
+        },
+        "vi": {
+          "headline": "Thêm video giới thiệu vào Cửa hàng Tiện ích",
+          "items": [
+            "Video giới thiệu giờ cho thấy Floating Browser hoạt động như thế nào trước khi cài đặt"
+          ]
+        }
+      }
+    }
+  },
   "0.2.0": {
     "notesSha256": "2c99d428e1ca75782dfb31873df8b69ce9a4dca505323325070e78acb6e34152",
     "summary": {
