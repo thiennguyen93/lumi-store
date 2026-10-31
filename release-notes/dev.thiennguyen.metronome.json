@@ -1,4 +1,56 @@
 {
+  "0.3.0": {
+    "notesSha256": "aab1ae43b6c7ad62cdc51daea806a4dd0d1d7f31f0a71ebe8f6bc7812dbf0638",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Tempo now counts the beat you hear",
+          "items": [
+            "Tempo counts the time signature's bottom note: 7/8 at 132 is now 132 eighth notes a minute",
+            "Tapping along with the clicks sets the tempo they are at, not double or half speed",
+            "Changing time signature keeps the clicks at the same speed: 4/4 to 6/8 sounds the same",
+            "Tempo markings like Allegro are judged in quarter notes, so 6/8 at 240 reads Moderato",
+            "A new tempo is heard from the next click, not after waiting for the one already planned",
+            "Changing clicks in a beat or taking beats out keeps the beat where it is"
+          ]
+        },
+        "vi": {
+          "headline": "Nhịp độ giờ đếm theo nhịp bạn nghe",
+          "items": [
+            "Nhịp độ đếm theo nốt dưới của nhịp: 7/8 ở 132 giờ là 132 nốt tám mỗi phút",
+            "Gõ theo tiếng click đặt nhịp độ đúng bằng tốc độ của chúng, không gấp đôi hay giảm nửa",
+            "Đổi nhịp giữ tốc độ click như cũ: từ 4/4 sang 6/8 nghe không đổi",
+            "Ký hiệu nhịp như Allegro được tính theo nốt tư, nên 6/8 ở 240 hiện Moderato",
+            "Nhịp độ mới được nghe từ tiếng click kế tiếp, không phải đợi tiếng đã định trước",
+            "Đổi số click trong nhịp hoặc bớt nhịp trong ô giữ nhịp đúng chỗ"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.4": {
+    "notesSha256": "b14acd321fb5455b7b1d35b22a6fc55566327853bae2a9d7f2a5066e326cf5a0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Your presets and changes are kept more reliably",
+          "items": [
+            "Your presets are no longer lost when the Metronome tab opens while Lumi is busy or Settings is hidden",
+            "Changes made while Settings is behind another app are now kept instead of being dropped"
+          ]
+        },
+        "vi": {
+          "headline": "Cài đặt sẵn và thay đổi được giữ lại đáng tin cậy hơn",
+          "items": [
+            "Cài đặt sẵn không còn bị mất khi mở tab Metronome trong lúc Lumi đang bận hoặc cửa sổ Cài đặt bị che khuất",
+            "Thay đổi thực hiện khi cửa sổ Cài đặt bị che khuất giờ được giữ lại thay vì bị bỏ qua"
+          ]
+        }
+      }
+    }
+  },
   "0.2.3": {
     "notesSha256": "a947e63ae89fd386fd4235bc0272636026a7522711d873159a2f3004d7e0557b",
     "summary": {
