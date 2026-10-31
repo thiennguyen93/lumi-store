@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.13] - 2026-10-31
+
+### Added
+
+- **Capitalize sentences**, as in Gõ Nhanh: the first letter after a full stop, **!** or **?** and a Space, or after a new line, is typed as a capital — “ok. ban” becomes “ok. Ban”. Off until you switch it on, on the Settings tab, in the menu or in the popover. Needs Lumi 1.68.0.
+
 ## [0.1.12] - 2026-10-22
 
 ### Changed

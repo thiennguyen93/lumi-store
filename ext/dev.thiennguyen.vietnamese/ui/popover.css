@@ -81,11 +81,14 @@ kbd {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
 }
 
-/* The four switches, as Control Center draws its own: a round symbol that
+/* The five switches, as Control Center draws its own: a round symbol that
    takes the accent when on, and beside it the name over what it does — one
    line each, cut with an ellipsis rather than wrapped, so every tile is the
    same height and its words line up with the symbol. */
 .mini { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 8px 10px; }
+/* Per app, last and across both columns: the fifth of an odd count, and the
+   one with icons to show beside its name. */
+.mini.wide { grid-column: span 2; }
 .dot { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--off); color: CanvasText; }
 .dot svg { width: 15px; height: 15px; }
 .mini[aria-checked="true"] .dot { background: var(--pick); color: #fff; }

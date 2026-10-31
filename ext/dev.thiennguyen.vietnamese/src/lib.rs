@@ -10,6 +10,14 @@
 //! made of it — delete so many characters, type this. A word ends at a space
 //! or punctuation (`commit`), which keeps the replay to one word.
 //!
+//! **What came before the word is replayed first.** Lumi tells the words this
+//! extension committed since the caret last moved, and a Return when it moved
+//! by one (`text_input::before`, Lumi 1.68.0), and they go through the engine
+//! ahead of the word, their answers dropped: that is how it knows a sentence
+//! just ended, and capitalizes the next one's first letter when
+//! `autoCapitalize` is on — Gõ Nhanh's own behaviour, after `.`, `!` or `?`
+//! and a Space, or a Return.
+//!
 //! **The engine works by key, the payload is by character.** Gõ Nhanh reads
 //! macOS keycodes and Shift, the way a key tap sees them; Lumi tells each
 //! key's character on the person's layout. So [`physical`] maps the character
@@ -37,6 +45,7 @@ pub struct Settings {
     pub modern_tone: bool,
     pub esc_restore: bool,
     pub english_restore: bool,
+    pub auto_capitalize: bool,
 }
 
 impl Settings {
@@ -47,6 +56,7 @@ impl Settings {
             modern_tone: flag(settings, "modernTone", true),
             esc_restore: flag(settings, "escRestore", true),
             english_restore: flag(settings, "englishRestore", false),
+            auto_capitalize: flag(settings, "autoCapitalize", false),
         }
     }
 }
@@ -58,16 +68,25 @@ fn flag(settings: &serde_json::Value, name: &str, default: bool) -> bool {
 }
 
 /// The answer to the last of `keys`, the keys of the word so far — or `None`,
-/// which lets the key type itself.
-pub fn respond(keys: &[text_input::Key], settings: Settings) -> Option<text_input::Edit> {
+/// which lets the key type itself. `before` is what Lumi told came before the
+/// word (`text_input::before`), replayed ahead of it with nothing answered
+/// for it; a key of it no Latin key types ended its word as typed, and is
+/// left out.
+pub fn respond(before: &[text_input::Key], keys: &[text_input::Key], settings: Settings) -> Option<text_input::Edit> {
     let mut engine = Engine::new();
     engine.set_method(if settings.vni { 1 } else { 0 });
     engine.set_modern_tone(settings.modern_tone);
     engine.set_esc_restore(settings.esc_restore);
     engine.set_english_auto_restore(settings.english_restore);
+    engine.set_auto_capitalize(settings.auto_capitalize);
 
-    let (last, before) = keys.split_last()?;
     for key in before {
+        if let Some((code, caps, shift)) = physical(key) {
+            engine.on_key_ext(code, caps, false, shift);
+        }
+    }
+    let (last, earlier) = keys.split_last()?;
+    for key in earlier {
         let (code, caps, shift) = physical(key)?;
         engine.on_key_ext(code, caps, false, shift);
     }
@@ -103,6 +122,9 @@ pub fn physical(key: &text_input::Key) -> Option<(u16, bool, bool)> {
     match key.code.as_str() {
         "Backspace" => return Some((kc::DELETE, false, false)),
         "Escape" => return Some((kc::ESC, false, false)),
+        // Only ever in what came before the word: Lumi tells a Return there.
+        "Enter" => return Some((kc::RETURN, false, false)),
+        "NumpadEnter" => return Some((kc::ENTER, false, false)),
         _ => {}
     }
     let mut characters = key.text.chars();
@@ -330,10 +352,11 @@ const METHODS: [(&str, &str); 2] = [("telex", "Telex"), ("vni", "VNI")];
 
 /// The engine's switches the menu holds: the setting, its manifest default,
 /// and its words — the Settings tab's own.
-const OPTIONS: [(&str, bool, &str, &str); 4] = [
+const OPTIONS: [(&str, bool, &str, &str); 5] = [
     ("modernTone", true, "Đặt dấu kiểu mới", "Place tone marks the modern way"),
     ("escRestore", true, "Esc trả lại phím đã gõ", "Escape gives back the keys"),
     ("englishRestore", false, "Giữ nguyên từ tiếng Anh", "Keep English words as typed"),
+    ("autoCapitalize", false, "Tự viết hoa đầu câu", "Capitalize sentences"),
     ("perApp", true, "Nhớ bật hay tắt cho từng ứng dụng", "Remember on or off for each app"),
 ];
 
@@ -357,7 +380,7 @@ const QUIT_ICON: &str = "power";
 const POPOVER: &str = "popover";
 
 /// What the popover shows, as JSON its page reads (popover.js): the switch,
-/// the typing method, the four switches by setting, the app the switch is
+/// the typing method, the five switches by setting, the app the switch is
 /// remembered for and the other apps it is remembered alike for ([`alike`],
 /// `{id, name}` each) — both only while it is remembered per app — and the
 /// display language. Every value read as the menu reads it
@@ -643,7 +666,8 @@ impl Guest for VietnameseTyping {
         if let Some(keys) = text_input::keys(&name, &payload) {
             // The sealed run: settings and the answer, nothing else.
             let settings = Settings::from_json(&lumi::settings());
-            return match respond(&keys, settings) {
+            let before = text_input::before(&name, &payload).unwrap_or_default();
+            return match respond(&before, &keys, settings) {
                 Some(edit) => text_input::answer(&edit),
                 None => Ok(()),
             };
@@ -678,7 +702,8 @@ lumi::register!(VietnameseTyping);
 mod tests {
     use super::*;
 
-    const TELEX: Settings = Settings { vni: false, modern_tone: true, esc_restore: true, english_restore: false };
+    const TELEX: Settings =
+        Settings { vni: false, modern_tone: true, esc_restore: true, english_restore: false, auto_capitalize: false };
 
     /// A US layout's `KeyboardEvent.code` for a character.
     fn code(character: char) -> &'static str {
@@ -690,35 +715,83 @@ mod tests {
         }
     }
 
-    /// Types `script` through `respond` the way Lumi's host does — the keys
-    /// of the word replayed, the answer held to its bounds — and answers the
-    /// document. `⌫` is Backspace and `⎋` Escape.
+    /// Types `script` through `respond` the way Lumi's host does
+    /// (`text_input::Session` in Lumi) — the keys of the word replayed, what
+    /// came before it told beside them, the answer held to its bounds — and
+    /// answers the document. `⌫` is Backspace, `⎋` Escape and `⏎` Return.
     fn typed(script: &str, settings: Settings) -> String {
+        /// Lumi's bound on the keys of a replay, what came before included.
+        const MAX_KEYS: usize = 32;
         let mut doc = String::new();
         let mut keys: Vec<text_input::Key> = Vec::new();
         let mut shadow = String::new();
+        // The words committed since the caret moved, and a Return, newest
+        // last: what a Backspace reaches back into and what is told before.
+        let mut committed: Vec<(Vec<text_input::Key>, String)> = Vec::new();
         for character in script.chars() {
             let key = match character {
                 '⌫' => text_input::Key { text: String::new(), code: "Backspace".to_string() },
                 '⎋' => text_input::Key { text: String::new(), code: "Escape".to_string() },
+                '⏎' => {
+                    // The application's line break: the word ends, what came
+                    // before is forgotten, and the Return stands before what
+                    // follows.
+                    doc.push('\n');
+                    keys.clear();
+                    shadow.clear();
+                    committed = vec![(vec![text_input::Key { text: String::new(), code: "Enter".to_string() }], String::new())];
+                    continue;
+                }
                 c => text_input::Key { text: c.to_string(), code: code(c).to_string() },
             };
-            let told = key.code == "Backspace" || key.code == "Escape";
-            if told && shadow.is_empty() {
+            let backspace = key.code == "Backspace";
+            let mut reached = false;
+            if backspace && shadow.is_empty() {
+                if committed.last().is_some_and(|(k, s)| !s.is_empty() && k.len() + keys.len() < MAX_KEYS) {
+                    let (k, s) = committed.pop().expect("just read");
+                    keys.splice(0..0, k);
+                    shadow = s;
+                    reached = true;
+                } else {
+                    committed.clear();
+                }
+            }
+            let told = backspace || key.code == "Escape";
+            if told && shadow.is_empty() && keys.is_empty() {
                 // No word open: the application's own key.
-                if key.code == "Backspace" {
+                if backspace {
                     doc.pop();
                 }
-                keys.clear();
+                committed.clear();
                 continue;
             }
             keys.push(key.clone());
+            let mut room = MAX_KEYS - keys.len();
+            let mut told_words = 0;
+            for (k, _) in committed.iter().rev() {
+                if k.len() > room {
+                    break;
+                }
+                room -= k.len();
+                told_words += 1;
+            }
+            let before: Vec<text_input::Key> =
+                committed[committed.len() - told_words..].iter().flat_map(|(k, _)| k.iter().cloned()).collect();
             let identity = match key.code.as_str() {
                 "Backspace" => edit(1, "", false),
                 "Escape" => edit(0, "", true),
                 _ => edit(0, &key.text, false),
             };
-            let answer = respond(&keys, settings).unwrap_or(identity);
+            let answer = respond(&before, &keys, settings);
+            if reached && answer.as_ref().is_some_and(|answer| answer.delete_before == 0) {
+                // A reach back not taken: the application's Backspace.
+                doc.pop();
+                keys.clear();
+                shadow.clear();
+                committed.clear();
+                continue;
+            }
+            let answer = answer.unwrap_or(identity);
             assert!(answer.delete_before as usize <= shadow.chars().count(), "{script:?}: deletes past the word");
             assert!(!answer.insert.chars().any(char::is_control), "{script:?}: a control character");
             for _ in 0..answer.delete_before {
@@ -727,9 +800,12 @@ mod tests {
             }
             doc.push_str(&answer.insert);
             shadow.push_str(&answer.insert);
-            if answer.commit || key.code == "Escape" {
+            if key.code == "Escape" {
                 keys.clear();
                 shadow.clear();
+                committed.clear();
+            } else if answer.commit {
+                committed.push((std::mem::take(&mut keys), std::mem::take(&mut shadow)));
             }
         }
         doc
@@ -763,6 +839,34 @@ mod tests {
     }
 
     #[test]
+    fn sentences_begin_with_a_capital_when_asked() {
+        let cap = Settings { auto_capitalize: true, ..TELEX };
+        assert_eq!(typed("ok. ban ", TELEX), "ok. ban ", "off by default, as in Gõ Nhanh");
+        assert_eq!(typed("ok. ban ", cap), "ok. Ban ");
+        assert_eq!(typed("xin chaof. tooi ", cap), "xin chào. Tôi ");
+        assert_eq!(typed("ok! ban ok? ban ", cap), "ok! Ban ok? Ban ");
+        assert_eq!(typed("ok.  ban ", cap), "ok.  Ban ", "however many Spaces");
+        assert_eq!(typed("ok. \"ban", cap), "ok. \"Ban", "past an opening quote");
+        assert_eq!(typed("ok⏎ban ", cap), "ok\nBan ", "after a Return");
+        assert_eq!(typed("ok. b⌫ban ", cap), "ok. Ban ", "the capital taken back comes again");
+        assert_eq!(typed("ok.ban ", cap), "ok.ban ", "a dot with no Space ends no sentence");
+        assert_eq!(typed("ok, ban ", cap), "ok, ban ");
+        assert_eq!(typed("ok. ba1n ", Settings { vni: true, ..cap }), "ok. Bán ");
+    }
+
+    /// The engine opens a committed word again when Lumi tells it the word,
+    /// the key that ended it and the Backspace — a guard on any engine bump.
+    #[test]
+    fn a_backspace_reaches_back_into_the_word_before() {
+        assert_eq!(typed("hoa ⌫s", TELEX), "hoá");
+        assert_eq!(typed("chuw ⌫x", TELEX), "chữ");
+        assert_eq!(typed("hoa, ⌫⌫s", TELEX), "hoá");
+        assert_eq!(typed("xin chao ⌫⌫⌫⌫⌫⌫s", TELEX), "xín");
+        assert_eq!(typed("hoa ⌫1", Settings { vni: true, ..TELEX }), "hoá");
+        assert_eq!(typed("ok⏎⌫x", TELEX), "okx", "a Return is never reached back into");
+    }
+
+    #[test]
     fn a_character_no_latin_key_types_ends_the_word_as_typed() {
         assert_eq!(physical(&text_input::Key { text: "å".to_string(), code: "KeyA".to_string() }), None);
         assert_eq!(typed("aå", TELEX), "aå");
@@ -779,10 +883,12 @@ mod tests {
 
     #[test]
     fn settings_arrive_as_strings() {
-        let settings = serde_json::json!({"method": "vni", "modernTone": "false", "escRestore": "true", "englishRestore": "true"});
+        let settings = serde_json::json!({
+            "method": "vni", "modernTone": "false", "escRestore": "true", "englishRestore": "true", "autoCapitalize": "true",
+        });
         assert_eq!(
             Settings::from_json(&settings),
-            Settings { vni: true, modern_tone: false, esc_restore: true, english_restore: true }
+            Settings { vni: true, modern_tone: false, esc_restore: true, english_restore: true, auto_capitalize: true }
         );
         assert_eq!(Settings::from_json(&serde_json::json!({})), TELEX);
     }
@@ -828,6 +934,7 @@ mod tests {
                 ("option:modernTone", true),
                 ("option:escRestore", true),
                 ("option:englishRestore", false),
+                ("option:autoCapitalize", false),
                 ("option:perApp", true),
                 ("-", false),
                 ("settings", false),
@@ -837,7 +944,7 @@ mod tests {
         );
         let saved = serde_json::json!({
             "method": "vni", "modernTone": "false", "escRestore": "false",
-            "englishRestore": "true", "perApp": "false",
+            "englishRestore": "true", "autoCapitalize": "true", "perApp": "false",
         });
         let ticks: Vec<(String, bool)> =
             drawn(&menu_entries(false, &saved)).into_iter().filter(|(id, _)| id != "-").collect();
@@ -850,6 +957,7 @@ mod tests {
                 ("option:modernTone", false),
                 ("option:escRestore", false),
                 ("option:englishRestore", true),
+                ("option:autoCapitalize", true),
                 ("option:perApp", false),
                 ("settings", false),
                 ("quit", false),
@@ -875,6 +983,7 @@ mod tests {
                 "Place tone marks the modern way",
                 "Escape gives back the keys",
                 "Keep English words as typed",
+                "Capitalize sentences",
                 "Remember on or off for each app",
                 "Settings…",
                 "Quit",
@@ -887,6 +996,7 @@ mod tests {
             "Đặt dấu kiểu mới",
             "Esc trả lại phím đã gõ",
             "Giữ nguyên từ tiếng Anh",
+            "Tự viết hoa đầu câu",
             "Nhớ bật hay tắt cho từng ứng dụng",
             "Cài đặt…",
             "Thoát",
@@ -907,7 +1017,9 @@ mod tests {
                 "v": 1,
                 "on": true,
                 "method": "telex",
-                "options": { "modernTone": true, "escRestore": true, "englishRestore": false, "perApp": true },
+                "options": {
+                    "modernTone": true, "escRestore": true, "englishRestore": false, "autoCapitalize": false, "perApp": true,
+                },
                 "app": "Slack",
                 "alike": [{ "id": "com.apple.Notes", "name": "Notes" }],
                 "language": "vi",

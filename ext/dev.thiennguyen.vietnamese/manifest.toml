@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.12"
+version = "0.1.13"
 description = "Vietnamese typing for your Mac, with Telex or VNI and no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
@@ -22,10 +22,12 @@ screenshots = ["shots/1-popover.png", "shots/2-per-app.png", "shots/3-settings.p
 # the id out of the link and publishes YouTube's picture of it beside the
 # package, so the store page asks nothing of YouTube until play is pressed.
 video = "https://youtu.be/qhMTPz81R3w"
-# 1.62.0 for the toggle's `tap+fn+shift` below: 1.61.0 reads `tap` as a
-# word it does not know in a key and refuses the whole manifest for it.
-# (1.61.0 is what `text-input`, `front-app` and `menu-bar-item` need.)
-min-lumi-version = "1.62.0"
+# 1.68.0 for what came before the word (`text_input::before`), which
+# Capitalize sentences reads where the last sentence ended from: an older
+# Lumi tells none, and the switch would do nothing. (1.62.0 is what the
+# toggle's `tap+fn+shift` below needs, 1.61.0 `text-input`, `front-app`
+# and `menu-bar-item`.)
+min-lumi-version = "1.68.0"
 # `text-input`: every key of the word, answered in a sealed run. The review
 # sheet says it loudest and adds a warning; Lumi refuses it beside
 # `network` or `ai`, and this extension holds neither.
@@ -153,6 +155,14 @@ default = "true"
 [[settings]]
 name = "englishRestore"
 label = "Keep English words as typed"
+kind = "bool"
+default = "false"
+
+# Off, as in Gõ Nhanh: a capital nobody typed is a surprise until somebody
+# asks for it.
+[[settings]]
+name = "autoCapitalize"
+label = "Capitalize the first letter of a sentence"
 kind = "bool"
 default = "false"
 

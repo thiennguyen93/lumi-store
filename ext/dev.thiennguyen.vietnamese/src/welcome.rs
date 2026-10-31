@@ -103,7 +103,8 @@ mod tests {
     use crate::{respond, Settings};
     use lumi_extension_api::text_input;
 
-    const TELEX: Settings = Settings { vni: false, modern_tone: true, esc_restore: true, english_restore: false };
+    const TELEX: Settings =
+        Settings { vni: false, modern_tone: true, esc_restore: true, english_restore: false, auto_capitalize: false };
     const VNI: Settings = Settings { vni: true, ..TELEX };
 
     /// `word` typed key by key through [`respond`], the way Lumi types
@@ -114,7 +115,7 @@ mod tests {
         let mut shown: Vec<char> = Vec::new();
         for character in word.chars() {
             keys.push(text_input::Key { text: character.to_string(), code: String::new() });
-            match respond(&keys, settings) {
+            match respond(&[], &keys, settings) {
                 Some(edit) => {
                     shown.truncate(shown.len().saturating_sub(edit.delete_before as usize));
                     shown.extend(edit.insert.chars());

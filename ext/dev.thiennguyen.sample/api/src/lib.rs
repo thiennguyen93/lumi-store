@@ -2535,9 +2535,10 @@ pub mod text_input {
     pub const ENABLED_EVENT: &str = "text-input-enabled";
 
     /// One key of the word: the character it typed on the person's keyboard
-    /// layout (empty for Backspace), and its `KeyboardEvent.code` name — the
-    /// physical key, `"KeyA"`, `"Digit2"`, `"Backspace"` — for an engine that
-    /// works by key rather than by character.
+    /// layout (empty for Backspace, Escape and Return), and its
+    /// `KeyboardEvent.code` name — the physical key, `"KeyA"`, `"Digit2"`,
+    /// `"Backspace"`, `"Enter"` — for an engine that works by key rather than
+    /// by character.
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct Key {
         pub text: String,
@@ -2565,9 +2566,33 @@ pub mod text_input {
             return None;
         }
         let value: serde_json::Value = serde_json::from_str(payload).ok()?;
-        value
-            .get("keys")?
-            .as_array()?
+        keys_in(value.get("keys")?)
+    }
+
+    /// What came before the word since the caret last moved, oldest first,
+    /// when [`Guest::on_event`](crate::Guest::on_event) was called for a key:
+    /// the keys of the words your answers committed, and a Return (`"Enter"`
+    /// or `"NumpadEnter"`) when the caret moved by one — as many whole words
+    /// as fit beside the word's keys in 32 — and nothing when nothing did.
+    /// Feed them to your engine ahead of [`keys`] so it knows the sentence it
+    /// is in, and answer for the last of [`keys`] alone: you may still delete
+    /// only what you typed into this word.
+    ///
+    /// Needs Lumi 1.68.0 or later; an older Lumi tells nothing before the
+    /// word, and this answers an empty list.
+    pub fn before(name: &str, payload: &str) -> Option<Vec<Key>> {
+        if name != EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        match value.get("before") {
+            Some(before) => keys_in(before),
+            None => Some(Vec::new()),
+        }
+    }
+
+    fn keys_in(keys: &serde_json::Value) -> Option<Vec<Key>> {
+        keys.as_array()?
             .iter()
             .map(|key| {
                 Some(Key {
@@ -2627,6 +2652,18 @@ pub mod text_input {
             assert!(keys[1].is_backspace());
             assert!(super::keys("timer", payload).is_none());
             assert_eq!(super::enabled_changed("text-input-enabled", r#"{"v":1,"enabled":false,"at":1}"#), Some(false));
+        }
+
+        #[test]
+        fn what_came_before_the_word_is_its_own_list_and_empty_when_untold() {
+            let payload = r#"{"v":1,"keys":[{"text":"b","code":"KeyB"}],"before":[{"text":".","code":"Period"},{"text":" ","code":"Space"},{"text":"","code":"Enter"}]}"#;
+            let before = super::before("text-input", payload).expect("before");
+            let codes: Vec<&str> = before.iter().map(|key| key.code.as_str()).collect();
+            assert_eq!(codes, ["Period", "Space", "Enter"]);
+            assert_eq!(super::keys("text-input", payload).expect("keys").len(), 1, "the word's keys alone");
+            let untold = r#"{"v":1,"keys":[{"text":"b","code":"KeyB"}]}"#;
+            assert_eq!(super::before("text-input", untold), Some(Vec::new()), "an older Lumi tells nothing");
+            assert!(super::before("timer", payload).is_none());
         }
     }
 }
