@@ -3,7 +3,7 @@ A steady beat to practise with, right inside Lumi. Pick a tempo, a time signatur
 ## Set the beat
 
 - **Tempo** from 20 to 300 beats a minute: − and + (hold **⇧** for 10), the slider, the **←** and **→** keys, a double-click on the number to type it in, or tap it in with **Tap** or **T**.
-- **Time signature**: 2/4, 3/4, 4/4, 5/4, 6/8, 7/8 and 12/8, or one of your own — any number of beats of half, quarter, eighth or sixteenth notes.
+- **Time signature**: 2/4, 3/4, 4/4, 5/4, 6/8, 7/8 and 12/8, or one of your own — up to 16 beats of half, quarter, eighth or sixteenth notes.
 - **Subdivision**: two, three or four clicks inside each beat.
 - **Accent** the first beat of every bar, louder and higher. With Beat Pads, accent any beat or leave it silent.
 - **Sound**: Click, Woodblock, Beep, Wind-up, Cowbell, Hi-hat, Sticks or Clave, and a volume of its own.
@@ -25,7 +25,7 @@ Choose in the **Settings** tab, or at the foot of the Metronome tab while it pla
 
 ## Good to know
 
-- The beat is kept on the Mac's audio clock, so it stays steady however busy the Mac is.
+- Every click is placed ahead of time on the Mac's audio clock, not on a timer in the page, so the clicks stay evenly spaced.
 - **Space** starts and stops. With Reduce Motion on, nothing swings or sweeps — the beat is shown by light alone.
 - It asks for nothing, and nothing leaves this Mac.
-- The beat plays while the Metronome tab is open, and stops when you leave it or close Settings.
+- The beat plays while the Metronome tab is open, and stops when you move to another tab.

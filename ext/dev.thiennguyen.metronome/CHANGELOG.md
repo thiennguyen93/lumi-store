@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4] - 2026-10-31
+
+### Fixed
+
+- Your presets are no longer lost when the Metronome tab opens while Lumi is busy or Settings is behind another app. The tab waits for what you kept, instead of starting empty and saving that over it.
+- A change made while Settings is behind another app, such as turning Orbit's ring, is kept: it is sent again until Lumi takes it, instead of being dropped.
+
 ## [0.2.3] - 2026-10-29
 
 ### Fixed

@@ -5,10 +5,10 @@
 [extension]
 id = "dev.thiennguyen.metronome"
 name = "Metronome"
-version = "0.2.3"
+version = "0.2.4"
 description = "A steady beat to practise with: tempo, time signature, sound and an accented first beat."
 author = "Thien Nguyen"
-summary = "Opens a Metronome tab here in Lumi. Set a tempo from 20 to 300 beats a minute — or type it in, or tap it — a time signature, extra clicks inside each beat, a sound and a volume, and accent the first beat of every bar or any other, or leave a beat silent. Keep what you set as a preset and come back to it with one click. Four ways to see the beat: a wind-up pendulum, a ring, a row of pads or plain settings rows. The beat is kept on the Mac's audio clock, so it stays steady however busy the Mac is, and nothing leaves this Mac."
+summary = "Opens a Metronome tab here in Lumi. Set a tempo from 20 to 300 beats a minute — or type it in, or tap it — a time signature, extra clicks inside each beat, a sound and a volume, and accent the first beat of every bar or any other, or leave a beat silent. Keep what you set as a preset and come back to it with one click. Four ways to see the beat: a wind-up pendulum, a ring, a row of pads or plain settings rows. Every click is placed ahead of time on the Mac's audio clock, so the clicks stay evenly spaced, and nothing leaves this Mac."
 homepage = "https://lumikeys.app/docs/extensions"
 # Built and tried on 1.64.0. Nothing it uses is newer — `[tabs]` is 1.32.0,
 # `[[page]]` and the bridge's `call` older still — but no older Lumi has been

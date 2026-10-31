@@ -13,6 +13,12 @@
 // change is sent, one call in flight at a time and only the newest waiting
 // behind it, and whatever is waiting when the page is put away goes with
 // `keepalive`, so a tempo changed just before switching tabs is not lost.
+//
+// Lumi does not always answer at once. It refuses a page's call (403)
+// while Settings is hidden or behind another app, and says 503 while the
+// component is busy; both answer in a moment, so both are asked again.
+// Nothing is saved until the load has been answered: a page that could not
+// read the presets and saved anyway would put none over all of them.
 
 import { DEFAULTS, fitLevels, type Settings } from "./metronome";
 
@@ -88,17 +94,56 @@ function nameOf(raw: unknown): string | null {
   return name.slice(0, 40);
 }
 
+/** How long to wait before asking again after `tries` refusals. */
+function backoff(tries: number): number {
+  return Math.min(250 * 2 ** tries, 4000);
+}
+
+/** Resolves after `ms`, or sooner when the page comes back in front of
+ *  somebody — the moment a call refused for being put away is answered. */
+function again(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      removeEventListener("focus", done);
+      document.removeEventListener("visibilitychange", done);
+      resolve();
+    };
+    const timer = setTimeout(done, ms);
+    addEventListener("focus", done);
+    document.addEventListener("visibilitychange", done);
+  });
+}
+
+/** Whether a refusal answers differently in a moment: the page put away
+ *  or behind another app (403), or the component busy (503). Anything
+ *  else is a failure, asked again only a few times. */
+const passing = (status: number) => status === 403 || status === 503;
+
+/** Set once the load is answered; until then nothing is saved. */
+let loaded = false;
+
 export async function load(): Promise<Saved> {
-  try {
-    const response = await call({ op: "load", store });
-    if (response.ok) {
-      const stored = (await response.json()) as unknown;
-      if (stored) return savedOf(stored);
+  for (let tries = 0; ; tries++) {
+    let status = 0;
+    try {
+      const response = await call({ op: "load", store });
+      if (response.ok) {
+        const stored = (await response.json()) as unknown;
+        loaded = true;
+        if (stored) return savedOf(stored);
+        return import.meta.env.DEV ? fromTheOldMock() : EMPTY;
+      }
+      status = response.status;
+    } catch {
+      // No answer at all; asked again like a failure.
     }
-  } catch {
-    // Nothing kept, or nobody to ask: start from the defaults.
+    if (!passing(status) && tries >= 3) break;
+    await again(backoff(tries));
   }
-  return import.meta.env.DEV ? fromTheOldMock() : EMPTY;
+  // Never answered: the defaults, with saving left off, so the presets
+  // that could not be read are still there the next time the tab opens.
+  return EMPTY;
 }
 
 /** `pnpm dev` only: the first mock kept the practice in the page's own
@@ -116,22 +161,36 @@ function fromTheOldMock(): Saved {
 let sending = false;
 let waiting: Saved | null = null;
 
+/** Sends what is waiting until it is kept. `sending` covers the wait
+ *  between tries too, so changes made meanwhile only replace what is
+ *  waiting and go with the next try. */
 async function flush() {
-  if (sending || !waiting) return;
+  if (sending) return;
   sending = true;
-  const next = waiting;
-  waiting = null;
-  try {
-    await call({ op: "save", store, saved: next });
-  } catch {
-    // Kept on the page; the next change tries again.
-  } finally {
-    sending = false;
-    if (waiting) void flush();
+  for (let tries = 0; waiting; ) {
+    const next = waiting;
+    waiting = null;
+    let status = 0;
+    try {
+      status = (await call({ op: "save", store, saved: next })).status;
+    } catch {
+      // No answer at all; asked again like a failure.
+    }
+    if (status >= 200 && status < 300) {
+      tries = 0;
+      continue;
+    }
+    // Not kept: a newer change goes in its place, or this one again.
+    waiting ??= next;
+    // A failure past a few tries waits for the next change.
+    if (!passing(status) && tries >= 3) break;
+    await again(backoff(tries++));
   }
+  sending = false;
 }
 
 export function save(saved: Saved) {
+  if (!loaded) return;
   waiting = saved;
   void flush();
 }
