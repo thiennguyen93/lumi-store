@@ -363,3 +363,16 @@ without one.
    covers every extension — so nothing about hearts is ever published
    here. Renaming or deleting the category breaks the job, not the
    release: the index then carries `discussion: null`.
+
+## License
+
+Everything in this repo is under the MIT License ([`LICENSE`](LICENSE))
+unless a folder says otherwise:
+
+- `ext/dev.thiennguyen.vietnamese/` is GPL-2.0-or-later, because its
+  Vietnamese word list is GPL — its own `LICENSE` and
+  `THIRD-PARTY-NOTICES.md` carry the detail.
+- A submodule under `ext/` is a repo of its own, under the licence that
+  repo carries; this one holds only the commit it is pinned to. The
+  first-party private entries are closed source.
+- The MIT License covers code and text, not the name Lumi or Lumi's logo.
