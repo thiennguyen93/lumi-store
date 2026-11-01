@@ -1128,10 +1128,14 @@ pub fn set_anchor(name: &str, at: &str, side: &str) -> Result<(), String> {
     lumi::ext::ui::set_anchor(name, at, side)
 }
 
-/// Choose light or dark for one of your panels — "light", "dark" or
-/// "system" — for a theme setting. Applies at once if the panel is up, and
-/// Lumi keeps it across a restart and an update (Lumi 1.61.0), so set it
-/// when the setting changes, not before every showing.
+/// Choose light or dark for one of your windows — "light", "dark" or
+/// "system" — for a theme setting. A panel's glass, a plain window's title
+/// bar and the page's `prefers-color-scheme` follow it together. Applies at
+/// once if the window is open, a window not open yet opens in it, and Lumi
+/// keeps it across a restart and an update (Lumi 1.61.0), so set it when the
+/// setting changes, not before every showing. A plain window needs Lumi
+/// 1.70.0 — an older Lumi refuses it as not a panel — so say so with
+/// `min-lumi-version` when its look matters.
 pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
     lumi::ext::ui::set_theme(name, theme)
 }

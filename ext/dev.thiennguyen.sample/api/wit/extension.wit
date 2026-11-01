@@ -1535,12 +1535,14 @@ interface ui {
     /// position is refused. Added in Lumi 1.47.
     set-anchor: func(name: string, at: string, side: string) -> result<_, string>;
 
-    /// Choose light or dark for one of your panels: "light", "dark", or
-    /// "system" to follow macOS again — for a theme setting. The panel's
-    /// glass and its page's `prefers-color-scheme` both follow. Takes effect
-    /// at once if the panel is up, and every time it is shown; Lumi keeps
-    /// the choice across a restart and an update (Lumi 1.61), so the first
-    /// showing after a launch is already in it. Added in 0.3.
+    /// Choose light or dark for one of your windows: "light", "dark", or
+    /// "system" to follow macOS again — for a theme setting. A panel's
+    /// glass, a plain window's title bar and the page's
+    /// `prefers-color-scheme` all follow. Takes effect at once if the window
+    /// is open, and every time it is shown; Lumi keeps the choice across a
+    /// restart and an update (Lumi 1.61), so the first showing after a
+    /// launch is already in it. Added in 0.3 for panels; a plain window
+    /// from Lumi 1.70, which an older Lumi refuses.
     set-theme: func(name: string, theme: string) -> result<_, string>;
 
     /// Pin one of your panels, or let it go: a pinned panel stays up while
