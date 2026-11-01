@@ -496,6 +496,13 @@ class BesideAnotherWindow(unittest.TestCase):
         self.assertIn('only a panel at position = "window"', refusal('kind = "panel"\nposition = "selection"\nanchor = { window = "card" }'))
         self.assertIn("only a panel has", refusal('position = "window"'))
 
+    def test_it_may_follow_its_window_and_only_it(self):
+        beside_pill('anchor = { window = "pill", follow = true }')
+        beside_pill('anchor = { window = "pill", at = "end", side = "above", follow = false }')
+        self.assertIn("follow is true or false", beside_pill_refusal('anchor = { window = "pill", follow = "yes" }'))
+        refused = refusal('kind = "panel"\nposition = "selection"\nanchor = { follow = true }')
+        self.assertIn('anchor follow, which only a panel at position = "window"', refused)
+
 
 class PanelFloor(unittest.TestCase):
     """A panel's floor is a panel's (`PANEL_*_MIN`, Lumi 1.47): a one-row

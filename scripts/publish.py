@@ -604,6 +604,14 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f'the panel {name} opens beside another window and names none; add anchor = {{ window = "…" }}')
         elif isinstance(anchor, dict) and str(anchor.get("window", "")).strip():
             fail(entry_id, f'the window {name} sets anchor window, which only a panel at position = "window" has')
+        # Going where its window goes (Lumi 1.69): that position's alone too,
+        # a yes or a no — an older Lumi refuses the key, so a manifest saying
+        # it raises its floor.
+        if isinstance(anchor, dict) and "follow" in anchor:
+            if not beside_window:
+                fail(entry_id, f'the window {name} sets anchor follow, which only a panel at position = "window" has')
+            if not isinstance(anchor["follow"], bool):
+                fail(entry_id, f"the panel {name}'s anchor follow is true or false")
         if "anchor" in window:
             if position not in ("selection", "menu-bar-item", "window") or kind != "panel":
                 fail(
@@ -611,7 +619,7 @@ def check_manifest(entry_id: str, manifest: dict):
                     f'the window {name} sets an anchor, which only a panel at position = "selection", '
                     '"menu-bar-item" or "window" has',
                 )
-            if not isinstance(anchor, dict) or not set(anchor) <= {"at", "side", "window"}:
+            if not isinstance(anchor, dict) or not set(anchor) <= {"at", "side", "window", "follow"}:
                 fail(entry_id, f"the panel {name}'s anchor is a table of at and side")
             at = str(anchor.get("at", "")).strip()
             side = str(anchor.get("side", "")).strip()
