@@ -1,4 +1,28 @@
 {
+  "0.1.13": {
+    "notesSha256": "d08b64f62c9e1ab88b93e35f90f904b44619589070f80e6c5087667384bc389f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Capitalize sentences automatically",
+          "items": [
+            "Capitalize the first letter after a full stop, exclamation mark, question mark, or new line",
+            "Turn it on in Settings, the menu, or the popover",
+            "Requires Lumi 1.68.0"
+          ]
+        },
+        "vi": {
+          "headline": "Tự động viết hoa đầu câu",
+          "items": [
+            "Viết hoa chữ cái đầu tiên sau dấu chấm, dấu chấm than, dấu hỏi hoặc dòng mới",
+            "Bật tính năng trong Cài đặt, menu hoặc cửa sổ nhỏ",
+            "Yêu cầu Lumi 1.68.0"
+          ]
+        }
+      }
+    }
+  },
   "0.1.12": {
     "notesSha256": "8bfcce38995de5a2714dec93fb5cd4cce7a9894d75d4f6d93cc4f83f0e1b4939",
     "summary": {
