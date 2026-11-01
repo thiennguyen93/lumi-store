@@ -1,4 +1,168 @@
 {
+  "0.2.10": {
+    "notesSha256": "5dd02d499392724c6c398a6903a1b537ea9fafc0f0494c1cb1ce281ff762fc32",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Keyboard shortcuts now work in the menu bar icon's menu",
+          "items": [
+            "Arrow keys navigate menu items and Return or Space selects the highlighted item",
+            "Type the first letters of a menu item to jump to it",
+            "Left and right arrows adjust zoom when the zoom row is highlighted",
+            "Keyboard shortcuts like ⌘T and ⌘Y now work while the menu is open"
+          ]
+        },
+        "vi": {
+          "headline": "Phím tắt giờ hoạt động trong menu của biểu tượng thanh menu",
+          "items": [
+            "Phím mũi tên di chuyển giữa các mục và Return hoặc Space chọn mục đang sáng",
+            "Gõ chữ cái đầu của mục menu để nhảy đến mục đó",
+            "Mũi tên trái phải điều chỉnh zoom khi hàng zoom đang được chọn",
+            "Các phím tắt như ⌘T và ⌘Y giờ hoạt động khi menu đang mở"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.9": {
+    "notesSha256": "9680ef1d3a18e1a8e535523f14dc9f0c0cf7e92b766802037b5e4c397a731b9e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Menu now opens in its own panel",
+          "items": [
+            "The menu opens in its own panel under the icon so a small browser no longer cuts it off"
+          ]
+        },
+        "vi": {
+          "headline": "Menu giờ mở trong bảng riêng",
+          "items": [
+            "Menu mở trong bảng riêng bên dưới biểu tượng nên trình duyệt nhỏ không còn che khuất nó"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.8": {
+    "notesSha256": "31f2370cfa73323499a9111da380983a5f3da3a4757787cfb37a4a688c2fdc1a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Zoom controls, smaller minimum size, and refined menus",
+          "items": [
+            "Zoom in, zoom out, and reset with Command-plus, Command-minus, and Command-zero",
+            "Each site remembers its zoom level across tabs and visits",
+            "The browser can now be resized down to 368 by 200 pixels",
+            "Menu items for Compact Mode, Desktop Site, and Zoom now have icons",
+            "The light behind Lumi's mark in the pill is now a perfect circle"
+          ]
+        },
+        "vi": {
+          "headline": "Điều khiển thu phóng, kích thước tối thiểu nhỏ hơn và menu tinh chỉnh",
+          "items": [
+            "Phóng to, thu nhỏ và đặt lại bằng Command-cộng, Command-trừ và Command-không",
+            "Mỗi trang web ghi nhớ mức thu phóng của nó qua các tab và lần truy cập",
+            "Trình duyệt giờ có thể thu nhỏ xuống 368 x 200 pixel",
+            "Các mục menu Chế độ gọn, Trang dành cho máy tính và Thu phóng giờ có biểu tượng",
+            "Vầng sáng phía sau biểu tượng Lumi trong viên thuốc giờ là hình tròn hoàn hảo"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.7": {
+    "notesSha256": "2b50bf323a360d75a7e304cee246f9fca0362ceae004723e3fcc23082d28981d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Compact Mode shows site icons and keeps its title centered",
+          "items": [
+            "The title in Compact Mode now shows the site's icon before it, just like the tab strip does",
+            "The title stays centered in Compact Mode even as buttons appear underneath"
+          ]
+        },
+        "vi": {
+          "headline": "Chế độ thu gọn hiển thị biểu tượng trang và giữ tiêu đề ở giữa",
+          "items": [
+            "Tiêu đề ở chế độ thu gọn giờ hiển thị biểu tượng của trang web phía trước, giống như thanh tab",
+            "Tiêu đề luôn ở giữa trong chế độ thu gọn ngay cả khi các nút xuất hiện bên dưới"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.6": {
+    "notesSha256": "9235ce0390b412ada199b78410b8e66a5430645da98a7456b44d2d6e40e681b7",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Maximize button and double-click to fill the screen",
+          "items": [
+            "Maximize button added between Minimize and Close to fill the screen",
+            "Double-click the tab strip or Compact Mode bar to maximize",
+            "Restore button returns the browser to its previous size and position"
+          ]
+        },
+        "vi": {
+          "headline": "Nút phóng to và nhấp đúp để chiếm toàn màn hình",
+          "items": [
+            "Thêm nút phóng to giữa nút thu nhỏ và đóng để chiếm toàn màn hình",
+            "Nhấp đúp vào thanh tab hoặc thanh Chế độ gọn để phóng to",
+            "Nút khôi phục đưa trình duyệt về kích thước và vị trí ban đầu"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.5": {
+    "notesSha256": "2db42a4b8c1bbae8ead9d2f5c7ed5dcf9d34119d97dd7b29273ff9d64c9032cf",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour follows your chosen appearance",
+          "items": [
+            "The Welcome tour now uses the appearance you picked in Settings"
+          ]
+        },
+        "vi": {
+          "headline": "Hướng dẫn đầu tiên theo giao diện bạn chọn",
+          "items": [
+            "Hướng dẫn chào mừng giờ dùng giao diện bạn đã chọn trong Cài đặt"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.4": {
+    "notesSha256": "819a5b091bc4e488d0cdf68d20cafd4957363aba0150d30032a5681ffbb37c13",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The tip now follows the pill as you drag it",
+          "items": [
+            "The tip over the pill follows it when you drag, staying beside it and pointing at it",
+            "The tip moves below the pill when you leave the pill at the top of the screen",
+            "The pill rings while its tip is showing, and clicking the pill dismisses the tip"
+          ]
+        },
+        "vi": {
+          "headline": "Mẹo giờ đây theo viên thuốc khi bạn kéo",
+          "items": [
+            "Mẹo trên viên thuốc theo nó khi bạn kéo, luôn ở bên cạnh và chỉ vào nó",
+            "Mẹo chuyển xuống dưới viên thuốc khi bạn để viên thuốc ở trên cùng màn hình",
+            "Viên thuốc rung khi mẹo đang hiển thị, và nhấp vào viên thuốc sẽ đóng mẹo"
+          ]
+        }
+      }
+    }
+  },
   "0.2.3": {
     "notesSha256": "d675d696dac3878da07378dd009defb94f930d6bf467484f223fcd1f7bbaa027",
     "summary": {
