@@ -1015,6 +1015,57 @@ interface recordings {
     set-longest-minutes: func(minutes: u32) -> result<_, string>;
 }
 
+/// How loud a source is, for your pages to draw — a waveform, a spectrum,
+/// an orb — and nothing else: no words heard, nothing kept, nothing sent.
+/// The readings are the ones `transcribe` and `recordings` tell, bounded by
+/// Lumi so they can never be the sound. Costs `audio-levels`. Added in Lumi
+/// 1.73.0.
+interface audio-levels {
+    use transcribe.{playing, failure};
+
+    /// What to hear.
+    variant source {
+        /// The microphone. Costs `microphone`.
+        microphone,
+        /// What this Mac plays — everything, or one app the person picks in
+        /// Lumi's panel, and you are never told which — on macOS 14.4 or
+        /// later. Costs `system-audio`.
+        system-audio(playing),
+        /// Both, as a call's two sides: each reading's `heard` says which.
+        /// Costs both.
+        call(playing),
+        /// What Lumi itself plays — your pages, the sites they show, and
+        /// every other extension's, which Lumi plays together — and nothing
+        /// of any other app: the one way to draw a site's sound, since
+        /// nothing of yours reaches into a site. Costs nothing more, and
+        /// needs no press. macOS asks the person once for Lumi to hear
+        /// audio, as it does for `system-audio`. On macOS 14.4 or later.
+        lumi,
+    }
+
+    record request {
+        source: source,
+        /// Frequency bands with each reading, 0 for the loudness alone; at
+        /// most 16.
+        bands: u8,
+    }
+
+    /// Hear `request`'s source for how loud it is: answers, straight away,
+    /// the id its readings carry. Your pages hear `lumi:audio-levels` —
+    /// `started` once it hears, a `level` about eight times a second, and
+    /// `ended` (why, as a recording's end is spelled) or `failed`. It hears
+    /// until you stop it, the person stops it from the menu bar — which says
+    /// so while it hears — no page of yours is left, the Mac sleeps or
+    /// locks, or you are switched off; never longer than that, since nothing
+    /// is kept. One live recording of yours at a time, a transcription or a
+    /// recording included. The microphone, the system audio and a call only
+    /// from a press.
+    start: func(request: request) -> result<string, failure>;
+
+    /// Stop hearing `id`. False when it is not going.
+    stop: func(id: string) -> result<bool, string>;
+}
+
 /// The general pasteboard. Costs `clipboard`, both directions — and
 /// `paste` costs more, because it presses a key in somebody else's app.
 interface clipboard {
@@ -2777,6 +2828,7 @@ world extension {
     import transcribe;
     import voices;
     import recordings;
+    import audio-levels;
     import clipboard;
     import alert;
     import open;

@@ -756,6 +756,35 @@ pub mod recordings {
     }
 }
 
+/// How loud a source is, for your pages to draw, and nothing else: no
+/// words heard, nothing kept, nothing sent. Needs the `audio-levels`
+/// capability; the microphone and the system audio need their own words
+/// beside it. Lumi 1.73.0.
+pub mod audio_levels {
+    use super::lumi::ext::audio_levels as wit;
+
+    pub use super::lumi::ext::transcribe::{Failure, FailureKind, Playing};
+    pub use wit::{Request, Source};
+
+    /// Hear `request`'s source for how loud it is, answering at once the id
+    /// its readings carry. Your pages hear `started`, a `level` about eight
+    /// times a second, and `ended` or `failed` (`lumi:audio-levels`). It
+    /// hears until you stop it, the person stops it from the menu bar, no
+    /// page of yours is left, the Mac sleeps or locks, or you are switched
+    /// off. [`Source::Lumi`] — what Lumi itself plays, your pages' sites
+    /// included — costs nothing more and needs no press; the microphone, the
+    /// system audio and a call cost their own words and only start from a
+    /// press. One live recording of yours at a time.
+    pub fn start(request: &Request) -> Result<String, Failure> {
+        wit::start(*request)
+    }
+
+    /// Stop hearing `id`. False when it is not going.
+    pub fn stop(id: &str) -> Result<bool, String> {
+        wit::stop(id)
+    }
+}
+
 /// Draw a line of text over the frontmost application, in Lumi's own
 /// alert style. The way an extension talks to the person at the keyboard.
 pub fn alert(text: &str) -> Result<(), String> {
