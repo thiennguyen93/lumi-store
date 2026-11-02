@@ -1,4 +1,112 @@
 {
+  "0.2.23": {
+    "notesSha256": "b942edd61588b3f97d79024efdc68aac9d0f4cf41ba1c502d8ac5684847acea8",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Pill shortcut now resumes playback",
+          "items": [
+            "The shortcut that shows and hides the pill now resumes playback like it does for the full browser"
+          ]
+        },
+        "vi": {
+          "headline": "Phím tắt viên nang giờ tiếp tục phát",
+          "items": [
+            "Phím tắt ẩn hiện viên nang giờ tiếp tục phát nội dung, giống như khi dùng trình duyệt đầy đủ"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.22": {
+    "notesSha256": "2a17c139be9d0ba93ffee300aa47ddf76b7c7f22424b23da105de000d53a0e6d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Find the mini panel with a keyboard shortcut",
+          "items": [
+            "Press ⌃⌥⌘P to make the mini panel shake and pulse so you can spot it on any display",
+            "With Reduce Motion enabled, the mini panel flashes its edge instead of pulsing"
+          ]
+        },
+        "vi": {
+          "headline": "Tìm bảng điều khiển thu nhỏ bằng phím tắt",
+          "items": [
+            "Nhấn ⌃⌥⌘P để bảng điều khiển thu nhỏ rung và nhấp nháy giúp bạn dễ tìm thấy trên màn hình nào cũng được",
+            "Khi bật Giảm chuyển động, viền bảng điều khiển thu nhỏ sẽ nhấp nháy thay vì lan tỏa"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.21": {
+    "notesSha256": "8152cbd07d709e66e78f5c3109c3bd5971e53d48bfc04864e574e66db11be7f0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Refined tab hover effects",
+          "items": [
+            "Tabs behind the one under your pointer now light up with the correct shape and spacing"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện hiệu ứng di chuột trên tab",
+          "items": [
+            "Tab phía sau tab đang trỏ chuột giờ sáng lên với hình dạng và khoảng cách chính xác"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.20": {
+    "notesSha256": "8542f228f3f663bd0b3eddae06c6c1de59c18cfc9561ac86a9fa515ac5d93ebe",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Tab menu, better undo for closing multiple tabs, and tab bar fixes",
+          "items": [
+            "Right-click or Control-click a tab to open its menu with options like duplicate, mute, and close",
+            "Tabs closed together now reopen together with one undo, each returning to its original position",
+            "New Tab button no longer overlaps the last visible tab when scrolling through many tabs",
+            "Tabs fade at the edges only when actually scrolled out of view, not when fully visible"
+          ]
+        },
+        "vi": {
+          "headline": "Menu thẻ, hoàn tác tốt hơn khi đóng nhiều thẻ, và sửa thanh thẻ",
+          "items": [
+            "Nhấp chuột phải hoặc Control-nhấp vào thẻ để mở menu với các tùy chọn như sao chép, tắt tiếng và đóng",
+            "Các thẻ đóng cùng lúc giờ mở lại cùng nhau bằng một lần hoàn tác, mỗi thẻ về đúng vị trí ban đầu",
+            "Nút Thẻ Mới không còn đè lên thẻ cuối cùng hiển thị khi cuộn qua nhiều thẻ",
+            "Các thẻ chỉ mờ dần ở rìa khi thực sự bị cuộn ra khỏi tầm nhìn, không phải khi hiển thị đầy đủ"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.19": {
+    "notesSha256": "60b13416f2ba75c6dab5b2c65f6d591ae4ce889f4ce89550260b57e4a728e7a6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Improved title fading on the pill",
+          "items": [
+            "Title fading on the pill now only affects the parts that scroll past the edges"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện hiệu ứng mờ dần tiêu đề trên pill",
+          "items": [
+            "Hiệu ứng mờ dần tiêu đề trên pill giờ chỉ áp dụng cho phần cuộn qua các cạnh"
+          ]
+        }
+      }
+    }
+  },
   "0.2.18": {
     "notesSha256": "75029d3ed6f9ae8bbb58c335b6ce47e133fbd92006224791f23e5367d88e8069",
     "summary": {
@@ -352,126 +460,6 @@
             "Mẹo trên viên thuốc theo nó khi bạn kéo, luôn ở bên cạnh và chỉ vào nó",
             "Mẹo chuyển xuống dưới viên thuốc khi bạn để viên thuốc ở trên cùng màn hình",
             "Viên thuốc rung khi mẹo đang hiển thị, và nhấp vào viên thuốc sẽ đóng mẹo"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.3": {
-    "notesSha256": "d675d696dac3878da07378dd009defb94f930d6bf467484f223fcd1f7bbaa027",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Choose whether the mini player follows what's playing or your last tab",
-          "items": [
-            "A new setting lets you keep the mini player on your last viewed tab even when another tab plays audio or video"
-          ]
-        },
-        "vi": {
-          "headline": "Chọn trình phát mini theo dõi nội dung đang phát hay tab cuối",
-          "items": [
-            "Cài đặt mới giữ trình phát mini ở tab bạn xem cuối ngay cả khi tab khác đang phát âm thanh hoặc video"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.2": {
-    "notesSha256": "7e25181cbd5176c745fa8866224f41d0c04f9bbe0f37003496a3a2b76f27f43e",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Extension Store page now explains what Floating Browser does",
-          "items": [
-            "The Extension Store page now describes what you get, how browsing stays private, and how to start"
-          ]
-        },
-        "vi": {
-          "headline": "Trang Extension Store giờ giải thích Floating Browser làm gì",
-          "items": [
-            "Trang Extension Store giờ mô tả Floating Browser làm gì, cách giữ riêng tư khi duyệt web, và cách bắt đầu"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.1": {
-    "notesSha256": "f198dabbd97c1fd76106b40d7ee415145b385bdf1949d041dfb182b6ee6c9994",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Demo video added to the Extension Store",
-          "items": [
-            "A demo video now shows how Floating Browser works before you install it"
-          ]
-        },
-        "vi": {
-          "headline": "Thêm video giới thiệu vào Cửa hàng Tiện ích",
-          "items": [
-            "Video giới thiệu giờ cho thấy Floating Browser hoạt động như thế nào trước khi cài đặt"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.0": {
-    "notesSha256": "2c99d428e1ca75782dfb31873df8b69ce9a4dca505323325070e78acb6e34152",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Close tabs, mini player controls, settings panel, and more",
-          "items": [
-            "Closing the last tab with ⌘W leaves a new tab open; press ⌘W again to close the browser",
-            "The mini player shows track title, artist, progress bar you can click or drag, and play/pause on hover",
-            "Album artwork appears on the mini player when available, with the site icon as a small badge",
-            "Settings panel lets you choose album art shape, enable color tinting, and set light or dark appearance",
-            "History and Settings open as tabs at lumi://history and lumi://settings addresses",
-            "YouTube now opens in desktop layout so controls appear when you move the mouse over the video"
-          ]
-        },
-        "vi": {
-          "headline": "Đóng thẻ, điều khiển trình phát nhỏ, bảng cài đặt và nhiều hơn nữa",
-          "items": [
-            "Đóng thẻ cuối bằng ⌘W để lại một thẻ mới; nhấn ⌘W lần nữa để đóng trình duyệt",
-            "Trình phát nhỏ hiển thị tên bài, nghệ sĩ, thanh tiến trình kéo được và nút phát/tạm dừng khi di chuột",
-            "Ảnh bìa album xuất hiện trên trình phát nhỏ khi có sẵn, với biểu tượng trang web làm huy hiệu nhỏ",
-            "Bảng cài đặt cho phép chọn hình dạng ảnh bìa, bật tô màu theo ảnh bìa và đặt giao diện sáng hoặc tối",
-            "Lịch sử và Cài đặt mở dưới dạng thẻ tại địa chỉ lumi://history và lumi://settings",
-            "YouTube giờ mở ở bố cục máy tính để các nút điều khiển hiện ra khi di chuột qua video"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.0": {
-    "notesSha256": "cb4a160d1c1b2036ed340caa55cae722a18b58f7734dc305627a251230ebe865",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "A small browser that floats over every app",
-          "items": [
-            "A floating browser at the top-right corner, opened with ⌃⌥⌘B, that goes with you to every desktop",
-            "Up to four tabs along the top, with an address bar that searches and suggests as you type",
-            "Browsing history kept on this Mac, searchable by day in History from the menu",
-            "Compact Mode shrinks the browser to one slim bar with the page title and controls",
-            "Minimize moves it to a small pill in the corner, with audio still playing",
-            "Your tabs and sign-ins stay after Lumi restarts, kept apart from other browsers"
-          ]
-        },
-        "vi": {
-          "headline": "Trình duyệt nhỏ nổi trên mọi ứng dụng",
-          "items": [
-            "Trình duyệt nổi ở góc trên bên phải, mở bằng ⌃⌥⌘B, theo bạn đến mọi desktop",
-            "Tối đa bốn tab trên cùng, với thanh địa chỉ tìm kiếm và gợi ý khi bạn gõ",
-            "Lịch sử duyệt web lưu trên Mac này, tìm theo ngày trong History từ menu",
-            "Chế độ Thu gọn biến trình duyệt thành một thanh mỏng với tiêu đề trang và nút điều khiển",
-            "Thu nhỏ chuyển thành viên thuốc ở góc màn hình, âm thanh vẫn phát",
-            "Tab và đăng nhập của bạn giữ nguyên sau khi khởi động lại Lumi, tách biệt với trình duyệt khác"
           ]
         }
       }
