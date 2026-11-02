@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.13"
+version = "0.1.14"
 description = "Vietnamese typing for your Mac, with Telex or VNI and no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
@@ -22,12 +22,13 @@ screenshots = ["shots/1-popover.png", "shots/2-per-app.png", "shots/3-settings.p
 # the id out of the link and publishes YouTube's picture of it beside the
 # package, so the store page asks nothing of YouTube until play is pressed.
 video = "https://youtu.be/qhMTPz81R3w"
-# 1.68.0 for what came before the word (`text_input::before`), which
-# Capitalize sentences reads where the last sentence ended from: an older
-# Lumi tells none, and the switch would do nothing. (1.62.0 is what the
+# 1.74.0 for the switch's sound (`sound`), which an older Lumi refuses as a
+# word it does not know. (1.68.0 is what came before the word,
+# `text_input::before`, which Capitalize sentences reads where the last
+# sentence ended from; 1.62.0 is what the
 # toggle's `tap+fn+shift` below needs, 1.61.0 `text-input`, `front-app`
 # and `menu-bar-item`.)
-min-lumi-version = "1.68.0"
+min-lumi-version = "1.74.0"
 # `text-input`: every key of the word, answered in a sealed run. The review
 # sheet says it loudest and adds a warning; Lumi refuses it beside
 # `network` or `ai`, and this extension holds neither.
@@ -39,7 +40,14 @@ min-lumi-version = "1.68.0"
 # `preload`: the popover loaded ahead, out of sight, as Lumi starts, so the
 # first click shows it at once. Its switch starts on; the person turns it
 # off with Preload on the Permissions sheet.
-capabilities = ["text-input", "front-app", "menu", "menu-bar-item", "preload"]
+# `sound`: a marimba's two notes as the switch moves, played by Lumi from the
+# run the switch is pressed in — only while "Play a sound when switching" is
+# on, which starts off.
+capabilities = ["text-input", "front-app", "menu", "menu-bar-item", "preload", "sound"]
+# No "Lumi Gõ tiếng Việt is playing — Stop" row in Lumi's menu: the switch's
+# sound lasts a third of a second, over before anybody could open a menu, and
+# a row that comes and goes with every press is a row that says nothing.
+sound-stop-row = false
 # The item's menu without Lumi's heading naming the extension: its one row,
 # "Gõ tiếng Việt", already says whose it is, and the name above it said the
 # same twice. The tooltip and VoiceOver still name it.
@@ -163,6 +171,17 @@ default = "false"
 [[settings]]
 name = "autoCapitalize"
 label = "Capitalize the first letter of a sentence"
+kind = "bool"
+default = "false"
+
+# A sound as the switch moves — rising for Vietnamese, falling for English —
+# when the person switches it themselves: the shortcut, the item's
+# right-click, the popover and the menu. Never when it follows the app in
+# front, which would sound at every change of window. Off at install: a
+# sound nobody asked for is rude.
+[[settings]]
+name = "switchSound"
+label = "Play a sound when switching between Vietnamese and English"
 kind = "bool"
 default = "false"
 

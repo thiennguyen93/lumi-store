@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.14] - 2026-11-03
+
+### Added
+
+- **Play a sound when switching** (Âm báo khi chuyển) on the Settings tab: a marimba's two notes, rising as typing becomes Vietnamese and falling as it becomes English, when you switch it yourself — the shortcut, a right-click on the V or E, the popover or the menu. Off until you turn it on.
+
+### Changed
+
+- The V or E in the menu bar, and the popover's tiles, change the moment you switch — before anything else the switch sees to.
+- Needs Lumi 1.74.0.
+
 ## [0.1.13] - 2026-10-31
 
 ### Added

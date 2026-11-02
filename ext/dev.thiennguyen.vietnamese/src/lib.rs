@@ -526,14 +526,25 @@ pub fn menu_bar_tooltip(on: bool, language: Option<&str>) -> &'static str {
 /// shows the same at a glance and opens a menu holding that row. Drawn
 /// together, wherever the switch or the language may have moved; Lumi keeps
 /// both, and the same item again is no change.
+///
+/// The item first: it is what the person watches. Setting the rows has Lumi
+/// build its whole menu again on the main thread, and the post to the
+/// popover asks that thread whether the popover is up — drawn last, the V
+/// or E waited behind both.
 fn draw_menu() -> Result<(), String> {
     let on = text_input::enabled()?;
     let settings = lumi::settings();
-    let language = settings.get("language").and_then(|value| value.as_str());
+    draw_item(on, &settings)?;
     // `set_rows`, not `set`: only it draws a row's icon.
     menu::set_rows(&menu_entries(on, &settings))?;
     // The popover, when it is up, shows the same; `false` when it is not.
     let _ = lumi::post(POPOVER, &popover_now(on, &settings).to_string());
+    Ok(())
+}
+
+/// The V or E in the menu bar, and its tooltip, for typing `on`.
+fn draw_item(on: bool, settings: &serde_json::Value) -> Result<(), String> {
+    let language = settings.get("language").and_then(|value| value.as_str());
     menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on)).tooltip(menu_bar_tooltip(on, language)))
 }
 
@@ -595,15 +606,48 @@ fn about_link(request: &str) -> Option<&'static str> {
     ABOUT_LINKS.iter().find(|(word, _)| *word == request).map(|(_, url)| *url)
 }
 
-/// The person switching typing on or off — a shortcut, the command, or the
-/// menu row — remembered for the app in front.
+/// The person switching typing on or off — a shortcut, the command, the menu
+/// row or the popover — remembered for the app in front, and heard when they
+/// asked to.
+///
+/// **Drawn before it is done.** The V or E changes first, the moment the run
+/// begins, then the switch moves: the icon is what the person watches, and
+/// drawn last it came after the app's memory was written, the sound and Lumi
+/// building its menu again — the first sound in a launch alone once took
+/// half a second. Should the switch refuse, what stands is drawn again.
 fn toggle() -> Result<(), String> {
     let on = !text_input::enabled()?;
-    text_input::set_enabled(on)?;
+    let settings = lumi::settings();
+    draw_item(on, &settings)?;
+    if let Err(refused) = text_input::set_enabled(on) {
+        let _ = draw_menu();
+        return Err(refused);
+    }
+    if flag(&settings, SWITCH_SOUND, false) {
+        switch_sound(on);
+    }
     if per_app() {
         remember(on)?;
     }
     draw_menu()
+}
+
+/// The `switchSound` setting: a sound as the person moves the switch.
+const SWITCH_SOUND: &str = "switchSound";
+
+/// What the Settings tab sends once "Play a sound when switching" is turned
+/// on, so the person hears what they chose.
+const PREVIEW_SOUND: &str = "switch-sound";
+
+/// The switch's sound, played by Lumi (`lumi::sound`): a marimba's two notes
+/// rising as typing becomes Vietnamese and falling as it becomes English —
+/// `sounds/make.py` makes both, and keeps the other candidates' recipes.
+/// Played under one name, so a switch pressed twice in quick succession is
+/// heard as the second press, Gõ Nhanh's own rule. A sound that cannot play
+/// costs the switch nothing.
+fn switch_sound(on: bool) {
+    let cue = lumi::sound::Options { name: Some(SWITCH_SOUND.to_string()), ..Default::default() };
+    let _ = lumi::sound::play(if on { "sounds/switch-on.wav" } else { "sounds/switch-off.wav" }, &cue);
 }
 
 struct VietnameseTyping;
@@ -635,6 +679,10 @@ impl Guest for VietnameseTyping {
         }
         if window == ":settings" && request == APPEARANCE_CHANGED {
             return apply_appearance().map(|()| String::new());
+        }
+        if window == ":settings" && request == PREVIEW_SOUND {
+            switch_sound(true);
+            return Ok(String::new());
         }
         if let Some(url) = about_link(&request).filter(|_| ABOUT_WINDOWS.contains(&window.as_str())) {
             return lumi::open_url(url).map(|()| String::new());
@@ -675,17 +723,23 @@ impl Guest for VietnameseTyping {
         if let Some(app) = front_app::changed(&name, &payload) {
             let app_name = app.name.unwrap_or_default();
             let id = app.id.unwrap_or_default();
+            // The switch the app is remembered at, moved — and its V or E
+            // drawn — before anything is written down, as a press moves it
+            // (`toggle`): the icon is what the person watches as they go
+            // from app to app.
+            let remembered_on = if per_app() { remembered().get(&id).and_then(serde_json::Value::as_bool) } else { None };
+            if let Some(on) = remembered_on {
+                if on != text_input::enabled()? {
+                    draw_item(on, &lumi::settings())?;
+                    text_input::set_enabled(on)?;
+                }
+            }
             let rev = lumi::storage::get(FRONT)?.map(|entry| entry.rev);
             lumi::storage::put(FRONT, &id, rev).map_err(lumi::storage::PutError::into_message)?;
             let rev = lumi::storage::get(FRONT_NAME)?.map(|entry| entry.rev);
             lumi::storage::put(FRONT_NAME, &app_name, rev).map_err(lumi::storage::PutError::into_message)?;
-            if per_app() {
-                if let Some(on) = remembered().get(&id).and_then(serde_json::Value::as_bool) {
-                    name_app(&id, Some(app_name))?;
-                    if on != text_input::enabled()? {
-                        text_input::set_enabled(on)?;
-                    }
-                }
+            if remembered_on.is_some() {
+                name_app(&id, Some(app_name))?;
             }
             return draw_menu();
         }

@@ -30,6 +30,8 @@ const WORDS = {
     capSays: "Sau dấu chấm, chấm than, chấm hỏi hay xuống dòng: “ok. ban” thành “ok. Ban”.",
     appName: "Nhớ bật hay tắt cho từng ứng dụng",
     appSays: "Mỗi ứng dụng giữ lựa chọn riêng.",
+    soundName: "Âm báo khi chuyển",
+    soundSays: "Một tiếng ngắn khi bật hoặc tắt gõ tiếng Việt.",
   },
   en: {
     generalTitle: "General",
@@ -54,6 +56,8 @@ const WORDS = {
     capSays: "After a full stop, ! or ?, or a new line: “ok. ban” becomes “ok. Ban”.",
     appName: "Remember on or off for each app",
     appSays: "Each app keeps its own choice.",
+    soundName: "Play a sound when switching",
+    soundSays: "A short sound as Vietnamese typing turns on or off.",
   },
 };
 
@@ -74,6 +78,7 @@ function fromLumi(raw) {
     englishRestore: flag("englishRestore", false),
     autoCapitalize: flag("autoCapitalize", false),
     perApp: flag("perApp", true),
+    switchSound: flag("switchSound", false),
     popoverAppearance: ["light", "dark"].includes(value("popoverAppearance")) ? value("popoverAppearance") : "system",
   };
 }
@@ -114,8 +119,16 @@ function restyle() {
   return fetch("/__lumi__/call", { method: "POST", body: "appearance" }).catch(() => {});
 }
 
+// The switch's sound turned on: the component plays it once (`PREVIEW_SOUND`
+// in src/lib.rs), so the person hears what they chose. Lumi plays it — a page
+// would need the file served as audio — and turning it off plays nothing.
+function previewSound() {
+  if (!state.switchSound) return;
+  return fetch("/__lumi__/call", { method: "POST", body: "switch-sound" }).catch(() => {});
+}
+
 // What the component is told after a save of `name`, if anything.
-const AFTER_SAVE = { language: redrawMenu, popoverAppearance: restyle };
+const AFTER_SAVE = { language: redrawMenu, popoverAppearance: restyle, switchSound: previewSound };
 
 // One change, drawn at once and saved as text; then read back, so a save
 // Lumi refused — the extension switched off meanwhile — shows what stands.

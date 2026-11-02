@@ -193,9 +193,30 @@ async function refresh() {
   draw();
 }
 
+// What a press will leave standing, drawn the moment it is pressed: the
+// component moves the switch and answers with what stands, and a tile that
+// waited for that answer changed after the storage, the sound and Lumi's menu
+// the run also sees to. The answer, when it comes, is drawn over it — the
+// truth either way — and a refusal draws what stands again.
+function expect(act) {
+  if (!state) return null;
+  if (act === "toggle") return { ...state, on: !state.on };
+  if (act.startsWith("method:")) return { ...state, method: act.slice("method:".length) };
+  if (act.startsWith("option:")) {
+    const name = act.slice("option:".length);
+    return { ...state, options: { ...state.options, [name]: !state.options?.[name] } };
+  }
+  return null;
+}
+
 pop.addEventListener("click", async (event) => {
   const act = event.target.closest("[data-act]")?.dataset.act;
   if (!act) return;
+  const expected = expect(act);
+  if (expected) {
+    state = expected;
+    draw();
+  }
   try {
     const next = await call(act);
     if (next) {
@@ -203,7 +224,9 @@ pop.addEventListener("click", async (event) => {
       draw();
     }
   } catch {
-    // Refused or gone (Quit switches the extension off): nothing to draw.
+    // Refused: what stands, drawn again. Gone (Quit switches the extension
+    // off): nothing answers, and nothing is drawn.
+    if (expected) refresh();
   }
 });
 
