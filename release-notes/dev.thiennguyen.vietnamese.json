@@ -1,4 +1,30 @@
 {
+  "0.1.14": {
+    "notesSha256": "7067e92074e64134e5b6ae398c67c181f96f5b5db524238b4576c4a3a31addba",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Sound when switching, and the menu bar updates instantly",
+          "items": [
+            "The V or E in the menu bar updates the moment you switch typing modes",
+            "A marimba plays two rising notes when switching to Vietnamese, two falling notes when switching to English",
+            "The sound is off by default and can be turned on in Settings under Play a sound when switching",
+            "Requires Lumi 1.74.0"
+          ]
+        },
+        "vi": {
+          "headline": "Âm báo khi chuyển và thanh menu cập nhật ngay lập tức",
+          "items": [
+            "Chữ V hoặc E trên thanh menu thay đổi ngay khi bạn chuyển chế độ gõ",
+            "Khi chuyển sang tiếng Việt, marimba phát hai nốt lên; khi chuyển sang tiếng Anh, hai nốt xuống",
+            "Âm báo tắt theo mặc định, bật trong Cài đặt tại mục Âm báo khi chuyển",
+            "Yêu cầu Lumi 1.74.0"
+          ]
+        }
+      }
+    }
+  },
   "0.1.13": {
     "notesSha256": "d08b64f62c9e1ab88b93e35f90f904b44619589070f80e6c5087667384bc389f",
     "summary": {
