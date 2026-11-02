@@ -144,7 +144,9 @@ CAPABILITIES = {
     # `audio-levels`, told how loud what is heard is, for drawing it; and
     # `keep-audio` (Lumi 1.65), what a source hears made into an audio file
     # of the extension's own — with no `speech` needed, so the two sources
-    # and `audio-levels` stand beside either.
+    # and `audio-levels` stand beside either. From Lumi 1.73 `audio-levels`
+    # hears too — what Lumi itself plays, alone, and the two sources for how
+    # loud — so it stands alone and the sources may stand beside it.
     "speech", "microphone", "system-audio", "voices", "audio-levels", "keep-audio",
     # Lumi 1.65: the `microphone-use` interface and event (which apps have a
     # microphone open, never what they hear), `microphone-sites` (the site an
@@ -446,14 +448,16 @@ def check_manifest(entry_id: str, manifest: dict):
             if reaching in ext.get("capabilities", []):
                 fail(entry_id, f"text-input cannot be declared with {reaching}: an extension that sees every key you type may not be able to send anything off this Mac")
     # `manifest.rs` again: the microphone and what the Mac plays are heard by
-    # `speech`, as words, or by `keep-audio`, as a recording kept, and by
-    # nothing else; how loud goes with either; the voices it remembers are
-    # named from words, so speech's alone; and `keep-audio` keeps a source.
+    # `speech`, as words, by `keep-audio`, as a recording kept, or by
+    # `audio-levels`, for how loud alone, and by nothing else; how loud
+    # stands alone since Lumi 1.73, when it hears what Lumi itself plays with
+    # no source word; the voices it remembers are named from words, so
+    # speech's alone; and `keep-audio` keeps a source.
     declared = ext.get("capabilities", [])
-    hears = "speech" in declared or "keep-audio" in declared
-    for source in ("microphone", "system-audio", "audio-levels"):
+    hears = any(word in declared for word in ("speech", "keep-audio", "audio-levels"))
+    for source in ("microphone", "system-audio"):
         if source in declared and not hears:
-            fail(entry_id, f"{source} needs something that hears it: declare speech or keep-audio beside it")
+            fail(entry_id, f"{source} needs something that hears it: declare speech, keep-audio or audio-levels beside it")
             break
     if "voices" in declared and "speech" not in declared:
         fail(entry_id, "voices are named from what speech hears: declare speech beside it")
