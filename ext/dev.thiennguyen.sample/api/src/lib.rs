@@ -2819,6 +2819,127 @@ pub mod microphone_use {
     }
 }
 
+/// Sounds of your own, played by Lumi from your component — a cue that
+/// something happened, or music for an hour with every window closed. A page
+/// plays its own sounds with `<audio>`; this is for the component.
+///
+/// A file your package carries under `ui/` ([`play`]) or one of your blobs
+/// ([`play_blob`]), in any format macOS plays (WAV, AIFF, CAF, M4A, MP3),
+/// with no length imposed. Each sound playing is a number; one played under
+/// a [`Options::name`] stops yours of the same name first, so a switch
+/// pressed twice is heard as the second. Up to eight of yours at once.
+/// While yours play, Lumi's menu holds a Stop row for them, unless your
+/// manifest says `sound-stop-row = false`. Hear them end with
+/// `events = ["sound-ended"]` and [`ended`].
+///
+/// Needs the `sound` capability and Lumi 1.74.0.
+///
+/// ```ignore
+/// let cue = lumi::sound::Options { name: Some("switch".into()), ..Default::default() };
+/// lumi::sound::play(if on { "sounds/on.wav" } else { "sounds/off.wav" }, &cue)?;
+///
+/// let music = lumi::sound::Options { repeat: true, volume: 0.6, name: Some("music".into()) };
+/// lumi::sound::play_blob(&track, &music)?;
+/// ```
+pub mod sound {
+    use super::lumi::ext::sound as wit;
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a sound's end
+    /// arrives as.
+    pub const EVENT: &str = "sound-ended";
+
+    /// How to play a sound.
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct Options {
+        /// From its start again each time it ends, until stopped.
+        pub repeat: bool,
+        /// How loud, 0 to 1 of the Mac's own volume.
+        pub volume: f32,
+        /// A name of yours, 1 to 128 bytes: a sound of yours playing under
+        /// it stops first.
+        pub name: Option<String>,
+    }
+
+    impl Default for Options {
+        /// Once, at the Mac's own volume, with no name.
+        fn default() -> Self {
+            Options { repeat: false, volume: 1.0, name: None }
+        }
+    }
+
+    /// One of your sounds that plays now.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Playing {
+        /// What [`play`] answered.
+        pub sound: u64,
+        pub name: Option<String>,
+    }
+
+    /// One of your sounds that stopped.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Ended {
+        /// What [`play`] answered.
+        pub sound: u64,
+        pub name: Option<String>,
+        /// It came to its end; false when it was stopped — by you, by a
+        /// sound of the same name, or by the person.
+        pub finished: bool,
+        /// When, in milliseconds since the Unix epoch.
+        pub at: u64,
+    }
+
+    fn options(options: &Options) -> wit::Options {
+        wit::Options { repeat: options.repeat, volume: options.volume, name: options.name.clone() }
+    }
+
+    /// Play `path`, a file under `ui/` (`"sounds/on.wav"`). Answers its
+    /// number.
+    pub fn play(path: &str, how: &Options) -> Result<u64, String> {
+        wit::play(&wit::Source::File(path.to_string()), &options(how))
+    }
+
+    /// Play the blob `id`, one of yours. Answers its number.
+    pub fn play_blob(id: &str, how: &Options) -> Result<u64, String> {
+        wit::play(&wit::Source::Blob(id.to_string()), &options(how))
+    }
+
+    /// Stop your sound `sound`; true when it still played.
+    pub fn stop(sound: u64) -> Result<bool, String> {
+        wit::stop(sound)
+    }
+
+    /// Stop your sounds played under `name`; true when one still played.
+    pub fn stop_named(name: &str) -> Result<bool, String> {
+        let mut stopped = false;
+        for playing in playing()? {
+            if playing.name.as_deref() == Some(name) {
+                stopped |= stop(playing.sound)?;
+            }
+        }
+        Ok(stopped)
+    }
+
+    /// Your sounds that play now, oldest first.
+    pub fn playing() -> Result<Vec<Playing>, String> {
+        Ok(wit::playing()?.into_iter().map(|playing| Playing { sound: playing.sound, name: playing.name }).collect())
+    }
+
+    /// The sound that stopped, when [`Guest::on_event`](crate::Guest::on_event)
+    /// was called for one.
+    pub fn ended(name: &str, payload: &str) -> Option<Ended> {
+        if name != EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        Some(Ended {
+            sound: value.get("sound")?.as_u64()?,
+            name: value.get("name").and_then(serde_json::Value::as_str).map(str::to_string),
+            finished: value.get("finished")?.as_bool()?,
+            at: value.get("at")?.as_u64()?,
+        })
+    }
+}
+
 /// An offer: one line of your words and one button, drawn by Lumi at the top
 /// right of the display, whose press runs one of your `[[command]]`s as the
 /// person's press — the one way a run nobody pressed, an event or a timer,

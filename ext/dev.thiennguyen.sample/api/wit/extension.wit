@@ -2725,6 +2725,66 @@ interface offer {
     allowed: func() -> result<bool, string>;
 }
 
+/// Sounds of your own, played by Lumi from your component: a cue that
+/// something happened — a switch moved by a shortcut, a timer gone off — or
+/// music for an hour with every window closed. A page plays its own sounds
+/// as any page does, with `<audio>`, and needs none of this.
+///
+/// A sound is a file your package carries under `ui/`, or one of your blobs
+/// — anything you wrote, downloaded or recorded — in any format macOS plays:
+/// WAV, AIFF, CAF, M4A, MP3. No length is imposed; your package's and your
+/// storage's own bounds are the bounds. Each sound playing is a number:
+/// `play` answers it, `stop` takes it, and `sound-ended` tells it
+/// (`events = ["sound-ended"]`): `{"v":1, "sound", "name", "finished",
+/// "at"}`, `finished` false when it was stopped rather than came to its end.
+/// A sound may carry a name of yours: another played under the same name
+/// stops it first — so two presses of a switch are heard as the second, and
+/// a run that remembers no number can still replace "music". Up to eight of
+/// yours play at once; another extension's and Lumi's own are never cut by
+/// yours. They play at the volume the Mac is set to.
+///
+/// While yours play, Lumi's menu says "‹your name› is playing — Stop", and
+/// Stop stops them all: the person can always silence what has no window to
+/// close. `sound-stop-row = false` in `[extension]` leaves that row out, for
+/// cues over before a menu could open, or an extension with a Stop of its
+/// own. Switched off or removed, your sounds stop.
+///
+/// Needs the `sound` capability, and so does hearing `sound-ended`. Every
+/// call costs budget. Added to 0.3 in Lumi 1.74.0 without a new world
+/// version.
+interface sound {
+    /// What to play.
+    variant source {
+        /// A path inside your package's `ui/`: `"sounds/on.wav"`.
+        file(string),
+        /// One of your blobs, by id.
+        blob(string),
+    }
+
+    record options {
+        /// From its start again each time it ends, until stopped.
+        repeat: bool,
+        /// How loud, 0 to 1 of the Mac's own volume; 1 for as it is.
+        volume: f32,
+        /// A name of yours, 1 to 128 bytes: a sound of yours playing under
+        /// it stops first.
+        name: option<string>,
+    }
+
+    record playing-sound {
+        /// What `play` answered.
+        sound: u64,
+        name: option<string>,
+    }
+
+    /// Play `source`; its number.
+    play: func(source: source, options: options) -> result<u64, string>;
+    /// Stop your sound `sound`; true when it still played.
+    stop: func(sound: u64) -> result<bool, string>;
+    /// Your sounds that play now, oldest first.
+    playing: func() -> result<list<playing-sound>, string>;
+}
+
 /// Typing through the extension: it stands between the keyboard and the
 /// text as a transducer — the keys of the word being typed in, how the text
 /// before the caret changes out. A way to type a language whose letters the
@@ -2850,6 +2910,7 @@ world extension {
     import time-zone;
     import microphone-use;
     import offer;
+    import sound;
     import text-input;
     import folders;
     import files;
