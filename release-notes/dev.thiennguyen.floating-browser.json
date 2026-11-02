@@ -1,4 +1,70 @@
 {
+  "0.2.13": {
+    "notesSha256": "b11079aa666743ce70ec89a41e7eaee60f3ceddd03493c13d785f0ade4a92cb9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Music visualizer that follows what's playing",
+          "items": [
+            "The pill's bars now follow the music from your site instead of dancing randomly",
+            "Find the visualizer toggle in Settings, on by default",
+            "Requires Lumi 1.73.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Thanh nhạc hiển thị theo bài hát đang phát",
+          "items": [
+            "Ba thanh trên viên thuốc giờ theo nhạc từ trang web thay vì nhảy ngẫu nhiên",
+            "Tìm công tắc hiển thị nhạc trong Cài đặt, mặc định bật",
+            "Yêu cầu Lumi 1.73.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.12": {
+    "notesSha256": "1989c4daa240013382bfe441731fd341b7f85857b7e6cb03f1249f435a6b76d1",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "About screen improvements",
+          "items": [
+            "About screen now shows what Floating Browser is and lists recent changes",
+            "About screen no longer stays in front when you bring a page forward"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện màn hình Giới thiệu",
+          "items": [
+            "Màn hình Giới thiệu giờ hiển thị Floating Browser là gì và liệt kê các thay đổi gần đây",
+            "Màn hình Giới thiệu không còn nằm phía trước khi bạn đưa trang web lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.11": {
+    "notesSha256": "a98debc8690b57a07a986c0dcab24470af05d51937220a2ceb0a57e4c9e65957",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "About page with version history and credits",
+          "items": [
+            "About page shows what Floating Browser is, who made it, and recent updates"
+          ]
+        },
+        "vi": {
+          "headline": "Trang giới thiệu với lịch sử phiên bản",
+          "items": [
+            "Trang giới thiệu hiển thị Floating Browser là gì, ai làm ra và các cập nhật gần đây"
+          ]
+        }
+      }
+    }
+  },
   "0.2.10": {
     "notesSha256": "5dd02d499392724c6c398a6903a1b537ea9fafc0f0494c1cb1ce281ff762fc32",
     "summary": {
