@@ -1,4 +1,132 @@
 {
+  "0.2.18": {
+    "notesSha256": "75029d3ed6f9ae8bbb58c335b6ce47e133fbd92006224791f23e5367d88e8069",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Tabs scroll when the strip fills, and titles fade smoothly",
+          "items": [
+            "When you have more tabs than fit, the strip scrolls like Safari and Firefox do",
+            "Tabs keep room for their icon and title start, and the active tab stays visible",
+            "Drag a tab to the edge and the strip scrolls with it",
+            "The speaker icon appears right after the tab icon and stays put when audio plays",
+            "Playing tabs show their title instead of empty space for the close button",
+            "Titles that run out of room fade out at the end instead of cutting off abruptly"
+          ]
+        },
+        "vi": {
+          "headline": "Thanh tab cuộn khi đầy và tiêu đề mờ dần tự nhiên",
+          "items": [
+            "Khi có nhiều tab hơn chỗ chứa, thanh tab sẽ cuộn như Safari và Firefox",
+            "Các tab giữ chỗ cho biểu tượng và đầu tiêu đề, tab đang dùng luôn hiển thị",
+            "Kéo tab đến mép và thanh tab sẽ cuộn theo",
+            "Biểu tượng loa xuất hiện ngay sau biểu tượng tab và giữ nguyên vị trí khi phát âm thanh",
+            "Tab đang phát nhạc hiển thị tiêu đề thay vì để trống chỗ cho nút đóng",
+            "Tiêu đề không đủ chỗ sẽ mờ dần ở cuối thay vì cắt đứt đột ngột"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.17": {
+    "notesSha256": "33bf9677313d97f0ea997b1c2cc016f84176d20a99a6335adcfd15bb8e70a265",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Improved tab behavior and window dragging",
+          "items": [
+            "Clicking the pill now returns to the tab it shows, respecting Now Playing priority",
+            "Narrow background tabs show truncated titles instead of just icons",
+            "Tab elements no longer shift when hovering: close buttons appear over titles or speakers",
+            "Narrow tabs compress spacing before hiding elements; playing tabs keep their icons",
+            "The Floating Browser icon can now be dragged to move the window",
+            "Background tabs no longer show loading spinners indefinitely after restart or hide"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện thao tác tab và kéo cửa sổ",
+          "items": [
+            "Nhấn vào pill giờ quay về đúng tab đang hiển thị, ưu tiên tab đang phát",
+            "Tab nền hẹp hiện tiêu đề rút gọn thay vì chỉ biểu tượng",
+            "Các phần tử trong tab không còn dịch chuyển khi rê chuột: nút đóng hiện lên trên tiêu đề hoặc loa",
+            "Tab hẹp thu hẹp khoảng cách trước khi ẩn phần tử; tab đang phát giữ biểu tượng",
+            "Biểu tượng Floating Browser giờ có thể kéo để di chuyển cửa sổ",
+            "Tab nền không còn hiện vòng xoay tải mãi sau khi khởi động lại hoặc ẩn đi"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.16": {
+    "notesSha256": "1abd2b411c4df913a93fe04ce3c1a748a87164354a4307955950c1d9a526a927",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Reopen closed tabs with their history",
+          "items": [
+            "Press ⌘⇧T to reopen the last closed tab with its back and forward history intact",
+            "Press ⌘⇧T again to reopen the tab closed before that"
+          ]
+        },
+        "vi": {
+          "headline": "Mở lại các tab đã đóng cùng lịch sử",
+          "items": [
+            "Nhấn ⌘⇧T để mở lại tab vừa đóng với lịch sử quay lại và tiến tới nguyên vẹn",
+            "Nhấn ⌘⇧T tiếp để mở lại tab đã đóng trước đó"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.15": {
+    "notesSha256": "ca4db3b162d832006a36c466b81a800c7c938f59a681ced85c068b6529c0fa89",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "History, Settings and About now open as regular tabs",
+          "items": [
+            "History, Settings and About open as tabs you can switch to and close like any other",
+            "These tabs appear in all menus alongside your regular tabs",
+            "When you reopen the browser, it shows whichever tab was in front before you closed it"
+          ]
+        },
+        "vi": {
+          "headline": "Lịch sử, Cài đặt và Giới thiệu giờ mở dưới dạng tab thông thường",
+          "items": [
+            "Lịch sử, Cài đặt và Giới thiệu mở dưới dạng tab có thể chuyển đổi và đóng như bất kỳ tab nào",
+            "Các tab này xuất hiện trong tất cả menu cùng với các tab thông thường của bạn",
+            "Khi mở lại trình duyệt, nó hiển thị tab nào đang ở phía trước trước khi bạn đóng"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.14": {
+    "notesSha256": "af9d993c2b1c6f99141255d57af8b524ff166eca5765f1ce802b0bb28cc5542f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Visualizer now requires explicit permission",
+          "items": [
+            "The visualizer is off by default and Lumi does not listen to audio until you enable it in Settings",
+            "If you used the visualizer before, turn it back on in Settings to see the bars follow your music"
+          ]
+        },
+        "vi": {
+          "headline": "Trình hiển thị âm thanh giờ yêu cầu cho phép rõ ràng",
+          "items": [
+            "Trình hiển thị âm thanh mặc định tắt và Lumi không nghe âm thanh cho đến khi bạn bật trong Cài đặt",
+            "Nếu bạn đã dùng trình hiển thị âm thanh trước đây, hãy bật lại trong Cài đặt để thấy các thanh nhảy theo nhạc"
+          ]
+        }
+      }
+    }
+  },
   "0.2.13": {
     "notesSha256": "b11079aa666743ce70ec89a41e7eaee60f3ceddd03493c13d785f0ade4a92cb9",
     "summary": {
