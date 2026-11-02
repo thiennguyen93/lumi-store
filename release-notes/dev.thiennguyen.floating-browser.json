@@ -1,4 +1,100 @@
 {
+  "0.2.27": {
+    "notesSha256": "e1ed6d00ec6c6b9a2f16729b20ad443cde88eee4765771d27c090a11fd768af3",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Faster menu controls",
+          "items": [
+            "Menu bar switches for Compact Mode and Mute All now respond instantly when clicked"
+          ]
+        },
+        "vi": {
+          "headline": "Điều khiển menu nhanh hơn",
+          "items": [
+            "Các công tắc Chế độ Thu gọn và Tắt tiếng trong menu giờ phản hồi ngay lập tức khi nhấn"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.26": {
+    "notesSha256": "c13f8822ecc544a96f8b4504f585bf657bf9ca74d51ac28889aa41dacec520aa",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Mute All now lets you unmute individual tabs",
+          "items": [
+            "With Mute All on, you can now unmute individual tabs while keeping the rest silent"
+          ]
+        },
+        "vi": {
+          "headline": "Tắt tiếng tất cả giờ cho phép bật tiếng từng tab",
+          "items": [
+            "Khi bật Tắt tiếng tất cả, bạn có thể bật tiếng từng tab riêng lẻ trong khi các tab khác vẫn im lặng"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.25": {
+    "notesSha256": "bb7187e32a5c6410ea79beeb74bee4de7e6cf863ef72581923dd4306629404cc",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Now Playing in the menu shows progress and matches macOS styling",
+          "items": [
+            "Now Playing shows elapsed and total time, with a progress bar you can click or drag to skip",
+            "The play button updates only after the site confirms playback has started or stopped",
+            "Progress bars and time display use white in Dark Mode and black in Light Mode, matching macOS",
+            "The play button stays blue while other controls match the menu color scheme",
+            "The active tab in Dark Mode now uses deeper blue with white text, like macOS sidebars"
+          ]
+        },
+        "vi": {
+          "headline": "Trình phát trong menu hiển thị tiến trình và theo phong cách macOS",
+          "items": [
+            "Trình phát hiển thị thời gian đã phát và tổng thời gian, với thanh tiến trình có thể nhấn hoặc kéo",
+            "Nút phát chỉ cập nhật sau khi trang web xác nhận đã bắt đầu hoặc dừng phát",
+            "Thanh tiến trình và thời gian dùng màu trắng ở chế độ tối, đen ở chế độ sáng, giống macOS",
+            "Nút phát giữ màu xanh trong khi các nút khác theo màu của menu",
+            "Tab đang hoạt động ở chế độ tối giờ dùng xanh đậm hơn với chữ trắng, giống thanh bên macOS"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.24": {
+    "notesSha256": "540808e1ee535526ceb56c92b1d7c77ba57a7efe1b8635052eace2c05d02def8",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Menu bar menu redesigned with Now Playing and tab list",
+          "items": [
+            "The menu bar menu now shows what is playing with album art, playback controls, and dancing bars",
+            "All open tabs appear in the menu with their site icons and close buttons",
+            "The active tab is highlighted in blue and others show close buttons when you hover over them",
+            "History, Settings, and About no longer appear in menus since they are browser pages",
+            "Quit is now labeled Quit Floating Browser"
+          ]
+        },
+        "vi": {
+          "headline": "Menu thanh menu được thiết kế lại với mục đang phát và danh sách tab",
+          "items": [
+            "Menu thanh menu hiện hiển thị nội dung đang phát với ảnh bìa, nút điều khiển và thanh nhảy",
+            "Tất cả các tab đang mở xuất hiện trong menu với biểu tượng trang web và nút đóng",
+            "Tab đang hoạt động được tô sáng màu xanh và các tab khác hiển thị nút đóng khi di chuột qua",
+            "Lịch sử, Cài đặt và Giới thiệu không còn xuất hiện trong menu vì chúng là trang trình duyệt",
+            "Thoát giờ được ghi là Thoát Floating Browser"
+          ]
+        }
+      }
+    }
+  },
   "0.2.23": {
     "notesSha256": "b942edd61588b3f97d79024efdc68aac9d0f4cf41ba1c502d8ac5684847acea8",
     "summary": {
@@ -370,96 +466,6 @@
             "Trình duyệt giờ có thể thu nhỏ xuống 368 x 200 pixel",
             "Các mục menu Chế độ gọn, Trang dành cho máy tính và Thu phóng giờ có biểu tượng",
             "Vầng sáng phía sau biểu tượng Lumi trong viên thuốc giờ là hình tròn hoàn hảo"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.7": {
-    "notesSha256": "2b50bf323a360d75a7e304cee246f9fca0362ceae004723e3fcc23082d28981d",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Compact Mode shows site icons and keeps its title centered",
-          "items": [
-            "The title in Compact Mode now shows the site's icon before it, just like the tab strip does",
-            "The title stays centered in Compact Mode even as buttons appear underneath"
-          ]
-        },
-        "vi": {
-          "headline": "Chế độ thu gọn hiển thị biểu tượng trang và giữ tiêu đề ở giữa",
-          "items": [
-            "Tiêu đề ở chế độ thu gọn giờ hiển thị biểu tượng của trang web phía trước, giống như thanh tab",
-            "Tiêu đề luôn ở giữa trong chế độ thu gọn ngay cả khi các nút xuất hiện bên dưới"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.6": {
-    "notesSha256": "9235ce0390b412ada199b78410b8e66a5430645da98a7456b44d2d6e40e681b7",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Maximize button and double-click to fill the screen",
-          "items": [
-            "Maximize button added between Minimize and Close to fill the screen",
-            "Double-click the tab strip or Compact Mode bar to maximize",
-            "Restore button returns the browser to its previous size and position"
-          ]
-        },
-        "vi": {
-          "headline": "Nút phóng to và nhấp đúp để chiếm toàn màn hình",
-          "items": [
-            "Thêm nút phóng to giữa nút thu nhỏ và đóng để chiếm toàn màn hình",
-            "Nhấp đúp vào thanh tab hoặc thanh Chế độ gọn để phóng to",
-            "Nút khôi phục đưa trình duyệt về kích thước và vị trí ban đầu"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.5": {
-    "notesSha256": "2db42a4b8c1bbae8ead9d2f5c7ed5dcf9d34119d97dd7b29273ff9d64c9032cf",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Welcome tour follows your chosen appearance",
-          "items": [
-            "The Welcome tour now uses the appearance you picked in Settings"
-          ]
-        },
-        "vi": {
-          "headline": "Hướng dẫn đầu tiên theo giao diện bạn chọn",
-          "items": [
-            "Hướng dẫn chào mừng giờ dùng giao diện bạn đã chọn trong Cài đặt"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.4": {
-    "notesSha256": "819a5b091bc4e488d0cdf68d20cafd4957363aba0150d30032a5681ffbb37c13",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "The tip now follows the pill as you drag it",
-          "items": [
-            "The tip over the pill follows it when you drag, staying beside it and pointing at it",
-            "The tip moves below the pill when you leave the pill at the top of the screen",
-            "The pill rings while its tip is showing, and clicking the pill dismisses the tip"
-          ]
-        },
-        "vi": {
-          "headline": "Mẹo giờ đây theo viên thuốc khi bạn kéo",
-          "items": [
-            "Mẹo trên viên thuốc theo nó khi bạn kéo, luôn ở bên cạnh và chỉ vào nó",
-            "Mẹo chuyển xuống dưới viên thuốc khi bạn để viên thuốc ở trên cùng màn hình",
-            "Viên thuốc rung khi mẹo đang hiển thị, và nhấp vào viên thuốc sẽ đóng mẹo"
           ]
         }
       }
