@@ -1,4 +1,28 @@
 {
+  "0.2.28": {
+    "notesSha256": "35cf3cb038e2b98a4adbc8289f5cb3665c7c37591a06c58c470835f9cccba1ca",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The pill now stays with the browser when you minimize",
+          "items": [
+            "The pill appears at the browser's bottom-right corner when you minimize",
+            "The browser reopens over the pill wherever you dragged it",
+            "Requires Lumi 1.75.0"
+          ]
+        },
+        "vi": {
+          "headline": "Viên thuốc giờ theo trình duyệt khi thu nhỏ",
+          "items": [
+            "Viên thuốc xuất hiện ở góc dưới bên phải trình duyệt khi thu nhỏ",
+            "Trình duyệt mở lại đúng vị trí viên thuốc mà bạn kéo đến",
+            "Yêu cầu Lumi 1.75.0"
+          ]
+        }
+      }
+    }
+  },
   "0.2.27": {
     "notesSha256": "e1ed6d00ec6c6b9a2f16729b20ad443cde88eee4765771d27c090a11fd768af3",
     "summary": {
@@ -438,34 +462,6 @@
           "headline": "Menu giờ mở trong bảng riêng",
           "items": [
             "Menu mở trong bảng riêng bên dưới biểu tượng nên trình duyệt nhỏ không còn che khuất nó"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.8": {
-    "notesSha256": "31f2370cfa73323499a9111da380983a5f3da3a4757787cfb37a4a688c2fdc1a",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Zoom controls, smaller minimum size, and refined menus",
-          "items": [
-            "Zoom in, zoom out, and reset with Command-plus, Command-minus, and Command-zero",
-            "Each site remembers its zoom level across tabs and visits",
-            "The browser can now be resized down to 368 by 200 pixels",
-            "Menu items for Compact Mode, Desktop Site, and Zoom now have icons",
-            "The light behind Lumi's mark in the pill is now a perfect circle"
-          ]
-        },
-        "vi": {
-          "headline": "Điều khiển thu phóng, kích thước tối thiểu nhỏ hơn và menu tinh chỉnh",
-          "items": [
-            "Phóng to, thu nhỏ và đặt lại bằng Command-cộng, Command-trừ và Command-không",
-            "Mỗi trang web ghi nhớ mức thu phóng của nó qua các tab và lần truy cập",
-            "Trình duyệt giờ có thể thu nhỏ xuống 368 x 200 pixel",
-            "Các mục menu Chế độ gọn, Trang dành cho máy tính và Thu phóng giờ có biểu tượng",
-            "Vầng sáng phía sau biểu tượng Lumi trong viên thuốc giờ là hình tròn hoàn hảo"
           ]
         }
       }
