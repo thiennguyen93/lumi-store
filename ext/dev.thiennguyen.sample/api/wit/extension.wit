@@ -1499,6 +1499,35 @@ interface ui {
     /// Lumi 1.65.0.
     open-window-on: func(name: string, beside: string) -> result<_, string>;
 
+    /// `show-window`, at a corner of your window `beside` as it stands now:
+    /// the window comes back with its `corner` on that window's same
+    /// corner — "top-left", "top-right", "bottom-left" or "bottom-right",
+    /// or "center" for its middle on that one's middle — held inside the
+    /// display `beside` is on, against its edge where it would run past it.
+    /// With `beside` not on screen it is `show-window`. For a window stepped
+    /// aside in favour of a smaller one the person can carry anywhere, which
+    /// should come back from where that one stands, not from where it was
+    /// left: a browser rising from its pill. Not a panel placed beside the
+    /// selection, the menu bar item or another window — Lumi places those.
+    /// `false` for a window `hide-window` did not take away, which does not
+    /// move. Both are names your manifest declares. Added in Lumi 1.75.0.
+    show-window-at: func(name: string, beside: string, corner: string) -> result<bool, string>;
+
+    /// `open-window`, at a corner of your window `beside` as it stands now:
+    /// the panel opens with its `corner` on that window's same corner, or
+    /// its middle on that one's middle for "center" — `show-window-at`'s
+    /// words — held inside the display `beside` is on. A window that
+    /// `hide-window` took away counts as standing where it was, since that
+    /// is where `show-window` puts it back. For a smaller window standing
+    /// in for a bigger one, opened as the bigger one is put away, which
+    /// should appear where that one was: a pill at the foot of the browser
+    /// minimized to it. A panel only, and not one Lumi places beside
+    /// something; one already up is focused where it stands, as
+    /// `open-window` does, and with `beside` neither on screen nor stepped
+    /// aside it is `open-window`. Both are names your manifest declares.
+    /// Added in Lumi 1.75.0.
+    open-window-at: func(name: string, beside: string, corner: string) -> result<_, string>;
+
     /// Bring up Lumi's Settings on this extension's own Settings tab — a
     /// panel's "Settings…". Only for something the person did. Added in 0.3.
     open-settings: func() -> result<_, string>;

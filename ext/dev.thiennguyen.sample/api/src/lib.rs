@@ -1050,6 +1050,54 @@ pub fn open_window_on(name: &str, beside: &str) -> Result<(), String> {
     lumi::ext::ui::open_window_on(name, beside)
 }
 
+/// [`show_window`], at a corner of your window `beside` as it stands now:
+/// the window comes back with its `corner` on that window's same corner —
+/// `"top-left"`, `"top-right"`, `"bottom-left"` or `"bottom-right"`, or
+/// `"center"` for its middle on that one's middle — held inside the display
+/// `beside` is on, against its edge where it would run past it. For a window
+/// stepped aside in favour of a smaller one the person can carry anywhere,
+/// which should come back from where that one stands — a browser rising
+/// from its pill, wherever the pill was dragged:
+///
+/// ```no_run
+/// // The pill pressed: the browser back over the pill, the pill gone.
+/// lumi_extension_api::show_window_at("browser", "pill", "bottom-right")?;
+/// lumi_extension_api::close_window("pill")?;
+/// # Ok::<(), String>(())
+/// ```
+///
+/// With `beside` not on screen it is [`show_window`]; `false` for a window
+/// [`hide_window`] did not take away, which does not move. Refused for a
+/// panel placed beside the selection, the menu bar item or another window,
+/// which Lumi places. Both are names your manifest declares. Works from
+/// [`Guest::on_event`]. Needs Lumi 1.75.0 or later.
+pub fn show_window_at(name: &str, beside: &str, corner: &str) -> Result<bool, String> {
+    lumi::ext::ui::show_window_at(name, beside, corner)
+}
+
+/// [`open_window`], at a corner of your window `beside` as it stands now:
+/// the panel opens with its `corner` on that window's same corner, or its
+/// middle on that one's middle — [`show_window_at`]'s words — held inside
+/// the display `beside` is on. A window [`hide_window`] took away counts as
+/// standing where it was. For a smaller window standing in for a bigger
+/// one, opened as the bigger one is put away, which should appear where
+/// that one was — a pill at the foot of the browser minimized to it:
+///
+/// ```no_run
+/// // Minimize: the pill at the browser's bottom-right, then the browser away.
+/// lumi_extension_api::open_window_at("pill", "browser", "bottom-right")?;
+/// lumi_extension_api::hide_window("browser")?;
+/// # Ok::<(), String>(())
+/// ```
+///
+/// A panel only, and not one Lumi places beside something. One already up
+/// is focused where it stands, as [`open_window`] does; with `beside` neither
+/// on screen nor stepped aside it is [`open_window`]. Both are names your
+/// manifest declares. Needs Lumi 1.75.0 or later.
+pub fn open_window_at(name: &str, beside: &str, corner: &str) -> Result<(), String> {
+    lumi::ext::ui::open_window_at(name, beside, corner)
+}
+
 /// Bring up Lumi's Settings on your extension's Settings tab — for a
 /// "Settings…" in one of your windows. Only for a press.
 pub fn open_settings() -> Result<(), String> {
