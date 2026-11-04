@@ -1,4 +1,24 @@
 {
+  "0.36.1": {
+    "notesSha256": "4b20c465135c308e045e2d457bfa3c1a6403ed4957b59309a0e65fa106cb2606",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed broken documentation links",
+          "items": [
+            "Fixed broken links to the extension guide and uninstall page"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa liên kết tài liệu bị hỏng",
+          "items": [
+            "Sửa liên kết đến hướng dẫn mở rộng và trang gỡ cài đặt bị hỏng"
+          ]
+        }
+      }
+    }
+  },
   "0.36.0": {
     "notesSha256": "535c4f0961e0ad74769830ee2b37d63bedfc1327ed2d0f4495e1b4815b6a4a36",
     "summary": {
@@ -492,26 +512,6 @@
             "Thẻ giờ tải trước khi Lumi khởi động để mở ngay lập tức",
             "Quyền tải trước mới cho phép bạn chọn có tải thẻ lúc khởi động hay không",
             "Yêu cầu Lumi 1.45.0"
-          ]
-        }
-      }
-    }
-  },
-  "0.17.0": {
-    "notesSha256": "d9b9d5303901150895ab8be85d2062077a4d8ec1d780631268d06c274e4e3a97",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Background card remembers its position and size",
-          "items": [
-            "The background card reopens where you left it and at the size you set, if you use Lumi 1.40.0 or later"
-          ]
-        },
-        "vi": {
-          "headline": "Thẻ nền nhớ vị trí và kích thước",
-          "items": [
-            "Thẻ nền mở lại đúng vị trí và kích thước bạn đã đặt, nếu bạn dùng Lumi 1.40.0 trở lên"
           ]
         }
       }

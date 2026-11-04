@@ -1,4 +1,24 @@
 {
+  "0.1.15": {
+    "notesSha256": "df987e937d9f5befbe95630c2c4504023a22bae076f19140942dd291cc7606dd",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed a broken link",
+          "items": [
+            "The link to Lumi Gõ tiếng Việt on lumikeys.app now works correctly"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa liên kết bị hỏng",
+          "items": [
+            "Liên kết đến Lumi Gõ tiếng Việt trên lumikeys.app giờ hoạt động đúng"
+          ]
+        }
+      }
+    }
+  },
   "0.1.14": {
     "notesSha256": "7067e92074e64134e5b6ae398c67c181f96f5b5db524238b4576c4a3a31addba",
     "summary": {
