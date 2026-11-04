@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1] - 2026-11-04
+
+### Fixed
+
+- The website link on Metronome's About page in Lumi opens its page on lumikeys.app. It opened a page that no longer exists.
+
 ## [0.3.0] - 2026-10-31
 
 ### Changed
