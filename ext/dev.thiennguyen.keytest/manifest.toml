@@ -4,11 +4,11 @@
 [extension]
 id = "dev.thiennguyen.keytest"
 name = "Keyboard Cleaner"
-version = "0.6.1"
+version = "0.6.2"
 description = "Lock your MacBook keyboard while you wipe it, then check every key and catch keys that double-type."
 author = "Thien Nguyen"
 summary = "Opens a Keyboard tab here in Lumi. Clean keyboard locks every key on your Mac for a while — and the trackpad too, unless you turn that off — so you can wipe it without typing into anything, and lights each key you wipe on a drawn MacBook keyboard, so cleaning tests it too. Any time, press each key and watch it light up: it counts the keys you have covered, shows which are held, and flags a key that registers twice from one press — the chatter a worn or dusty switch produces. Nothing leaves the page."
-homepage = "https://lumikeys.app/docs/extensions"
+homepage = "https://lumikeys.app/extensions/dev.thiennguyen.keytest/"
 # 1.38.0 for `input-hold`, the capability cleaning needs: an older Lumi
 # does not know the word and would refuse the manifest for it. (WIT 0.3,
 # [[page]] and the settings layout all came before it.)
