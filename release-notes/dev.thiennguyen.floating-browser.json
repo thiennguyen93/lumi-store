@@ -1,4 +1,24 @@
 {
+  "0.2.29": {
+    "notesSha256": "5cddcc82dec405ba88961708dea2282d5280452ce026e39e5962e56c2c77535f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Updated store page with new demo video and current features",
+          "items": [
+            "The Extension Store page now shows a demo video and updated screenshots"
+          ]
+        },
+        "vi": {
+          "headline": "Trang cửa hàng được cập nhật với video demo mới và tính năng hiện tại",
+          "items": [
+            "Trang Extension Store giờ có video demo và ảnh chụp màn hình mới nhất"
+          ]
+        }
+      }
+    }
+  },
   "0.2.28": {
     "notesSha256": "35cf3cb038e2b98a4adbc8289f5cb3665c7c37591a06c58c470835f9cccba1ca",
     "summary": {
@@ -442,26 +462,6 @@
             "Gõ chữ cái đầu của mục menu để nhảy đến mục đó",
             "Mũi tên trái phải điều chỉnh zoom khi hàng zoom đang được chọn",
             "Các phím tắt như ⌘T và ⌘Y giờ hoạt động khi menu đang mở"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.9": {
-    "notesSha256": "9680ef1d3a18e1a8e535523f14dc9f0c0cf7e92b766802037b5e4c397a731b9e",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Menu now opens in its own panel",
-          "items": [
-            "The menu opens in its own panel under the icon so a small browser no longer cuts it off"
-          ]
-        },
-        "vi": {
-          "headline": "Menu giờ mở trong bảng riêng",
-          "items": [
-            "Menu mở trong bảng riêng bên dưới biểu tượng nên trình duyệt nhỏ không còn che khuất nó"
           ]
         }
       }
