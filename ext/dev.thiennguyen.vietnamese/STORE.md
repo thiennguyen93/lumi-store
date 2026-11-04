@@ -30,4 +30,4 @@ The typing engine is [Gõ Nhanh](https://github.com/khaphanspace/gonhanh.org) by
 2. Start typing. The V in the menu bar says Vietnamese is on.
 3. Press fn ⇧ for English, and again for Vietnamese.
 
-Needs Lumi 1.62 or later. More about extensions at [lumikeys.app](https://lumikeys.app/docs/extensions).
+Needs Lumi 1.62 or later. More about extensions at [lumikeys.app](https://lumikeys.app/extensions/).

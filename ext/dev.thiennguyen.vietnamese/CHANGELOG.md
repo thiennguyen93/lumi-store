@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.15] - 2026-11-04
+
+### Fixed
+
+- The lumikeys.app link at the end of Lumi Gõ tiếng Việt's page in the Extension Store opens the extensions on lumikeys.app. It opened a page that no longer exists.
+
 ## [0.1.14] - 2026-11-03
 
 ### Added
