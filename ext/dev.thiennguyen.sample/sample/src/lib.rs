@@ -611,7 +611,7 @@ impl lumi::Guest for Sample {
             // an uninstall survey belongs; this one costs `applications`
             // and `network`, both already in the manifest for `translate`.
             lumi::Lifecycle::Uninstalling => lumi::open_url(
-                "https://lumikeys.app/docs/extensions?uninstalled=dev.thiennguyen.sample",
+                "https://docs.lumikeys.app/extensions/?uninstalled=dev.thiennguyen.sample",
             ),
         }
     }

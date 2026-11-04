@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.36.1] - 2026-11-04
+
+### Fixed
+
+- The extension guide linked from the sample's page in the Extension Store, and the page opened when the sample is uninstalled, are the developer guide on docs.lumikeys.app. Both were a page that no longer exists.
+
 ## [0.36.0] - 2026-10-25
 
 ### Added

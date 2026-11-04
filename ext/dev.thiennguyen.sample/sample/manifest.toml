@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.sample"
 name = "Sample"
-version = "0.36.0"
+version = "0.36.1"
 # 1.64.0: the floor is the newest thing this manifest names or the component
 # calls — the `speech`, `microphone`, `system-audio` and `audio-levels`
 # capabilities and the Transcribe window's `transcribe` calls. Before it, 1.60.0: the `schedule`
