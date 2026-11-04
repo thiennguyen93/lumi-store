@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] - 2026-11-04
+
+### Fixed
+
+- The website link on Rhythm Keys's About page in Lumi opens its page on lumikeys.app. It opened a page that no longer exists.
+
 ## [0.2.0] - 2026-10-09
 
 ### Changed
