@@ -1,4 +1,24 @@
 {
+  "0.2.1": {
+    "notesSha256": "c12203ccee76aef4f9cd0223a4ba5d98261569b5f755696872f35d7317c4c06d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed broken website link",
+          "items": [
+            "The website link in the About page now opens the correct page"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa liên kết trang web bị lỗi",
+          "items": [
+            "Liên kết trang web trong trang Giới thiệu giờ mở đúng trang"
+          ]
+        }
+      }
+    }
+  },
   "0.2.0": {
     "notesSha256": "6be312cedb247cc4fbe4cf8335c90586eadbe3bc0f643983b59ed2a437d0d52c",
     "summary": {

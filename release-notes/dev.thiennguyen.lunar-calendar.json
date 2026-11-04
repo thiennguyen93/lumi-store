@@ -1,4 +1,24 @@
 {
+  "0.6.2": {
+    "notesSha256": "85d59dbd346f62e78b2d49536666446860f4f6a5bc47d59b4c35eb8c17ee879f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed broken link in About page",
+          "items": [
+            "The website link in the About page now opens the correct extension page"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa liên kết trong trang Giới thiệu",
+          "items": [
+            "Liên kết trang web trong phần Giới thiệu giờ mở đúng trang của tiện ích"
+          ]
+        }
+      }
+    }
+  },
   "0.6.1": {
     "notesSha256": "f0fc6e6ef3a5ad8c45fe14dce963faec7b9f309c2c2bf24e2aa45629e9233aca",
     "summary": {

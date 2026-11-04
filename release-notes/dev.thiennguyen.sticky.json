@@ -1,4 +1,24 @@
 {
+  "0.1.28": {
+    "notesSha256": "f9043141ed8abbd31c6fa5683a30fe038bd5fabf3449ec2b5bc92ca3e8888193",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed website link in About page",
+          "items": [
+            "The website link in the About page now opens the correct page"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa liên kết trang web trong trang Giới thiệu",
+          "items": [
+            "Liên kết trang web trong trang Giới thiệu giờ mở đúng trang"
+          ]
+        }
+      }
+    }
+  },
   "0.1.27": {
     "notesSha256": "6233eeaa6704cd0dde9121c47e7fdbea2428c00f7cbce70470610973a8c0feef",
     "summary": {
@@ -440,26 +460,6 @@
           "headline": "Ghi chú giờ chạm được thanh menu trên mọi màn hình",
           "items": [
             "Ghi chú kéo lên đầu màn hình giờ chạm sát thanh menu trên mọi màn hình"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.8": {
-    "notesSha256": "835a7b8c84a265deb44a279f069876c31cfe6022d58dbd52b9e8bf7a7442c9bd",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Footer now shows Lumi branding",
-          "items": [
-            "The note's footer now carries Lumi's mark, so it's clear where Sticky Notes lives"
-          ]
-        },
-        "vi": {
-          "headline": "Chân trang hiển thị thương hiệu Lumi",
-          "items": [
-            "Chân trang ghi chú giờ có logo Lumi, cho thấy rõ Sticky Notes chạy trong Lumi"
           ]
         }
       }

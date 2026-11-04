@@ -1,4 +1,26 @@
 {
+  "0.7.2": {
+    "notesSha256": "84be92476f7ae7b52dd03ebc92219be5f557857dfc0e0c87f5c79d7177dc088f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed broken links",
+          "items": [
+            "Fixed the website link in the About page to open the correct page",
+            "Fixed the link at the bottom of the Extension Store page to open the correct page"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa các liên kết bị lỗi",
+          "items": [
+            "Sửa liên kết trang web trong trang Giới thiệu để mở đúng trang",
+            "Sửa liên kết ở cuối trang Extension Store để mở đúng trang"
+          ]
+        }
+      }
+    }
+  },
   "0.7.1": {
     "notesSha256": "1b90e8e38ff05975f8562c4c8445e61917f42168faf3ba21d9a1ea327c9ad154",
     "summary": {
@@ -364,26 +386,6 @@
             "Cắt ảnh, vẽ mũi tên, thêm hộp, làm nổi bật vùng, làm mờ phần nhạy cảm, thêm chữ và đánh số bước",
             "Hoàn tác thay đổi, phóng to thu nhỏ, rồi sao chép hoặc lưu ảnh chụp đã chỉnh sửa",
             "Thanh công cụ nằm trên thanh tiêu đề để tiết kiệm không gian"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.0": {
-    "notesSha256": "52b7f8b7ed4bc061409782b0f065323ebbe341c8d42c3afbc9a1d896057ac4c9",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "New editor window",
-          "items": [
-            "Added a command to open the editor window"
-          ]
-        },
-        "vi": {
-          "headline": "Cửa sổ chỉnh sửa mới",
-          "items": [
-            "Thêm lệnh để mở cửa sổ chỉnh sửa"
           ]
         }
       }

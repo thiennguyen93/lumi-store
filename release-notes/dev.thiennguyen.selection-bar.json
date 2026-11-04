@@ -1,4 +1,26 @@
 {
+  "0.5.8": {
+    "notesSha256": "d3689ce626650483688d2e86f439718f0e49cdce5a70677997b89369b564cc3e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed broken links",
+          "items": [
+            "Fixed the website link in the About page to open the correct page",
+            "Fixed the link in the Extension Store to open the correct extensions page"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa các liên kết bị lỗi",
+          "items": [
+            "Sửa liên kết trang web trong phần Giới thiệu để mở đúng trang",
+            "Sửa liên kết trong Cửa hàng Tiện ích để mở đúng trang tiện ích"
+          ]
+        }
+      }
+    }
+  },
   "0.5.7": {
     "notesSha256": "b1e7f397aaf9b19a0a32e8de51e1e4d623054cbe7e63b278bcedaeb7d173a2eb",
     "summary": {
@@ -446,34 +468,6 @@
           "headline": "Cài đặt gọn gàng hơn",
           "items": [
             "Đã xóa phần AI trong Cài đặt vì mỗi hành động đã hiển thị mô hình của nó"
-          ]
-        }
-      }
-    }
-  },
-  "0.3.16": {
-    "notesSha256": "9834d3da73212955da4d05ff77d52bf1bd31795fc9d366e035742bab057f23f1",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Change tracking moved into each action's settings",
-          "items": [
-            "Selection Bar's page in Lumi now opens on Settings instead of About",
-            "Show what changed moved into each AI action's own settings under The answer",
-            "Each action remembers its own Show what changed preference separately",
-            "How changes are marked is still shared across all actions",
-            "Change tracking only applies to actions that replace your selected text"
-          ]
-        },
-        "vi": {
-          "headline": "Theo dõi thay đổi chuyển vào cài đặt từng hành động",
-          "items": [
-            "Trang Selection Bar trong Lumi giờ mở ở Cài đặt thay vì Giới thiệu",
-            "Hiển thị nội dung thay đổi chuyển vào cài đặt riêng của từng hành động AI",
-            "Mỗi hành động nhớ tùy chọn Hiển thị nội dung thay đổi riêng của nó",
-            "Cách đánh dấu thay đổi vẫn dùng chung cho tất cả hành động",
-            "Theo dõi thay đổi chỉ áp dụng cho hành động thay thế văn bản đã chọn"
           ]
         }
       }

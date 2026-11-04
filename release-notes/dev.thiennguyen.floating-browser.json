@@ -1,4 +1,26 @@
 {
+  "0.2.30": {
+    "notesSha256": "eab9bf005af2e8530e8ba2963392299dde4a9373635c1a052173dc415fb6da06",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed broken links",
+          "items": [
+            "The website link on the About page now opens the correct page",
+            "The link at the end of the Extension Store page now opens the correct page"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa các liên kết bị hỏng",
+          "items": [
+            "Liên kết trang web trên trang Giới thiệu giờ mở đúng trang",
+            "Liên kết ở cuối trang Cửa hàng Tiện ích giờ mở đúng trang"
+          ]
+        }
+      }
+    }
+  },
   "0.2.29": {
     "notesSha256": "5cddcc82dec405ba88961708dea2282d5280452ce026e39e5962e56c2c77535f",
     "summary": {
@@ -436,32 +458,6 @@
           "headline": "Trang giới thiệu với lịch sử phiên bản",
           "items": [
             "Trang giới thiệu hiển thị Floating Browser là gì, ai làm ra và các cập nhật gần đây"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.10": {
-    "notesSha256": "5dd02d499392724c6c398a6903a1b537ea9fafc0f0494c1cb1ce281ff762fc32",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Keyboard shortcuts now work in the menu bar icon's menu",
-          "items": [
-            "Arrow keys navigate menu items and Return or Space selects the highlighted item",
-            "Type the first letters of a menu item to jump to it",
-            "Left and right arrows adjust zoom when the zoom row is highlighted",
-            "Keyboard shortcuts like ⌘T and ⌘Y now work while the menu is open"
-          ]
-        },
-        "vi": {
-          "headline": "Phím tắt giờ hoạt động trong menu của biểu tượng thanh menu",
-          "items": [
-            "Phím mũi tên di chuyển giữa các mục và Return hoặc Space chọn mục đang sáng",
-            "Gõ chữ cái đầu của mục menu để nhảy đến mục đó",
-            "Mũi tên trái phải điều chỉnh zoom khi hàng zoom đang được chọn",
-            "Các phím tắt như ⌘T và ⌘Y giờ hoạt động khi menu đang mở"
           ]
         }
       }

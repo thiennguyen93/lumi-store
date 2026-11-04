@@ -1,4 +1,24 @@
 {
+  "0.6.2": {
+    "notesSha256": "1ef0c66f4bcb57f2f3465706bbcd1c89fa79d016c95dcd7d038c5b8212b61ab8",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed broken website link",
+          "items": [
+            "The website link in the About page now opens the correct page"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa liên kết trang web bị lỗi",
+          "items": [
+            "Liên kết trang web trong trang Giới thiệu giờ mở đúng trang"
+          ]
+        }
+      }
+    }
+  },
   "0.6.1": {
     "notesSha256": "7425c6e091d794672e708e4232f82dd05f1946c2bc99abd967b03c9037b1fb45",
     "summary": {
@@ -418,26 +438,6 @@
           "items": [
             "Phím Globe giờ có thể kiểm tra bằng cách nhấn cùng phím delete hoặc phím mũi tên",
             "Chú thích và ghi chú hướng dẫn cách kiểm tra phím Globe"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.7": {
-    "notesSha256": "a5e01576c94924cdf76eb3def82a36703c15f42091e84471a4855973a600e300",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Improved keyboard visibility",
-          "items": [
-            "Opening 'Keys this page cannot hear' now scrolls only the notes, keeping the keyboard visible"
-          ]
-        },
-        "vi": {
-          "headline": "Cải thiện hiển thị bàn phím",
-          "items": [
-            "Mở 'Phím trang này không nghe được' giờ chỉ cuộn phần ghi chú, giữ bàn phím luôn hiển thị"
           ]
         }
       }
