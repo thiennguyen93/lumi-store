@@ -1,4 +1,26 @@
 {
+  "0.6.1": {
+    "notesSha256": "f0fc6e6ef3a5ad8c45fe14dce963faec7b9f309c2c2bf24e2aa45629e9233aca",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Friendlier suggestions when adding a date",
+          "items": [
+            "The name field now suggests 'Daughter's birthday' instead of 'Grandmother's death anniversary'",
+            "The welcome window example also changed from a death anniversary to a birthday"
+          ]
+        },
+        "vi": {
+          "headline": "Gợi ý thân thiện hơn khi thêm ngày",
+          "items": [
+            "Ô Tên giờ gợi ý 'Sinh nhật con gái' thay vì 'Giỗ bà nội'",
+            "Ngày ví dụ trong cửa sổ Chào mừng cũng đổi từ ngày giỗ sang sinh nhật"
+          ]
+        }
+      }
+    }
+  },
   "0.6.0": {
     "notesSha256": "a4db5d947d6f79ba7fa109869189b5a72748d91f378706cf6e1c573c4d24e147",
     "summary": {
