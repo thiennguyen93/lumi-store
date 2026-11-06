@@ -479,6 +479,19 @@ class BesideAnotherWindow(unittest.TestCase):
         beside_pill('anchor = { window = "pill", at = "end", side = "above" }')
         beside_pill('anchor = { window = "pill", at = "center", side = "below" }\nfocus = false')
 
+    def test_it_may_name_a_window_with_copies_by_its_declarations_name(self):
+        """Lumi 1.76: beside whichever copy's page asked for it."""
+        cards = BESIDE_BASE.format(fields='anchor = {{ window = "{beside}" }}').replace(
+            'position = "bottom-right"', 'position = "bottom-right"\ncopies = 3'
+        )
+        for beside in ("pill", "pill-2"):
+            publish.check_manifest("dev.you.thing", tomllib.loads(cards.format(beside=beside)))
+        for nothing in ("pill-9", "pills"):
+            with self.assertRaises(SystemExit) as caught:
+                publish.check_manifest("dev.you.thing", tomllib.loads(cards.format(beside=nothing)))
+            self.assertIn("declares no window as", str(caught.exception.code))
+        self.assertIn("declares no window as", beside_pill_refusal('anchor = { window = "pill-1" }'))
+
     def test_it_names_a_window_the_manifest_declares_and_not_itself(self):
         self.assertIn("names none", beside_pill_refusal(""))
         self.assertIn("names none", beside_pill_refusal('anchor = { at = "end" }'))

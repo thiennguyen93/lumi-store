@@ -847,7 +847,13 @@ def check_manifest(entry_id: str, manifest: dict):
             answering.add(one)
     # `manifest.rs`'s rule for a panel beside another of its windows (Lumi
     # 1.66): the window it names is one the manifest declares, and not
-    # itself, same sentences.
+    # itself, same sentences. A window declared with `copies` is named by
+    # its declaration's name too, which no copy answers to (Lumi 1.76).
+    copied = {
+        str(window.get("name", ""))
+        for window in manifest.get("window", [])
+        if "copies" in window
+    }
     for window in manifest.get("window", []):
         if str(window.get("position", "")).strip() != "window":
             continue
@@ -859,7 +865,7 @@ def check_manifest(entry_id: str, manifest: dict):
         own_names = [f"{own}-{k}" for k in range(1, copies + 1)] if isinstance(copies, int) else [own]
         if beside in own_names:
             fail(entry_id, f"the panel {own} stands beside itself; anchor window names another window")
-        if beside not in answering:
+        if beside not in answering and beside not in copied:
             fail(entry_id, f"the panel {own} stands beside {beside!r}, which the manifest declares no window as")
     # `manifest.rs`'s rule that one item opens one panel (Lumi 1.61): a
     # second would leave which one a click opens to the order they are listed
