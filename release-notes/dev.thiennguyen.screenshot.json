@@ -366,49 +366,5 @@
         }
       }
     }
-  },
-  "0.2.0": {
-    "notesSha256": "0ff6a8daedc6e664e6cb10a2cac172764a9a519096d7052f860d1f3160c7413b",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "The editor arrives",
-          "items": [
-            "You can now edit screenshots with crop, arrows, boxes, highlights, pixelation, text, and numbered steps",
-            "The editor includes undo, zoom, and options to copy or save your edited image",
-            "The toolbar sits in the title bar to save space"
-          ]
-        },
-        "vi": {
-          "headline": "Trình chỉnh sửa ra mắt",
-          "items": [
-            "Giờ bạn có thể chỉnh sửa ảnh chụp với cắt, mũi tên, hộp, làm nổi bật, làm mờ, văn bản và đánh số bước",
-            "Trình chỉnh sửa có hoàn tác, phóng to và tùy chọn sao chép hoặc lưu ảnh đã chỉnh sửa",
-            "Thanh công cụ nằm trên thanh tiêu đề để tiết kiệm không gian"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.0": {
-    "notesSha256": "52b7f8b7ed4bc061409782b0f065323ebbe341c8d42c3afbc9a1d896057ac4c9",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "New editor window",
-          "items": [
-            "Added a command to open the editor window"
-          ]
-        },
-        "vi": {
-          "headline": "Cửa sổ chỉnh sửa mới",
-          "items": [
-            "Thêm lệnh để mở cửa sổ chỉnh sửa"
-          ]
-        }
-      }
-    }
   }
 }
