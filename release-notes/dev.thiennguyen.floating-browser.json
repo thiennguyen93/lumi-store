@@ -1,4 +1,28 @@
 {
+  "0.2.31": {
+    "notesSha256": "0b20d2db5326190adfe4736b4e1f91e8c81d98394575465a8d46855eb14bdb94",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Tab count accuracy improved",
+          "items": [
+            "The tab count now matches the number of tabs shown in the menu",
+            "Tabs on History, Settings, or About pages no longer inflate the count",
+            "Closing a tab from the menu after restart now updates the count correctly"
+          ]
+        },
+        "vi": {
+          "headline": "Số lượng tab hiển thị chính xác hơn",
+          "items": [
+            "Số đếm tab giờ khớp với số tab hiển thị trong menu",
+            "Tab đang ở trang Lịch sử, Cài đặt hoặc Giới thiệu không còn làm tăng số đếm",
+            "Đóng tab từ menu sau khi khởi động lại giờ cập nhật số đếm đúng"
+          ]
+        }
+      }
+    }
+  },
   "0.2.30": {
     "notesSha256": "eab9bf005af2e8530e8ba2963392299dde4a9373635c1a052173dc415fb6da06",
     "summary": {
@@ -438,26 +462,6 @@
           "items": [
             "Màn hình Giới thiệu giờ hiển thị Floating Browser là gì và liệt kê các thay đổi gần đây",
             "Màn hình Giới thiệu không còn nằm phía trước khi bạn đưa trang web lên"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.11": {
-    "notesSha256": "a98debc8690b57a07a986c0dcab24470af05d51937220a2ceb0a57e4c9e65957",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "About page with version history and credits",
-          "items": [
-            "About page shows what Floating Browser is, who made it, and recent updates"
-          ]
-        },
-        "vi": {
-          "headline": "Trang giới thiệu với lịch sử phiên bản",
-          "items": [
-            "Trang giới thiệu hiển thị Floating Browser là gì, ai làm ra và các cập nhật gần đây"
           ]
         }
       }
