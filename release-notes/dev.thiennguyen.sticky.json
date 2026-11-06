@@ -1,4 +1,32 @@
 {
+  "0.1.29": {
+    "notesSha256": "a9a11d4508fcb33390c5c329be65a3b5b501d42a1261ca27a2773e07acdf53f3",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The menu now opens in its own panel",
+          "items": [
+            "The ⋯ menu opens in a panel under the button, like a Mac menu, so small notes no longer cut it off",
+            "You can navigate the menu with arrows, Return, typing, and shortcuts, then close it with Escape or a click",
+            "After choosing an item, the note gets keyboard focus back with the caret where you left it",
+            "Notes that do not float on top stay visible while their menu is open",
+            "Requires Lumi 1.76.0"
+          ]
+        },
+        "vi": {
+          "headline": "Menu giờ mở trong bảng riêng",
+          "items": [
+            "Menu ⋯ mở trong bảng dưới nút, giống menu Mac, nên ghi chú nhỏ không còn bị cắt nữa",
+            "Bạn có thể điều hướng menu bằng mũi tên, Return, gõ chữ và phím tắt, rồi đóng bằng Escape hoặc nhấp chuột",
+            "Sau khi chọn mục, ghi chú nhận lại con trỏ bàn phím ở vị trí bạn để lại",
+            "Ghi chú không nổi trên cùng vẫn hiện khi menu đang mở",
+            "Yêu cầu Lumi 1.76.0"
+          ]
+        }
+      }
+    }
+  },
   "0.1.28": {
     "notesSha256": "f9043141ed8abbd31c6fa5683a30fe038bd5fabf3449ec2b5bc92ca3e8888193",
     "summary": {
@@ -440,26 +468,6 @@
           "headline": "Đóng ghi chú bằng Command-W",
           "items": [
             "Giờ bạn có thể đóng ghi chú bằng ⌘W hoặc từ menu Hành động, giống như phím Esc"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.9": {
-    "notesSha256": "243605c7a1a786ccd484e321d2410865f35dd562afc8085ced021adf2592771b",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Notes now reach the menu bar on every display",
-          "items": [
-            "A note dragged to the top of the screen now goes right up to the menu bar, on every display"
-          ]
-        },
-        "vi": {
-          "headline": "Ghi chú giờ chạm được thanh menu trên mọi màn hình",
-          "items": [
-            "Ghi chú kéo lên đầu màn hình giờ chạm sát thanh menu trên mọi màn hình"
           ]
         }
       }

@@ -1,4 +1,30 @@
 {
+  "0.90.0": {
+    "notesSha256": "4e96336bbc8ba9123acc7d91adfe56252128aacb5cd01fed076bf9a4f45fde8c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Text previews now show character, word and paragraph counts",
+          "items": [
+            "Text previews display character, word and paragraph counts for the entire item",
+            "Character counts include spaces and line breaks in the total",
+            "Paragraphs are counted as any line containing text, matching Pages and Word",
+            "Hidden items in privacy mode show counts only after you reveal them"
+          ]
+        },
+        "vi": {
+          "headline": "Xem trước văn bản giờ hiển thị số ký tự, từ và đoạn",
+          "items": [
+            "Xem trước văn bản hiển thị số ký tự, từ và đoạn văn của toàn bộ mục",
+            "Số ký tự bao gồm cả khoảng trắng và xuống dòng",
+            "Đoạn văn được đếm là bất kỳ dòng nào có chữ, giống Pages và Word",
+            "Mục ẩn trong chế độ riêng tư chỉ hiển thị số đếm sau khi bạn bật lên"
+          ]
+        }
+      }
+    }
+  },
   "0.89.2": {
     "notesSha256": "ae066f5bddd1a041b29a322dabb3b1a389a224097999e9ac0c9dae6c2cabf584",
     "summary": {
@@ -426,30 +452,6 @@
             "Tìm trong vẫn hiển thị và mờ đi khi Khớp đoạn mã tắt tắt",
             "Giao diện mờ đi khi chọn Kính tối",
             "Ở nơi không thể dùng sinh trắc học, ứng dụng giờ nói cần mật khẩu trên Mac này"
-          ]
-        }
-      }
-    }
-  },
-  "0.80.1": {
-    "notesSha256": "03ccac536408f60110844a0e5feb6f4f2a11dab422a2cd922a14ea82dd965f66",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Clearer privacy settings when history is locked",
-          "items": [
-            "Confirm it's you before showing is now disabled while Lock history is on",
-            "Turning off privacy mode no longer asks for authentication when history is locked",
-            "The Welcome tour no longer offers Ask before showing if history is already locked"
-          ]
-        },
-        "vi": {
-          "headline": "Cài đặt bảo mật rõ ràng hơn khi lịch sử đã khóa",
-          "items": [
-            "Xác nhận danh tính trước khi hiển thị giờ bị vô hiệu hóa khi Khóa lịch sử đang bật",
-            "Tắt chế độ riêng tư không còn yêu cầu xác thực khi lịch sử đã được khóa",
-            "Hướng dẫn chào mừng không còn đề xuất Hỏi trước khi hiển thị nếu lịch sử đã khóa"
           ]
         }
       }
