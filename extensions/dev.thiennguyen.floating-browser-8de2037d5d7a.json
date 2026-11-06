@@ -1,0 +1,530 @@
+[
+ {
+  "version": "0.2.31",
+  "date": "",
+  "notes": "- The number on the pill's tab button is the number of tabs its menu lists. A tab on History, Settings or About counted there though the menu leaves those pages out, so two sites and History read 3 over a menu of two; and a tab closed from that menu after Lumi restarted left the number as it was.",
+  "notesSha256": "0b20d2db5326190adfe4736b4e1f91e8c81d98394575465a8d46855eb14bdb94",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Tab count accuracy improved",
+     "items": [
+      "The tab count now matches the number of tabs shown in the menu",
+      "Tabs on History, Settings, or About pages no longer inflate the count",
+      "Closing a tab from the menu after restart now updates the count correctly"
+     ]
+    },
+    "vi": {
+     "headline": "Số lượng tab hiển thị chính xác hơn",
+     "items": [
+      "Số đếm tab giờ khớp với số tab hiển thị trong menu",
+      "Tab đang ở trang Lịch sử, Cài đặt hoặc Giới thiệu không còn làm tăng số đếm",
+      "Đóng tab từ menu sau khi khởi động lại giờ cập nhật số đếm đúng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.30",
+  "date": "",
+  "notes": "- The website link on Floating Browser's About page in Lumi opens its page on lumikeys.app. It opened a page that no longer exists.\n- The lumikeys.app link at the end of Floating Browser's page in the Extension Store opens the extensions on lumikeys.app. It opened a page that no longer exists.",
+  "notesSha256": "eab9bf005af2e8530e8ba2963392299dde4a9373635c1a052173dc415fb6da06",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed broken links",
+     "items": [
+      "The website link on the About page now opens the correct page",
+      "The link at the end of the Extension Store page now opens the correct page"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa các liên kết bị hỏng",
+     "items": [
+      "Liên kết trang web trên trang Giới thiệu giờ mở đúng trang",
+      "Liên kết ở cuối trang Cửa hàng Tiện ích giờ mở đúng trang"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.29",
+  "date": "",
+  "notes": "- A new demo video on Floating Browser's page in the Extension Store, and its pictures and words brought up to date: the pill at the browser's corner, Now Playing in the menu bar's menu, a tab's menu and ⌘⇧T, Maximize, and ⌃⌥⌘P to find the pill.",
+  "notesSha256": "5cddcc82dec405ba88961708dea2282d5280452ce026e39e5962e56c2c77535f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Updated store page with new demo video and current features",
+     "items": [
+      "The Extension Store page now shows a demo video and updated screenshots"
+     ]
+    },
+    "vi": {
+     "headline": "Trang cửa hàng được cập nhật với video demo mới và tính năng hiện tại",
+     "items": [
+      "Trang Extension Store giờ có video demo và ảnh chụp màn hình mới nhất"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.28",
+  "date": "",
+  "notes": "- Minimize puts the pill at the foot of the browser, at its bottom-right corner, and the browser comes back over the pill — its bottom-right corner on the pill's, wherever the pill was dragged, on whichever display. By the edge of the screen either stands inside it, against that edge. Before, the pill opened wherever it had last been left and the browser came back where it stood, each with a place of its own.\n- Needs Lumi 1.75.0.",
+  "notesSha256": "35cf3cb038e2b98a4adbc8289f5cb3665c7c37591a06c58c470835f9cccba1ca",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "The pill now stays with the browser when you minimize",
+     "items": [
+      "The pill appears at the browser's bottom-right corner when you minimize",
+      "The browser reopens over the pill wherever you dragged it",
+      "Requires Lumi 1.75.0"
+     ]
+    },
+    "vi": {
+     "headline": "Viên thuốc giờ theo trình duyệt khi thu nhỏ",
+     "items": [
+      "Viên thuốc xuất hiện ở góc dưới bên phải trình duyệt khi thu nhỏ",
+      "Trình duyệt mở lại đúng vị trí viên thuốc mà bạn kéo đến",
+      "Yêu cầu Lumi 1.75.0"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.27",
+  "date": "",
+  "notes": "- Compact Mode and Mute All in the menu bar's menu move the moment they are pressed. Before, a switch waited for the browser to be told and the menu drawn again before it moved, and read as slow; two quick presses now also end where the switch was last drawn.",
+  "notesSha256": "e1ed6d00ec6c6b9a2f16729b20ad443cde88eee4765771d27c090a11fd768af3",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster menu controls",
+     "items": [
+      "Menu bar switches for Compact Mode and Mute All now respond instantly when clicked"
+     ]
+    },
+    "vi": {
+     "headline": "Điều khiển menu nhanh hơn",
+     "items": [
+      "Các công tắc Chế độ Thu gọn và Tắt tiếng trong menu giờ phản hồi ngay lập tức khi nhấn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.26",
+  "date": "",
+  "notes": "- With Mute All on, a tab's speaker — or Unmute Tab in its menu — lets that tab be heard again while the others stay silent, and Mute All in the menu bar unticks, since not every tab is silent any more; pressed again it silences every tab. Before, the speaker only muted the tab a second time, and the one way to hear anything was to turn Mute All off for every tab.",
+  "notesSha256": "c13f8822ecc544a96f8b4504f585bf657bf9ca74d51ac28889aa41dacec520aa",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Mute All now lets you unmute individual tabs",
+     "items": [
+      "With Mute All on, you can now unmute individual tabs while keeping the rest silent"
+     ]
+    },
+    "vi": {
+     "headline": "Tắt tiếng tất cả giờ cho phép bật tiếng từng tab",
+     "items": [
+      "Khi bật Tắt tiếng tất cả, bạn có thể bật tiếng từng tab riêng lẻ trong khi các tab khác vẫn im lặng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.25",
+  "date": "",
+  "notes": "- Now Playing in the menu bar's menu shows how far it has played of how long it is, at the end of the artist's line, and its band can be pressed or dragged to go elsewhere in what plays, as the pill's can, the time there shown over it; its button changes once the site has paused or played, as the pill's does, rather than guessing first.\n- Now Playing's bars and the played length of its band are drawn in the menu's ink — white in Dark Mode, black in Light — as macOS's own Now Playing draws its band, the play button the one blue there; the blue sank into the dark glass.\n- In Dark Mode the tab in front in that menu is a deeper blue with its title in white, as a chosen row in a macOS sidebar is; the light tint ran a muddy grey-blue on the dark glass, with blue words on it hard to read.",
+  "notesSha256": "bb7187e32a5c6410ea79beeb74bee4de7e6cf863ef72581923dd4306629404cc",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Now Playing in the menu shows progress and matches macOS styling",
+     "items": [
+      "Now Playing shows elapsed and total time, with a progress bar you can click or drag to skip",
+      "The play button updates only after the site confirms playback has started or stopped",
+      "Progress bars and time display use white in Dark Mode and black in Light Mode, matching macOS",
+      "The play button stays blue while other controls match the menu color scheme",
+      "The active tab in Dark Mode now uses deeper blue with white text, like macOS sidebars"
+     ]
+    },
+    "vi": {
+     "headline": "Trình phát trong menu hiển thị tiến trình và theo phong cách macOS",
+     "items": [
+      "Trình phát hiển thị thời gian đã phát và tổng thời gian, với thanh tiến trình có thể nhấn hoặc kéo",
+      "Nút phát chỉ cập nhật sau khi trang web xác nhận đã bắt đầu hoặc dừng phát",
+      "Thanh tiến trình và thời gian dùng màu trắng ở chế độ tối, đen ở chế độ sáng, giống macOS",
+      "Nút phát giữ màu xanh trong khi các nút khác theo màu của menu",
+      "Tab đang hoạt động ở chế độ tối giờ dùng xanh đậm hơn với chữ trắng, giống thanh bên macOS"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.24",
+  "date": "",
+  "notes": "- The menu under Floating Browser's icon in the menu bar is drawn as the browser's own menu is. What plays stands at the top as Now Playing — its picture, title and artist, how far it has played, and a button to pause it or play it on — with its bars dancing beside the heading while it plays, and the other tabs below it, each with its site's icon and a × to close it: always on the tab in front, which is tinted blue, and on the others under the pointer. Compact Mode and Mute All are switches, and every other row has its icon.\n- History, Settings and About are no longer listed in the menu bar's menu or the pill's: they are the browser's own pages, not tabs anybody went to.\n- Quit is called Quit Floating Browser.",
+  "notesSha256": "540808e1ee535526ceb56c92b1d7c77ba57a7efe1b8635052eace2c05d02def8",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Menu bar menu redesigned with Now Playing and tab list",
+     "items": [
+      "The menu bar menu now shows what is playing with album art, playback controls, and dancing bars",
+      "All open tabs appear in the menu with their site icons and close buttons",
+      "The active tab is highlighted in blue and others show close buttons when you hover over them",
+      "History, Settings, and About no longer appear in menus since they are browser pages",
+      "Quit is now labeled Quit Floating Browser"
+     ]
+    },
+    "vi": {
+     "headline": "Menu thanh menu được thiết kế lại với mục đang phát và danh sách tab",
+     "items": [
+      "Menu thanh menu hiện hiển thị nội dung đang phát với ảnh bìa, nút điều khiển và thanh nhảy",
+      "Tất cả các tab đang mở xuất hiện trong menu với biểu tượng trang web và nút đóng",
+      "Tab đang hoạt động được tô sáng màu xanh và các tab khác hiển thị nút đóng khi di chuột qua",
+      "Lịch sử, Cài đặt và Giới thiệu không còn xuất hiện trong menu vì chúng là trang trình duyệt",
+      "Thoát giờ được ghi là Thoát Floating Browser"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.23",
+  "date": "",
+  "notes": "- With the browser minimized to its pill, its shortcut that hides it and shows it again plays on what was playing, as it does with the browser itself on screen. Before, the music stopped with the pill and stayed stopped when the pill came back.",
+  "notesSha256": "b942edd61588b3f97d79024efdc68aac9d0f4cf41ba1c502d8ac5684847acea8",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Pill shortcut now resumes playback",
+     "items": [
+      "The shortcut that shows and hides the pill now resumes playback like it does for the full browser"
+     ]
+    },
+    "vi": {
+     "headline": "Phím tắt viên nang giờ tiếp tục phát",
+     "items": [
+      "Phím tắt ẩn hiện viên nang giờ tiếp tục phát nội dung, giống như khi dùng trình duyệt đầy đủ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.22",
+  "date": "",
+  "notes": "- **Locate the mini panel** (⌃⌥⌘P): the minimized browser's pill shakes and a blue ring breathes out from it twice, so you can find it on whichever display it is. With Reduce Motion on, its edge flashes instead.",
+  "notesSha256": "2a17c139be9d0ba93ffee300aa47ddf76b7c7f22424b23da105de000d53a0e6d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Find the mini panel with a keyboard shortcut",
+     "items": [
+      "Press ⌃⌥⌘P to make the mini panel shake and pulse so you can spot it on any display",
+      "With Reduce Motion enabled, the mini panel flashes its edge instead of pulsing"
+     ]
+    },
+    "vi": {
+     "headline": "Tìm bảng điều khiển thu nhỏ bằng phím tắt",
+     "items": [
+      "Nhấn ⌃⌥⌘P để bảng điều khiển thu nhỏ rung và nhấp nháy giúp bạn dễ tìm thấy trên màn hình nào cũng được",
+      "Khi bật Giảm chuyển động, viền bảng điều khiển thu nhỏ sẽ nhấp nháy thay vì lan tỏa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.21",
+  "date": "",
+  "notes": "- A tab behind lit under the pointer is lit in the shape of the tab in front — as tall, its top corners rounded and its foot curving out at either side — and stands further from the tabs beside it, the hairlines beside it gone as they always meant to be.",
+  "notesSha256": "8152cbd07d709e66e78f5c3109c3bd5971e53d48bfc04864e574e66db11be7f0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Refined tab hover effects",
+     "items": [
+      "Tabs behind the one under your pointer now light up with the correct shape and spacing"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện hiệu ứng di chuột trên tab",
+     "items": [
+      "Tab phía sau tab đang trỏ chuột giờ sáng lên với hình dạng và khoảng cách chính xác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.20",
+  "date": "",
+  "notes": "- A right-click or a ⌃-click on a tab opens its menu, as Chrome's does: New Tab to the Right, Reload, Duplicate, Mute Tab, Close Tab, Close Other Tabs and Close Tabs to the Right. The tab is not chosen; what cannot be done is dimmed.\n- Tabs closed at once — Close Other Tabs, Close Tabs to the Right, or Close — come back together with one ⌘⇧T, each at its place, the one that was in front in front again.\n- With the tabs scrolling, New Tab stands clear of the strip's end rather than over the last tab in sight, where it sat against that tab's close button. Each end fades only by as much of the tabs as has gone past it, so a tab in full sight is never faded.",
+  "notesSha256": "8542f228f3f663bd0b3eddae06c6c1de59c18cfc9561ac86a9fa515ac5d93ebe",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Tab menu, better undo for closing multiple tabs, and tab bar fixes",
+     "items": [
+      "Right-click or Control-click a tab to open its menu with options like duplicate, mute, and close",
+      "Tabs closed together now reopen together with one undo, each returning to its original position",
+      "New Tab button no longer overlaps the last visible tab when scrolling through many tabs",
+      "Tabs fade at the edges only when actually scrolled out of view, not when fully visible"
+     ]
+    },
+    "vi": {
+     "headline": "Menu thẻ, hoàn tác tốt hơn khi đóng nhiều thẻ, và sửa thanh thẻ",
+     "items": [
+      "Nhấp chuột phải hoặc Control-nhấp vào thẻ để mở menu với các tùy chọn như sao chép, tắt tiếng và đóng",
+      "Các thẻ đóng cùng lúc giờ mở lại cùng nhau bằng một lần hoàn tác, mỗi thẻ về đúng vị trí ban đầu",
+      "Nút Thẻ Mới không còn đè lên thẻ cuối cùng hiển thị khi cuộn qua nhiều thẻ",
+      "Các thẻ chỉ mờ dần ở rìa khi thực sự bị cuộn ra khỏi tầm nhìn, không phải khi hiển thị đầy đủ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.19",
+  "date": "",
+  "notes": "- A long title on the pill no longer has half its first letter faded while it rests at its start: each edge fades only by as much of the title as has gone past it, growing as the title moves, and its last letter comes to rest at the end in the clear.",
+  "notesSha256": "60b13416f2ba75c6dab5b2c65f6d591ae4ce889f4ce89550260b57e4a728e7a6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Improved title fading on the pill",
+     "items": [
+      "Title fading on the pill now only affects the parts that scroll past the edges"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện hiệu ứng mờ dần tiêu đề trên pill",
+     "items": [
+      "Hiệu ứng mờ dần tiêu đề trên pill giờ chỉ áp dụng cho phần cuộn qua các cạnh"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.18",
+  "date": "",
+  "notes": "- With more tabs than the strip holds, it scrolls, as Safari's and Firefox's do: the tabs no longer run under New Tab and the window's buttons, and each keeps room for its icon and the start of its title — the tab in front too, beside its close button. The tab in front stays in sight, an end with tabs out of sight fades, a mouse's wheel turns the strip, and a tab dragged to an end takes the strip along with it.\n- A tab's speaker stands just after its icon, and neither moves as the tab comes in front or starts to play: a tab playing behind shows its title too, in place of an empty space kept for its close button, which comes over the end of its title under the pointer, as on any tab behind.\n- A title with too little room for a letter and an ellipsis fades out at its end, as Chrome's do, rather than leaving its room empty.",
+  "notesSha256": "75029d3ed6f9ae8bbb58c335b6ce47e133fbd92006224791f23e5367d88e8069",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Tabs scroll when the strip fills, and titles fade smoothly",
+     "items": [
+      "When you have more tabs than fit, the strip scrolls like Safari and Firefox do",
+      "Tabs keep room for their icon and title start, and the active tab stays visible",
+      "Drag a tab to the edge and the strip scrolls with it",
+      "The speaker icon appears right after the tab icon and stays put when audio plays",
+      "Playing tabs show their title instead of empty space for the close button",
+      "Titles that run out of room fade out at the end instead of cutting off abruptly"
+     ]
+    },
+    "vi": {
+     "headline": "Thanh tab cuộn khi đầy và tiêu đề mờ dần tự nhiên",
+     "items": [
+      "Khi có nhiều tab hơn chỗ chứa, thanh tab sẽ cuộn như Safari và Firefox",
+      "Các tab giữ chỗ cho biểu tượng và đầu tiêu đề, tab đang dùng luôn hiển thị",
+      "Kéo tab đến mép và thanh tab sẽ cuộn theo",
+      "Biểu tượng loa xuất hiện ngay sau biểu tượng tab và giữ nguyên vị trí khi phát âm thanh",
+      "Tab đang phát nhạc hiển thị tiêu đề thay vì để trống chỗ cho nút đóng",
+      "Tiêu đề không đủ chỗ sẽ mờ dần ở cuối thay vì cắt đứt đột ngột"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.17",
+  "date": "",
+  "notes": "- A click on the pill brings the browser back on the tab the pill shows: with Prioritize Now Playing Tab on, the one playing, not the one left in front.\n- A narrow tab behind shows as much of its title as fits, cut with an ellipsis, in place of its icon alone.\n- Nothing in a tab moves as the pointer comes and goes: a tab behind draws its close button over the end of its title, or in the place kept for it beside its speaker, and every tab in the strip is one width.\n- A narrow tab closes up the space between its icon, speaker and close button before leaving any out: the tab in front keeps its icon while it plays.\n- The Floating Browser icon at the window's top left moves the window when dragged; a click still opens its menu.\n- A tab behind no longer spins for ever after Lumi restarts or the browser is put away: it shows its icon, and loads when you open it.",
+  "notesSha256": "33bf9677313d97f0ea997b1c2cc016f84176d20a99a6335adcfd15bb8e70a265",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Improved tab behavior and window dragging",
+     "items": [
+      "Clicking the pill now returns to the tab it shows, respecting Now Playing priority",
+      "Narrow background tabs show truncated titles instead of just icons",
+      "Tab elements no longer shift when hovering: close buttons appear over titles or speakers",
+      "Narrow tabs compress spacing before hiding elements; playing tabs keep their icons",
+      "The Floating Browser icon can now be dragged to move the window",
+      "Background tabs no longer show loading spinners indefinitely after restart or hide"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện thao tác tab và kéo cửa sổ",
+     "items": [
+      "Nhấn vào pill giờ quay về đúng tab đang hiển thị, ưu tiên tab đang phát",
+      "Tab nền hẹp hiện tiêu đề rút gọn thay vì chỉ biểu tượng",
+      "Các phần tử trong tab không còn dịch chuyển khi rê chuột: nút đóng hiện lên trên tiêu đề hoặc loa",
+      "Tab hẹp thu hẹp khoảng cách trước khi ẩn phần tử; tab đang phát giữ biểu tượng",
+      "Biểu tượng Floating Browser giờ có thể kéo để di chuyển cửa sổ",
+      "Tab nền không còn hiện vòng xoay tải mãi sau khi khởi động lại hoặc ẩn đi"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.16",
+  "date": "",
+  "notes": "- **⌘⇧T** opens the tab you closed last again, where it was and with its Back and Forward, as in Chrome and Safari. Press it again for the one before.",
+  "notesSha256": "1abd2b411c4df913a93fe04ce3c1a748a87164354a4307955950c1d9a526a927",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Reopen closed tabs with their history",
+     "items": [
+      "Press ⌘⇧T to reopen the last closed tab with its back and forward history intact",
+      "Press ⌘⇧T again to reopen the tab closed before that"
+     ]
+    },
+    "vi": {
+     "headline": "Mở lại các tab đã đóng cùng lịch sử",
+     "items": [
+      "Nhấn ⌘⇧T để mở lại tab vừa đóng với lịch sử quay lại và tiến tới nguyên vẹn",
+      "Nhấn ⌘⇧T tiếp để mở lại tab đã đóng trước đó"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.15",
+  "date": "",
+  "notes": "- History, Settings and About open as tabs of their own, like any other: listed in the icon's menu, the menu bar's and the pill's, kept across a restart, and closed as any tab. Bringing the browser back shows the tab that was in front, never a page left over it.",
+  "notesSha256": "ca4db3b162d832006a36c466b81a800c7c938f59a681ced85c068b6529c0fa89",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "History, Settings and About now open as regular tabs",
+     "items": [
+      "History, Settings and About open as tabs you can switch to and close like any other",
+      "These tabs appear in all menus alongside your regular tabs",
+      "When you reopen the browser, it shows whichever tab was in front before you closed it"
+     ]
+    },
+    "vi": {
+     "headline": "Lịch sử, Cài đặt và Giới thiệu giờ mở dưới dạng tab thông thường",
+     "items": [
+      "Lịch sử, Cài đặt và Giới thiệu mở dưới dạng tab có thể chuyển đổi và đóng như bất kỳ tab nào",
+      "Các tab này xuất hiện trong tất cả menu cùng với các tab thông thường của bạn",
+      "Khi mở lại trình duyệt, nó hiển thị tab nào đang ở phía trước trước khi bạn đóng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.14",
+  "date": "",
+  "notes": "- **Visualizer** is off until you turn it on in Settings, and Lumi listens to nothing until then. It is off after this update too: turn it on again if you want the bars to follow the music.",
+  "notesSha256": "af9d993c2b1c6f99141255d57af8b524ff166eca5765f1ce802b0bb28cc5542f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Visualizer now requires explicit permission",
+     "items": [
+      "The visualizer is off by default and Lumi does not listen to audio until you enable it in Settings",
+      "If you used the visualizer before, turn it back on in Settings to see the bars follow your music"
+     ]
+    },
+    "vi": {
+     "headline": "Trình hiển thị âm thanh giờ yêu cầu cho phép rõ ràng",
+     "items": [
+      "Trình hiển thị âm thanh mặc định tắt và Lumi không nghe âm thanh cho đến khi bạn bật trong Cài đặt",
+      "Nếu bạn đã dùng trình hiển thị âm thanh trước đây, hãy bật lại trong Cài đặt để thấy các thanh nhảy theo nhạc"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.13",
+  "date": "",
+  "notes": "- **Visualizer**, in Settings and on until you turn it off: the pill's three bars follow the music while a site plays, in place of dancing by themselves. Off, Lumi listens to nothing and the bars dance as before. Needs Lumi 1.73.0.",
+  "notesSha256": "b11079aa666743ce70ec89a41e7eaee60f3ceddd03493c13d785f0ade4a92cb9",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Music visualizer that follows what's playing",
+     "items": [
+      "The pill's bars now follow the music from your site instead of dancing randomly",
+      "Find the visualizer toggle in Settings, on by default",
+      "Requires Lumi 1.73.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Thanh nhạc hiển thị theo bài hát đang phát",
+     "items": [
+      "Ba thanh trên viên thuốc giờ theo nhạc từ trang web thay vì nhảy ngẫu nhiên",
+      "Tìm công tắc hiển thị nhạc trong Cài đặt, mặc định bật",
+      "Yêu cầu Lumi 1.73.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.12",
+  "date": "",
+  "notes": "- About says what Floating Browser is in a line and lists what is new in its last three versions, in place of the About window's buttons.\n- About no longer stays over a page put in front of it, where its Done pressed the page instead.",
+  "notesSha256": "1989c4daa240013382bfe441731fd341b7f85857b7e6cb03f1249f435a6b76d1",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "About screen improvements",
+     "items": [
+      "About screen now shows what Floating Browser is and lists recent changes",
+      "About screen no longer stays in front when you bring a page forward"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện màn hình Giới thiệu",
+     "items": [
+      "Màn hình Giới thiệu giờ hiển thị Floating Browser là gì và liệt kê các thay đổi gần đây",
+      "Màn hình Giới thiệu không còn nằm phía trước khi bạn đưa trang web lên"
+     ]
+    }
+   }
+  }
+ }
+]
