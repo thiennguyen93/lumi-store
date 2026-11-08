@@ -1,0 +1,43 @@
+# Mic Mute's manifest. One key mutes every microphone on the Mac and keeps a
+# microphone plugged in later muted too, until the same key unmutes them all.
+# Lumi holds each input muted and puts it back (`audio-devices`); everything
+# about "every microphone" — which devices, the key, the icon — is here.
+[extension]
+id = "dev.thiennguyen.mic-mute"
+name = "Mic Mute"
+version = "0.1.0"
+description = "Mute every microphone on your Mac with one key, and keep it muted until you press it again."
+author = "Thien Nguyen"
+summary = "Press ⌥⌘M to mute every microphone on your Mac at once — built-in, USB and Bluetooth — and a microphone you plug in while muted is muted too. Press it again and each one is back as it was. The menu bar icon says which it is."
+homepage = "https://lumikeys.app/extensions/dev.thiennguyen.mic-mute/"
+# 1.77.0: the `audio-devices` capability and event, which this extension is
+# built on.
+min-lumi-version = "1.77.0"
+# `audio-devices` to hold every input muted and hear devices come and go;
+# `menu-bar-item` for the icon that says whether the microphones are muted;
+# `menu` for the row in that icon's menu that switches it.
+capabilities = ["audio-devices", "menu", "menu-bar-item"]
+# Mic Mute draws its own state in the menu bar, so Lumi's "Microphone muted
+# by Mic Mute — Unmute" row would say it twice. Switching Mic Mute off, or
+# quitting Lumi, still unmutes everything.
+audio-devices-row = false
+# A right-click on the icon switches it; a click opens its menu.
+menu-bar-item-right-click = "toggle"
+# Devices coming and going: a microphone plugged in while muted is muted too.
+events = ["audio-devices"]
+
+[[command]]
+name = "toggle"
+label = "Mute or unmute every microphone"
+icon = "mic-off"
+
+[[shortcut]]
+command = "toggle"
+key = "alt+cmd+m"
+
+[[settings]]
+name = "virtual"
+label = "Mute virtual microphones too"
+description = "Meeting apps add virtual microphones of their own, such as Microsoft Teams Audio. Left off, Mic Mute leaves them alone, so the app's own sound goes on working when you share your screen."
+kind = "bool"
+default = "false"
