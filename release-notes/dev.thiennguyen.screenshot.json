@@ -366,5 +366,55 @@
         }
       }
     }
+  },
+  "0.2.0": {
+    "notesSha256": "0ff6a8daedc6e664e6cb10a2cac172764a9a519096d7052f860d1f3160c7413b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The editor: crop, annotate, and save your screenshots",
+          "items": [
+            "Crop your screenshots to the part you need",
+            "Draw arrows, boxes, and highlights to point things out",
+            "Blur sensitive areas with pixelation",
+            "Add text labels and numbered steps to explain what you captured",
+            "Undo changes, zoom in to work on details, then copy or save the result",
+            "The toolbar sits in the title bar to save space"
+          ]
+        },
+        "vi": {
+          "headline": "Trình chỉnh sửa: cắt, chú thích và lưu ảnh chụp màn hình",
+          "items": [
+            "Cắt ảnh chụp màn hình để lấy phần cần thiết",
+            "Vẽ mũi tên, hộp và làm nổi bật để chỉ ra nội dung",
+            "Làm mờ vùng nhạy cảm bằng hiệu ứng pixel hóa",
+            "Thêm nhãn văn bản và các bước đánh số để giải thích nội dung đã chụp",
+            "Hoàn tác thay đổi, phóng to để chỉnh sửa chi tiết, rồi sao chép hoặc lưu kết quả",
+            "Thanh công cụ nằm trên thanh tiêu đề để tiết kiệm không gian"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "52b7f8b7ed4bc061409782b0f065323ebbe341c8d42c3afbc9a1d896057ac4c9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "New command to open the editor window",
+          "items": [
+            "Added a command to open the editor window"
+          ]
+        },
+        "vi": {
+          "headline": "Lệnh mới để mở cửa sổ chỉnh sửa",
+          "items": [
+            "Thêm lệnh để mở cửa sổ chỉnh sửa"
+          ]
+        }
+      }
+    }
   }
 }
