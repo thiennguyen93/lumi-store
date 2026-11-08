@@ -197,6 +197,12 @@ class TextInput(unittest.TestCase):
         self.assertIn("is not true or false", self.refusal('"sound"', 'sound-stop-row = "no"'))
         self.assertIn("needs the sound capability", self.refusal('"menu"', 'events = ["sound-ended"]'))
 
+    def test_the_audio_devices_row_and_event_need_the_word(self):
+        publish.check_manifest("dev.you.thing", self.manifest('"audio-devices"', 'audio-devices-row = false\nevents = ["audio-devices"]'))
+        self.assertIn("needs the audio-devices capability", self.refusal('"menu"', "audio-devices-row = false"))
+        self.assertIn("is not true or false", self.refusal('"audio-devices"', 'audio-devices-row = "no"'))
+        self.assertIn("needs the audio-devices capability", self.refusal('"menu"', 'events = ["audio-devices"]'))
+
     def test_the_menu_bar_item_heading_needs_the_item(self):
         publish.check_manifest("dev.you.thing", self.manifest('"menu-bar-item"', "menu-bar-item-heading = false"))
         self.assertIn("needs the menu-bar-item capability", self.refusal('"menu"', "menu-bar-item-heading = false"))

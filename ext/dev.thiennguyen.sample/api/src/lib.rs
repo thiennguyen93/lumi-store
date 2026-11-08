@@ -59,7 +59,8 @@
 //! `time-zone`, [`text_input`] needs `text-input` — and works only from the
 //! `text-input` run, the one told a key —, [`front_app`] needs
 //! `front-app`, [`microphone_use`] needs `microphone-use` — its `sites`
-//! `microphone-sites` too — and [`offer`] needs `offer`. `alert`, `settings`, `profiles`, [`storage`],
+//! `microphone-sites` too — [`offer`] needs `offer` and [`audio_devices`]
+//! needs `audio-devices`. `alert`, `settings`, `profiles`, [`storage`],
 //! [`owner`] and [`hyper_key_enabled`] cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
@@ -2864,6 +2865,280 @@ pub mod microphone_use {
                 })
             })
             .collect()
+    }
+}
+
+/// The Mac's sound devices, and holding one's input muted until you let go —
+/// for a system-wide microphone mute, say. Lumi puts each device back as it
+/// was once nobody holds it, and **you can never unmute a device you did not
+/// mute**: nothing here writes an unmute, and a device somebody else unmuted
+/// after you held it stays as they left it ([`Side::as_held`] says so).
+///
+/// Mute is the only silence Lumi uses. A volume of 0 is not one — measured,
+/// it left a built-in microphone hearing, did nothing on a Bluetooth headset
+/// and left a USB headset hearing quietly — so a side without a mute Lumi can
+/// set ([`Side::mute_settable`]) is refused with `cannot-mute`.
+///
+/// Each device's [`Device::id`] is yours alone: stable for you across
+/// launches and reconnects, meaningless to another extension. It is the
+/// connection's, so the same USB headset on another port can be a new device;
+/// [`Device::model`] is the same for two devices of one model, for knowing a
+/// headset again.
+///
+/// While you hold anything, Lumi's menu says "Microphone muted by ‹your
+/// name› — Unmute"; the person's press lets go of every hold of yours, and
+/// until they press something of yours again, a hold from a run nobody
+/// pressed is refused with `refused`. `audio-devices-row = false` in
+/// `[extension]` leaves the row out, for an extension that draws its own.
+/// Switched off, removed or quitting Lumi, your holds go.
+///
+/// Hear `events = ["audio-devices"]` to be told the whole set whenever a
+/// device comes or goes, a default moves, a mute or a volume changes, or one
+/// of your holds does — and once as it stands when you start hearing — read
+/// with [`changed`]. Re-holding a microphone that has just arrived is what
+/// the event is for.
+///
+/// Needs the `audio-devices` capability and Lumi 1.77.0; say so with
+/// `min-lumi-version`.
+///
+/// ```ignore
+/// use lumi::audio_devices::{self, Scope};
+///
+/// // Mute every input Lumi can silence.
+/// for device in audio_devices::devices()? {
+///     if device.input.as_ref().is_some_and(|side| side.mute_settable) {
+///         audio_devices::hold_muted(&device.id, Scope::Input)?;
+///     }
+/// }
+/// ```
+pub mod audio_devices {
+    use super::lumi::ext::audio_devices as wit;
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name the set arrives
+    /// as.
+    pub const EVENT: &str = "audio-devices";
+
+    /// A device's side.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    pub enum Scope {
+        Input,
+        /// Refused as `unsupported` for now.
+        Output,
+    }
+
+    /// How a device is attached.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    pub enum Transport {
+        BuiltIn,
+        Usb,
+        Bluetooth,
+        BluetoothLe,
+        Continuity,
+        Airplay,
+        Hdmi,
+        DisplayPort,
+        Thunderbolt,
+        Pci,
+        Firewire,
+        Avb,
+        Virtual,
+        Aggregate,
+        Other,
+    }
+
+    impl Transport {
+        fn from_wit(transport: wit::Transport) -> Transport {
+            match transport {
+                wit::Transport::BuiltIn => Transport::BuiltIn,
+                wit::Transport::Usb => Transport::Usb,
+                wit::Transport::Bluetooth => Transport::Bluetooth,
+                wit::Transport::BluetoothLe => Transport::BluetoothLe,
+                wit::Transport::Continuity => Transport::Continuity,
+                wit::Transport::Airplay => Transport::Airplay,
+                wit::Transport::Hdmi => Transport::Hdmi,
+                wit::Transport::DisplayPort => Transport::DisplayPort,
+                wit::Transport::Thunderbolt => Transport::Thunderbolt,
+                wit::Transport::Pci => Transport::Pci,
+                wit::Transport::Firewire => Transport::Firewire,
+                wit::Transport::Avb => Transport::Avb,
+                wit::Transport::Virtual => Transport::Virtual,
+                wit::Transport::Aggregate => Transport::Aggregate,
+                wit::Transport::Other => Transport::Other,
+            }
+        }
+
+        fn from_word(word: &str) -> Transport {
+            match word {
+                "built-in" => Transport::BuiltIn,
+                "usb" => Transport::Usb,
+                "bluetooth" => Transport::Bluetooth,
+                "bluetooth-le" => Transport::BluetoothLe,
+                "continuity" => Transport::Continuity,
+                "airplay" => Transport::Airplay,
+                "hdmi" => Transport::Hdmi,
+                "display-port" => Transport::DisplayPort,
+                "thunderbolt" => Transport::Thunderbolt,
+                "pci" => Transport::Pci,
+                "firewire" => Transport::Firewire,
+                "avb" => Transport::Avb,
+                "virtual" => Transport::Virtual,
+                "aggregate" => Transport::Aggregate,
+                _ => Transport::Other,
+            }
+        }
+    }
+
+    /// One side of a device.
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct Side {
+        pub channels: u32,
+        /// `None` when this side has no mute at all.
+        pub muted: Option<bool>,
+        /// Whether Lumi can set the mute — what [`hold_muted`] needs.
+        pub mute_settable: bool,
+        /// 0 to 1, as the device says it; `None` without a volume. Read only.
+        pub volume: Option<f32>,
+        /// You hold this side muted.
+        pub held: bool,
+        /// You hold it and it reads muted: `false` once somebody else
+        /// unmuted it after you held it.
+        pub as_held: bool,
+        pub is_default: bool,
+    }
+
+    /// One device.
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct Device {
+        /// Yours alone; stable for you.
+        pub id: String,
+        /// The model as the device says it (vendor and product on USB);
+        /// `None` when it says nothing useful.
+        pub model: Option<String>,
+        pub name: String,
+        pub transport: Transport,
+        pub input: Option<Side>,
+        pub output: Option<Side>,
+    }
+
+    fn scope_of(scope: Scope) -> wit::Scope {
+        match scope {
+            Scope::Input => wit::Scope::Input,
+            Scope::Output => wit::Scope::Output,
+        }
+    }
+
+    fn side_of(side: wit::Side) -> Side {
+        Side {
+            channels: side.channels,
+            muted: side.muted,
+            mute_settable: side.mute_settable,
+            volume: side.volume,
+            held: side.held,
+            as_held: side.as_held,
+            is_default: side.is_default,
+        }
+    }
+
+    /// Every device this Mac has now, Lumi's own left out.
+    pub fn devices() -> Result<Vec<Device>, String> {
+        Ok(wit::devices()?
+            .into_iter()
+            .map(|device| Device {
+                id: device.id,
+                model: device.model,
+                name: device.name,
+                transport: Transport::from_wit(device.transport),
+                input: device.input.map(side_of),
+                output: device.output.map(side_of),
+            })
+            .collect())
+    }
+
+    /// Mute `scope` of device `id` and keep it muted while you hold it.
+    /// Holding what you already hold writes it again — after
+    /// [`Side::as_held`] went false, say.
+    pub fn hold_muted(id: &str, scope: Scope) -> Result<(), String> {
+        wit::hold_muted(id, scope_of(scope))
+    }
+
+    /// Let go of `scope` of device `id`. Once nobody holds it, Lumi puts it
+    /// back as it was. Letting go of what you do not hold is nothing.
+    pub fn release(id: &str, scope: Scope) -> Result<(), String> {
+        wit::release(id, scope_of(scope))
+    }
+
+    /// The word a refusal from [`hold_muted`] or [`release`] starts with —
+    /// `"not-found"`, `"cannot-mute"`, `"unsupported"`, `"refused"`,
+    /// `"busy"` or `"failed"` — to act on; `None` for any other error.
+    pub fn refusal(said: &str) -> Option<&'static str> {
+        ["not-found", "cannot-mute", "unsupported", "refused", "busy", "failed"]
+            .into_iter()
+            .find(|word| said.strip_prefix(word).is_some_and(|rest| rest.starts_with(':')))
+    }
+
+    /// The whole set, when [`Guest::on_event`](crate::Guest::on_event) was
+    /// called with it.
+    pub fn changed(name: &str, payload: &str) -> Option<Vec<Device>> {
+        if name != EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        let side = |side: &serde_json::Value| -> Option<Option<Side>> {
+            if side.is_null() {
+                return Some(None);
+            }
+            let flag = |key: &str| side.get(key).and_then(serde_json::Value::as_bool);
+            Some(Some(Side {
+                channels: side.get("channels")?.as_u64()? as u32,
+                muted: flag("muted"),
+                mute_settable: flag("muteSettable")?,
+                volume: side.get("volume").and_then(serde_json::Value::as_f64).map(|v| v as f32),
+                held: flag("held")?,
+                as_held: flag("asHeld")?,
+                is_default: flag("isDefault")?,
+            }))
+        };
+        let null = serde_json::Value::Null;
+        value
+            .get("devices")?
+            .as_array()?
+            .iter()
+            .map(|device| {
+                Some(Device {
+                    id: device.get("id")?.as_str()?.to_string(),
+                    model: device.get("model").and_then(serde_json::Value::as_str).map(str::to_string),
+                    name: device.get("name")?.as_str()?.to_string(),
+                    transport: Transport::from_word(device.get("transport")?.as_str()?),
+                    input: side(device.get("input").unwrap_or(&null))?,
+                    output: side(device.get("output").unwrap_or(&null))?,
+                })
+            })
+            .collect()
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        /// The set reads as Lumi sends it — the event's words, camelCase, a
+        /// side `null` when the device has none — and a refusal's word is
+        /// found only where it leads.
+        #[test]
+        fn the_set_reads_as_lumi_sends_it() {
+            let payload = r#"{"v":1,"devices":[{"id":"a1","model":null,"name":"Headset","transport":"usb",
+                "input":{"channels":1,"muted":true,"muteSettable":true,"volume":0.5,"held":true,"asHeld":false,"isDefault":true},
+                "output":null}],"at":7}"#;
+            let devices = changed(EVENT, payload).expect("reads");
+            assert_eq!(devices.len(), 1);
+            assert_eq!((devices[0].id.as_str(), devices[0].transport, devices[0].model.as_deref()), ("a1", Transport::Usb, None));
+            let side = devices[0].input.as_ref().expect("an input");
+            assert_eq!((side.muted, side.mute_settable, side.held, side.as_held, side.is_default), (Some(true), true, true, false, true));
+            assert!(devices[0].output.is_none());
+            assert!(changed("microphone-use", payload).is_none());
+            assert_eq!(refusal("cannot-mute: audio-devices.hold-muted refused: …"), Some("cannot-mute"));
+            assert_eq!(refusal("refused: the person unmuted it"), Some("refused"));
+            assert_eq!(refusal("it was refused: no"), None);
+        }
     }
 }
 

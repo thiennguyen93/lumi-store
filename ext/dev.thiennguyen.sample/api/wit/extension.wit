@@ -2908,6 +2908,108 @@ interface feature-flags {
     enabled: func() -> list<flag>;
 }
 
+/// The Mac's sound devices, and holding one's input muted. A hold is yours
+/// until you release it, you are switched off or uninstalled, the person
+/// presses Unmute in Lumi's menu, or Lumi quits; Lumi puts the device back as
+/// it was once the last hold goes. You can never unmute a device you did not
+/// mute: no function here writes an unmute, and a device somebody else
+/// unmuted after you held it stays as they left it (`as-held` says so).
+///
+/// Mute is the only silence Lumi uses. A volume of 0 is not one: measured,
+/// it left the built-in microphone hearing, did nothing on a Bluetooth
+/// headset and left a USB headset hearing quietly. A side with no mute Lumi
+/// can set is refused as `cannot-mute`.
+///
+/// Every device has an `id` that is yours alone — stable for you across
+/// launches and reconnects, meaning nothing to another extension. A device's
+/// id is its connection's: the same USB headset on another port can be a new
+/// device. `model` is the same for two devices of one model, for telling a
+/// headset you know on a new port.
+///
+/// While you hold anything, Lumi's menu says "Microphone muted by ‹your
+/// name› — Unmute"; its press lets go of every hold of yours, and until the
+/// person presses something of yours again, a hold from a run nobody
+/// pressed is refused (`refused`). `audio-devices-row = false` in
+/// `[extension]` leaves the row out, for an extension that draws its own.
+///
+/// Hear `audio-devices` (`events = ["audio-devices"]`) to be told the whole
+/// set whenever a device comes or goes, a default moves, a mute or a volume
+/// changes, or one of your holds does: `{"v":1, "devices":[…], "at"}`, each
+/// device as `devices` answers it.
+///
+/// A refusal starts with a word to match on: `not-found:`, `cannot-mute:`,
+/// `unsupported:` (an output, not yet), `refused:`, `busy:` (more than 20
+/// writes in a second), `failed:`. Needs the `audio-devices` capability, and
+/// so does hearing the event. Every call costs budget. Added to 0.3 in Lumi
+/// 1.77.0 without a new world version.
+interface audio-devices {
+    /// A device's side.
+    enum scope {
+        input,
+        output,
+    }
+
+    /// How a device is attached.
+    enum transport {
+        built-in,
+        usb,
+        bluetooth,
+        bluetooth-le,
+        continuity,
+        airplay,
+        hdmi,
+        display-port,
+        thunderbolt,
+        pci,
+        firewire,
+        avb,
+        virtual,
+        aggregate,
+        other,
+    }
+
+    record side {
+        channels: u32,
+        /// None when this side has no mute at all.
+        muted: option<bool>,
+        /// Whether Lumi can set the mute — what `hold-muted` needs.
+        mute-settable: bool,
+        /// 0 to 1, as the device says it; none without a volume. Read only.
+        volume: option<f32>,
+        /// You hold this side muted.
+        held: bool,
+        /// You hold it, and it reads muted: false once somebody else unmuted
+        /// it after you held it.
+        as-held: bool,
+        is-default: bool,
+    }
+
+    record device {
+        /// Yours alone; stable for you.
+        id: string,
+        /// The model as the device says it (vendor and product on USB); none
+        /// when it says nothing useful.
+        model: option<string>,
+        name: string,
+        transport: transport,
+        input: option<side>,
+        output: option<side>,
+    }
+
+    /// Every device this Mac has now, Lumi's own left out.
+    devices: func() -> result<list<device>, string>;
+
+    /// Mute `scope` of device `id` and keep it muted while you hold it.
+    /// Holding what you already hold writes it again — after `as-held` went
+    /// false, say. `output` is refused (`unsupported`) for now.
+    hold-muted: func(id: string, scope: scope) -> result<_, string>;
+
+    /// Let go of `scope` of device `id`. Once nobody holds it, Lumi puts it
+    /// back as it was: unmuted only if Lumi muted it and it still reads
+    /// muted. Letting go of what you do not hold is nothing.
+    release: func(id: string, scope: scope) -> result<_, string>;
+}
+
 world extension {
     import selection;
     import transforms;
@@ -2945,6 +3047,7 @@ world extension {
     import files;
     import owner;
     import feature-flags;
+    import audio-devices;
 
     /// Run one of the commands the manifest declares.
     ///

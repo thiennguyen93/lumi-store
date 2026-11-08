@@ -158,6 +158,10 @@ CAPABILITIES = {
     # of the extension's, played by Lumi from any run, any length) and the
     # `sound-ended` event.
     "sound",
+    # Lumi 1.77: the `audio-devices` interface and event (the Mac's sound
+    # devices, and holding one's input muted until the extension lets go,
+    # Lumi putting it back).
+    "audio-devices",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -205,6 +209,8 @@ EVENTS = {
     # Lumi 1.74: one of the extension's own sounds coming to its end or
     # being stopped.
     "sound-ended": "sound",
+    # Lumi 1.77: the Mac's sound devices changing, the whole set each time.
+    "audio-devices": "audio-devices",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -532,6 +538,15 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"sound-stop-row = {stop_row!r} is not true or false")
         if "sound" not in ext.get("capabilities", []):
             fail(entry_id, "sound-stop-row says whether Lumi's menu shows a Stop row while the extension's sounds play, which needs the sound capability — add it to capabilities")
+    # And `audio-devices-row`, whether Lumi's menu holds an Unmute row while
+    # the extension holds a sound device muted (Lumi 1.77) — only beside the
+    # word that holds one.
+    if "audio-devices-row" in ext or "audio_devices_row" in ext:
+        devices_row = ext.get("audio-devices-row", ext.get("audio_devices_row"))
+        if not isinstance(devices_row, bool):
+            fail(entry_id, f"audio-devices-row = {devices_row!r} is not true or false")
+        if "audio-devices" not in ext.get("capabilities", []):
+            fail(entry_id, "audio-devices-row says whether Lumi's menu shows an Unmute row while the extension holds a device muted, which needs the audio-devices capability — add it to capabilities")
     # And `menu-bar-item-settings`, whether that menu ends with Lumi's row
     # onto the extension's settings — the same rule.
     if "menu-bar-item-settings" in ext or "menu_bar_item_settings" in ext:
