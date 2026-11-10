@@ -19,8 +19,21 @@
 //! **An input Lumi cannot mute is said, never shown as muted**: an iPhone
 //! used as a microphone has no mute Lumi can set, and a volume of 0 is not
 //! silence, so the alert names it.
+//!
+//! **⌥⌘M is held as well as pressed** (0.2.0, `hold = true`, Lumi 1.79.0):
+//! Lumi runs `toggle` once when the key goes down and once when it comes
+//! up. While the microphones are muted, the key going down unmutes them at
+//! once — so the first word is heard — and its coming up decides: held at
+//! least [`HOLD_MS`], push-to-talk, and they are muted again; let go sooner,
+//! a tap, and they stay on, the toggle it always was. While they are on, the
+//! key going down mutes them, and its coming up does nothing. A talk is kept
+//! in storage under [`TALKING`] (the pair Lumi numbered), so an
+//! `audio-devices` event in the middle of one does not mute what the person
+//! is holding open; an up Lumi sends because it lost the key (a password
+//! field, the Mac asleep) mutes them again, the safe side.
 
 use lumi::audio_devices::{self, Device, Scope, Transport};
+use lumi::hold::{self, Phase};
 use lumi::{menu, menu_bar_item, storage};
 use lumi_extension_api as lumi;
 
@@ -30,6 +43,14 @@ const MUTED: &str = "muted";
 
 /// The row in the icon's menu that switches it.
 const TOGGLE_ROW: &str = "toggle";
+
+/// The storage key for a talk under way: the pair of the key's down that
+/// unmuted the microphones, while the key is held.
+const TALKING: &str = "talking";
+
+/// How long the key must be held for its release to mute again — shorter is
+/// a tap, which toggles.
+const HOLD_MS: u64 = 300;
 
 /// Whether the person wants every microphone muted.
 fn wanted() -> Result<bool, String> {
@@ -41,6 +62,24 @@ fn set_wanted(on: bool) -> Result<(), String> {
     storage::put(MUTED, if on { "true" } else { "false" }, rev)
         .map(|_| ())
         .map_err(storage::PutError::into_message)
+}
+
+/// The pair of the talk under way, if a key's down unmuted the microphones
+/// and its up has not come.
+fn talking() -> Result<Option<u64>, String> {
+    Ok(storage::get(TALKING)?.and_then(|entry| entry.value.parse().ok()))
+}
+
+fn set_talking(pair: Option<u64>) -> Result<(), String> {
+    match pair {
+        Some(pair) => {
+            let rev = storage::get(TALKING)?.map(|entry| entry.rev);
+            storage::put(TALKING, &pair.to_string(), rev)
+                .map(|_| ())
+                .map_err(storage::PutError::into_message)
+        }
+        None => storage::delete(TALKING),
+    }
 }
 
 /// Whether the person's setting mutes virtual microphones too.
@@ -100,7 +139,7 @@ fn release_all() -> Result<(), String> {
 /// The icon, its tooltip and its menu's row, for `muted`.
 fn draw(muted: bool) -> Result<(), String> {
     let (icon, tooltip) = if muted {
-        ("mic-off", "Microphones muted — ⌥⌘M to unmute")
+        ("mic-off", "Microphones muted — hold ⌥⌘M to talk, tap to unmute")
     } else {
         ("mic", "Microphones on — ⌥⌘M to mute")
     };
@@ -138,12 +177,62 @@ fn toggle() -> Result<(), String> {
     }
 }
 
+/// The key going down, held (`hold`): while muted, unmute at once and
+/// remember the talk; while on, mute — the toggle, at the press.
+///
+/// The talk is written down **before** the devices move, [`toggle`]'s rule:
+/// the release tells an `audio-devices` event, which must read that the
+/// microphones are open on purpose.
+fn key_down(pair: u64) -> Result<(), String> {
+    if !wanted()? {
+        return toggle();
+    }
+    set_talking(Some(pair))?;
+    release_all()?;
+    menu_bar_item::set(&menu_bar_item::Item::icon("mic").tooltip("Talking — let go of ⌥⌘M to mute"))
+}
+
+/// The key coming up, held: the end of a talk this pair began — muted again
+/// after a hold, left on after a tap. Nothing for a pair that began none
+/// (the key went down while the microphones were on, and muted them).
+fn key_up(pair: u64, held_ms: u64, why: Option<hold::Why>) -> Result<(), String> {
+    if talking()? != Some(pair) {
+        return Ok(());
+    }
+    let tapped = held_ms < HOLD_MS && matches!(why, Some(hold::Why::Released) | Some(hold::Why::Tapped));
+    if tapped {
+        // A tap: unmuted is where the person wanted to end up.
+        set_wanted(false)?;
+        set_talking(None)?;
+        draw(false)?;
+        return lumi::alert("Microphones on");
+    }
+    // Let go after a hold, or lost by Lumi: muted again, the safe side.
+    let held = hold_all(&audio_devices::devices()?);
+    set_talking(None)?;
+    match held {
+        Ok(_) => draw(true),
+        Err(said) => {
+            set_wanted(false)?;
+            draw(false)?;
+            Err(said)
+        }
+    }
+}
+
 struct MicMute;
 
 impl lumi::Guest for MicMute {
-    fn run_command(name: String, _params: String) -> Result<String, String> {
+    fn run_command(name: String, params: String) -> Result<String, String> {
         match name.as_str() {
-            "toggle" => toggle().map(|()| String::new()),
+            "toggle" => match hold::of(&params) {
+                Some(held) if held.phase == Phase::Down => key_down(held.pair),
+                Some(held) => key_up(held.pair, held.held_ms.unwrap_or(0), held.why),
+                // Lumi always says the half of the press a held command's
+                // run is; none is a toggle, as before.
+                None => toggle(),
+            }
+            .map(|()| String::new()),
             other => Err(format!("Mic Mute has no {other} command")),
         }
     }
@@ -166,7 +255,11 @@ impl lumi::Guest for MicMute {
                 menu::set_shown(false)?;
                 draw(false)
             }
-            lumi::Lifecycle::Updated(_) => draw(wanted()?),
+            // A talk an older version began has no up coming to this one.
+            lumi::Lifecycle::Updated(_) => {
+                set_talking(None)?;
+                draw(wanted()?)
+            }
             // Lumi lets go of every hold of a removed extension's anyway;
             // this only says so first.
             lumi::Lifecycle::Uninstalling => release_all(),
@@ -175,7 +268,8 @@ impl lumi::Guest for MicMute {
 
     fn on_event(name: String, payload: String) -> Result<(), String> {
         let Some(devices) = audio_devices::changed(&name, &payload) else { return Ok(()) };
-        if !wanted()? {
+        // A talk open on purpose is not a microphone somebody unmuted.
+        if !wanted()? || talking()?.is_some() {
             return Ok(());
         }
         // A microphone plugged in, or one somebody unmuted: held as wanted.

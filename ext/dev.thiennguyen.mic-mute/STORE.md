@@ -8,6 +8,10 @@ Press **⌥⌘M** and every microphone your Mac has is muted at once — the bui
 - **Muted means silent.** Mic Mute uses each microphone's own mute, never a volume of zero, which some microphones still hear through.
 - **It says what it can't mute.** An iPhone used as a microphone has no mute a Mac can set, so Mic Mute names it instead of showing it as muted.
 
+## Hold to talk
+
+While your microphones are muted, hold **⌥⌘M** to talk: every microphone is on for as long as you hold it, and muted again the moment you let go. A quick tap still unmutes them for good, so one key does both. If your Mac locks or sleeps while you hold it, they are muted again.
+
 ## Meeting apps
 
 Apps like Microsoft Teams add a virtual microphone of their own. Mic Mute leaves those alone so the app's sound keeps working when you share your screen; turn on **Mute virtual microphones too** in Settings to mute them as well.

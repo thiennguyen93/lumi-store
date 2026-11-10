@@ -5,14 +5,15 @@
 [extension]
 id = "dev.thiennguyen.mic-mute"
 name = "Mic Mute"
-version = "0.1.0"
+version = "0.2.0"
 description = "Mute every microphone on your Mac with one key, and keep it muted until you press it again."
 author = "Thien Nguyen"
-summary = "Press ⌥⌘M to mute every microphone on your Mac at once — built-in, USB and Bluetooth — and a microphone you plug in while muted is muted too. Press it again and each one is back as it was. The menu bar icon says which it is."
+summary = "Press ⌥⌘M to mute every microphone on your Mac at once — built-in, USB and Bluetooth — and a microphone you plug in while muted is muted too. Hold ⌥⌘M to talk, or tap it to unmute and each one is back as it was. The menu bar icon says which it is."
 homepage = "https://lumikeys.app/extensions/dev.thiennguyen.mic-mute/"
-# 1.77.0: the `audio-devices` capability and event, which this extension is
-# built on.
-min-lumi-version = "1.77.0"
+# 1.79.0: `hold = true`, ⌥⌘M heard as it is let go (push-to-talk) — an older
+# Lumi would unmute on the press and never hear the release. 1.77.0 brought
+# the `audio-devices` capability and event this is built on.
+min-lumi-version = "1.79.0"
 # `audio-devices` to hold every input muted and hear devices come and go;
 # `menu-bar-item` for the icon that says whether the microphones are muted;
 # `menu` for the row in that icon's menu that switches it.
@@ -26,10 +27,13 @@ menu-bar-item-right-click = "toggle"
 # Devices coming and going: a microphone plugged in while muted is muted too.
 events = ["audio-devices"]
 
+# Held: Lumi runs it when ⌥⌘M goes down and again when it comes up, so a
+# hold can be push-to-talk and a tap the toggle it was (`lumi::hold`).
 [[command]]
 name = "toggle"
 label = "Mute or unmute every microphone"
 icon = "mic-off"
+hold = true
 
 [[shortcut]]
 command = "toggle"
