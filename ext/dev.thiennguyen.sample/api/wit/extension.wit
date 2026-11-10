@@ -95,6 +95,26 @@ interface selection {
     /// Needs Lumi 1.48.0.
     replace-and-select: func(expected: string, replacement: string) -> result<replaced, string>;
 
+    /// Put `text` at the caret in the app in front, where nothing is
+    /// selected — the place `read` answers "nothing" for — for text that
+    /// replaces nothing. Answers how it went in, as `replace` does:
+    /// "accessibility", "typed" or "pasted".
+    ///
+    /// Refused where something is selected now: writing there would write
+    /// over it, which is `replace`'s, with the text `read` answered. Where
+    /// the app answers Accessibility, the caret is found there, the text
+    /// written at it and read back; where it says nothing, Lumi looks as
+    /// `read` does, with a ⌘C, and types or pastes only once that copied
+    /// nothing — so without `clipboard` such an app is refused, since
+    /// nothing could say whether something was selected. Every other rule is
+    /// `replace`'s: refused where the caret is in text nobody can edit, a
+    /// long text pasted only with `clipboard`, and this extension's panels
+    /// closed first, so the keys land where the caret is.
+    ///
+    /// Costs `accessibility` and `input`. Answers only something the person
+    /// did — a command or one of the extension's windows. Needs Lumi 1.79.0.
+    insert: func(text: string) -> result<string, string>;
+
     /// Copy the selection in the app in front the way that app copies it —
     /// its own ⌘C — so the board holds what it puts there: the text as it
     /// lays it out, and the formatting, links and pictures it keeps. `true`

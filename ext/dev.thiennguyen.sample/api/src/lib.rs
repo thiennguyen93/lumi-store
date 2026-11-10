@@ -61,7 +61,8 @@
 //! `front-app`, [`microphone_use`] needs `microphone-use` — its `sites`
 //! `microphone-sites` too — [`offer`] needs `offer` and [`audio_devices`]
 //! needs `audio-devices`. `alert`, `settings`, `profiles`, [`storage`],
-//! [`owner`] and [`hyper_key_enabled`] cost nothing but budget — every host call spends
+//! [`owner`], [`hyper_key_enabled`] and [`hold`] (which only reads your params)
+//! cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
 //! run's credit. [`about`] and [`license`] cost nothing at all.
 //!
@@ -200,6 +201,27 @@ pub fn replace_selection(expected: &str, replacement: &str) -> Result<String, St
 /// `min-lumi-version`.
 pub fn replace_selection_and_select(expected: &str, replacement: &str) -> Result<Replaced, String> {
     lumi::ext::selection::replace_and_select(expected, replacement)
+}
+
+/// Put `text` at the caret in the frontmost application, where nothing is
+/// selected — for text that replaces nothing: words heard, a line of your
+/// own. The answer says how it went in, as [`replace_selection`]'s does:
+/// `"accessibility"`, `"typed"` or `"pasted"`.
+///
+/// Refused where something is selected now: writing there would write over
+/// it, which is [`replace_selection`]'s, with the text [`selection`]
+/// answered. Where the app says nothing through Accessibility, Lumi looks
+/// with a ⌘C, as [`selection`] does, and writes only once that copied
+/// nothing — so without `clipboard` declared, such an app is refused. Every
+/// other rule is [`replace_selection`]'s: refused where the caret is in text
+/// nobody can edit, a long text pasted only with `clipboard`, and your
+/// panels closed first.
+///
+/// Needs `accessibility` and `input`, and answers only something the person
+/// did: a command, or a request from one of your windows. Needs Lumi 1.79.0
+/// — say so with `min-lumi-version`.
+pub fn insert_at_caret(text: &str) -> Result<String, String> {
+    lumi::ext::selection::insert(text)
 }
 
 /// Copy the selection in the frontmost application the way that application
@@ -3348,6 +3370,121 @@ pub mod offer {
             id: offer.get("id")?.as_u64()?,
             data: offer.get("data").and_then(serde_json::Value::as_str).map(str::to_string),
         })
+    }
+}
+
+/// A held command: one declared `hold = true` under its `[[command]]` is
+/// run twice for every press — once when its key goes down, once when it
+/// comes up — with `"hold"` in the run's params, which [`of`] reads. For
+/// push-to-talk, or anything that has to know how long a key was held: what
+/// a hold means is yours, and `held_ms` is how you tell a tap from a hold.
+///
+/// Lumi keeps four promises:
+///
+/// 1. **Every down gets exactly one up**, with the same `pair`.
+/// 2. **In order**: the up's run starts after the down's has finished.
+/// 3. **The up is never refused**, however busy your extension is.
+/// 4. **Lumi sends the up itself when it can no longer see the key**, and
+///    [`Hold::why`] says why.
+///
+/// A press with no key to let go of — a menu, a leader menu step, an offer's
+/// button — runs a down and then at once an up whose `why` is
+/// [`Why::Tapped`] and `held_ms` 0. Holding the key's combination ends the
+/// moment any of its modifiers is let go too.
+///
+/// Needs Lumi 1.79.0: an older Lumi runs the command once, on the down, so
+/// set `min-lumi-version` to 1.79.0 or later (the store requires it).
+///
+/// ```ignore
+/// fn run_command(name: String, params: String) -> Result<String, String> {
+///     match lumi::hold::of(&params) {
+///         Some(hold) if hold.phase == lumi::hold::Phase::Down => start_talking(),
+///         Some(_) => stop_talking(),
+///         None => toggle(),
+///     }
+///     .map(|()| String::new())
+/// }
+/// ```
+pub mod hold {
+    /// Which half of the press a run is.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum Phase {
+        Down,
+        Up,
+    }
+
+    /// Why an up came.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum Why {
+        /// The key came up, or a modifier of its combination did.
+        Released,
+        /// Lumi may have missed the key coming up — secure input came on (a
+        /// password field took the keys), or the keyboard was not watched
+        /// for a moment.
+        Lost,
+        /// The Mac went to sleep or locked, or another user came in.
+        Away,
+        /// The shortcut that held the key is gone.
+        Unbound,
+        /// The press had no key to let go of: a menu, a leader menu step,
+        /// an offer's button.
+        Tapped,
+        /// A reason this SDK does not know yet, as Lumi said it.
+        Other,
+    }
+
+    /// One run of a held command.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct Hold {
+        /// The same number on a down and its up.
+        pub pair: u64,
+        pub phase: Phase,
+        /// How long the key was held, in milliseconds — an up's only.
+        pub held_ms: Option<u64>,
+        /// Why the up came — an up's only.
+        pub why: Option<Why>,
+    }
+
+    /// The hold a command's run carries, read from its `params` — `None` for
+    /// a command that is not held, or a run from an older Lumi.
+    pub fn of(params: &str) -> Option<Hold> {
+        let value: serde_json::Value = serde_json::from_str(params).ok()?;
+        let hold = value.get("hold")?;
+        let phase = match hold.get("phase")?.as_str()? {
+            "down" => Phase::Down,
+            "up" => Phase::Up,
+            _ => return None,
+        };
+        let why = hold.get("why").and_then(serde_json::Value::as_str).map(|why| match why {
+            "released" => Why::Released,
+            "lost" => Why::Lost,
+            "away" => Why::Away,
+            "unbound" => Why::Unbound,
+            "tapped" => Why::Tapped,
+            _ => Why::Other,
+        });
+        Some(Hold {
+            pair: hold.get("pair")?.as_u64()?,
+            phase,
+            held_ms: hold.get("heldMs").and_then(serde_json::Value::as_u64),
+            why,
+        })
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn a_run_says_its_half_of_the_press() {
+            let down = of(r#"{"mode":"x","hold":{"pair":7,"phase":"down"}}"#).expect("a down");
+            assert_eq!(down, Hold { pair: 7, phase: Phase::Down, held_ms: None, why: None });
+            let up = of(r#"{"hold":{"pair":7,"phase":"up","heldMs":1840,"why":"released"}}"#).expect("an up");
+            assert_eq!(up, Hold { pair: 7, phase: Phase::Up, held_ms: Some(1840), why: Some(Why::Released) });
+            assert_eq!(of(r#"{"hold":{"pair":1,"phase":"up","heldMs":0,"why":"newer"}}"#).and_then(|h| h.why), Some(Why::Other));
+            assert_eq!(of("{}"), None);
+            assert_eq!(of("not json"), None);
+        }
     }
 }
 
