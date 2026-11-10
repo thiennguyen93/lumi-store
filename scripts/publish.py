@@ -538,6 +538,18 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"sound-stop-row = {stop_row!r} is not true or false")
         if "sound" not in ext.get("capabilities", []):
             fail(entry_id, "sound-stop-row says whether Lumi's menu shows a Stop row while the extension's sounds play, which needs the sound capability — add it to capabilities")
+    # And `click-through-row`, whether Lumi's menu holds a Make Clickable row
+    # while a window of the extension lets every press through (Lumi 1.78) —
+    # only beside a panel that may.
+    if "click-through-row" in ext or "click_through_row" in ext:
+        clickable_row = ext.get("click-through-row", ext.get("click_through_row"))
+        if not isinstance(clickable_row, bool):
+            fail(entry_id, f"click-through-row = {clickable_row!r} is not true or false")
+        through = any(
+            window.get("click-through", window.get("click_through")) is True for window in manifest.get("window", [])
+        )
+        if not through:
+            fail(entry_id, "click-through-row says whether Lumi's menu shows a Make Clickable row while a window of the extension lets every press through, which needs a panel declaring click-through")
     # And `audio-devices-row`, whether Lumi's menu holds an Unmute row while
     # the extension holds a sound device muted (Lumi 1.77) — only beside the
     # word that holds one.
@@ -810,6 +822,22 @@ def check_manifest(entry_id: str, manifest: dict):
             for side, points in sides.items():
                 if isinstance(points, bool) or not isinstance(points, (int, float)) or not points >= 0:
                     fail(entry_id, f"the panel {name}'s overhang{' ' + side if side else ''} is not a distance in points")
+        # `manifest.rs`'s click-through rule (Lumi 1.78), same sentences: a
+        # panel's with a material, never beside the selection or under its
+        # menu bar item. An older Lumi ignores the key and the panel takes
+        # every press.
+        for key in ("click-through", "click_through"):
+            if key not in window:
+                continue
+            through = window[key]
+            if not isinstance(through, bool):
+                fail(entry_id, f"the window {name}'s click-through = {through!r} is not true or false")
+            if through and kind != "panel":
+                fail(entry_id, f"the window {name} sets click-through, which only a panel has — a window's title bar and edges are macOS's")
+            if through and position in ("selection", "menu-bar-item"):
+                fail(entry_id, f"the panel {name} sets click-through, which a panel beside the selection or under its menu bar item has no use for — it goes at the next press, or its item toggles it")
+            if through and not material:
+                fail(entry_id, f"the panel {name} sets click-through, which needs a material: a panel without one is an opaque sheet, hiding what it lets the presses through to")
         # `manifest.rs`'s arrow rule (Lumi 1.61; beside a window 1.67), same
         # sentences: a panel's under the menu bar item or beside another
         # window, cut into its glass, and never beside an overhang, whose

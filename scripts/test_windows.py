@@ -63,6 +63,34 @@ class Overhang(unittest.TestCase):
         self.assertIn("table of sides", refused)
 
 
+class ClickThrough(unittest.TestCase):
+    def test_a_panel_with_a_material_may_let_the_pointer_through(self):
+        check('kind = "panel"\nmaterial = "clear"\nclick-through = true')
+        check('kind = "panel"\nmaterial = "popover"\nposition = "top-right"\nclick-through = true')
+        check('kind = "panel"\nclick-through = false')
+
+    def test_a_window_a_bare_panel_or_one_that_goes_at_a_press_may_not(self):
+        self.assertIn("only a panel has", refusal("click-through = true"))
+        self.assertIn("needs a material", refusal('kind = "panel"\nclick-through = true'))
+        # Under the menu bar item too, which first needs its capability — Lumi's own test covers it.
+        refused = refusal('kind = "panel"\nmaterial = "popover"\nposition = "selection"\nclick-through = true')
+        self.assertIn("has no use for", refused)
+        self.assertIn("not true or false", refusal('kind = "panel"\nmaterial = "clear"\nclick-through = "yes"'))
+
+    def test_the_clickable_row_needs_a_panel_that_may(self):
+        def with_row(line: str, fields: str) -> None:
+            manifest = tomllib.loads(BASE.format(fields=fields).replace('version = "1.0.0"', f'version = "1.0.0"\n{line}', 1))
+            publish.check_manifest("dev.you.thing", manifest)
+
+        with_row("click-through-row = false", 'kind = "panel"\nmaterial = "clear"\nclick-through = true')
+        with self.assertRaises(SystemExit) as caught:
+            with_row("click-through-row = false", 'kind = "panel"\nmaterial = "clear"')
+        self.assertIn("needs a panel declaring click-through", str(caught.exception.code))
+        with self.assertRaises(SystemExit) as caught:
+            with_row('click-through-row = "no"', 'kind = "panel"\nmaterial = "clear"\nclick-through = true')
+        self.assertIn("not true or false", str(caught.exception.code))
+
+
 class Listed(unittest.TestCase):
     def test_it_is_true_or_false(self):
         check("listed = false")
