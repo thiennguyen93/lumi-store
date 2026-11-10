@@ -384,6 +384,19 @@ def is_valid_ui_path(path: str) -> bool:
     )
 
 
+# The Lumi that first runs a held command in pairs (`hold = true`).
+HOLD_SINCE = (1, 79, 0)
+
+
+def version_tuple(text: str) -> tuple:
+    """A `min-lumi-version` as numbers to compare — (0, 0, 0) for one that is
+    missing or not three numbers, which is below every floor this checks."""
+    parts = str(text).strip().split(".")
+    if len(parts) != 3 or not all(part.isdigit() for part in parts):
+        return (0, 0, 0)
+    return tuple(int(part) for part in parts)
+
+
 def fail(entry_id: str, why: str):
     sys.exit(f"error: {entry_id}: {why}")
 
@@ -575,6 +588,21 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"two commands are named {name}")
         seen.add(name)
         check_params(entry_id, name, command.get("params", []))
+        # `hold = true` (Lumi 1.79): a held command, run once when its key
+        # goes down and once when it comes up — `ext::manifest::Command::hold`.
+        # A Lumi before 1.79 ignores the key and runs it once, on the press,
+        # never telling the release: for push-to-talk, a microphone left live.
+        # So a manifest that declares one must name 1.79.0 as its floor, and
+        # Lumi's own floor check keeps it off an older release.
+        held = command.get("hold", False)
+        if not isinstance(held, bool):
+            fail(entry_id, f"command {name}: hold = {held!r} is not true or false")
+        if held:
+            if any(param.get("name") == "hold" for param in command.get("params", [])):
+                fail(entry_id, f"command {name} is held (hold = true), and a held command's runs carry Lumi's \"hold\" in their params — give the param another name")
+            floor = ext.get("min-lumi-version") or ext.get("min_lumi_version") or ""
+            if version_tuple(floor) < HOLD_SINCE:
+                fail(entry_id, f"command {name} is held (hold = true), which Lumi reads from 1.79.0 — an older Lumi runs it once, on the press, and never tells the release; set min-lumi-version to \"1.79.0\" or later")
         suggested = str(command.get("suggested-key", "")).strip()
         if suggested:
             why = suggested_key_problem(suggested)

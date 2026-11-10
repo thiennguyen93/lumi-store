@@ -227,6 +227,39 @@ class TextInput(unittest.TestCase):
         self.assertIn("only an extension whose source is public", str(caught.exception.code))
 
 
+class Held(unittest.TestCase):
+    """A held command (`hold = true`, Lumi 1.79) names 1.79.0 as its floor —
+    an older Lumi would run it once, on the press — and declares no param
+    under the key Lumi's own `hold` goes in."""
+
+    def manifest(self, extension: str, command: str):
+        return tomllib.loads(
+            BASE.replace('version = "1.0.0"', f'version = "1.0.0"\n{extension}')
+            .replace('label = "Open"', f'label = "Open"\n{command}')
+            .format(fields="")
+        )
+
+    def refusal(self, extension: str, command: str) -> str:
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", self.manifest(extension, command))
+        return str(caught.exception.code)
+
+    def test_a_held_command_names_its_floor(self):
+        publish.check_manifest("dev.you.thing", self.manifest('min-lumi-version = "1.79.0"', "hold = true"))
+        publish.check_manifest("dev.you.thing", self.manifest('min-lumi-version = "1.80.2"', "hold = true"))
+        self.assertIn("set min-lumi-version", self.refusal('min-lumi-version = "1.77.0"', "hold = true"))
+        # 1.78.0 shipped without held commands.
+        self.assertIn("set min-lumi-version", self.refusal('min-lumi-version = "1.78.0"', "hold = true"))
+        self.assertIn("set min-lumi-version", self.refusal("", "hold = true"))
+        # Not held, no floor is asked.
+        publish.check_manifest("dev.you.thing", self.manifest("", "hold = false"))
+
+    def test_hold_is_true_or_false_and_shadows_no_param(self):
+        self.assertIn("is not true or false", self.refusal('min-lumi-version = "1.79.0"', 'hold = "yes"'))
+        shadow = 'hold = true\n\n[[command.params]]\nname = "hold"\nlabel = "Hold"\nkind = "text"'
+        self.assertIn("give the param another name", self.refusal('min-lumi-version = "1.79.0"', shadow))
+
+
 class Ai(unittest.TestCase):
     def test_it_is_a_capability_lumi_offers(self):
         publish.check_manifest("dev.you.thing", tomllib.loads(
