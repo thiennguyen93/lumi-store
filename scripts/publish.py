@@ -387,6 +387,68 @@ def is_valid_ui_path(path: str) -> bool:
 # The Lumi that first runs a held command in pairs (`hold = true`).
 HOLD_SINCE = (1, 79, 0)
 
+# The Lumi that first draws an extension's overlay (`kind = "overlay"`). An
+# older Lumi refuses the kind, so the package would be offered to it and fail
+# at install: a manifest declaring one names this floor.
+OVERLAY_SINCE = (1, 79, 0)
+
+# `manifest.rs`'s `overlay_refusal`, in its order: every key an overlay does
+# not have — where Lumi places it, what takes the keyboard or the pointer,
+# its chrome and size, a place the person left it, and `listed` — with how
+# each is told said. `False` for the chrome switches, which default on; the
+# rest are said by being there at all, except `remember-frame` and `restore`,
+# said only when true, and `width` and `height`, only when not 0.
+OVERLAY_REFUSED = (
+    (("position",), "said"),
+    (("anchor",), "said"),
+    (("scroll",), "said"),
+    (("modifier-keys", "modifier_keys"), "said"),
+    (("all-desktops", "all_desktops"), "said"),
+    (("material",), "text"),
+    (("titlebar",), "text"),
+    (("titlebar-height",), "said"),
+    (("app-name", "app_name"), "said"),
+    (("focus",), "said"),
+    (("overhang",), "said"),
+    (("click-through", "click_through"), "said"),
+    (("arrow",), "said"),
+    (("width",), "nonzero"),
+    (("height",), "nonzero"),
+    (("min-width",), "said"),
+    (("min-height",), "said"),
+    (("resizable",), "false"),
+    (("maximizable",), "false"),
+    (("minimizable",), "false"),
+    (("remember-frame",), "true"),
+    (("restore",), "true"),
+    (("copies",), "said"),
+    (("listed",), "said"),
+)
+
+# `manifest.rs`'s `MOST_EVENT_LIFE_SECONDS`: the most an overlay opened from
+# an event may stay up (5 when unsaid).
+MOST_EVENT_LIFE_SECONDS = 30
+
+
+def overlay_refusal(window: dict):
+    """The first key an overlay says that it does not have, by its manifest
+    spelling, or None — `manifest.rs`'s `overlay_refusal`."""
+    for keys, how in OVERLAY_REFUSED:
+        for key in keys:
+            if key not in window:
+                continue
+            value = window[key]
+            said = {
+                "said": True,
+                "text": bool(str(value).strip()),
+                "nonzero": value != 0,
+                "false": value is False,
+                "true": value is True,
+            }[how]
+            if said:
+                return keys[0]
+    return None
+
 
 def version_tuple(text: str) -> tuple:
     """A `min-lumi-version` as numbers to compare — (0, 0, 0) for one that is
@@ -551,6 +613,17 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"sound-stop-row = {stop_row!r} is not true or false")
         if "sound" not in ext.get("capabilities", []):
             fail(entry_id, "sound-stop-row says whether Lumi's menu shows a Stop row while the extension's sounds play, which needs the sound capability — add it to capabilities")
+    # And `overlay-row`, whether Lumi's menu holds a Hide row while an overlay
+    # of the extension is up (Lumi 1.79) — only beside an overlay.
+    if "overlay-row" in ext or "overlay_row" in ext:
+        overlay_row = ext.get("overlay-row", ext.get("overlay_row"))
+        if not isinstance(overlay_row, bool):
+            fail(entry_id, f"overlay-row = {overlay_row!r} is not true or false")
+        overlays = any(
+            (str(window.get("kind", "")).strip() or "window") == "overlay" for window in manifest.get("window", [])
+        )
+        if not overlays:
+            fail(entry_id, "overlay-row says whether Lumi's menu shows a Hide row while an overlay of the extension is up, which needs a window declaring kind = \"overlay\"")
     # And `audio-devices-row`, whether Lumi's menu holds an Unmute row while
     # the extension holds a sound device muted (Lumi 1.77) — only beside the
     # word that holds one.
@@ -597,6 +670,14 @@ def check_manifest(entry_id: str, manifest: dict):
         held = command.get("hold", False)
         if not isinstance(held, bool):
             fail(entry_id, f"command {name}: hold = {held!r} is not true or false")
+        # `held-after-ms` (Lumi 1.79): when a held key is told it is held,
+        # once, between its down and its up — `manifest::HELD_AFTER_MS`.
+        held_after = command.get("held-after-ms", command.get("held_after_ms"))
+        if held_after is not None:
+            if not held:
+                fail(entry_id, f"command {name}: held-after-ms says when a held key is told it is held, which needs hold = true")
+            if isinstance(held_after, bool) or not isinstance(held_after, int) or not 100 <= held_after <= 2000:
+                fail(entry_id, f"command {name}: held-after-ms = {held_after!r} is not between 100 and 2000")
         if held:
             if any(param.get("name") == "hold" for param in command.get("params", [])):
                 fail(entry_id, f"command {name} is held (hold = true), and a held command's runs carry Lumi's \"hold\" in their params — give the param another name")
@@ -631,8 +712,54 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"window {name} points at {path!r}, which is not a plain relative path")
         # `manifest.rs`'s kind and position rules, same sentences.
         kind = str(window.get("kind", "")).strip() or "window"
-        if kind not in ("window", "panel"):
-            fail(entry_id, f'the window {name} asks for kind {kind!r}; a window is "window" or "panel"')
+        if kind not in ("window", "panel", "overlay"):
+            fail(entry_id, f'the window {name} asks for kind {kind!r}; a window is "window", "panel" or "overlay"')
+        # `manifest.rs`'s overlay rules (Lumi 1.79), same sentences: every key
+        # about where a window stands, what takes the keyboard or the pointer,
+        # how it is reshaped or a place it was left is refused beside
+        # `kind = "overlay"`, and `display`, `cover` and `event-life-seconds`
+        # are an overlay's alone. An older Lumi refuses the kind, so the
+        # manifest names 1.79.0 as its floor.
+        if kind == "overlay":
+            refused = overlay_refusal(window)
+            if refused:
+                fail(
+                    entry_id,
+                    f"the overlay {name} sets {refused}, which an overlay does not have — Lumi places it over a whole "
+                    "display, and it never takes the pointer or the keyboard",
+                )
+            display = window.get("display", "")
+            if not isinstance(display, str) or display.strip() not in ("", "pointer", "each"):
+                fail(entry_id, f'the overlay {name} asks for display {display!r}; an overlay covers "pointer" or "each"')
+            cover = window.get("cover", "")
+            if not isinstance(cover, str) or cover.strip() not in ("", "display", "below-menu-bar"):
+                fail(entry_id, f'the overlay {name} asks for cover {cover!r}; an overlay covers "display" or "below-menu-bar"')
+            for key in ("event-life-seconds", "event_life_seconds"):
+                if key not in window:
+                    continue
+                life = window[key]
+                if isinstance(life, bool) or not isinstance(life, int) or not 1 <= life <= MOST_EVENT_LIFE_SECONDS:
+                    fail(
+                        entry_id,
+                        f"the overlay {name} asks for an event-life-seconds of {life}; an overlay an event opens "
+                        f"stays 1 to {MOST_EVENT_LIFE_SECONDS} seconds",
+                    )
+            floor = ext.get("min-lumi-version") or ext.get("min_lumi_version") or ""
+            if version_tuple(floor) < OVERLAY_SINCE:
+                fail(
+                    entry_id,
+                    f'the window {name} is an overlay (kind = "overlay"), which Lumi draws from 1.79.0 — an older Lumi '
+                    'refuses the manifest; set min-lumi-version to "1.79.0" or later',
+                )
+        else:
+            for key, spelling in (
+                ("display", "display"),
+                ("cover", "cover"),
+                ("event-life-seconds", "event-life-seconds"),
+                ("event_life_seconds", "event-life-seconds"),
+            ):
+                if key in window:
+                    fail(entry_id, f'the window {name} sets {spelling}, which only an overlay (kind = "overlay") has')
         position = str(window.get("position", "")).strip()
         # "cursor" is the default, so saying it on a plain window is allowed.
         if position not in ("", "cursor") and kind == "window":
@@ -735,7 +862,8 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f"the window {name} sets focus, which only a panel has — a window always takes the keyboard")
             if not isinstance(window["focus"], bool):
                 fail(entry_id, f"the panel {name}'s focus = {window['focus']!r} is not true or false")
-        # `manifest.rs`'s capturable rule: a window's alone, and a boolean.
+        # `manifest.rs`'s capturable rule: a window's or an overlay's (Lumi
+        # 1.79: kept out of other apps' captures), and a boolean.
         if "capturable" in window:
             if kind == "panel":
                 fail(entry_id, f"the panel {name} sets capturable, which only a window has — Lumi's captures leave every panel out already")
@@ -793,7 +921,7 @@ def check_manifest(entry_id: str, manifest: dict):
         # `manifest.rs`'s keep-alive and preload rules, same sentences: a
         # window's or a panel's (a window's since Lumi 1.65), one page per
         # declaration, and loaded ahead only when kept (Lumi 1.45).
-        what = "window" if kind == "window" else "panel"
+        what = kind
         if "keep-alive" in window:
             if not isinstance(window["keep-alive"], bool):
                 fail(entry_id, f"the {what} {name}'s keep-alive = {window['keep-alive']!r} is not true or false")

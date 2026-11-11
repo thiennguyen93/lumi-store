@@ -63,6 +63,79 @@ class Overhang(unittest.TestCase):
         self.assertIn("table of sides", refused)
 
 
+class Overlay(unittest.TestCase):
+    """`manifest.rs`'s overlay rules (Lumi 1.79), as `check_manifest` repeats them."""
+
+    @staticmethod
+    def manifest(fields: str, line: str = 'min-lumi-version = "1.79.0"') -> dict:
+        return tomllib.loads(BASE.format(fields=fields).replace('version = "1.0.0"', f'version = "1.0.0"\n{line}', 1))
+
+    def check(self, fields: str, line: str = 'min-lumi-version = "1.79.0"') -> None:
+        publish.check_manifest("dev.you.thing", self.manifest(fields, line))
+
+    def refusal(self, fields: str, line: str = 'min-lumi-version = "1.79.0"') -> str:
+        with self.assertRaises(SystemExit) as caught:
+            self.check(fields, line)
+        return str(caught.exception.code)
+
+    def test_an_overlay_and_its_own_keys(self):
+        self.check('kind = "overlay"')
+        self.check('kind = "overlay"\ndisplay = "each"\ncover = "below-menu-bar"\nevent-life-seconds = 30\ncapturable = false')
+        self.check('kind = "overlay"\ndisplay = "pointer"\ncover = "display"\nevent-life-seconds = 1\nkeep-alive = true')
+        # Said as their defaults, and the chrome switches left on, are not keys it lacks.
+        self.check('kind = "overlay"\nresizable = true\nremember-frame = false\nrestore = false\nwidth = 0')
+
+    def test_it_names_1_79_as_its_floor(self):
+        self.assertIn('set min-lumi-version to "1.79.0"', self.refusal('kind = "overlay"', line=""))
+        self.assertIn('set min-lumi-version to "1.79.0"', self.refusal('kind = "overlay"', line='min-lumi-version = "1.78.0"'))
+
+    def test_every_key_it_would_not_keep_is_refused_by_name(self):
+        for fields, key in (
+            ('position = "cursor"', "position"),
+            ('anchor = { at = "start" }', "anchor"),
+            ('scroll = "follow"', "scroll"),
+            ("modifier-keys = true", "modifier-keys"),
+            ("all-desktops = true", "all-desktops"),
+            ('material = "clear"', "material"),
+            ('titlebar = "standard"', "titlebar"),
+            ("titlebar-height = 40", "titlebar-height"),
+            ('app-name = "Glow"', "app-name"),
+            ("focus = false", "focus"),
+            ("overhang = 10", "overhang"),
+            ("click-through = true", "click-through"),
+            ("arrow = false", "arrow"),
+            ("width = 400", "width"),
+            ("height = 300", "height"),
+            ("min-width = 200", "min-width"),
+            ("min-height = 100", "min-height"),
+            ("resizable = false", "resizable"),
+            ("maximizable = false", "maximizable"),
+            ("minimizable = false", "minimizable"),
+            ("remember-frame = true", "remember-frame"),
+            ("restore = true", "restore"),
+            ("copies = 2", "copies"),
+            ("listed = true", "listed"),
+        ):
+            refused = self.refusal(f'kind = "overlay"\n{fields}')
+            self.assertIn(f"sets {key}, which an overlay does not have", refused, fields)
+
+    def test_its_keys_are_an_overlays_alone_and_bounded(self):
+        for kind in ("", 'kind = "panel"', 'kind = "window"'):
+            for fields, key in (('display = "each"', "display"), ('cover = "display"', "cover"), ("event-life-seconds = 5", "event-life-seconds")):
+                self.assertIn(f'sets {key}, which only an overlay (kind = "overlay") has', self.refusal(f"{kind}\n{fields}"))
+        for wrong in ("event-life-seconds = 0", "event-life-seconds = 31", 'event-life-seconds = "5"'):
+            self.assertIn("stays 1 to 30 seconds", self.refusal(f'kind = "overlay"\n{wrong}'))
+        self.assertIn('covers "pointer" or "each"', self.refusal('kind = "overlay"\ndisplay = "all"'))
+        self.assertIn('covers "display" or "below-menu-bar"', self.refusal('kind = "overlay"\ncover = "work"'))
+        self.assertIn('"window", "panel" or "overlay"', self.refusal('kind = "overlays"'))
+
+    def test_the_hide_row_needs_an_overlay(self):
+        floor = 'min-lumi-version = "1.79.0"'
+        self.check('kind = "overlay"', line=f"{floor}\noverlay-row = false")
+        self.assertIn('needs a window declaring kind = "overlay"', self.refusal('kind = "panel"', line=f"{floor}\noverlay-row = false"))
+        self.assertIn("not true or false", self.refusal('kind = "overlay"', line=f'{floor}\noverlay-row = "no"'))
+
+
 class Listed(unittest.TestCase):
     def test_it_is_true_or_false(self):
         check("listed = false")
@@ -258,6 +331,13 @@ class Held(unittest.TestCase):
         self.assertIn("is not true or false", self.refusal('min-lumi-version = "1.79.0"', 'hold = "yes"'))
         shadow = 'hold = true\n\n[[command.params]]\nname = "hold"\nlabel = "Hold"\nkind = "text"'
         self.assertIn("give the param another name", self.refusal('min-lumi-version = "1.79.0"', shadow))
+
+    def test_held_after_ms_is_a_held_commands_within_its_bounds(self):
+        floor = 'min-lumi-version = "1.79.0"'
+        publish.check_manifest("dev.you.thing", self.manifest(floor, "hold = true\nheld-after-ms = 300"))
+        self.assertIn("needs hold = true", self.refusal(floor, "held-after-ms = 300"))
+        for said in ("99", "2001", '"300"', "true"):
+            self.assertIn("is not between 100 and 2000", self.refusal(floor, f"hold = true\nheld-after-ms = {said}"))
 
 
 class Ai(unittest.TestCase):
