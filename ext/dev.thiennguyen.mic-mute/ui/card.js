@@ -1,5 +1,6 @@
 // The card while talking (card.html). What it shows is the component's:
-// `{"v": 1, "state": "talking" | "muted" | "unmuted" | "ended"}`, posted before the
+// `{"v": 1, "state": "talking" | "talking-on" | "muted" | "unmuted" | "ended"}`
+// — "talking-on" a talk begun with the microphones on — posted before the
 // card is opened and asked again with `call("state")` each time it shows —
 // the post alone misses a page that is not loaded yet (preloading switched
 // off, the first press after a launch). "talking" stays until the component
@@ -12,9 +13,12 @@ const title = document.getElementById("title");
 const sub = document.getElementById("sub");
 
 const SHOWN = {
-  // Said whichever way the talk began: from on, "Talking" alone read as
-  // nothing having changed, and the Muted after it as a surprise.
-  talking: { title: "Talking", sub: "Let go to mute", stay: 0 },
+  talking: { title: "Talking", sub: "", stay: 0 },
+  // A talk begun with the microphones on ends muted, which "Talking" alone
+  // does not say: the Muted after it read as a surprise. From muted, letting
+  // go is back where the person was, and needs no line (the owner,
+  // 2026-11-11). Drawn as "talking".
+  "talking-on": { title: "Talking", sub: "Let go to mute", stay: 0, look: "talking" },
   muted: { title: "Muted", sub: "", stay: 1000 },
   unmuted: { title: "Unmuted", sub: "", stay: 1000 },
   ended: { title: "Muted", sub: "Push to Talk ended", stay: 1500 },
@@ -44,7 +48,7 @@ function show(told) {
   const shown = SHOWN[told.state];
   if (!shown) return;
   clearTimeout(away);
-  card.dataset.state = told.state;
+  card.dataset.state = shown.look || told.state;
   title.textContent = shown.title;
   sub.textContent = shown.sub;
   sub.hidden = !shown.sub;

@@ -87,8 +87,9 @@ const CARD: &str = "card";
 const GLOW: &str = "glow";
 
 /// The storage key for what the card says now — the very post it was sent,
-/// `{"v": 1, "state"}` with `state` `"talking"`, `"muted"`, `"unmuted"` or
-/// `"ended"` — which its page asks for each time it shows, since a post
+/// `{"v": 1, "state"}` with `state` `"talking"`, `"talking-on"` (a talk begun
+/// with the microphones on, which letting go mutes), `"muted"`, `"unmuted"`
+/// or `"ended"` — which its page asks for each time it shows, since a post
 /// misses a page that has not loaded yet.
 const CARD_SAYS: &str = "card";
 
@@ -409,11 +410,12 @@ fn key_down(pair: u64) -> Result<(), String> {
 /// panel too, which reads every device, and the card waited behind it —
 /// 26 to 157 ms after the held was due (measured 2026-11-11).
 fn key_held(pair: u64) -> Result<(), String> {
-    if talking_as(pair)?.is_none() {
+    let Some(talk) = talking_as(pair)? else {
         return Ok(());
-    }
+    };
     match while_talking() {
-        WhileTalking::Card => card("talking")?,
+        // Begun on, letting go mutes, and the card says so.
+        WhileTalking::Card => card(if talk.began_on { "talking-on" } else { "talking" })?,
         WhileTalking::Glow => lumi::open_window(GLOW)?,
         WhileTalking::IconOnly => {}
     }
