@@ -5,39 +5,140 @@
 [extension]
 id = "dev.thiennguyen.mic-mute"
 name = "Mic Mute"
-version = "0.2.0"
+version = "0.3.0"
 description = "Mute every microphone on your Mac with one key, and keep it muted until you press it again."
 author = "Thien Nguyen"
 summary = "Press ⌥⌘M to mute every microphone on your Mac at once — built-in, USB and Bluetooth — and a microphone you plug in while muted is muted too. Hold ⌥⌘M to talk, or tap it to unmute and each one is back as it was. The menu bar icon says which it is."
 homepage = "https://lumikeys.app/extensions/dev.thiennguyen.mic-mute/"
 # 1.79.0: `hold = true`, ⌥⌘M heard as it is let go (push-to-talk) — an older
-# Lumi would unmute on the press and never hear the release. 1.77.0 brought
-# the `audio-devices` capability and event this is built on.
+# Lumi would unmute on the press and never hear the release — and the icon
+# drawn in colour and the glow round the screen (`kind = "overlay"`). 1.77.0
+# brought the `audio-devices` capability and event this is built on.
 min-lumi-version = "1.79.0"
 # `audio-devices` to hold every input muted and hear devices come and go;
-# `menu-bar-item` for the icon that says whether the microphones are muted;
-# `menu` for the row in that icon's menu that switches it.
-capabilities = ["audio-devices", "menu", "menu-bar-item"]
+# `menu-bar-item` for the icon that says whether the microphones are muted,
+# and the panel a click on it opens; `menu` for the row in that icon's menu
+# that switches it, which VoiceOver still reaches; `preload` so the panel
+# and the talking card are loaded ahead and show at the press, not after a
+# page load.
+capabilities = ["audio-devices", "menu", "menu-bar-item", "preload"]
 # Mic Mute draws its own state in the menu bar, so Lumi's "Microphone muted
 # by Mic Mute — Unmute" row would say it twice. Switching Mic Mute off, or
 # quitting Lumi, still unmutes everything.
 audio-devices-row = false
-# A right-click on the icon switches it; a click opens its menu.
+# A right-click on the icon switches it; a click opens its panel.
 menu-bar-item-right-click = "toggle"
+# The card lets every press through and puts itself away in a second or
+# two, so Lumi's "lets clicks through — Make Clickable" row would only flash
+# in the menu; there is nothing on the card to press.
+click-through-row = false
+# The glow is up only while ⌥⌘M is held and goes the moment it is let go, so
+# Lumi's "drawing over your screen — Hide" row would only come and go in the
+# menu on every press.
+overlay-row = false
 # Devices coming and going: a microphone plugged in while muted is muted too.
 events = ["audio-devices"]
 
+# The Settings tab is Mic Mute's own page (settings.html): the key, what
+# shows while it is held, drawn as a picture of each, and the virtual
+# microphones — one page for all of it (the owner, 2026-11-11). The two
+# `[[settings]]` below still decide what it can save. It is the tab Mic
+# Mute's page opens on, since everything a person comes here to change is
+# on it.
+[tabs.settings]
+page = "settings.html"
+default = true
+
+# Lumi's Shortcuts tab, hidden: ⌥⌘M — the `[[shortcut]]` below — is
+# recorded and changed on the Settings tab, the one place it is set.
+[tabs.shortcuts]
+hidden = true
+
 # Held: Lumi runs it when ⌥⌘M goes down and again when it comes up, so a
-# hold can be push-to-talk and a tap the toggle it was (`lumi::hold`).
+# hold can be push-to-talk and a tap the toggle it was (`lumi::hold`) — and
+# once between, when the key is still down at 200 ms (`held-after-ms`, the
+# same 200 ms that tells a tap from a hold in `key_up`), where the talking
+# icon, card and glow are drawn, so a tap never shows them. 200, not 300: a
+# tap is well under it, and the card waited a noticeable moment at 300 (the
+# owner, 2026-11-11).
 [[command]]
 name = "toggle"
 label = "Mute or unmute every microphone"
 icon = "mic-off"
 hold = true
+held-after-ms = 200
 
 [[shortcut]]
 command = "toggle"
 key = "alt+cmd+m"
+
+# What a click on the item opens: the switch as a round button, every
+# microphone with what it is now, the key and Settings (panel.html).
+[[window]]
+name = "panel"
+title = "Mic Mute"
+path = "panel.html"
+kind = "panel"
+position = "menu-bar-item"
+anchor = { at = "center" }
+material = "popover"
+arrow = true
+keep-alive = true
+preload = true
+width = 300
+height = 260
+
+# The card at the top right while ⌥⌘M is held, when "While talking" says
+# Card (card.html): never the keyboard, never a press, put away by the
+# key's release or, after a tap or a talk Lumi ended, by itself.
+[[window]]
+name = "card"
+title = "Mic Mute"
+path = "card.html"
+kind = "panel"
+position = "top-right"
+material = "popover"
+focus = false
+click-through = true
+keep-alive = true
+preload = true
+width = 170
+height = 48
+
+# The glow round every display while ⌥⌘M is held, when "While talking" says
+# Screen Glow (glow.html): every press goes through it. Kept out of other
+# apps' pictures of the screen — a call's screen share never shows the rim,
+# which is a signal for the person at the Mac alone.
+[[window]]
+name = "glow"
+title = "Glow round the screen while you talk"
+path = "glow.html"
+kind = "overlay"
+display = "each"
+capturable = false
+keep-alive = true
+preload = true
+
+# What shows while ⌥⌘M is held, besides the icon moving: a card, a glow
+# round the screen, or the icon alone. All three are variants the owner
+# picked (design review, 2026-11-10), so the choice is the person's.
+[[settings]]
+name = "while-talking"
+label = "While talking"
+kind = "segmented"
+default = "card"
+
+[[settings.options]]
+value = "icon"
+label = "Icon Only"
+
+[[settings.options]]
+value = "card"
+label = "Card"
+
+[[settings.options]]
+value = "glow"
+label = "Screen Glow"
 
 [[settings]]
 name = "virtual"

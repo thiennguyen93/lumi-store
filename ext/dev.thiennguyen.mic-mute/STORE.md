@@ -2,7 +2,7 @@ Mute every microphone on your Mac with one key, and know at a glance that they a
 
 ## One key for every microphone
 
-Press **⌥⌘M** and every microphone your Mac has is muted at once — the built-in one, a USB headset, Bluetooth earbuds. Press it again and each one is back exactly as it was. Right-click the menu bar icon, or choose **Mute Every Microphone** in its menu, to do the same.
+Press **⌥⌘M** and every microphone your Mac has is muted at once — the built-in one, a USB headset, Bluetooth earbuds. Press it again and each one is back exactly as it was. Right-click the menu bar icon to do the same, or click it for a panel with the switch and every microphone listed with what it is now, the one your Mac is using marked — click another to use it instead.
 
 - **It stays muted.** A microphone you plug in while muted is muted the moment it arrives, and one unmuted in System Settings is muted again, until you unmute from Mic Mute.
 - **Muted means silent.** Mic Mute uses each microphone's own mute, never a volume of zero, which some microphones still hear through.
@@ -10,7 +10,9 @@ Press **⌥⌘M** and every microphone your Mac has is muted at once — the bui
 
 ## Hold to talk
 
-While your microphones are muted, hold **⌥⌘M** to talk: every microphone is on for as long as you hold it, and muted again the moment you let go. A quick tap still unmutes them for good, so one key does both. If your Mac locks or sleeps while you hold it, they are muted again.
+Hold **⌥⌘M** to talk: every microphone is on for as long as you hold it, and muted the moment you let go — whether they were muted or on when you pressed it. A quick tap still switches them on or off for good, so one key does both. If your Mac locks or sleeps while you hold it, they are muted again.
+
+While you talk the menu bar icon moves, and a card at the top right of your screen says **Talking**. In Settings, **While talking** can light an orange glow round the edge of every display instead — clicks go through it, and a screen share never shows it — or leave the icon alone to say it. If your Mac stops hearing the key before you let go, the card turns red: your microphones are muted again, even though your finger is still on the key.
 
 ## Meeting apps
 

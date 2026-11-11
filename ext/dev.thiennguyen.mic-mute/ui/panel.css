@@ -1,0 +1,136 @@
+/* The panel under Mic Mute's item (panel.html): Control Center's round
+   button first, then the microphones as rows. Lumi draws the popover glass
+   under it (`material = "popover"`), so the page is clear and every fill a
+   tint over the glass, on lumi.css's tokens with a fallback for a preview
+   outside Lumi. */
+
+:root {
+  --muted: #ff3b30;
+  --on-signal: #ffffff;
+  --chip: rgba(0, 0, 0, 0.07);
+  --chip-ink: #3a3a3c;
+  --sep: rgba(0, 0, 0, 0.1);
+  --hover: rgba(0, 0, 0, 0.06);
+  --dim: color-mix(in srgb, CanvasText 55%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --muted: #ff453a;
+    --chip: rgba(255, 255, 255, 0.1);
+    --chip-ink: #e5e5ea;
+    --sep: rgba(255, 255, 255, 0.12);
+    --hover: rgba(255, 255, 255, 0.08);
+  }
+}
+:root[data-theme="dark"] {
+  --muted: #ff453a;
+  --chip: rgba(255, 255, 255, 0.1);
+  --chip-ink: #e5e5ea;
+  --sep: rgba(255, 255, 255, 0.12);
+  --hover: rgba(255, 255, 255, 0.08);
+}
+
+html, body { margin: 0; background: transparent; overflow: hidden; }
+
+.pop {
+  display: flex;
+  flex-direction: column;
+  padding: 2px 0 5px;
+  font: 13px/1.3 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* The switch: the whole row, lit under the pointer as a microphone's row
+   is, at the same 5 pt inset, so the circle and the words sit where they
+   did when only the circle was a button. */
+.top {
+  box-sizing: border-box;
+  width: calc(100% - 10px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 5px 2px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.top:hover, .top:focus-visible { background: var(--hover); outline: none; }
+.big {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--chip);
+  color: var(--chip-ink);
+  transition: background 0.12s, color 0.12s;
+}
+.big svg { width: 22px; height: 22px; }
+.big .off { display: none; }
+.top[aria-checked="true"] .big { background: var(--muted); color: var(--on-signal); }
+.top[aria-checked="true"] .big .on { display: none; }
+.top[aria-checked="true"] .big .off { display: block; }
+
+.title { display: flex; flex-direction: column; min-width: 0; }
+.title b { font-size: 14px; }
+.title span { font-size: 12px; color: var(--dim); }
+
+.sep { height: 11px; display: flex; align-items: center; padding: 0 14px; }
+.sep::before { content: ""; flex: 1; height: 1px; background: var(--sep); }
+
+.devices { list-style: none; margin: 0; padding: 0; }
+.devices li { min-width: 0; }
+.devices .row { height: 34px; display: flex; align-items: center; gap: 10px; margin: 0 5px; padding: 0 9px; min-width: 0; border-radius: 7px; }
+/* A microphone macOS will make the input: a row to press, as in Sound
+   settings, lit under the pointer as the Settings… row is. */
+button.row { box-sizing: border-box; width: calc(100% - 10px); border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+button.row:hover, button.row:focus-visible { background: var(--hover); outline: none; }
+.chip { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--chip); color: var(--chip-ink); }
+.chip svg { width: 14px; height: 14px; }
+/* Every chip stays neutral, muted or not: a red glyph on a red tint read as
+   nothing on the dark glass (the owner, 2026-11-11). The row's own word says
+   Muted, and the round button above says it for all of them. */
+/* The Mac's input — the one apps hear — is filled with Lumi's accent, white
+   glyph, as Control Center's Sound marks the device in use. */
+.devices li.default .chip { background: var(--accent, #378add); color: var(--on-signal); }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.state { font-size: 12px; color: var(--dim); white-space: nowrap; }
+.devices .none { color: var(--dim); height: 34px; display: flex; align-items: center; padding: 0 14px; }
+
+.hint { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 30px; padding: 0 14px; }
+.hint .k { font-size: 12px; color: var(--dim); }
+
+.link {
+  height: 28px;
+  margin: 0 5px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.link:hover, .link:focus-visible { background: var(--hover); outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .big { transition: none; }
+}

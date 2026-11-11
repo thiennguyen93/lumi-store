@@ -1,0 +1,91 @@
+/* The card while talking (card.html). Lumi draws the glass under it
+   (`material = "popover"`), so the page itself is clear. Orange is the colour
+   macOS gives a microphone in use; red is the colour of muted in every
+   meeting app. */
+
+:root {
+  --live: #ff9500;
+  --muted: #ff3b30;
+  --on-signal: #ffffff;
+  --plain: rgba(0, 0, 0, 0.08);
+  --dim: color-mix(in srgb, CanvasText 55%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --live: #ff9f0a;
+    --muted: #ff453a;
+    --plain: rgba(255, 255, 255, 0.12);
+  }
+}
+:root[data-theme="dark"] {
+  --live: #ff9f0a;
+  --muted: #ff453a;
+  --plain: rgba(255, 255, 255, 0.12);
+}
+
+html, body { margin: 0; background: transparent; overflow: hidden; }
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  padding: 8px 16px 8px 8px;
+  font: 13px/1.2 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.disc {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--plain);
+}
+.disc svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.disc .off { display: none; }
+
+[data-state="talking"] .disc { background: var(--live); color: var(--on-signal); animation: ring 1.2s ease-out infinite; }
+[data-state="muted"] .disc,
+[data-state="ended"] .disc { background: var(--muted); color: var(--on-signal); }
+[data-state="muted"] .disc .on,
+[data-state="ended"] .disc .on { display: none; }
+[data-state="muted"] .disc .off,
+[data-state="ended"] .disc .off { display: block; }
+
+.words { display: flex; flex-direction: column; }
+.words b { font-weight: 600; }
+.words small { font-size: 11px; color: var(--dim); }
+
+.bars { display: none; align-items: center; gap: 2px; height: 14px; color: var(--live); }
+[data-state="talking"] .bars { display: inline-flex; }
+.bars i { width: 2.5px; height: 100%; border-radius: 1px; background: currentColor; transform: scaleY(0.35); animation: frames 0.75s steps(6, end) infinite; }
+.bars i:nth-child(2) { animation-delay: -0.25s; }
+.bars i:nth-child(3) { animation-delay: -0.5s; }
+
+@keyframes frames {
+  0% { transform: scaleY(0.35); }
+  33% { transform: scaleY(1); }
+  66% { transform: scaleY(0.55); }
+  100% { transform: scaleY(0.35); }
+}
+@keyframes ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--live) 70%, transparent); }
+  100% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--live) 0%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bars i, [data-state="talking"] .disc { animation: none; }
+  .bars i { transform: scaleY(0.7); }
+}

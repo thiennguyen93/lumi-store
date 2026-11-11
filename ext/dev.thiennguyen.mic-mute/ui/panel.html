@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- The panel a click on Mic Mute's item opens, under it (`[[window]] panel`,
+     `position = "menu-bar-item"`, an arrow on the item): one round button
+     that mutes or unmutes every microphone, each microphone with what it is
+     now, Push to Talk's key, and Settings. panel.js asks the component what
+     to draw and tells it every press; a right-click on the item still
+     switches it without opening anything. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mic Mute</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <main class="pop" hidden>
+    <!-- The whole row is the switch, round button and words alike, as a
+         Control Center module is: pressing only the 46 pt circle was a small
+         target (the owner, 2026-11-11). -->
+    <button type="button" class="top" role="switch" data-act="toggle" aria-checked="true" aria-label="Mute every microphone">
+      <span class="big" aria-hidden="true">
+        <svg class="on" viewBox="0 0 24 24"><path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/></svg>
+        <svg class="off" viewBox="0 0 24 24"><path d="M12 19v3"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M16.95 16.95A7 7 0 0 1 5 12v-2"/><path d="M18.89 13.23A7 7 0 0 0 19 12v-2"/><path d="m2 2 20 20"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/></svg>
+      </span>
+      <span class="title"><b>Microphones</b><span id="summary"></span></span>
+    </button>
+    <div class="sep"></div>
+    <ul class="devices" id="devices" aria-label="Microphones"></ul>
+    <div class="sep"></div>
+    <div class="hint" id="hint" hidden><span>Push to Talk</span><span class="k" id="key"></span></div>
+    <button type="button" class="link" data-act="settings">Settings…</button>
+  </main>
+  <script src="panel.js"></script>
+</body>
+</html>

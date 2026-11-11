@@ -1,0 +1,270 @@
+/* Mic Mute's Settings tab (settings.html). Sections and cards as Lumi draws
+   its own settings, on lumi.css's tokens (`--border`, `--card`, `--accent`,
+   `--warn`, `--raised`), which follow Lumi's Appearance through the page's
+   `data-theme`. The pictures under While talking are small Mac desktops in
+   colours of their own, a light and a dark set.
+
+   Every rule is a class: the page is served with `default-src 'self'`, so a
+   `style` attribute would be refused. */
+
+:root {
+  --dim: color-mix(in srgb, CanvasText 62%, transparent);
+  --link: var(--accent-ink, #2a6fb3);
+  --live: #ff9500;
+  --ring: color-mix(in srgb, var(--accent, #378add) 22%, transparent);
+
+  --wall: linear-gradient(140deg, #9fb8f5 0%, #c3b4ee 52%, #f2c3d3 100%);
+  --bar: rgba(255, 255, 255, 0.5);
+  --bar-ink: rgba(29, 29, 31, 0.55);
+  --win: rgba(255, 255, 255, 0.94);
+  --win-bar: #f0f0f4;
+  --tile1: #dfe5ef;
+  --tile2: #e8e1f0;
+  --tile3: #e3ece4;
+  --tile4: #efe6dc;
+  --face: rgba(29, 29, 31, 0.22);
+  --glass: rgba(255, 255, 255, 0.86);
+  --glass-ink: #1d1d1f;
+  --dock: rgba(255, 255, 255, 0.42);
+  --lens: #ffffff;
+}
+
+/* Lumi tells the page its Appearance as `data-theme`; a page opened with
+   none follows macOS, as lumi.css does. */
+:root[data-theme="dark"] {
+  --live: #ff9f0a;
+  --wall: linear-gradient(140deg, #1c2a52 0%, #382a5e 52%, #5c2c4e 100%);
+  --bar: rgba(0, 0, 0, 0.32);
+  --bar-ink: rgba(242, 242, 247, 0.6);
+  --win: rgba(44, 44, 50, 0.96);
+  --win-bar: #36363c;
+  --tile1: #3a4150;
+  --tile2: #43394f;
+  --tile3: #364239;
+  --tile4: #4a4136;
+  --face: rgba(242, 242, 247, 0.22);
+  --glass: rgba(48, 48, 54, 0.9);
+  --glass-ink: #f2f2f7;
+  --dock: rgba(255, 255, 255, 0.14);
+  --lens: #2c2c30;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --live: #ff9f0a;
+    --wall: linear-gradient(140deg, #1c2a52 0%, #382a5e 52%, #5c2c4e 100%);
+    --bar: rgba(0, 0, 0, 0.32);
+    --bar-ink: rgba(242, 242, 247, 0.6);
+    --win: rgba(44, 44, 50, 0.96);
+    --win-bar: #36363c;
+    --tile1: #3a4150;
+    --tile2: #43394f;
+    --tile3: #364239;
+    --tile4: #4a4136;
+    --face: rgba(242, 242, 247, 0.22);
+    --glass: rgba(48, 48, 54, 0.9);
+    --glass-ink: #f2f2f7;
+    --dock: rgba(255, 255, 255, 0.14);
+    --lens: #2c2c30;
+  }
+}
+
+.page { display: flex; flex-direction: column; gap: 14px; padding: 4px 0 16px; }
+section { display: flex; flex-direction: column; gap: 6px; }
+h2 { margin: 0; font-size: 13px; font-weight: 600; }
+svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+.card { border: 1px solid var(--border); border-radius: 9px; background: var(--card); padding: 4px 14px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; }
+/* lumi.css draws a `label` small and dim, as a field's caption; this one is
+   a whole row's words. */
+.text { flex: 1; min-width: 0; display: flex; flex-direction: column; margin: 0; font-size: 13px; opacity: 1; cursor: default; }
+label.text { cursor: pointer; }
+.sub { font-size: 12px; color: var(--dim); }
+
+/* The status line under "Mute or unmute": one line, one height, whatever it
+   says — a long sentence is cut with an ellipsis and read whole from its
+   tooltip, never wrapped onto a second line. */
+.status { height: 16px; display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 12px; white-space: nowrap; }
+.status .said { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--dim); }
+.status.bad .said { color: var(--warn); }
+.status .sign { width: 12px; height: 12px; flex: none; color: var(--warn); stroke-width: 2.2; }
+.status .act { flex: none; padding: 0; border: 0; border-radius: 0; background: none; font-size: 12px; color: var(--link); cursor: pointer; }
+.status .act:hover:not(:disabled) { background: none; text-decoration: underline; }
+
+/* The recorder: the key as caps, "Type shortcut…" while it listens. */
+.keys {
+  width: 156px;
+  height: 30px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--raised);
+  cursor: pointer;
+}
+.keys:hover:not(:disabled) { background: var(--raised); }
+.keys.recording { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.keys.held { border-color: var(--warn); }
+.keys .cap {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--card);
+  font-size: 12px;
+  line-height: 1;
+}
+.keys .ask { color: var(--dim); }
+
+/* The switch, as Lumi's own. */
+.switch {
+  width: 38px;
+  height: 22px;
+  flex: none;
+  position: relative;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background 0.15s;
+}
+.switch:hover:not(:disabled) { background: var(--border); }
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: left 0.15s;
+}
+.switch[aria-checked="true"], .switch[aria-checked="true"]:hover:not(:disabled) { background: var(--accent); }
+.switch[aria-checked="true"]::after { left: 18px; }
+
+/* While talking: three pictures to choose from, as System Settings'
+   Appearance chooses — the chosen one ringed in the accent, its name bold,
+   and only it moving. */
+.choices-card { padding: 14px 14px 10px; }
+.choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--dim);
+  cursor: pointer;
+}
+.choice:hover:not(:disabled) { background: none; }
+.choice[aria-checked="true"] { color: inherit; font-weight: 500; }
+.choice:focus-visible { outline: none; }
+.choice:focus-visible .scene { box-shadow: 0 0 0 2px var(--accent); }
+
+.scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 188 / 118;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--wall);
+  box-shadow: 0 0 0 1px var(--border);
+}
+.choice[aria-checked="true"] .scene { box-shadow: 0 0 0 2px var(--accent), 0 0 0 5px var(--ring); }
+
+.menubar { position: absolute; left: 0; right: 0; top: 0; height: 12px; display: flex; align-items: center; gap: 5px; padding: 0 7px; background: var(--bar); color: var(--bar-ink); }
+/* The Apple menu, as macOS's own font draws it: U+F8FF is the Apple logo
+   in the system font on every Mac, so no picture of it ships here. */
+.apple { font: 9px/1 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; margin-top: -1px; color: var(--bar-ink); }
+.word { height: 3px; border-radius: 2px; background: currentColor; opacity: 0.75; }
+.word.app { width: 12px; opacity: 1; }
+.word.menu1 { width: 10px; }
+.word.menu2 { width: 8px; }
+.word.clock { width: 14px; }
+.spring { flex: 1; }
+.mic { width: 8px; height: 8px; display: block; flex: none; color: var(--live); stroke-width: 2.6; }
+.wifi { width: 7px; height: 5px; border-radius: 7px 7px 1px 1px; background: currentColor; opacity: 0.75; }
+.batt { width: 10px; height: 5px; box-sizing: border-box; border: 1px solid currentColor; border-radius: 1.5px; opacity: 0.75; }
+
+.window { position: absolute; left: 14px; top: 22px; bottom: 22px; width: 50%; display: flex; flex-direction: column; overflow: hidden; border-radius: 6px; background: var(--win); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(0, 0, 0, 0.12); }
+.titlebar { height: 10px; flex: none; display: flex; align-items: center; gap: 2.5px; padding: 0 5px; background: var(--win-bar); }
+.titlebar i { display: block; width: 4px; height: 4px; border-radius: 50%; }
+.titlebar .close { background: #ff5f57; }
+.titlebar .min { background: #febc2e; }
+.titlebar .zoom { background: #28c840; }
+.tiles { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; padding: 3px; }
+.tiles span { display: grid; place-items: center; border-radius: 3px; }
+.tiles span::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: var(--face); }
+.tiles .t1 { background: var(--tile1); }
+.tiles .t2 { background: var(--tile2); }
+.tiles .t3 { background: var(--tile3); }
+.tiles .t4 { background: var(--tile4); }
+/* The person talking, ringed as a meeting app rings whoever speaks. */
+.tiles .you { box-shadow: inset 0 0 0 1.2px var(--live); }
+
+.dock { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); display: flex; gap: 3px; padding: 2.5px; border-radius: 5px; background: var(--dock); }
+.dock i { display: block; width: 9px; height: 9px; border-radius: 2.5px; }
+.dock .d1 { background: #4a90e2; }
+.dock .d2 { background: #34c759; }
+.dock .d3 { background: #ff9f0a; }
+.dock .d4 { background: #af52de; }
+.dock .d5 { background: #8e8e93; }
+
+/* Card: the card.html Mic Mute shows at the top right, small. */
+.talk-card { position: absolute; right: 7px; top: 17px; display: flex; align-items: center; gap: 5px; padding: 3px 8px 3px 3px; border-radius: 10px; background: var(--glass); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18), 0 0 0 0.5px rgba(0, 0, 0, 0.1); color: var(--glass-ink); font-size: 8px; font-weight: 600; line-height: 1; }
+.disc { width: 14px; height: 14px; display: grid; place-items: center; border-radius: 50%; background: var(--live); color: #ffffff; animation: ring 1.2s ease-out infinite; }
+.disc svg { width: 8px; height: 8px; stroke-width: 2.6; }
+.bars { display: inline-flex; align-items: center; gap: 1.2px; height: 7px; color: var(--live); }
+.bars i { display: block; width: 1.4px; height: 100%; border-radius: 1px; background: currentColor; transform: scaleY(0.4); animation: frames 0.75s steps(6, end) infinite; }
+.bars i:nth-child(2) { animation-delay: -0.25s; }
+.bars i:nth-child(3) { animation-delay: -0.5s; }
+
+/* Screen Glow: glow.html's rim, at the picture's size. */
+.glow { position: absolute; inset: 0; border-radius: 8px; box-shadow: inset 0 0 0 2px rgba(255, 149, 0, 0.92), inset 0 0 18px rgba(255, 149, 0, 0.55); animation: breathe 2.4s ease-in-out infinite; pointer-events: none; }
+
+/* Icon Only: nothing on the screen moves but the menu bar icon, too small
+   to see at this size — so a magnifier under it shows it larger. */
+.lens { position: absolute; right: 40px; top: 18px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; gap: 2px; border-radius: 50%; background: var(--lens); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22), 0 0 0 0.5px rgba(0, 0, 0, 0.12); }
+.lens::before { content: ""; position: absolute; left: 50%; top: -6px; width: 1px; height: 6px; background: var(--bar-ink); opacity: 0.5; }
+.lens .mic { width: 12px; height: 12px; stroke-width: 2.4; }
+.lens .bars { height: 8px; }
+
+/* Only the chosen picture moves; the others hold still, their bars at half
+   height rather than at their shortest, where they read as dots. */
+.choice:not([aria-checked="true"]) .disc,
+.choice:not([aria-checked="true"]) .bars i,
+.choice:not([aria-checked="true"]) .glow { animation: none; }
+.choice:not([aria-checked="true"]) .bars i { transform: scaleY(0.7); }
+
+@keyframes frames {
+  0% { transform: scaleY(0.4); }
+  33% { transform: scaleY(1); }
+  66% { transform: scaleY(0.6); }
+  100% { transform: scaleY(0.4); }
+}
+@keyframes ring {
+  0% { box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.6); }
+  100% { box-shadow: 0 0 0 5px rgba(255, 149, 0, 0); }
+}
+@keyframes breathe {
+  50% { box-shadow: inset 0 0 0 2px rgba(255, 149, 0, 0.92), inset 0 0 9px rgba(255, 149, 0, 0.45); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disc, .bars i, .glow, .switch, .switch::after { animation: none; transition: none; }
+  .bars i { transform: scaleY(0.7); }
+}

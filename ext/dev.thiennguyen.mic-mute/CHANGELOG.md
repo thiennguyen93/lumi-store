@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0] - 2026-11-11
+
+### Added
+
+- **A panel from the menu bar icon.** A click opens a round button that mutes or unmutes every microphone, each microphone with what it is now — one Mic Mute can't mute, such as an iPhone, saying so; the one your Mac is using marked, and a click on another making it the one your Mac uses, as in Sound settings — and Settings. A right-click still switches it without opening anything.
+- **The menu bar icon in colour**: a red slash while your microphones are muted, an orange dot while they are on, and orange bars moving while you talk.
+- **A card at the top right while you hold ⌥⌘M**, from the moment it is a hold rather than a tap, so a tap never flashes it: orange while you talk, and red if your Mac stops listening to the key before you let go — a password field taking the keyboard, say — since your microphones are muted again while you may still be talking. A tap of ⌥⌘M, a right-click or the menu's row says **Muted** or **Unmuted** on the same card; with the glow or the icon alone, Lumi's alert says it as before.
+- **Or a glow round the screen while you hold ⌥⌘M**: an orange edge on every display, which clicks go through and a screen share never shows.
+- **Hold ⌥⌘M while your microphones are on, too**: they stay on while you hold it and are muted when you let go — a hold always ends muted, and the card says so ("Let go to mute"). A tap still switches them, as before.
+- **While talking**, in Settings: the card, the glow, or the moving icon alone, each shown as a small picture of your screen to choose from.
+- **Change ⌥⌘M in Settings**, beside While talking: click the key and press another. Settings is now the one tab for everything Mic Mute asks, and Mic Mute's page opens on it; the separate Shortcuts tab is gone.
+- **The panel and the card are light or dark as macOS is**, like the menu bar above them, whatever Lumi's own Appearance says.
+
 ## [0.2.0] - 2026-11-10
 
 ### Added

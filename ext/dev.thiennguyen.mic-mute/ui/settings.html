@@ -1,0 +1,75 @@
+<!doctype html>
+<!-- Mic Mute's Settings tab (`[tabs.settings] page`), which Lumi embeds in
+     the extension's page. One page for everything Mic Mute asks: the key
+     that mutes and unmutes — recorded here, so Lumi's own Shortcuts tab is
+     hidden (`[tabs.shortcuts] hidden = true`) — what shows while the key is
+     held, drawn as a picture of each, and the virtual microphones. The two
+     settings are still the manifest's `[[settings]]`, saved over the bridge;
+     the key is the `[[shortcut]]` Lumi keeps, written with
+     `PUT /__lumi__/shortcuts`. settings.js does all of it. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mic Mute Settings</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <main class="page">
+    <section>
+      <h2>Shortcut</h2>
+      <div class="card">
+        <div class="row">
+          <div class="text">
+            <span>Mute or unmute</span>
+            <!-- The row's status line: what the key does, how to leave a
+                 recording, or what stands in its way. One fixed height in
+                 every state, so the card never grows or shrinks under it. -->
+            <div class="status" id="status" aria-live="polite"></div>
+          </div>
+          <button type="button" class="keys" id="keys" aria-label="Shortcut for mute or unmute"></button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 id="talking-title">While talking</h2>
+      <div class="card choices-card">
+        <div class="choices" role="radiogroup" aria-labelledby="talking-title" id="choices"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Microphones</h2>
+      <div class="card">
+        <div class="row">
+          <label class="text" for="virtual">
+            <span>Mute virtual microphones too</span>
+            <span class="sub">Such as Microsoft Teams Audio. Left off, a meeting app's own sound keeps working while you share your screen.</span>
+          </label>
+          <button type="button" class="switch" id="virtual" role="switch" aria-checked="false"></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- One small Mac desktop, drawn once and copied into each choice: a menu
+       bar with Mic Mute's icon, a meeting window, a Dock. Each choice then
+       adds what it shows on top (settings.js, `EFFECTS`). -->
+  <template id="scene">
+    <div class="menubar">
+      <span class="apple" aria-hidden="true">&#xF8FF;</span><span class="word app"></span><span class="word menu1"></span><span class="word menu2"></span>
+      <span class="spring"></span>
+      <svg class="mic" viewBox="0 0 24 24"><path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/></svg>
+      <span class="wifi"></span><span class="batt"></span><span class="word clock"></span>
+    </div>
+    <div class="window">
+      <div class="titlebar"><i class="close"></i><i class="min"></i><i class="zoom"></i></div>
+      <div class="tiles"><span class="you t1"></span><span class="t2"></span><span class="t3"></span><span class="t4"></span></div>
+    </div>
+    <div class="dock"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4"></i><i class="d5"></i></div>
+  </template>
+
+  <script src="settings.js"></script>
+</body>
+</html>
