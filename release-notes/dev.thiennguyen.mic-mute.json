@@ -8,22 +8,22 @@
           "headline": "A panel, a tour, and hold the key to talk",
           "items": [
             "A welcome tour shows the key, the menu bar icon, and what you see while talking",
-            "Click the menu bar icon to open a panel with a mute button, all microphones, and settings",
+            "Click the menu bar icon for a panel: mute every microphone, or choose the one your Mac uses",
             "The menu bar icon is now in color: red slash when muted, orange dot when on, moving bars while talking",
             "Hold the key to talk and release to mute, with a card or glow showing when you can speak",
             "Choose what you see while talking: a card at top right, a glow round the screen, or just the icon",
-            "Change the key in settings by clicking it and pressing another"
+            "Change the key in Settings; the panel and card are light or dark as macOS is"
           ]
         },
         "vi": {
           "headline": "Bảng điều khiển, hướng dẫn và giữ phím để nói",
           "items": [
             "Hướng dẫn chào mừng giới thiệu phím tắt, biểu tượng thanh menu và những gì bạn thấy khi nói",
-            "Nhấp biểu tượng thanh menu để mở bảng điều khiển với nút tắt tiếng, tất cả micro và cài đặt",
+            "Nhấp biểu tượng thanh menu để mở bảng điều khiển: tắt tiếng mọi microphone hoặc chọn microphone Mac đang dùng",
             "Biểu tượng thanh menu giờ có màu: gạch đỏ khi tắt tiếng, chấm cam khi bật, thanh chuyển động khi nói",
             "Giữ phím để nói và thả ra để tắt tiếng, với thẻ hoặc viền sáng hiện khi bạn có thể nói",
             "Chọn hiển thị khi nói: thẻ ở góc trên bên phải, viền sáng quanh màn hình hoặc chỉ biểu tượng",
-            "Đổi phím tắt trong cài đặt bằng cách nhấp vào và nhấn phím khác"
+            "Đổi phím tắt trong Cài đặt; bảng điều khiển và thẻ sáng hoặc tối theo macOS"
           ]
         }
       }
@@ -37,15 +37,15 @@
         "en": {
           "headline": "Hold your hotkey to talk, release to mute again",
           "items": [
-            "Hold ⌥⌘M to talk while muted, release to mute again. A quick tap still unmutes as before.",
-            "Requires Lumi 1.79.0 or later."
+            "Hold ⌥⌘M to talk while muted and release to mute again; a quick tap still unmutes as before",
+            "Requires Lumi 1.79.0 or later"
           ]
         },
         "vi": {
           "headline": "Giữ phím tắt để nói, thả ra để tắt tiếng lại",
           "items": [
-            "Giữ ⌥⌘M để nói khi đang tắt tiếng, thả ra để tắt tiếng lại. Nhấn nhanh vẫn bật tiếng như trước.",
-            "Yêu cầu Lumi 1.79.0 trở lên."
+            "Giữ ⌥⌘M để nói khi đang tắt tiếng và thả ra để tắt tiếng lại; nhấn nhanh vẫn bật tiếng như trước",
+            "Yêu cầu Lumi 1.79.0 trở lên"
           ]
         }
       }

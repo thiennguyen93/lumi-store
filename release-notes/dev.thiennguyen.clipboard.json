@@ -7,7 +7,7 @@
         "en": {
           "headline": "Insert text at cursor without changing what you last copied",
           "items": [
-            "Insert text at your cursor without replacing what you last copied",
+            "Write a text item where you are typing, straight from its actions",
             "Rich text is inserted as plain text when using insert at cursor",
             "Selected text is preserved when inserting at cursor",
             "Requires Lumi 1.79.0 or later"
@@ -16,7 +16,7 @@
         "vi": {
           "headline": "Chèn văn bản tại con trỏ mà không thay đổi nội dung đã sao chép",
           "items": [
-            "Chèn văn bản tại vị trí con trỏ mà không thay thế nội dung vừa sao chép",
+            "Ghi một mục văn bản vào chỗ bạn đang gõ, ngay từ các thao tác của mục đó",
             "Văn bản định dạng được chèn dưới dạng văn bản thuần khi dùng chèn tại con trỏ",
             "Văn bản đang chọn được giữ nguyên khi chèn tại con trỏ",
             "Yêu cầu Lumi phiên bản 1.79.0 trở lên"
