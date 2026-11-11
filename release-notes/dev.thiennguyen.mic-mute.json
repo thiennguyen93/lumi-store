@@ -1,0 +1,84 @@
+{
+  "0.3.0": {
+    "notesSha256": "8d8740fa41b53fc79ae39e6563ab58e1901f879871831a0333d9224278ebca00",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "A panel, a tour, and hold the key to talk",
+          "items": [
+            "A welcome tour shows the key, the menu bar icon, and what you see while talking",
+            "Click the menu bar icon to open a panel with a mute button, all microphones, and settings",
+            "The menu bar icon is now in color: red slash when muted, orange dot when on, moving bars while talking",
+            "Hold the key to talk and release to mute, with a card or glow showing when you can speak",
+            "Choose what you see while talking: a card at top right, a glow round the screen, or just the icon",
+            "Change the key in settings by clicking it and pressing another"
+          ]
+        },
+        "vi": {
+          "headline": "Bảng điều khiển, hướng dẫn và giữ phím để nói",
+          "items": [
+            "Hướng dẫn chào mừng giới thiệu phím tắt, biểu tượng thanh menu và những gì bạn thấy khi nói",
+            "Nhấp biểu tượng thanh menu để mở bảng điều khiển với nút tắt tiếng, tất cả micro và cài đặt",
+            "Biểu tượng thanh menu giờ có màu: gạch đỏ khi tắt tiếng, chấm cam khi bật, thanh chuyển động khi nói",
+            "Giữ phím để nói và thả ra để tắt tiếng, với thẻ hoặc viền sáng hiện khi bạn có thể nói",
+            "Chọn hiển thị khi nói: thẻ ở góc trên bên phải, viền sáng quanh màn hình hoặc chỉ biểu tượng",
+            "Đổi phím tắt trong cài đặt bằng cách nhấp vào và nhấn phím khác"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.0": {
+    "notesSha256": "9f70946853c81cfa7f12bae93e4ec84a30b40763cd2fdb2ddc53cb4479be0721",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Hold your hotkey to talk, release to mute again",
+          "items": [
+            "Hold ⌥⌘M to talk while muted, release to mute again. A quick tap still unmutes as before.",
+            "Requires Lumi 1.79.0 or later."
+          ]
+        },
+        "vi": {
+          "headline": "Giữ phím tắt để nói, thả ra để tắt tiếng lại",
+          "items": [
+            "Giữ ⌥⌘M để nói khi đang tắt tiếng, thả ra để tắt tiếng lại. Nhấn nhanh vẫn bật tiếng như trước.",
+            "Yêu cầu Lumi 1.79.0 trở lên."
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "5993c88a9c84fdce135875f902fe79a8c61deb0672a1509466eebc72522d1815",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Mute every microphone on your Mac with one key",
+          "items": [
+            "Press ⌥⌘M to mute every microphone and press it again to restore each one",
+            "Microphones you plug in while muted are muted automatically",
+            "The menu bar icon shows whether microphones are muted or not",
+            "Microphones that cannot be muted are named so you know they are still active",
+            "Virtual microphones can be muted too in Settings, off by default",
+            "Requires Lumi 1.77.0"
+          ]
+        },
+        "vi": {
+          "headline": "Tắt tiếng mọi microphone trên Mac chỉ bằng một phím",
+          "items": [
+            "Nhấn ⌥⌘M để tắt tiếng mọi microphone và nhấn lại để khôi phục từng cái",
+            "Microphone cắm vào khi đang tắt tiếng sẽ tự động bị tắt tiếng",
+            "Biểu tượng thanh menu hiển thị microphone đang tắt hay bật tiếng",
+            "Microphone không thể tắt tiếng sẽ được ghi tên để bạn biết chúng vẫn hoạt động",
+            "Có thể tắt tiếng microphone ảo trong Cài đặt, mặc định là tắt",
+            "Yêu cầu Lumi 1.77.0"
+          ]
+        }
+      }
+    }
+  }
+}

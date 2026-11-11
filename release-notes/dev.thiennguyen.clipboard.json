@@ -1,4 +1,30 @@
 {
+  "0.91.0": {
+    "notesSha256": "128acb120faecce760a95626520933cb58dc932ed1e40c255da40afd47e2be44",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Insert text at cursor without changing what you last copied",
+          "items": [
+            "Insert text at your cursor without replacing what you last copied",
+            "Rich text is inserted as plain text when using insert at cursor",
+            "Selected text is preserved when inserting at cursor",
+            "Requires Lumi 1.79.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Chèn văn bản tại con trỏ mà không thay đổi nội dung đã sao chép",
+          "items": [
+            "Chèn văn bản tại vị trí con trỏ mà không thay thế nội dung vừa sao chép",
+            "Văn bản định dạng được chèn dưới dạng văn bản thuần khi dùng chèn tại con trỏ",
+            "Văn bản đang chọn được giữ nguyên khi chèn tại con trỏ",
+            "Yêu cầu Lumi phiên bản 1.79.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
   "0.90.0": {
     "notesSha256": "4e96336bbc8ba9123acc7d91adfe56252128aacb5cd01fed076bf9a4f45fde8c",
     "summary": {
@@ -426,32 +452,6 @@
           "headline": "Đã xóa biểu tượng chế độ riêng tư khỏi thanh tiêu đề",
           "items": [
             "Biểu tượng con mắt trên thanh tiêu đề đã được xóa để tránh nhầm lẫn với nút ghim"
-          ]
-        }
-      }
-    }
-  },
-  "0.80.2": {
-    "notesSha256": "ce4f11a691c5be2b2a702a12d9d8dfe83f289f3e03e6955f9ce4312487682de5",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Settings that depend on others now dim instead of hiding",
-          "items": [
-            "Settings that only work when another is on now dim as a whole row instead of hiding",
-            "Look in stays visible and dims when Match snippets is off",
-            "Theme dims when Dark glass is chosen",
-            "Where biometric unlock is unavailable, the app now says it needs a password on this Mac"
-          ]
-        },
-        "vi": {
-          "headline": "Các cài đặt phụ thuộc giờ mờ đi thay vì ẩn",
-          "items": [
-            "Các cài đặt chỉ hoạt động khi cài đặt khác bật giờ mờ toàn bộ hàng thay vì ẩn",
-            "Tìm trong vẫn hiển thị và mờ đi khi Khớp đoạn mã tắt tắt",
-            "Giao diện mờ đi khi chọn Kính tối",
-            "Ở nơi không thể dùng sinh trắc học, ứng dụng giờ nói cần mật khẩu trên Mac này"
           ]
         }
       }
