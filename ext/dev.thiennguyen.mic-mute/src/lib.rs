@@ -51,6 +51,12 @@
 //! button, every microphone with what it is now, the key and Settings. A
 //! right-click still switches without opening anything, and Lumi's own menu
 //! of the item — the one VoiceOver presses — keeps the check row.
+//!
+//! **A Welcome tour opens on install** (0.3.0, [`welcome`]), and on an
+//! update from before 0.3.0. Its stage shows the person's own microphones
+//! and moves with the real key: it is told what the panel is told.
+
+mod welcome;
 
 use lumi::audio_devices::{self, Device, Scope, Transport};
 use lumi::hold::{self, Phase, Why};
@@ -270,11 +276,13 @@ fn panel_state() -> Result<serde_json::Value, String> {
     Ok(json!({ "v": 1, "muted": muted, "talking": talking, "devices": devices }))
 }
 
-/// The panel, told what stands now if it is open — or kept loaded, put away:
-/// a post is news for whoever is looking, and a closed panel asks again when
-/// it opens.
-fn tell_panel() -> Result<(), String> {
-    lumi::post(PANEL, &panel_state()?.to_string()).map(|_| ())
+/// The pages that show the microphones — the panel, and the Welcome tour's
+/// stage — told what stands now if they are open, or kept loaded, put away:
+/// a post is news for whoever is looking, and a page that opens later asks.
+fn tell_pages() -> Result<(), String> {
+    let state = panel_state()?.to_string();
+    lumi::post(PANEL, &state)?;
+    lumi::post(welcome::WELCOME, &state).map(|_| ())
 }
 
 /// The card, saying `says` — written down first, so a page that loads after
@@ -317,7 +325,7 @@ fn draw(muted: bool) -> Result<(), String> {
     };
     menu_bar_item::set(&menu_bar_item::Item::icon(icon).tooltip(tooltip).coloured())?;
     menu::set(&[menu::Entry::check(TOGGLE_ROW, "Mute Every Microphone", muted)])?;
-    tell_panel()
+    tell_pages()
 }
 
 /// The item while talking: the live microphone with orange bars playing
@@ -329,7 +337,7 @@ fn draw_talking() -> Result<(), String> {
             .tooltip("Talking — let go of ⌥⌘M to mute")
             .coloured(),
     )?;
-    tell_panel()
+    tell_pages()
 }
 
 /// Mute everything, or unmute it all — and, when `say`, say so: the key, the
@@ -482,21 +490,36 @@ fn key_up(pair: u64, held_ms: u64, why: Option<Why>) -> Result<(), String> {
     }
 }
 
-/// A press in the panel: what it shows next, or nothing for a press that
-/// puts it away. `use:<id>` is a press on a microphone's row: that one
-/// becomes the Mac's input, as in Sound settings, and stays so whatever
-/// Mic Mute does after — muting moves no default.
-fn panel_pressed(request: &str) -> Result<String, String> {
+/// What the panel and the Welcome tour's stage both ask, each answered with
+/// the state that stands after it: `state`; `toggle`, the round button,
+/// which says nothing since the page in front of the person already shows
+/// it; and `use:<id>`, a press on a microphone's row: that one becomes the
+/// Mac's input, as in Sound settings, and stays so whatever Mic Mute does
+/// after — muting moves no default. `None` for any other request.
+fn microphones_asked(request: &str) -> Option<Result<String, String>> {
+    let answered = |done: Result<(), String>| done.and_then(|()| panel_state()).map(|state| state.to_string());
     if let Some(id) = request.strip_prefix("use:") {
-        audio_devices::set_default(id, Scope::Input)?;
-        return Ok(panel_state()?.to_string());
+        return Some(answered(audio_devices::set_default(id, Scope::Input)));
     }
     match request {
-        "state" => Ok(panel_state()?.to_string()),
-        "toggle" => {
-            switch(false)?;
-            Ok(panel_state()?.to_string())
-        }
+        "state" => Some(answered(Ok(()))),
+        "toggle" => Some(answered(switch(false))),
+        _ => None,
+    }
+}
+
+/// The requests [`microphones_asked`] answers, as a page sends them — held
+/// against `ui/welcome.js` by `welcome`'s tests.
+#[cfg(test)]
+const MICROPHONE_REQUESTS: [&str; 3] = ["state", "toggle", "use:"];
+
+/// A press in the panel: what it shows next, or nothing for a press that
+/// puts it away.
+fn panel_pressed(request: &str) -> Result<String, String> {
+    if let Some(answer) = microphones_asked(request) {
+        return answer;
+    }
+    match request {
         "settings" => {
             lumi::close_window(PANEL)?;
             lumi::open_settings()?;
@@ -555,6 +578,9 @@ impl lumi::Guest for MicMute {
         match window.as_str() {
             PANEL => panel_pressed(&request),
             CARD => card_asked(&request),
+            welcome::WELCOME => microphones_asked(&request)
+                .or_else(|| welcome::on_page(&request))
+                .unwrap_or_else(|| Err(format!("Mic Mute's Welcome has no {request}"))),
             _ => match menu::pressed(&window, &request).as_deref() {
                 Some(TOGGLE_ROW) => toggle().map(|()| String::new()),
                 _ => Err(format!("Mic Mute has no {window} window")),
@@ -564,17 +590,20 @@ impl lumi::Guest for MicMute {
 
     fn on_lifecycle(event: lumi::Lifecycle) -> Result<(), String> {
         match event {
-            // Its row belongs in its own icon's menu, not in Lumi's too.
+            // Its row belongs in its own icon's menu, not in Lumi's too. The
+            // Welcome after: an icon Lumi refused is no reason to keep the
+            // tour closed, and the error is answered once it is up — for
+            // Lumi's log.
             lumi::Lifecycle::Installed => {
-                menu::set_shown(false)?;
-                draw(false)?;
-                dress()
+                let drawn = menu::set_shown(false).and_then(|()| draw(false)).and_then(|()| dress());
+                welcome::on_install()?;
+                drawn
             }
             // A talk an older version began has no up coming to this one.
-            lumi::Lifecycle::Updated(_) => {
-                set_talking(None)?;
-                draw(wanted()?)?;
-                dress()
+            lumi::Lifecycle::Updated(from) => {
+                let drawn = set_talking(None).and_then(|()| wanted()).and_then(draw).and_then(|()| dress());
+                welcome::on_update(&from)?;
+                drawn
             }
             // Lumi lets go of every hold of a removed extension's anyway;
             // this only says so first.
@@ -585,7 +614,7 @@ impl lumi::Guest for MicMute {
     fn on_event(name: String, payload: String) -> Result<(), String> {
         let Some(devices) = audio_devices::changed(&name, &payload) else { return Ok(()) };
         // A microphone came, went or changed: an open panel shows it.
-        tell_panel()?;
+        tell_pages()?;
         // A talk open on purpose is not a microphone somebody unmuted.
         if !wanted()? || talking()?.is_some() {
             return Ok(());

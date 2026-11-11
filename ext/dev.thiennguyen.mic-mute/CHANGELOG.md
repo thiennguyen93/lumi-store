@@ -4,6 +4,7 @@
 
 ### Added
 
+- **A welcome tour** when you install Mic Mute, or update from an earlier version: the key — tried right there, tapped or held, with your own microphones — the menu bar icon and its panel, and what shows while you talk. Lumi's About page for Mic Mute opens it again.
 - **A panel from the menu bar icon.** A click opens a round button that mutes or unmutes every microphone, each microphone with what it is now — one Mic Mute can't mute, such as an iPhone, saying so; the one your Mac is using marked, and a click on another making it the one your Mac uses, as in Sound settings — and Settings. A right-click still switches it without opening anything.
 - **The menu bar icon in colour**: a red slash while your microphones are muted, an orange dot while they are on, and orange bars moving while you talk.
 - **A card at the top right while you hold ⌥⌘M**, from the moment it is a hold rather than a tap, so a tap never flashes it: orange while you talk, and red if your Mac stops listening to the key before you let go — a password field taking the keyboard, say — since your microphones are muted again while you may still be talking. A tap of ⌥⌘M, a right-click or the menu's row says **Muted** or **Unmuted** on the same card; with the glow or the icon alone, Lumi's alert says it as before.

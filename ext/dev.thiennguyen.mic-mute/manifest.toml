@@ -119,6 +119,25 @@ capturable = false
 keep-alive = true
 preload = true
 
+# The Welcome tour (welcome.html, src/welcome.rs): opened on install, and on
+# an update from a version before 0.3.0 (the owner, 2026-11-11), which says
+# what is new first. What Mic Mute does; the key, tapped or held, tried for
+# real on its stage and recorded again there as on the Settings tab; the
+# menu bar icon and the panel hanging from it; and what shows while
+# talking. The other first-party tours' shape — a stage acting each step
+# out on top, the words below, a finish of its own. Laid out for this size
+# and no other, so it does not resize; the height holds macOS's title bar
+# too (32 points), so the page itself is 520 high. Lumi's About page opens
+# it again, as any window.
+[[window]]
+name = "welcome"
+title = "Welcome to Mic Mute"
+path = "welcome.html"
+width = 600
+height = 552
+resizable = false
+maximizable = false
+
 # What shows while ⌥⌘M is held, besides the icon moving: a card, a glow
 # round the screen, or the icon alone. All three are variants the owner
 # picked (design review, 2026-11-10), so the choice is the person's.
