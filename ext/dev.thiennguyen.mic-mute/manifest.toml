@@ -10,6 +10,12 @@ description = "Mute every microphone on your Mac with one key, and keep it muted
 author = "Thien Nguyen"
 summary = "Press ⌥⌘M to mute every microphone on your Mac at once — built-in, USB and Bluetooth — and a microphone you plug in while muted is muted too. Hold ⌥⌘M to talk, or tap it to unmute and each one is back as it was. The menu bar icon says which it is."
 homepage = "https://lumikeys.app/extensions/dev.thiennguyen.mic-mute/"
+# The store's pictures, 1280 × 800: promo pages drawn round the extension's
+# own pages (scripts/preview/promo/dev.thiennguyen.mic-mute.json, its scenes
+# in scripts/preview/shots/ — README: Store pictures). Each on a Mac in the
+# middle of a call: the panel under the icon, the Muted card after a tap,
+# the Talking card while ⌥⌘M is held, and the glow round the screen (dark).
+screenshots = ["shots/1-panel.png", "shots/2-tap.png", "shots/3-push-to-talk.png", "shots/4-screen-glow.png"]
 # 1.79.0: `hold = true`, ⌥⌘M heard as it is let go (push-to-talk) — an older
 # Lumi would unmute on the press and never hear the release — and the icon
 # drawn in colour and the glow round the screen (`kind = "overlay"`). 1.77.0

@@ -1,0 +1,65 @@
+{
+  "color": "#f43f5e",
+  "shots": [
+    {
+      "headline": "Mute every microphone at once",
+      "sub": "Press ⌥⌘M in any app, or click the menu bar icon.",
+      "frame": "panel",
+      "transparent": true,
+      "width": 300,
+      "height": 260,
+      "page": "panel.html",
+      "theme": "light",
+      "inset": "0",
+      "callout": {
+        "title": "Mic Mute",
+        "label": "Each microphone, as it is now",
+        "body": "<b>Click&nbsp;one</b> to make it the one your Mac uses. An iPhone can't be muted, so it says so.",
+        "side": "left"
+      }
+    },
+    {
+      "headline": "Tap ⌥⌘M to switch",
+      "sub": "A card at the top right says Muted or Unmuted, then puts itself away.",
+      "frame": "panel",
+      "transparent": true,
+      "width": 170,
+      "height": 48,
+      "page": "card.html",
+      "theme": "light",
+      "inset": "0",
+      "callout": {
+        "title": "Mic Mute",
+        "label": "It stays muted",
+        "body": "A microphone you plug in while muted is <b>muted</b> the moment it arrives."
+      }
+    },
+    {
+      "headline": "Hold ⌥⌘M to talk",
+      "sub": "Your microphones are on while you hold it, and muted the moment you let go.",
+      "frame": "panel",
+      "transparent": true,
+      "width": 170,
+      "height": 48,
+      "page": "card.html",
+      "theme": "light",
+      "inset": "0",
+      "callout": {
+        "title": "Mic Mute",
+        "label": "If your Mac stops hearing the key",
+        "body": "The card turns <b>red</b>: your microphones are muted again."
+      }
+    },
+    {
+      "headline": "Or a glow round the screen",
+      "sub": "Clicks go through it, and a screen share never shows it.",
+      "frame": "panel",
+      "transparent": true,
+      "width": 960,
+      "height": 560,
+      "page": "glow.html",
+      "theme": "dark",
+      "inset": "0"
+    }
+  ]
+}

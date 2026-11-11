@@ -1,0 +1,13 @@
+{
+  "state": {
+    "v": 1,
+    "muted": true,
+    "talking": false,
+    "devices": [
+      { "id": "BuiltInMicrophoneDevice", "name": "MacBook Pro Microphone", "kind": "built-in", "state": "muted", "default": true, "choosable": true },
+      { "id": "usb-headset", "name": "USB Headset", "kind": "usb", "state": "muted", "default": false, "choosable": true },
+      { "id": "airpods-pro", "name": "AirPods Pro", "kind": "bluetooth", "state": "muted", "default": false, "choosable": true },
+      { "id": "iphone", "name": "iPhone Microphone", "kind": "phone", "state": "cannot", "default": false, "choosable": true }
+    ]
+  }
+}
