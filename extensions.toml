@@ -158,3 +158,13 @@ subdir = "."
 category = "Utilities"
 private = true
 follow = true
+
+# First-party and in-tree, for the sample's reason. Its pages under ui/ are
+# plain HTML, so nothing is built beside the component. Needs Lumi 1.79.0
+# (a command held to talk, an item drawn in colour, an overlay round the
+# screen).
+[[extension]]
+id = "dev.thiennguyen.mic-mute"
+path = "ext/dev.thiennguyen.mic-mute"
+subdir = "."
+category = "Utilities"

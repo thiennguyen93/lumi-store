@@ -16,6 +16,9 @@ homepage = "https://lumikeys.app/extensions/dev.thiennguyen.mic-mute/"
 # middle of a call: the panel under the icon, the Muted card after a tap,
 # the Talking card while ⌥⌘M is held, and the glow round the screen (dark).
 screenshots = ["shots/1-panel.png", "shots/2-tap.png", "shots/3-push-to-talk.png", "shots/4-screen-glow.png"]
+# The demo video, ahead of the pictures. Store-only too: the store publishes
+# YouTube's picture of it beside the package.
+video = "https://youtu.be/6UuLgj8nhFQ"
 # 1.79.0: `hold = true`, ⌥⌘M heard as it is let go (push-to-talk) — an older
 # Lumi would unmute on the press and never hear the release — and the icon
 # drawn in colour and the glow round the screen (`kind = "overlay"`). 1.77.0
