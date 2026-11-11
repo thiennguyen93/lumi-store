@@ -1,4 +1,26 @@
 {
+  "0.2.32": {
+    "notesSha256": "95b1d80c54185bd1ed9696156c3cfacc41db34d01c773dab622d606d2a29682a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Improved menu readability and visual clarity",
+          "items": [
+            "The active tab in menus now has a stronger blue tint and darker text in light mode",
+            "Menu text is now easier to read with better contrast throughout"
+          ]
+        },
+        "vi": {
+          "headline": "Cải thiện khả năng đọc và hiển thị menu",
+          "items": [
+            "Tab đang hoạt động trong menu giờ có màu xanh đậm hơn và chữ rõ hơn ở chế độ sáng",
+            "Chữ trong menu giờ dễ đọc hơn với độ tương phản tốt hơn"
+          ]
+        }
+      }
+    }
+  },
   "0.2.31": {
     "notesSha256": "0b20d2db5326190adfe4736b4e1f91e8c81d98394575465a8d46855eb14bdb94",
     "summary": {
@@ -440,28 +462,6 @@
             "Ba thanh trên viên thuốc giờ theo nhạc từ trang web thay vì nhảy ngẫu nhiên",
             "Tìm công tắc hiển thị nhạc trong Cài đặt, mặc định bật",
             "Yêu cầu Lumi 1.73.0 trở lên"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.12": {
-    "notesSha256": "1989c4daa240013382bfe441731fd341b7f85857b7e6cb03f1249f435a6b76d1",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "About screen improvements",
-          "items": [
-            "About screen now shows what Floating Browser is and lists recent changes",
-            "About screen no longer stays in front when you bring a page forward"
-          ]
-        },
-        "vi": {
-          "headline": "Cải thiện màn hình Giới thiệu",
-          "items": [
-            "Màn hình Giới thiệu giờ hiển thị Floating Browser là gì và liệt kê các thay đổi gần đây",
-            "Màn hình Giới thiệu không còn nằm phía trước khi bạn đưa trang web lên"
           ]
         }
       }
