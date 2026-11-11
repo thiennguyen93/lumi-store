@@ -1228,13 +1228,17 @@ pub fn set_anchor(name: &str, at: &str, side: &str) -> Result<(), String> {
     lumi::ext::ui::set_anchor(name, at, side)
 }
 
-/// Choose light or dark for one of your windows — "light", "dark" or
-/// "system" — for a theme setting. A panel's glass, a plain window's title
-/// bar and the page's `prefers-color-scheme` follow it together. Applies at
-/// once if the window is open, a window not open yet opens in it, and Lumi
-/// keeps it across a restart and an update (Lumi 1.61.0), so set it when the
-/// setting changes, not before every showing. A plain window needs Lumi
-/// 1.70.0 — an older Lumi refuses it as not a panel — so say so with
+/// Choose light or dark for one of your windows — "light", "dark",
+/// "system" or "macos" — for a theme setting. "system" is Lumi's own look,
+/// which is macOS's unless the person set Lumi's Appearance to Light or
+/// Dark; "macos" is macOS's whatever that says, followed as macOS changes,
+/// for a window that stands beside the menu bar or other apps (Lumi 1.79.0).
+/// A panel's glass, a plain window's title bar and the page's
+/// `prefers-color-scheme` follow it together. Applies at once if the window
+/// is open, a window not open yet opens in it, and Lumi keeps it across a
+/// restart and an update (Lumi 1.61.0), so set it when the setting changes,
+/// not before every showing. A plain window needs Lumi 1.70.0 — an older
+/// Lumi refuses it as not a panel — and "macos" Lumi 1.79.0, so say so with
 /// `min-lumi-version` when its look matters.
 pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
     lumi::ext::ui::set_theme(name, theme)
@@ -2200,6 +2204,8 @@ pub mod menu {
 /// use lumi::menu_bar_item::{self, Item};
 ///
 /// menu_bar_item::set(&Item::icon("globe").text("VI").tooltip("Typing in Vietnamese"))?;
+/// // Or in the drawing's own colours (Lumi 1.79.0):
+/// menu_bar_item::set(&Item::icon("icons/live.svg").tooltip("Recording").coloured())?;
 /// ```
 ///
 /// Lumi keeps the last item you set, across restarts and updates, and draws
@@ -2246,8 +2252,9 @@ pub mod menu_bar_item {
         /// An item drawn as an icon, spelled as a `[[command]]` icon is: a
         /// Lucide icon's name from Lumi's set (`"globe"`), or an `.svg`
         /// under your `ui/` of at most 64 KiB. Drawn 18 points tall in the
-        /// menu bar's own ink, whatever colours the file has, and no wider
-        /// than twice its height.
+        /// menu bar's own ink, whatever colours the file has — unless you
+        /// ask for its colours with [`Item::coloured`] — and no wider than
+        /// twice its height.
         pub fn icon(icon: &str) -> Self {
             Item {
                 icon: Some(icon.to_string()),
@@ -2290,6 +2297,88 @@ pub mod menu_bar_item {
             });
             self
         }
+
+        /// Draw the item in its files' own colours rather than in the menu
+        /// bar's ink — a state worth a colour, such as a muted microphone's
+        /// red or a recording's dot. `currentColor` in a file is still the
+        /// bar's ink, in light and dark alike, so a file drawn in it alone
+        /// looks as [`Item::icon`] draws it; a file `icons/on.svg` with an
+        /// `icons/on.dark.svg` beside it draws that one under a dark bar; a
+        /// Lucide name is all `currentColor`. It covers every frame of
+        /// [`Item::frames`] too. Lumi draws it again whenever the bar's look
+        /// changes. Never let a colour alone say the state: say it in the
+        /// drawing's shape and in [`Item::tooltip`] as well. Needs Lumi
+        /// 1.79.0 — an extension that never calls this does not.
+        pub fn coloured(self) -> Coloured {
+            Coloured(self)
+        }
+    }
+
+    /// An [`Item`] drawn in its files' own colours: [`Item::coloured`].
+    /// [`set`] takes it as it takes an item.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Coloured(pub Item);
+
+    impl Coloured {
+        /// [`Item::text`], after [`Item::coloured`].
+        pub fn text(self, text: &str) -> Self {
+            Coloured(self.0.text(text))
+        }
+
+        /// [`Item::tooltip`], after [`Item::coloured`].
+        pub fn tooltip(self, tooltip: &str) -> Self {
+            Coloured(self.0.tooltip(tooltip))
+        }
+
+        /// [`Item::frames`], after [`Item::coloured`].
+        pub fn frames(self, icons: &[&str], per_second: u8) -> Self {
+            Coloured(self.0.frames(icons, per_second))
+        }
+    }
+
+    /// What [`set`] draws: an [`Item`] in the menu bar's ink, or a
+    /// [`Coloured`] one. Each is sent by a path of its own, so an extension
+    /// that never draws in colour never names the call that does, and runs
+    /// on a Lumi older than it.
+    pub trait Drawn: sealed::Sealed {
+        #[doc(hidden)]
+        fn draw(&self) -> Result<(), String>;
+    }
+
+    mod sealed {
+        pub trait Sealed {}
+        impl Sealed for super::Item {}
+        impl Sealed for super::Coloured {}
+    }
+
+    fn still(item: &Item) -> wit::Item {
+        wit::Item {
+            icon: item.icon.clone(),
+            text: item.text.clone(),
+            tooltip: item.tooltip.clone(),
+        }
+    }
+
+    fn frames_of(item: &Item) -> Option<wit::Frames> {
+        item.frames.as_ref().map(|frames| wit::Frames {
+            icons: frames.icons.clone(),
+            per_second: frames.per_second,
+        })
+    }
+
+    impl Drawn for Item {
+        fn draw(&self) -> Result<(), String> {
+            match frames_of(self) {
+                Some(frames) => wit::set_animated(&still(self), &frames),
+                None => wit::set(&still(self)),
+            }
+        }
+    }
+
+    impl Drawn for Coloured {
+        fn draw(&self) -> Result<(), String> {
+            wit::set_coloured(&still(&self.0), frames_of(&self.0).as_ref())
+        }
     }
 
     /// Draw your item, or change it. The same item again is no change, so
@@ -2297,23 +2386,11 @@ pub mod menu_bar_item {
     /// changed what it shows.
     ///
     /// An item with [`Item::frames`] plays them (`set-animated`); one
-    /// without stops a loop set before.
-    pub fn set(item: &Item) -> Result<(), String> {
-        let still = wit::Item {
-            icon: item.icon.clone(),
-            text: item.text.clone(),
-            tooltip: item.tooltip.clone(),
-        };
-        match &item.frames {
-            Some(frames) => wit::set_animated(
-                &still,
-                &wit::Frames {
-                    icons: frames.icons.clone(),
-                    per_second: frames.per_second,
-                },
-            ),
-            None => wit::set(&still),
-        }
+    /// without stops a loop set before. A [`Coloured`] item is drawn in its
+    /// files' colours (`set-coloured`); an [`Item`] set after it is drawn in
+    /// the bar's ink again.
+    pub fn set(item: &impl Drawn) -> Result<(), String> {
+        item.draw()
     }
 
     /// Take your item out of the menu bar.
@@ -2920,8 +2997,13 @@ pub mod microphone_use {
 /// with [`changed`]. Re-holding a microphone that has just arrived is what
 /// the event is for.
 ///
-/// Needs the `audio-devices` capability and Lumi 1.77.0; say so with
-/// `min-lumi-version`.
+/// [`set_default`] chooses the Mac's default input or output, as Sound
+/// settings does, from any run but an uninstall's; nothing is kept or put
+/// back after you. [`default_choices`] says which devices macOS will make a
+/// default (Lumi 1.79.0).
+///
+/// Needs the `audio-devices` capability and Lumi 1.77.0 — 1.79.0 for the
+/// default — say so with `min-lumi-version`.
 ///
 /// ```ignore
 /// use lumi::audio_devices::{self, Scope};
@@ -2944,7 +3026,8 @@ pub mod audio_devices {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub enum Scope {
         Input,
-        /// Refused as `unsupported` for now.
+        /// Refused as `unsupported` by [`hold_muted`] for now; taken by
+        /// [`set_default`].
         Output,
     }
 
@@ -3089,11 +3172,29 @@ pub mod audio_devices {
         wit::release(id, scope_of(scope))
     }
 
-    /// The word a refusal from [`hold_muted`] or [`release`] starts with —
-    /// `"not-found"`, `"cannot-mute"`, `"unsupported"`, `"refused"`,
-    /// `"busy"` or `"failed"` — to act on; `None` for any other error.
+    /// The ids of the devices macOS will make the Mac's default for
+    /// `scope` now — the ones a picker offers. A virtual device may be
+    /// listed, and muted, and still never be a default. Needs Lumi 1.79.0.
+    pub fn default_choices(scope: Scope) -> Result<Vec<String>, String> {
+        wit::default_choices(scope_of(scope))
+    }
+
+    /// Make device `id` the Mac's default for `scope`, as Sound settings
+    /// does: the input every app that follows the Mac's choice hears, or
+    /// the output it plays to. A device already the default is left alone.
+    /// From any run, an event's too, but not an uninstall's; nothing is put
+    /// back after you. Refused as `cannot-be-default` for a device
+    /// [`default_choices`] does not offer. Needs Lumi 1.79.0.
+    pub fn set_default(id: &str, scope: Scope) -> Result<(), String> {
+        wit::set_default(id, scope_of(scope))
+    }
+
+    /// The word a refusal from [`hold_muted`], [`release`] or
+    /// [`set_default`] starts with — `"not-found"`, `"cannot-mute"`,
+    /// `"cannot-be-default"`, `"unsupported"`, `"refused"`, `"busy"` or
+    /// `"failed"` — to act on; `None` for any other error.
     pub fn refusal(said: &str) -> Option<&'static str> {
-        ["not-found", "cannot-mute", "unsupported", "refused", "busy", "failed"]
+        ["not-found", "cannot-mute", "cannot-be-default", "unsupported", "refused", "busy", "failed"]
             .into_iter()
             .find(|word| said.strip_prefix(word).is_some_and(|rest| rest.starts_with(':')))
     }
@@ -3158,6 +3259,7 @@ pub mod audio_devices {
             assert!(devices[0].output.is_none());
             assert!(changed("microphone-use", payload).is_none());
             assert_eq!(refusal("cannot-mute: audio-devices.hold-muted refused: …"), Some("cannot-mute"));
+            assert_eq!(refusal("cannot-be-default: audio-devices.set-default refused: …"), Some("cannot-be-default"));
             assert_eq!(refusal("refused: the person unmuted it"), Some("refused"));
             assert_eq!(refusal("it was refused: no"), None);
         }
@@ -3388,17 +3490,33 @@ pub mod offer {
 ///    [`Hold::why`] says why.
 ///
 /// A press with no key to let go of — a menu, a leader menu step, an offer's
-/// button — runs a down and then at once an up whose `why` is
-/// [`Why::Tapped`] and `held_ms` 0. Holding the key's combination ends the
-/// moment any of its modifiers is let go too.
+/// button, a right-click on your menu bar item — runs a down and then at once
+/// an up whose `why` is [`Why::Tapped`] and `held_ms` 0. Its down says so
+/// too: its `why` is [`Why::Tapped`] (Lumi 1.79.0), so draw nothing there
+/// that only a hold shows — it would be on screen for the moment before the
+/// up takes it away. A key's down never has a `why`: nobody knows yet how
+/// long it will be held. Holding the key's combination ends the moment any
+/// of its modifiers is let go too.
+///
+/// **To show a hold only once it is one**, say `held-after-ms = 300` under
+/// the `[[command]]` (100 to 2000): while the key is still down that long
+/// after its down, Lumi runs the command once more between the down and the
+/// up, with [`Phase::Held`] and `held_ms` — never after the up, never for a
+/// press with no key. Draw what a hold shows there, not on the down, and a
+/// tap shows none of it. A command that says nothing is never told.
 ///
 /// Needs Lumi 1.79.0: an older Lumi runs the command once, on the down, so
 /// set `min-lumi-version` to 1.79.0 or later (the store requires it).
 ///
 /// ```ignore
 /// fn run_command(name: String, params: String) -> Result<String, String> {
+///     use lumi::hold::{Phase, Why};
 ///     match lumi::hold::of(&params) {
-///         Some(hold) if hold.phase == lumi::hold::Phase::Down => start_talking(),
+///         // A tap: its up follows at once, and toggles.
+///         Some(hold) if hold.phase == Phase::Down && hold.why == Some(Why::Tapped) => Ok(()),
+///         Some(hold) if hold.phase == Phase::Down => start_talking(),
+///         // With `held-after-ms`: the key is still down, so it is a hold.
+///         Some(hold) if hold.phase == Phase::Held => show_talking(),
 ///         Some(_) => stop_talking(),
 ///         None => toggle(),
 ///     }
@@ -3410,6 +3528,10 @@ pub mod hold {
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub enum Phase {
         Down,
+        /// The key is still down its command's `held-after-ms` after its
+        /// down: told once, between the down and the up, and only to a
+        /// command that asked (Lumi 1.79.0).
+        Held,
         Up,
     }
 
@@ -3439,9 +3561,11 @@ pub mod hold {
         /// The same number on a down and its up.
         pub pair: u64,
         pub phase: Phase,
-        /// How long the key was held, in milliseconds — an up's only.
+        /// How long the key was held, in milliseconds — an up's, and a
+        /// held's (how long it had been down when told).
         pub held_ms: Option<u64>,
-        /// Why the up came — an up's only.
+        /// Why the up came. On a down, only ever [`Why::Tapped`]: a press
+        /// with no key to let go of, whose up follows at once.
         pub why: Option<Why>,
     }
 
@@ -3452,6 +3576,7 @@ pub mod hold {
         let hold = value.get("hold")?;
         let phase = match hold.get("phase")?.as_str()? {
             "down" => Phase::Down,
+            "held" => Phase::Held,
             "up" => Phase::Up,
             _ => return None,
         };
@@ -3481,6 +3606,11 @@ pub mod hold {
             assert_eq!(down, Hold { pair: 7, phase: Phase::Down, held_ms: None, why: None });
             let up = of(r#"{"hold":{"pair":7,"phase":"up","heldMs":1840,"why":"released"}}"#).expect("an up");
             assert_eq!(up, Hold { pair: 7, phase: Phase::Up, held_ms: Some(1840), why: Some(Why::Released) });
+            // A tapped pair's down says it is one.
+            let tapped = of(r#"{"hold":{"pair":8,"phase":"down","why":"tapped"}}"#).expect("a tapped down");
+            assert_eq!(tapped, Hold { pair: 8, phase: Phase::Down, held_ms: None, why: Some(Why::Tapped) });
+            let held = of(r#"{"hold":{"pair":7,"phase":"held","heldMs":300}}"#).expect("a held");
+            assert_eq!(held, Hold { pair: 7, phase: Phase::Held, held_ms: Some(300), why: None });
             assert_eq!(of(r#"{"hold":{"pair":1,"phase":"up","heldMs":0,"why":"newer"}}"#).and_then(|h| h.why), Some(Why::Other));
             assert_eq!(of("{}"), None);
             assert_eq!(of("not json"), None);

@@ -1635,14 +1635,17 @@ interface ui {
     /// position is refused. Added in Lumi 1.47.
     set-anchor: func(name: string, at: string, side: string) -> result<_, string>;
 
-    /// Choose light or dark for one of your windows: "light", "dark", or
-    /// "system" to follow macOS again — for a theme setting. A panel's
-    /// glass, a plain window's title bar and the page's
-    /// `prefers-color-scheme` all follow. Takes effect at once if the window
-    /// is open, and every time it is shown; Lumi keeps the choice across a
-    /// restart and an update (Lumi 1.61), so the first showing after a
-    /// launch is already in it. Added in 0.3 for panels; a plain window
-    /// from Lumi 1.70, which an older Lumi refuses.
+    /// Choose light or dark for one of your windows: "light", "dark",
+    /// "system" for Lumi's own look — macOS's, unless the person set Lumi's
+    /// Appearance to Light or Dark — or "macos" for macOS's whatever Lumi's
+    /// Appearance says, followed as macOS changes (Lumi 1.79), for a window
+    /// that stands beside the menu bar or other apps. A panel's glass, a
+    /// plain window's title bar and the page's `prefers-color-scheme` all
+    /// follow. Takes effect at once if the window is open, and every time it
+    /// is shown; Lumi keeps the choice across a restart and an update (Lumi
+    /// 1.61), so the first showing after a launch is already in it. Added in
+    /// 0.3 for panels; a plain window from Lumi 1.70, which an older Lumi
+    /// refuses, as it refuses "macos" before 1.79.
     set-theme: func(name: string, theme: string) -> result<_, string>;
 
     /// Pin one of your panels, or let it go: a pinned panel stays up while
@@ -2493,6 +2496,15 @@ interface menu-bar-item {
     /// back still after a restart, until you set the loop again. Added to
     /// 0.3 in Lumi 1.65.0 without a new world version.
     set-animated: func(item: item, frames: frames) -> result<_, string>;
+    /// `set`, or `set-animated` with `frames`, drawing every icon in its
+    /// file's own colours rather than in the menu bar's ink: `currentColor`
+    /// is the bar's ink in light and dark alike, and a file `p.svg` with a
+    /// `p.dark.svg` beside it draws that one under a dark bar. A Lucide name
+    /// is all `currentColor`, so it looks as `set` draws it. Lumi draws it
+    /// again whenever the bar's look changes, with nothing asked of you. The
+    /// same item again is no change; `set` or `set-animated` draws it in ink
+    /// again. Added to 0.3 in Lumi 1.79.0 without a new world version.
+    set-coloured: func(item: item, frames: option<frames>) -> result<_, string>;
     /// Take your item out of the menu bar.
     clear: func() -> result<_, string>;
     /// Whether your item shows: one switch, kept by Lumi, that your own
@@ -2957,11 +2969,18 @@ interface feature-flags {
 /// changes, or one of your holds does: `{"v":1, "devices":[…], "at"}`, each
 /// device as `devices` answers it.
 ///
+/// You may also choose the Mac's default input or output, as Sound settings
+/// does (`set-default`, Lumi 1.79): nothing is kept or put back — not when
+/// you are switched off, not when Lumi quits — since the choice is the
+/// person's through you. `default-choices` says which devices macOS will
+/// make a default; another is refused as `cannot-be-default`.
+///
 /// A refusal starts with a word to match on: `not-found:`, `cannot-mute:`,
-/// `unsupported:` (an output, not yet), `refused:`, `busy:` (more than 20
-/// writes in a second), `failed:`. Needs the `audio-devices` capability, and
-/// so does hearing the event. Every call costs budget. Added to 0.3 in Lumi
-/// 1.77.0 without a new world version.
+/// `cannot-be-default:`, `unsupported:` (an output, not yet), `refused:`,
+/// `busy:` (more than 20 writes in a second, holds and defaults together),
+/// `failed:`. Needs the `audio-devices` capability, and so does hearing the
+/// event. Every call costs budget. Added to 0.3 in Lumi 1.77.0 without a new
+/// world version.
 interface audio-devices {
     /// A device's side.
     enum scope {
@@ -3028,6 +3047,20 @@ interface audio-devices {
     /// back as it was: unmuted only if Lumi muted it and it still reads
     /// muted. Letting go of what you do not hold is nothing.
     release: func(id: string, scope: scope) -> result<_, string>;
+
+    /// The ids of the devices macOS will make the Mac's default for `scope`
+    /// now — the ones a picker offers. A virtual device, say, may be listed
+    /// and muted and still never be a default. Added in Lumi 1.79.
+    default-choices: func(scope: scope) -> result<list<string>, string>;
+
+    /// Make device `id` the Mac's default for `scope`: the input every app
+    /// that follows the Mac's choice hears, or the output it plays to. From
+    /// any run, an event's included, but not an uninstall's. A device already
+    /// the default is left alone. Nothing is put back after you; the event
+    /// tells you the default moved, `is-default`. Refused as
+    /// `cannot-be-default` for a device `default-choices` does not offer,
+    /// and as `failed` when macOS did not take it. Added in Lumi 1.79.
+    set-default: func(id: string, scope: scope) -> result<_, string>;
 }
 
 world extension {
