@@ -1,4 +1,34 @@
 {
+  "0.4.0": {
+    "notesSha256": "31ce2181e231bc2a47f9932a218232fbdc076a4554c45993c635495a91f3d47d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Mute when the screen locks",
+          "items": [
+            "Mute every microphone when you lock your Mac or switch users",
+            "Microphones stay muted after you unlock until you press the hotkey",
+            "A card appears when you unlock to tell you microphones are muted",
+            "Turn off the unlock card in settings to rely on the menu bar icon alone",
+            "The setting is off by default",
+            "Requires Lumi 1.81.0"
+          ]
+        },
+        "vi": {
+          "headline": "Tắt tiếng khi khóa màn hình",
+          "items": [
+            "Tắt tiếng mọi micro khi bạn khóa máy Mac hoặc chuyển người dùng",
+            "Micro vẫn tắt tiếng sau khi mở khóa cho đến khi bạn nhấn phím tắt",
+            "Thẻ thông báo xuất hiện khi mở khóa để cho biết micro đang tắt tiếng",
+            "Tắt thẻ thông báo trong cài đặt để chỉ dùng biểu tượng thanh menu",
+            "Tính năng này mặc định tắt",
+            "Yêu cầu Lumi 1.81.0"
+          ]
+        }
+      }
+    }
+  },
   "0.3.0": {
     "notesSha256": "8d8740fa41b53fc79ae39e6563ab58e1901f879871831a0333d9224278ebca00",
     "summary": {
