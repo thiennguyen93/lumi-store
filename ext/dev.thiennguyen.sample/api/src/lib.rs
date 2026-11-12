@@ -59,8 +59,8 @@
 //! `time-zone`, [`text_input`] needs `text-input` — and works only from the
 //! `text-input` run, the one told a key —, [`front_app`] needs
 //! `front-app`, [`microphone_use`] needs `microphone-use` — its `sites`
-//! `microphone-sites` too — [`offer`] needs `offer` and [`audio_devices`]
-//! needs `audio-devices`. `alert`, `settings`, `profiles`, [`storage`],
+//! `microphone-sites` too — [`offer`] needs `offer`, [`audio_devices`]
+//! needs `audio-devices` and [`away`] needs `away`. `alert`, `settings`, `profiles`, [`storage`],
 //! [`owner`], [`hyper_key_enabled`] and [`hold`] (which only reads your params)
 //! cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
@@ -2882,6 +2882,84 @@ pub mod front_app {
         let value: serde_json::Value = serde_json::from_str(payload).ok()?;
         let text = |field: &str| value.get(field).and_then(serde_json::Value::as_str).map(str::to_string);
         Some(App { id: text("app"), name: text("name"), at: value.get("at")?.as_u64()? })
+    }
+}
+
+/// The person stepping away from the Mac and coming back — for an extension
+/// that does something while nobody is at it: mute, pause, keep the time.
+///
+/// Hear it with `events = ["away"]`; needs the `away` capability. Four
+/// reasons are told, each when it begins and when it ends: the screen
+/// locked, the Mac asleep, its screens asleep, another user switched in.
+/// They overlap — a lid closed on a Mac that locks at once is asleep and
+/// locked, and the wake ends the sleep while the lock stands until the
+/// person unlocks — so each is told on its own, and a coming back always
+/// follows its going away. Nothing is told when your extension starts.
+/// Lumi 1.81.0.
+pub mod away {
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a step away or
+    /// back arrives as.
+    pub const EVENT: &str = "away";
+
+    /// Why the person is away, or what they came back from.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub enum Why {
+        /// The screen locked — ⌃⌘Q, Lock Screen, a hot corner, the lock
+        /// after a sleep or a screen saver — and unlocked.
+        Locked,
+        /// The Mac going to sleep, and waking.
+        Sleep,
+        /// The displays going to sleep, and waking, the Mac still awake.
+        ScreensAsleep,
+        /// Another user switched in, and back.
+        SwitchedOut,
+        /// A reason a later Lumi tells, by its word.
+        Other(String),
+    }
+
+    /// One step away or back.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Away {
+        /// `true` as the person goes away, `false` as they come back.
+        pub away: bool,
+        /// Which reason.
+        pub why: Why,
+        /// When, in milliseconds since the Unix epoch.
+        pub at: u64,
+    }
+
+    /// The step, when [`Guest::on_event`](crate::Guest::on_event) was called
+    /// for one.
+    pub fn changed(name: &str, payload: &str) -> Option<Away> {
+        if name != EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        let why = match value.get("why")?.as_str()? {
+            "locked" => Why::Locked,
+            "sleep" => Why::Sleep,
+            "screens-asleep" => Why::ScreensAsleep,
+            "switched-out" => Why::SwitchedOut,
+            other => Why::Other(other.to_string()),
+        };
+        Some(Away { away: value.get("away")?.as_bool()?, why, at: value.get("at")?.as_u64()? })
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn a_step_away_and_back_read_as_told() {
+            let locked = changed(EVENT, r#"{"v":1,"away":true,"why":"locked","at":7}"#).expect("a step");
+            assert_eq!(locked, Away { away: true, why: Why::Locked, at: 7 });
+            let woke = changed(EVENT, r#"{"v":1,"away":false,"why":"sleep","at":8}"#).expect("a step");
+            assert_eq!(woke, Away { away: false, why: Why::Sleep, at: 8 });
+            let later = changed(EVENT, r#"{"v":1,"away":true,"why":"lid","at":9}"#).expect("a step");
+            assert_eq!(later.why, Why::Other("lid".to_string()));
+            assert!(changed("front-app", r#"{"v":1,"away":true,"why":"locked","at":7}"#).is_none());
+            assert!(changed(EVENT, r#"{"v":1,"why":"locked","at":7}"#).is_none(), "no way told");
+        }
     }
 }
 
