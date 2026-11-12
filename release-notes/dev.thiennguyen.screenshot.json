@@ -366,5 +366,49 @@
         }
       }
     }
+  },
+  "0.2.0": {
+    "notesSha256": "0ff6a8daedc6e664e6cb10a2cac172764a9a519096d7052f860d1f3160c7413b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Mark up your screenshots with the new built-in editor",
+          "items": [
+            "You can now crop, draw arrows and boxes, highlight, pixelate, add text and numbered steps",
+            "The editor includes undo, zoom, and lets you copy or save the result",
+            "The toolbar sits in the title bar to save space"
+          ]
+        },
+        "vi": {
+          "headline": "Chỉnh sửa ảnh chụp màn hình với trình soạn thảo tích hợp mới",
+          "items": [
+            "Giờ bạn có thể cắt ảnh, vẽ mũi tên và hộp, làm nổi bật, làm mờ, thêm chữ và đánh số bước",
+            "Trình soạn thảo có hoàn tác, phóng to, và cho phép sao chép hoặc lưu kết quả",
+            "Thanh công cụ nằm trên thanh tiêu đề để tiết kiệm không gian"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "52b7f8b7ed4bc061409782b0f065323ebbe341c8d42c3afbc9a1d896057ac4c9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "New command to open the editor window",
+          "items": [
+            "Added a command to open the editor window"
+          ]
+        },
+        "vi": {
+          "headline": "Lệnh mới để mở cửa sổ chỉnh sửa",
+          "items": [
+            "Thêm lệnh để mở cửa sổ chỉnh sửa"
+          ]
+        }
+      }
+    }
   }
 }
