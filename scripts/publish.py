@@ -162,6 +162,9 @@ CAPABILITIES = {
     # devices, and holding one's input muted until the extension lets go,
     # Lumi putting it back).
     "audio-devices",
+    # Lumi 1.81: the `away` event (the screen locked, the Mac or its screens
+    # asleep, another user switched in, and each way back).
+    "away",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -211,6 +214,8 @@ EVENTS = {
     "sound-ended": "sound",
     # Lumi 1.77: the Mac's sound devices changing, the whole set each time.
     "audio-devices": "audio-devices",
+    # Lumi 1.81: the person stepping away from the Mac, and back.
+    "away": "away",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -392,6 +397,11 @@ HOLD_SINCE = (1, 79, 0)
 # at install: a manifest declaring one names this floor.
 OVERLAY_SINCE = (1, 79, 0)
 
+# The Lumi that first tells the `away` event and knows its capability. An
+# older Lumi refuses both words, so the package would be offered to it and
+# fail at install: a manifest naming either names this floor.
+AWAY_SINCE = (1, 81, 0)
+
 # `manifest.rs`'s `overlay_refusal`, in its order: every key an overlay does
 # not have — where Lumi places it, what takes the keyboard or the pointer,
 # its chrome and size, a place the person left it, and `listed` — with how
@@ -571,6 +581,14 @@ def check_manifest(entry_id: str, manifest: dict):
             fail(entry_id, f"unknown event {name!r} — Lumi sends {sorted(EVENTS)}")
         if EVENTS[name] is not None and EVENTS[name] not in ext.get("capabilities", []):
             fail(entry_id, f"hearing {name!r} needs the {EVENTS[name]} capability — add it to capabilities")
+    if "away" in ext.get("events", []) or "away" in declared:
+        floor = ext.get("min-lumi-version") or ext.get("min_lumi_version") or ""
+        if version_tuple(floor) < AWAY_SINCE:
+            fail(
+                entry_id,
+                'the away event and capability are told from Lumi 1.81.0 — an older Lumi refuses the manifest; '
+                'set min-lumi-version to "1.81.0" or later',
+            )
     if "clipboard-ocr" in ext.get("events", []) and "clipboard" not in ext.get("events", []):
         fail(entry_id, 'hearing "clipboard-ocr" needs "clipboard" too — the text names a copy the extension has to have heard')
     # `manifest.rs`'s `preload-default`: where the preload switch starts, so

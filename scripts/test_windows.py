@@ -276,6 +276,12 @@ class TextInput(unittest.TestCase):
         self.assertIn("is not true or false", self.refusal('"audio-devices"', 'audio-devices-row = "no"'))
         self.assertIn("needs the audio-devices capability", self.refusal('"menu"', 'events = ["audio-devices"]'))
 
+    def test_away_needs_its_word_and_its_floor(self):
+        self.assertIn("needs the away capability", self.refusal('"menu"', 'events = ["away"]'))
+        self.assertIn('set min-lumi-version to "1.81.0"', self.refusal('"away"', 'events = ["away"]'))
+        self.assertIn('set min-lumi-version to "1.81.0"', self.refusal('"away"'))
+        publish.check_manifest("dev.you.thing", self.manifest('"away"', 'min-lumi-version = "1.81.0"\nevents = ["away"]'))
+
     def test_the_menu_bar_item_heading_needs_the_item(self):
         publish.check_manifest("dev.you.thing", self.manifest('"menu-bar-item"', "menu-bar-item-heading = false"))
         self.assertIn("needs the menu-bar-item capability", self.refusal('"menu"', "menu-bar-item-heading = false"))
