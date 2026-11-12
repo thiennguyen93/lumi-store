@@ -75,6 +75,9 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
 
 .card { border: 1px solid var(--border); border-radius: 9px; background: var(--card); padding: 4px 14px; }
 .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; }
+.row + .row { border-top: 1px solid var(--border); }
+/* A row that means nothing while the one above it is off. */
+.row.idle { opacity: 0.5; }
 /* lumi.css draws a `label` small and dim, as a field's caption; this one is
    a whole row's words. */
 .text { flex: 1; min-width: 0; display: flex; flex-direction: column; margin: 0; font-size: 13px; opacity: 1; cursor: default; }

@@ -3,8 +3,9 @@
      the extension's page. One page for everything Mic Mute asks: the key
      that mutes and unmutes — recorded here, so Lumi's own Shortcuts tab is
      hidden (`[tabs.shortcuts] hidden = true`) — what shows while the key is
-     held, drawn as a picture of each, and the virtual microphones. The two
-     settings are still the manifest's `[[settings]]`, saved over the bridge;
+     held, drawn as a picture of each, the virtual microphones, and muting when
+     the screen locks. The settings are still the manifest's `[[settings]]`,
+     saved over the bridge;
      the key is the `[[shortcut]]` Lumi keeps, written with
      `PUT /__lumi__/shortcuts`. settings.js does all of it. -->
 <html lang="en">
@@ -48,6 +49,19 @@
             <span class="sub">Such as Microsoft Teams Audio. Left off, a meeting app's own sound keeps working while you share your screen.</span>
           </label>
           <button type="button" class="switch" id="virtual" role="switch" aria-checked="false"></button>
+        </div>
+        <div class="row">
+          <label class="text" for="locked">
+            <span>Mute when the screen locks</span>
+            <span class="sub">They stay muted after you unlock, until you press the key.</span>
+          </label>
+          <button type="button" class="switch" id="locked" role="switch" aria-checked="false"></button>
+        </div>
+        <div class="row" id="locked-card-row">
+          <label class="text" for="locked-card">
+            <span>Show a card when you unlock</span>
+          </label>
+          <button type="button" class="switch" id="locked-card" role="switch" aria-checked="true"></button>
         </div>
       </div>
     </section>

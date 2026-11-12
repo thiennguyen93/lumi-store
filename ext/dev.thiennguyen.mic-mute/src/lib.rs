@@ -55,12 +55,24 @@
 //! **A Welcome tour opens on install** (0.3.0, [`welcome`]), and on an
 //! update from before 0.3.0. Its stage shows the person's own microphones
 //! and moves with the real key: it is told what the panel is told.
+//!
+//! **Locking the screen can mute them** (0.4.0, the `mute-when-locked`
+//! setting, off by default; Lumi's `away` event, 1.81.0). At the lock, every
+//! microphone that is on is muted, and they **stay muted** after the unlock
+//! — the person taps the key to turn them back on (the owner, 2026-11-12).
+//! The unlock says so on the card at the top right ([`LOCKED`], drawn by an
+//! overlay: the unlock is an event, and an event's run may open an overlay
+//! but never a panel) unless `locked-card` is off. Another user switched in
+//! counts as a lock (the owner, 2026-11-12): for the person it is leaving the
+//! Mac, whether or not macOS also calls it one. The Mac or its screens
+//! asleep are other reasons Lumi tells, and this leaves them alone — a lock
+//! that follows them is told as a lock.
 
 mod welcome;
 
 use lumi::audio_devices::{self, Device, Scope, Transport};
 use lumi::hold::{self, Phase, Why};
-use lumi::{menu, menu_bar_item, storage};
+use lumi::{away, menu, menu_bar_item, storage};
 use lumi_extension_api as lumi;
 use serde_json::json;
 
@@ -91,6 +103,25 @@ const CARD: &str = "card";
 /// up — every down gets its up from Lumi, a lost one included, so it never
 /// stays.
 const GLOW: &str = "glow";
+
+/// The card at the unlock (`[[window]] locked`, an overlay), when the lock
+/// muted the microphones.
+const LOCKED: &str = "locked";
+
+/// The storage key for a lock that muted the microphones, `"1"` until the
+/// unlock reads it — or until any press of the person's, which speaks for
+/// itself and leaves nothing for the unlock to say.
+const LOCK_MUTED: &str = "lock-muted";
+
+/// The storage key for the reasons that count as the screen locked
+/// ([`locks`]) standing now, comma-separated: the first to go away mutes,
+/// and the last to come back is the unlock. Two at once is a switch of user
+/// that macOS also calls a lock, whose two ways back may come in either
+/// order — the card waits for the second, or it would open under a lock
+/// screen still up. A press clears it ([`forget_lock`]): the person is at
+/// the Mac, so nothing stands, and a way back Lumi never told — Lumi
+/// restarted while locked — cannot keep it from emptying.
+const AWAY: &str = "away";
 
 /// The storage key for what the card says now — the very post it was sent,
 /// `{"v": 1, "state"}` with `state` `"talking"`, `"talking-on"` (a talk begun
@@ -165,6 +196,90 @@ fn talking_as(pair: u64) -> Result<Option<Talk>, String> {
 /// Whether the person's setting mutes virtual microphones too.
 fn virtual_too() -> bool {
     lumi::settings().get("virtual").and_then(|value| value.as_str()) == Some("true")
+}
+
+/// Whether the person's setting mutes every microphone when the screen
+/// locks. Off unless it says so.
+fn mute_when_locked() -> bool {
+    lumi::settings().get("mute-when-locked").and_then(|value| value.as_str()) == Some("true")
+}
+
+/// Whether the unlock says the lock muted them, on the card. On unless the
+/// setting says otherwise.
+fn locked_card() -> bool {
+    lumi::settings().get("locked-card").and_then(|value| value.as_str()) != Some("false")
+}
+
+/// A press of the person's: whatever the lock did, they have moved on from
+/// it, so the unlock says nothing — and they are at the Mac, so no lock
+/// stands.
+fn forget_lock() -> Result<(), String> {
+    storage::delete(LOCK_MUTED)?;
+    storage::delete(AWAY)
+}
+
+/// The reason's word, when Mic Mute counts it as the screen locked: the
+/// lock itself, and another user switched in.
+fn locks(why: &away::Why) -> Option<&'static str> {
+    match why {
+        away::Why::Locked => Some("locked"),
+        away::Why::SwitchedOut => Some("switched-out"),
+        _ => None,
+    }
+}
+
+/// The reasons that count as locked standing now, as [`AWAY`] keeps them.
+fn standing() -> Result<Vec<String>, String> {
+    Ok(storage::get(AWAY)?
+        .map(|entry| entry.value.split(',').filter(|why| !why.is_empty()).map(str::to_string).collect())
+        .unwrap_or_default())
+}
+
+/// What a step does to the locked state: the screen now locked, unlocked,
+/// or neither.
+#[derive(Debug, PartialEq, Eq)]
+enum Turned {
+    Locked,
+    Unlocked,
+    Neither,
+}
+
+/// `why` going away (`gone`) or coming back, over the reasons standing:
+/// the reasons after it, and whether that locked or unlocked the screen —
+/// locked by the first to go, unlocked by the last to come back. Pure, for
+/// the tests.
+fn step(mut reasons: Vec<String>, why: &str, gone: bool) -> (Vec<String>, Turned) {
+    let was_locked = !reasons.is_empty();
+    if gone {
+        if !reasons.iter().any(|each| each == why) {
+            reasons.push(why.to_string());
+        }
+    } else {
+        reasons.retain(|each| each != why);
+    }
+    let turned = match (was_locked, reasons.is_empty()) {
+        (false, false) => Turned::Locked,
+        (true, true) => Turned::Unlocked,
+        _ => Turned::Neither,
+    };
+    (reasons, turned)
+}
+
+/// A step away or back of a reason that counts as locked: the set kept, and
+/// the lock or the unlock run when it turns ([`step`]).
+fn stepped(why: &str, gone: bool) -> Result<(), String> {
+    let (reasons, turned) = step(standing()?, why, gone);
+    if reasons.is_empty() {
+        storage::delete(AWAY)?;
+    } else {
+        let rev = storage::get(AWAY)?.map(|entry| entry.rev);
+        storage::put(AWAY, &reasons.join(","), rev).map_err(storage::PutError::into_message)?;
+    }
+    match turned {
+        Turned::Locked => screen_locked(),
+        Turned::Unlocked => screen_unlocked(),
+        Turned::Neither => Ok(()),
+    }
 }
 
 /// What shows while talking besides the item, as the person's
@@ -299,7 +414,7 @@ fn card(says: &str) -> Result<(), String> {
 /// The icon, its tooltip and its menu's row, for `muted` — and the panel,
 /// told.
 ///
-/// The panel and the card in macOS's light or dark rather than Lumi's
+/// The panel and both cards in macOS's light or dark rather than Lumi's
 /// (`set_theme`'s `"macos"`, Lumi 1.79.0): both stand by the menu bar,
 /// which is drawn in macOS's look whatever Lumi's own Appearance says, so a
 /// Lumi set to Dark on a light Mac put a dark panel under a light bar. Lumi
@@ -308,7 +423,8 @@ fn card(says: &str) -> Result<(), String> {
 /// edge and nothing a look could put on the wrong ground.
 fn dress() -> Result<(), String> {
     lumi::set_theme(PANEL, "macos")?;
-    lumi::set_theme(CARD, "macos")
+    lumi::set_theme(CARD, "macos")?;
+    lumi::set_theme(LOCKED, "macos")
 }
 
 /// The icon is drawn in colour (0.3.0, `Item::coloured`, Lumi 1.79.0): the
@@ -354,6 +470,7 @@ fn draw_talking() -> Result<(), String> {
 /// beside this run and reads [`MUTED`] to decide whether to hold — written
 /// last, a release's own event read "still muted" and held everything again.
 fn switch(say: bool) -> Result<(), String> {
+    forget_lock()?;
     let on_card = while_talking() == WhileTalking::Card;
     if wanted()? {
         set_wanted(false)?;
@@ -402,6 +519,7 @@ fn toggle() -> Result<(), String> {
 /// here (the icon, the menu, the panel told) made the down take up to
 /// 210 ms — past the 200 ms the held is due at (measured 2026-11-11).
 fn key_down(pair: u64) -> Result<(), String> {
+    forget_lock()?;
     if !wanted()? {
         return set_talking(Some(Talk { pair, began_on: true }));
     }
@@ -488,6 +606,61 @@ fn key_up(pair: u64, held_ms: u64, why: Option<Why>) -> Result<(), String> {
         // Muted before and muted again: back where the person was.
         (false, false, _) => lumi::close_window(CARD),
     }
+}
+
+/// The screen locked — `away` locked or switched out, the first of them
+/// ([`stepped`]) — with "Mute when the screen locks" on: every microphone that is on is muted, and the unlock is left
+/// a note to say so. On means `muted` off, or a talk under way — one begun
+/// muted has opened them though `muted` still says muted. Already muted, it
+/// changes nothing and leaves no note.
+///
+/// A talk is muted here and left to end at its own up, which Lumi sends for
+/// the lock as `why: "away"` ([`key_up`]): that up is what closes the glow
+/// and the card. Should that up land first, the talk is already muted when
+/// this runs, so it leaves no note and the unlock says nothing — muted
+/// quietly at the end of a talk, as a talk Lumi ends always was.
+///
+/// `muted` is written first and the devices moved after, [`switch`]'s rule:
+/// every hold tells an `audio-devices` event that reads it.
+fn screen_locked() -> Result<(), String> {
+    if !mute_when_locked() {
+        return Ok(());
+    }
+    let talk = talking()?;
+    let was = wanted()?;
+    if was && talk.is_none() {
+        return Ok(());
+    }
+    storage::put(LOCK_MUTED, "1", storage::get(LOCK_MUTED)?.map(|entry| entry.rev))
+        .map_err(storage::PutError::into_message)?;
+    set_wanted(true)?;
+    if let Err(said) = hold_all(&audio_devices::devices()?) {
+        // Nothing to say at the unlock about a mute that did not take.
+        set_wanted(was)?;
+        storage::delete(LOCK_MUTED)?;
+        return Err(said);
+    }
+    match talk {
+        Some(_) => Ok(()),
+        None => draw(true),
+    }
+}
+
+/// The screen unlocked — the last of the reasons that count as locked come
+/// back ([`stepped`]): nothing moves — the microphones stay muted until
+/// the person taps the key (the owner, 2026-11-12) — and, if the lock muted
+/// them and nothing has been pressed since, the card says so unless
+/// "Show a card when you unlock" is off. The note goes either way, so a lock
+/// with the setting switched off since is not spoken for at a later unlock.
+fn screen_unlocked() -> Result<(), String> {
+    if storage::get(LOCK_MUTED)?.is_none() {
+        return Ok(());
+    }
+    storage::delete(LOCK_MUTED)?;
+    if locked_card() && wanted()? {
+        lumi::open_window(LOCKED)?;
+    }
+    Ok(())
 }
 
 /// What the panel and the Welcome tour's stage both ask, each answered with
@@ -612,6 +785,15 @@ impl lumi::Guest for MicMute {
     }
 
     fn on_event(name: String, payload: String) -> Result<(), String> {
+        // The screen locking and unlocking, another user switched in
+        // counting as a lock. The Mac or its screens asleep are told too,
+        // and left alone: the setting is about the lock.
+        if let Some(step) = away::changed(&name, &payload) {
+            return match locks(&step.why) {
+                Some(why) => stepped(why, step.away),
+                None => Ok(()),
+            };
+        }
         let Some(devices) = audio_devices::changed(&name, &payload) else { return Ok(()) };
         // A microphone came, went or changed: an open panel shows it.
         tell_pages()?;
@@ -631,3 +813,47 @@ impl lumi::Guest for MicMute {
 }
 
 lumi::register!(MicMute);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn walk(steps: &[(&str, bool)]) -> Vec<Turned> {
+        let mut reasons = Vec::new();
+        steps
+            .iter()
+            .map(|&(why, gone)| {
+                let (after, turned) = step(std::mem::take(&mut reasons), why, gone);
+                reasons = after;
+                turned
+            })
+            .collect()
+    }
+
+    /// A lock alone: locked at the lock, unlocked at its way back.
+    #[test]
+    fn a_lock_locks_and_its_way_back_unlocks() {
+        assert_eq!(walk(&[("locked", true), ("locked", false)]), [Turned::Locked, Turned::Unlocked]);
+        assert_eq!(walk(&[("switched-out", true), ("switched-out", false)]), [Turned::Locked, Turned::Unlocked]);
+    }
+
+    /// A switch of user that macOS also calls a lock: locked by the first,
+    /// unlocked only by the last to come back, in either order.
+    #[test]
+    fn two_reasons_unlock_only_when_both_are_back() {
+        for (first, second) in [("locked", "switched-out"), ("switched-out", "locked")] {
+            for back in [first, second] {
+                let other = if back == first { second } else { first };
+                let turned = walk(&[(first, true), (second, true), (back, false), (other, false)]);
+                assert_eq!(turned, [Turned::Locked, Turned::Neither, Turned::Neither, Turned::Unlocked]);
+            }
+        }
+    }
+
+    /// A step told twice, or a way back with nothing gone, turns nothing.
+    #[test]
+    fn a_step_told_again_or_a_lone_way_back_turns_nothing() {
+        assert_eq!(walk(&[("locked", false)]), [Turned::Neither]);
+        assert_eq!(walk(&[("locked", true), ("locked", true), ("locked", false)]), [Turned::Locked, Turned::Neither, Turned::Unlocked]);
+    }
+}

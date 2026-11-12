@@ -1,0 +1,69 @@
+<!doctype html>
+<!-- The card at the unlock (`[[window]] locked`, `kind = "overlay"`): the
+     microphones were muted when the screen locked, and still are. The talking
+     card's look (card.css) — the red disc and "Muted" — drawn at the top
+     right of a page over the display, 16 points in as the card panel stands,
+     because the unlock is an event and an event's run may open an overlay but
+     never a panel. Lumi lets every press through it and puts it away by
+     itself after `event-life-seconds`. An overlay has no material for Lumi to
+     draw under it, so the card paints its own ground. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mic Mute</title>
+  <link rel="stylesheet" href="/__lumi__/lumi.css">
+  <link rel="stylesheet" href="card.css">
+  <style>
+    :root {
+      --ground: rgba(246, 246, 246, 0.96);
+      --edge: rgba(0, 0, 0, 0.12);
+      --shade: rgba(0, 0, 0, 0.18);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --ground: rgba(44, 44, 46, 0.96);
+        --edge: rgba(255, 255, 255, 0.14);
+        --shade: rgba(0, 0, 0, 0.45);
+      }
+    }
+    :root[data-theme="dark"] {
+      --ground: rgba(44, 44, 46, 0.96);
+      --edge: rgba(255, 255, 255, 0.14);
+      --shade: rgba(0, 0, 0, 0.45);
+    }
+    .card {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      border-radius: 12px;
+      background: var(--ground);
+      color: CanvasText;
+      box-shadow: 0 0 0 0.5px var(--edge), 0 8px 24px var(--shade);
+      animation: arrive 0.2s ease-out;
+    }
+    @keyframes arrive {
+      from { opacity: 0; transform: translateY(-6px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card" data-state="muted" role="status" aria-live="polite">
+    <span class="disc" aria-hidden="true">
+      <svg class="off" viewBox="0 0 24 24"><path d="M12 19v3"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M16.95 16.95A7 7 0 0 1 5 12v-2"/><path d="M18.89 13.23A7 7 0 0 0 19 12v-2"/><path d="m2 2 20 20"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/></svg>
+    </span>
+    <span class="words"><b>Muted</b><small>When the screen locked</small></span>
+  </main>
+  <script>
+    // Kept loaded between unlocks: each showing plays the arrival again.
+    window.addEventListener("lumi:shown", () => {
+      const card = document.querySelector(".card");
+      card.style.animation = "none";
+      void card.offsetWidth;
+      card.style.animation = "";
+    });
+  </script>
+</body>
+</html>

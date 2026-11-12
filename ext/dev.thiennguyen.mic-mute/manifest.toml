@@ -5,7 +5,7 @@
 [extension]
 id = "dev.thiennguyen.mic-mute"
 name = "Mic Mute"
-version = "0.3.0"
+version = "0.4.0"
 description = "Mute every microphone on your Mac with one key, and keep it muted until you press it again."
 author = "Thien Nguyen"
 summary = "Press ⌥⌘M to mute every microphone on your Mac at once — built-in, USB and Bluetooth — and a microphone you plug in while muted is muted too. Hold ⌥⌘M to talk, or tap it to unmute and each one is back as it was. The menu bar icon says which it is."
@@ -19,18 +19,22 @@ screenshots = ["shots/1-panel.png", "shots/2-tap.png", "shots/3-push-to-talk.png
 # The demo video, ahead of the pictures. Store-only too: the store publishes
 # YouTube's picture of it beside the package.
 video = "https://youtu.be/6UuLgj8nhFQ"
-# 1.79.0: `hold = true`, ⌥⌘M heard as it is let go (push-to-talk) — an older
-# Lumi would unmute on the press and never hear the release — and the icon
-# drawn in colour and the glow round the screen (`kind = "overlay"`). 1.77.0
-# brought the `audio-devices` capability and event this is built on.
-min-lumi-version = "1.79.0"
+# 1.81.0: the `away` capability and event behind "Mute when the screen
+# locks", which an older Lumi refuses. Before it, 1.79.0: `hold = true`, ⌥⌘M
+# heard as it is let go (push-to-talk) — an older Lumi would unmute on the
+# press and never hear the release — and the icon drawn in colour and the
+# glow round the screen (`kind = "overlay"`). 1.77.0 brought the
+# `audio-devices` capability and event this is built on.
+min-lumi-version = "1.81.0"
 # `audio-devices` to hold every input muted and hear devices come and go;
 # `menu-bar-item` for the icon that says whether the microphones are muted,
 # and the panel a click on it opens; `menu` for the row in that icon's menu
 # that switches it, which VoiceOver still reaches; `preload` so the panel
 # and the talking card are loaded ahead and show at the press, not after a
-# page load.
-capabilities = ["audio-devices", "menu", "menu-bar-item", "preload"]
+# page load; `away` to hear the screen lock and unlock, for "Mute when the
+# screen locks" — declared whether that is on or off, since a manifest
+# cannot ask for it later.
+capabilities = ["audio-devices", "away", "menu", "menu-bar-item", "preload"]
 # Mic Mute draws its own state in the menu bar, so Lumi's "Microphone muted
 # by Mic Mute — Unmute" row would say it twice. Switching Mic Mute off, or
 # quitting Lumi, still unmutes everything.
@@ -46,7 +50,9 @@ click-through-row = false
 # menu on every press.
 overlay-row = false
 # Devices coming and going: a microphone plugged in while muted is muted too.
-events = ["audio-devices"]
+# The person stepping away: the screen locking mutes every microphone when
+# "Mute when the screen locks" is on, and its unlock says so.
+events = ["audio-devices", "away"]
 
 # The Settings tab is Mic Mute's own page (settings.html): the key, what
 # shows while it is held, drawn as a picture of each, and the virtual
@@ -128,6 +134,24 @@ capturable = false
 keep-alive = true
 preload = true
 
+# The card at the unlock, when "Mute when the screen locks" muted the
+# microphones and "Show a card when you unlock" is on (locked.html): the
+# card's look, drawn at the top right by an overlay, because the unlock is an
+# event and an event's run may open an overlay for a few seconds but never a
+# panel. Below the menu bar, so its icons stay above the page, and kept out of
+# a call's screen share as the glow is: it is said to the person at the Mac.
+# Loaded ahead, so it is up the moment the screen is unlocked.
+[[window]]
+name = "locked"
+title = "Muted while your Mac was locked"
+path = "locked.html"
+kind = "overlay"
+cover = "below-menu-bar"
+capturable = false
+event-life-seconds = 3
+keep-alive = true
+preload = true
+
 # The Welcome tour (welcome.html, src/welcome.rs): opened on install, and on
 # an update from a version before 0.3.0 (the owner, 2026-11-11), which says
 # what is new first. What Mic Mute does; the key, tapped or held, tried for
@@ -174,3 +198,21 @@ label = "Mute virtual microphones too"
 description = "Meeting apps add virtual microphones of their own, such as Microsoft Teams Audio. Left off, Mic Mute leaves them alone, so the app's own sound goes on working when you share your screen."
 kind = "bool"
 default = "false"
+
+# Locking the screen — or switching to another user, which the owner counts
+# as one (2026-11-12) — mutes every microphone that is on, and they stay
+# muted after the unlock: the person taps ⌥⌘M to turn them back on. Off by
+# default.
+[[settings]]
+name = "mute-when-locked"
+label = "Mute when the screen locks"
+kind = "bool"
+default = "false"
+
+# Whether the unlock says so, on the card at the top right — the default
+# (the owner, 2026-11-12) — or says nothing, the icon alone showing it.
+[[settings]]
+name = "locked-card"
+label = "Show a card when you unlock"
+kind = "bool"
+default = "true"

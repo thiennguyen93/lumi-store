@@ -14,6 +14,10 @@ Hold **⌥⌘M** to talk: every microphone is on for as long as you hold it, and
 
 While you talk the menu bar icon moves, and a card at the top right of your screen says **Talking**. In Settings, **While talking** can light an orange glow round the edge of every display instead — clicks go through it, and a screen share never shows it — or leave the icon alone to say it. If your Mac stops hearing the key before you let go, the card turns red: your microphones are muted again, even though your finger is still on the key.
 
+## When you lock your Mac
+
+Turn on **Mute when the screen locks** in Settings, and locking your Mac — or switching to another user — mutes every microphone that is on. They stay muted when you unlock — a card at the top right says so — until you press **⌥⌘M** again.
+
 ## Meeting apps
 
 Apps like Microsoft Teams add a virtual microphone of their own. Mic Mute leaves those alone so the app's sound keeps working when you share your screen; turn on **Mute virtual microphones too** in Settings to mute them as well.

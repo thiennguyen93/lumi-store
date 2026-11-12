@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0] - 2026-11-12
+
+### Added
+
+- **Mute when the screen locks**, in Settings: locking your Mac, or switching to another user, mutes every microphone that is on, and they stay muted after you come back until you press ⌥⌘M. A card at the top right says so when you unlock; turn off **Show a card when you unlock** to have the menu bar icon alone say it. Off unless you turn it on.
+- Needs Lumi 1.81.0.
+
 ## [0.3.0] - 2026-11-11
 
 ### Added

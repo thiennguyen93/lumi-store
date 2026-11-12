@@ -1,15 +1,23 @@
 // Mic Mute's Settings tab (settings.html): the key, what shows while it is
-// held, and the virtual microphones — one page, since Lumi's own Shortcuts
-// tab is hidden for this extension.
+// held, the virtual microphones and muting when the screen locks — one page,
+// since Lumi's own Shortcuts tab is hidden for this extension.
 //
 // The key's row is shortcut.js's, which the Welcome window draws too.
 //
-// The two settings are the manifest's `[[settings]]`, saved as text over
+// The settings are the manifest's `[[settings]]`, saved as text over
 // `PUT /__lumi__/settings`; a change made elsewhere arrives as
 // `lumi:settings`.
 
 const choicesBox = document.getElementById("choices");
-const virtualSwitch = document.getElementById("virtual");
+const cardRow = document.getElementById("locked-card-row");
+
+// The on-off settings, each a switch: the manifest's name, and its value
+// before anything is read — the manifest's default.
+const SWITCHES = [
+  { name: "virtual", button: document.getElementById("virtual"), on: false },
+  { name: "mute-when-locked", button: document.getElementById("locked"), on: false },
+  { name: "locked-card", button: document.getElementById("locked-card"), on: true },
+];
 const sceneTemplate = document.getElementById("scene");
 
 const MIC = '<path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/>';
@@ -24,7 +32,6 @@ const CHOICES = [
 ];
 
 let talking = "card";
-let virtual = false;
 
 const shortcut = shortcutRow({
   keys: document.getElementById("keys"),
@@ -40,8 +47,10 @@ function drawChoices() {
   }
 }
 
-function drawSwitch() {
-  virtualSwitch.setAttribute("aria-checked", String(virtual));
+function drawSwitches() {
+  for (const each of SWITCHES) each.button.setAttribute("aria-checked", String(each.on));
+  // The card is the unlock's to show only when the lock mutes.
+  cardRow.classList.toggle("idle", !SWITCHES[1].on);
 }
 
 // --- Settings -------------------------------------------------------------
@@ -50,9 +59,11 @@ function apply(values) {
   if (!values || typeof values !== "object") return;
   const wanted = values["while-talking"];
   if (CHOICES.some((choice) => choice.value === wanted)) talking = wanted;
-  if ("virtual" in values) virtual = String(values.virtual) === "true";
+  for (const each of SWITCHES) {
+    if (each.name in values) each.on = String(values[each.name]) === "true";
+  }
   drawChoices();
-  drawSwitch();
+  drawSwitches();
 }
 
 async function readSettings() {
@@ -115,18 +126,20 @@ choicesBox.addEventListener("keydown", (event) => {
   choicesBox.querySelector(`[data-value="${next}"]`)?.focus();
 });
 
-virtualSwitch.addEventListener("click", () => {
-  virtual = !virtual;
-  drawSwitch();
-  void save({ virtual: String(virtual) }, () => {
-    virtual = !virtual;
-    drawSwitch();
+for (const each of SWITCHES) {
+  each.button.addEventListener("click", () => {
+    each.on = !each.on;
+    drawSwitches();
+    void save({ [each.name]: String(each.on) }, () => {
+      each.on = !each.on;
+      drawSwitches();
+    });
   });
-});
+}
 
 window.addEventListener("lumi:settings", (event) => apply(event.detail));
 
 drawChoices();
-drawSwitch();
+drawSwitches();
 void readSettings();
 void shortcut.read();
