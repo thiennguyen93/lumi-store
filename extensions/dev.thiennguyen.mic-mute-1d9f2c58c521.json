@@ -1,0 +1,126 @@
+[
+ {
+  "version": "0.4.0",
+  "date": "2026-11-12",
+  "notes": "### Added\n\n- **Mute when the screen locks**, in Settings: locking your Mac, or switching to another user, mutes every microphone that is on, and they stay muted after you come back until you press ⌥⌘M. A card at the top right says so when you unlock; turn off **Show a card when you unlock** to have the menu bar icon alone say it. Off unless you turn it on.\n- Needs Lumi 1.81.0.",
+  "notesSha256": "31ce2181e231bc2a47f9932a218232fbdc076a4554c45993c635495a91f3d47d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Mute when the screen locks",
+     "items": [
+      "Mute every microphone when you lock your Mac or switch users",
+      "Microphones stay muted after you unlock until you press the hotkey",
+      "A card appears when you unlock to tell you microphones are muted",
+      "Turn off the unlock card in settings to rely on the menu bar icon alone",
+      "The setting is off by default",
+      "Requires Lumi 1.81.0"
+     ]
+    },
+    "vi": {
+     "headline": "Tắt tiếng khi khóa màn hình",
+     "items": [
+      "Tắt tiếng mọi micro khi bạn khóa máy Mac hoặc chuyển người dùng",
+      "Micro vẫn tắt tiếng sau khi mở khóa cho đến khi bạn nhấn phím tắt",
+      "Thẻ thông báo xuất hiện khi mở khóa để cho biết micro đang tắt tiếng",
+      "Tắt thẻ thông báo trong cài đặt để chỉ dùng biểu tượng thanh menu",
+      "Tính năng này mặc định tắt",
+      "Yêu cầu Lumi 1.81.0"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.0",
+  "date": "2026-11-11",
+  "notes": "### Added\n\n- **A welcome tour** when you install Mic Mute, or update from an earlier version: the key — tried right there, tapped or held, with your own microphones — the menu bar icon and its panel, and what shows while you talk. Lumi's About page for Mic Mute opens it again.\n- **A panel from the menu bar icon.** A click opens a round button that mutes or unmutes every microphone, each microphone with what it is now — one Mic Mute can't mute, such as an iPhone, saying so; the one your Mac is using marked, and a click on another making it the one your Mac uses, as in Sound settings — and Settings. A right-click still switches it without opening anything.\n- **The menu bar icon in colour**: a red slash while your microphones are muted, an orange dot while they are on, and orange bars moving while you talk.\n- **A card at the top right while you hold ⌥⌘M**, from the moment it is a hold rather than a tap, so a tap never flashes it: orange while you talk, and red if your Mac stops listening to the key before you let go — a password field taking the keyboard, say — since your microphones are muted again while you may still be talking. A tap of ⌥⌘M, a right-click or the menu's row says **Muted** or **Unmuted** on the same card; with the glow or the icon alone, Lumi's alert says it as before.\n- **Or a glow round the screen while you hold ⌥⌘M**: an orange edge on every display, which clicks go through and a screen share never shows.\n- **Hold ⌥⌘M while your microphones are on, too**: they stay on while you hold it and are muted when you let go — a hold always ends muted, and the card says so (\"Let go to mute\") when they were on. A tap still switches them, as before.\n- **While talking**, in Settings: the card, the glow, or the moving icon alone, each shown as a small picture of your screen to choose from.\n- **Change ⌥⌘M in Settings**, beside While talking: click the key and press another. Settings is now the one tab for everything Mic Mute asks, and Mic Mute's page opens on it; the separate Shortcuts tab is gone.\n- **The panel and the card are light or dark as macOS is**, like the menu bar above them, whatever Lumi's own Appearance says.",
+  "notesSha256": "8d8740fa41b53fc79ae39e6563ab58e1901f879871831a0333d9224278ebca00",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "A panel, a tour, and hold the key to talk",
+     "items": [
+      "A welcome tour shows the key, the menu bar icon, and what you see while talking",
+      "Click the menu bar icon for a panel: mute every microphone, or choose the one your Mac uses",
+      "The menu bar icon is now in color: red slash when muted, orange dot when on, moving bars while talking",
+      "Hold the key to talk and release to mute, with a card or glow showing when you can speak",
+      "Choose what you see while talking: a card at top right, a glow round the screen, or just the icon",
+      "Change the key in Settings; the panel and card are light or dark as macOS is"
+     ]
+    },
+    "vi": {
+     "headline": "Bảng điều khiển, hướng dẫn và giữ phím để nói",
+     "items": [
+      "Hướng dẫn chào mừng giới thiệu phím tắt, biểu tượng thanh menu và những gì bạn thấy khi nói",
+      "Nhấp biểu tượng thanh menu để mở bảng điều khiển: tắt tiếng mọi microphone hoặc chọn microphone Mac đang dùng",
+      "Biểu tượng thanh menu giờ có màu: gạch đỏ khi tắt tiếng, chấm cam khi bật, thanh chuyển động khi nói",
+      "Giữ phím để nói và thả ra để tắt tiếng, với thẻ hoặc viền sáng hiện khi bạn có thể nói",
+      "Chọn hiển thị khi nói: thẻ ở góc trên bên phải, viền sáng quanh màn hình hoặc chỉ biểu tượng",
+      "Đổi phím tắt trong Cài đặt; bảng điều khiển và thẻ sáng hoặc tối theo macOS"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.0",
+  "date": "2026-11-10",
+  "notes": "### Added\n\n- **Hold ⌥⌘M to talk.** While your microphones are muted, holding ⌥⌘M turns them on for as long as you hold it, and letting go mutes them again. A quick tap still unmutes them, as before.\n- Needs Lumi 1.79.0.",
+  "notesSha256": "9f70946853c81cfa7f12bae93e4ec84a30b40763cd2fdb2ddc53cb4479be0721",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Hold your hotkey to talk, release to mute again",
+     "items": [
+      "Hold ⌥⌘M to talk while muted and release to mute again; a quick tap still unmutes as before",
+      "Requires Lumi 1.79.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Giữ phím tắt để nói, thả ra để tắt tiếng lại",
+     "items": [
+      "Giữ ⌥⌘M để nói khi đang tắt tiếng và thả ra để tắt tiếng lại; nhấn nhanh vẫn bật tiếng như trước",
+      "Yêu cầu Lumi 1.79.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.0",
+  "date": "2026-11-09",
+  "notes": "### Added\n\n- **⌥⌘M mutes every microphone on your Mac** — built-in, USB and Bluetooth — and pressing it again puts each one back as it was. A right-click on the menu bar icon, or **Mute Every Microphone** in its menu, does the same.\n- **A microphone you plug in while muted is muted too**, and so is one unmuted somewhere else, until you unmute from Mic Mute.\n- **The menu bar icon says which it is**: a microphone, or a microphone crossed out.\n- **A microphone Lumi cannot mute is named**, such as an iPhone used as a microphone, so it is never taken for muted.\n- **Mute virtual microphones too**, in Settings, off by default: meeting apps' own virtual microphones are left alone unless you turn it on.\n- Needs Lumi 1.77.0.",
+  "notesSha256": "5993c88a9c84fdce135875f902fe79a8c61deb0672a1509466eebc72522d1815",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Mute every microphone on your Mac with one key",
+     "items": [
+      "Press ⌥⌘M to mute every microphone and press it again to restore each one",
+      "Microphones you plug in while muted are muted automatically",
+      "The menu bar icon shows whether microphones are muted or not",
+      "Microphones that cannot be muted are named so you know they are still active",
+      "Virtual microphones can be muted too in Settings, off by default",
+      "Requires Lumi 1.77.0"
+     ]
+    },
+    "vi": {
+     "headline": "Tắt tiếng mọi microphone trên Mac chỉ bằng một phím",
+     "items": [
+      "Nhấn ⌥⌘M để tắt tiếng mọi microphone và nhấn lại để khôi phục từng cái",
+      "Microphone cắm vào khi đang tắt tiếng sẽ tự động bị tắt tiếng",
+      "Biểu tượng thanh menu hiển thị microphone đang tắt hay bật tiếng",
+      "Microphone không thể tắt tiếng sẽ được ghi tên để bạn biết chúng vẫn hoạt động",
+      "Có thể tắt tiếng microphone ảo trong Cài đặt, mặc định là tắt",
+      "Yêu cầu Lumi 1.77.0"
+     ]
+    }
+   }
+  }
+ }
+]

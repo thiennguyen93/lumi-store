@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ef4444"/>
+      <stop offset="1" stop-color="#b91c1c"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <!-- A keyboard as wide as Keyboard Test's, half as tall as the V and
+       level with its foot, faint, so the V reads first. -->
+  <g fill="#ffffff" fill-opacity="0.35">
+    <rect x="10" y="32" width="5" height="5.5" rx="1.3"/>
+    <rect x="16.5" y="32" width="5" height="5.5" rx="1.3"/>
+    <rect x="23" y="32" width="5" height="5.5" rx="1.3"/>
+    <rect x="29.5" y="32" width="5" height="5.5" rx="1.3"/>
+    <rect x="36" y="32" width="5" height="5.5" rx="1.3"/>
+    <rect x="42.5" y="32" width="5" height="5.5" rx="1.3"/>
+    <rect x="49" y="32" width="5" height="5.5" rx="1.3"/>
+    <rect x="10" y="39" width="8.25" height="5.5" rx="1.3"/>
+    <rect x="19.75" y="39" width="5" height="5.5" rx="1.3"/>
+    <rect x="26.25" y="39" width="5" height="5.5" rx="1.3"/>
+    <rect x="32.75" y="39" width="5" height="5.5" rx="1.3"/>
+    <rect x="39.25" y="39" width="5" height="5.5" rx="1.3"/>
+    <rect x="45.75" y="39" width="8.25" height="5.5" rx="1.3"/>
+    <rect x="10" y="46" width="5" height="5.5" rx="1.3"/>
+    <rect x="16.5" y="46" width="5" height="5.5" rx="1.3"/>
+    <rect x="23" y="46" width="18" height="5.5" rx="1.3"/>
+    <rect x="42.5" y="46" width="5" height="5.5" rx="1.3"/>
+    <rect x="49" y="46" width="5" height="5.5" rx="1.3"/>
+  </g>
+  <!-- Over it, a V folded like a ribbon: the left arm laid over the right. -->
+  <g fill="none" stroke-width="8" stroke-linecap="round">
+    <path d="M47 16.5l-15 31" stroke="#fecaca"/>
+    <path d="M17 16.5l15 31" stroke="#ffffff"/>
+  </g>
+</svg>
