@@ -1145,6 +1145,24 @@ pub fn open_permissions() -> Result<(), String> {
     lumi::ext::ui::open_permissions()
 }
 
+/// Bring up Lumi's Settings on one of the tabs of your extension's page —
+/// for an "Open" row of yours in Lumi's menu bar menu, onto the tab you put
+/// there to be looked at, or a "What's New" onto your Changelog. `tab` is
+/// named as [`set_tab_label`] names it: `":about"`, `":settings"`,
+/// `":shortcuts"`, `":changelog"` or `":page:<name>"`. One your manifest
+/// hides or does not declare is refused; one it declares but has nothing in
+/// today opens your page where it would open by itself. Only for a press,
+/// like [`open_settings`]. Needs Lumi 1.82.0 or later.
+///
+/// ```no_run
+/// // A menu bar row "Open", onto the extension's `[[page]] name = "main"`.
+/// lumi_extension_api::open_tab(":page:main")?;
+/// # Ok::<(), String>(())
+/// ```
+pub fn open_tab(tab: &str) -> Result<(), String> {
+    lumi::ext::ui::open_tab(tab)
+}
+
 /// Whether Lumi loads your panels ahead — those whose `[[window]]` says
 /// `preload = true` — as your extension is loaded: at launch, once installed
 /// or updated, when switched on. One switch, kept by Lumi — on from install

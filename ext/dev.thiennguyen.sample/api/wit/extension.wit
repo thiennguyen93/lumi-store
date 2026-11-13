@@ -1560,6 +1560,16 @@ interface ui {
     /// person did. Added in Lumi 1.44.0.
     open-permissions: func() -> result<_, string>;
 
+    /// Bring up Lumi's Settings on one of the tabs of this extension's page
+    /// — for an "Open" row of your own in Lumi's menu bar menu, onto the tab
+    /// you put there to be looked at, or a "What's New" onto your Changelog.
+    /// `tab` is named as `set-tab-label` names it: ":about", ":settings",
+    /// ":shortcuts", ":changelog" or ":page:<name>"; one the manifest hides
+    /// or does not declare is refused, and one it declares but has nothing
+    /// in today opens the page where it would open by itself. Only for
+    /// something the person did. Added in Lumi 1.82.0.
+    open-tab: func(tab: string) -> result<_, string>;
+
     /// Switch your extension off, as the switch beside it under Extensions
     /// in Lumi's Settings does: its windows close, its menu bar item and rows
     /// go, and none of its code runs — commands, shortcuts, events, timers —
