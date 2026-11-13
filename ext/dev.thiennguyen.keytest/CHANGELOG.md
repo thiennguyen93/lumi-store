@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.0] - 2026-11-13
+
+### Added
+
+- Keyboard Cleaner has two rows in Lumi's menu bar menu: Open, which opens its Keyboard tab, and Clean My Keyboard Now, which opens it and locks the keyboard right away — for as long as the Settings tab says, and the trackpad too unless you turned that off. Hold esc and right shift for 2 seconds to unlock, as always. Needs Lumi 1.82 or later.
+
 ## [0.6.2] - 2026-11-04
 
 ### Fixed

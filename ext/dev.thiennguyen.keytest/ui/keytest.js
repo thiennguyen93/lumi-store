@@ -534,12 +534,19 @@
    *  may have flipped the Hyper key meanwhile — both moments when the page
    *  is in front, which is the only time Lumi lets it call. A refusal
    *  leaves the last answer standing. The layout is taken only until the
-   *  person has pressed the switch here, so a late answer cannot undo it. */
+   *  person has pressed the switch here, so a late answer cannot undo it.
+   *  `clean` is Clean My Keyboard Now, pressed in Lumi's menu bar menu a
+   *  moment ago: the extension's code hands it to one ask only. */
   let layoutChosen = false;
+  /** The last ask was refused — a page loading before it is on screen in
+   *  Settings in front is — so the next time it gets the keyboard it asks
+   *  again, or a Clean My Keyboard Now waiting for it would be missed. */
+  let stateRefused = false;
   function askState() {
     fetch("/__lumi__/call", { method: "POST", body: JSON.stringify({ kind: "state" }) })
       .then((response) => (response.ok ? response.json() : null))
       .then((answer) => {
+        stateRefused = !answer;
         if (!answer) return;
         if (typeof answer.hyperKeyEnabled === "boolean") hyperOn = answer.hyperKeyEnabled;
         if (!layoutChosen && answer.layout in LAYOUTS && answer.layout !== layout) {
@@ -547,8 +554,11 @@
           draw();
         }
         paint();
+        if (answer.clean === true) cleanFromMenu();
       })
-      .catch(() => {});
+      .catch(() => {
+        stateRefused = true;
+      });
   }
 
   /** Whether this page's own question (`[[sheet]] confirm`) is up: it has
@@ -560,7 +570,7 @@
   // cleaning, when they come from Lumi whatever has focus.
   const focusChanged = () => {
     const focused = document.hasFocus();
-    if (focused && hint.hidden === false) askState();
+    if (focused && (hint.hidden === false || stateRefused)) askState();
     hint.hidden = focused || cleaning || asking;
     if (!focused && !cleaning && down.size) {
       down.clear();
@@ -650,7 +660,37 @@
     focusChanged();
   });
 
+  // Clean My Keyboard Now, from Lumi's menu bar menu: the extension's code
+  // brought this tab up and told it to ask (`lumi:message`), or left the
+  // press for the ask this page makes as it loads or gets the keyboard
+  // back. No question first — the row says what it does, and the sheet
+  // opens only on a press made in this page — and the ways out are on
+  // screen for as long as it lasts, as for the button's.
+  window.addEventListener("lumi:message", (event) => {
+    if ((event.detail || {}).kind === "clean") askState();
+  });
+  async function cleanFromMenu() {
+    // The person's Lock for and trackpad choice, not the defaults, on a
+    // page that has only just loaded.
+    await settingsRead;
+    startCleaning();
+  }
+
+  /** A hold asked for and not yet answered: the menu's press and the
+   *  sheet's answer must not ask twice. */
+  let starting = false;
+
   async function startCleaning() {
+    if (cleaning || starting) return;
+    starting = true;
+    try {
+      await askForHold();
+    } finally {
+      starting = false;
+    }
+  }
+
+  async function askForHold() {
     done.hidden = true;
     let answer;
     try {
@@ -906,7 +946,8 @@
   window.addEventListener("lumi:settings", (event) => applySettings(event.detail));
 
   describeCleaning();
-  fetch("/__lumi__/settings")
+  /** Settled once the settings are read, or could not be. */
+  const settingsRead = fetch("/__lumi__/settings")
     .then((response) => (response.ok ? response.json() : {}))
     .then(applySettings)
     .catch(() => {});

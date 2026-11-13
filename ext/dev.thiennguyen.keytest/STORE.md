@@ -7,6 +7,7 @@ Lock every key on your Mac while you wipe the keyboard, right inside Lumi — th
 - **Wipe and test at once.** Each key you wipe lights up, so when you are done you know which keys work and which type twice.
 - **Ways out.** Hold **esc** and **right shift** together for 2 seconds, or let the time run out. With the trackpad left unlocked, holding the unlock button for 2 seconds works too.
 - **Touch ID can't be locked.** Pressing it locks your Mac, which ends cleaning.
+- **From the menu bar.** Under **Keyboard Cleaner** in Lumi's menu bar menu, **Open** opens the Keyboard tab, and **Clean My Keyboard Now** opens it and starts cleaning in one press.
 
 ## Test every key
 
