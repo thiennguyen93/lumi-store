@@ -181,6 +181,13 @@ PROMO = """<!doctype html>
   }}
   .callout .head {{ display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; }}
   .callout .head img {{ width: 32px; height: 32px; }}
+  /* The store's Beta tag beside the name, as Lumi's Extension Store draws it
+     (`BetaTag`): small capitals on a tint, here of the extension's colour. */
+  .callout .head .beta {{
+    padding: 2px 8px; border-radius: 6px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: {color}; background: color-mix(in srgb, {color} 14%, #fff);
+  }}
   .callout .label {{ margin-top: 12px; font-size: 16px; font-weight: 600; color: #8a8a8e; }}
   .callout .body {{ margin-top: 6px; font-size: 21px; line-height: 1.4; }}
   .callout .body b {{ color: {color}; }}
@@ -248,7 +255,7 @@ def app_icon(bundle_id: str) -> "bytes | None":
 
 
 CALLOUT = """<div class="callout" style="{side}">
-    <div class="head"><img src="/__icon__" alt="">{title}</div>
+    <div class="head"><img src="/__icon__" alt="">{title}{beta}</div>
     <div class="label">{label}</div>
     <div class="body">{body}</div>
   </div>"""
@@ -316,6 +323,9 @@ def promo_page(spec: dict, n: int, name: str) -> str:
         callout=CALLOUT.format(
             side="left: 60px; right: auto" if callout.get("side") == "left" else "",
             title=callout.get("title", name),
+            # `"beta": true` at the spec's top: the extension's entry says
+            # `beta = true` in extensions.toml, so its pictures say so too.
+            beta='<span class="beta">Beta</span>' if spec.get("beta") is True else "",
             label=callout.get("label", ""),
             body=callout.get("body", ""),
         )

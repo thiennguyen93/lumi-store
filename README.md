@@ -47,6 +47,15 @@ after review.
    the plates turning over at the top of Discover — neither is a manifest
    key, because neither is the author's to claim.
 
+   `beta = true` draws a **Beta** tag beside the extension's name in
+   Lumi's Extension Store and on lumikeys.app: still being finished, and
+   may change. Ask for it in your PR. It is a word about the extension,
+   not about a version, so it is lifted by deleting the line, with no new
+   release — and your versions stay plain `1.2.0`. Do not write
+   `1.2.0-beta.1` instead: Lumi compares versions as three numbers, and a
+   copy installed at a pre-release version is never offered an update. A
+   Lumi from before the tag ignores it and draws none.
+
    Pictures for your extension's page in the store go in your manifest,
    from your own source (not a built front end):
 
@@ -252,6 +261,8 @@ taken the same way every time, without a Lumi build:
   window from where it would stand; `zoom` draws a small page larger, its
   `width` and `height` still the page's own; `transparent` drops the
   window's background and shadow, for a see-through panel;
+  and `"beta": true` beside `color`, for an entry that is `beta = true`,
+  draws the Beta tag beside the name on every callout;
 - `scripts/preview/shots/<id>-<n>.js` — an optional scene run in the page
   before the picture (a row clicked, a field filled);
 - `scripts/preview/<id>.json` — what the stand-in bridge answers `call`

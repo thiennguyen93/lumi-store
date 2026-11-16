@@ -298,8 +298,13 @@ RESERVED_PAGE_LABELS = {label.lower() for label in BUILTIN_TABS.values()} | {"pe
 MAX_ICON = 64 * 1024
 # The store's shelves: an entry's `category` in extensions.toml is one of
 # these, and Lumi's Extension Store filters Discover by them. The store's
-# word rather than the author's, like `featured` — both are decided in
-# review, which is why neither is a manifest key.
+# word rather than the author's, like `featured` and `beta` — all three are
+# decided in review, which is why none is a manifest key. `beta` in
+# particular is a word about the extension, not a version: it is lifted by
+# deleting the line, with no release, and versions stay plain
+# `major.minor.patch`, which is all Lumi's update check compares
+# (`manifest::parse_triplet` refuses a `-beta.1` suffix, so a pre-release
+# version would never be offered an update).
 CATEGORIES = ["Productivity", "Writing", "Windows", "Design", "Developer", "Utilities"]
 # `[extension] screenshots`: a few pictures for the extension's page in
 # Lumi's Extension Store. Store-only — Lumi's manifest reader ignores the
@@ -352,6 +357,8 @@ VERSION_HEADING_RE = re.compile(
 )
 UNRELEASED_HEADING_RE = re.compile(r"^##\s+\[?unreleased\]?\s*$", re.IGNORECASE)
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?$")
+# What a manifest may ship as: SEMVER_RE with no pre-release (`check_manifest`).
+RELEASE_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # `release-notes/<id>.json` at the root: the store's own short summary of
 # each version, in English and Vietnamese, for Lumi's update list and the
@@ -535,6 +542,17 @@ def check_manifest(entry_id: str, manifest: dict):
         fail(entry_id, "the extension has no name")
     if not ext.get("version", "").strip():
         fail(entry_id, "the extension has no version")
+    # Three numbers and nothing after them: Lumi's update check reads a
+    # version as `major.minor.patch` (`manifest::parse_triplet`) and offers
+    # nothing past one it cannot read, so a copy installed at
+    # `1.2.0-beta.1` would never hear of 1.2.0. A beta is the entry's
+    # `beta = true` in extensions.toml, which needs no special version.
+    if not RELEASE_RE.match(ext["version"]):
+        fail(
+            entry_id,
+            f"version {ext['version']!r} is not three numbers like 1.2.0 — Lumi never offers an update "
+            "past a pre-release; ask for beta = true in extensions.toml instead",
+        )
     for word in ext.get("capabilities", []):
         if word not in CAPABILITIES:
             fail(entry_id, f"capability {word!r} is not one the host offers ({sorted(CAPABILITIES)})")
@@ -1797,6 +1815,8 @@ def listed_entries() -> list:
             fail(entry_id, f"category {category!r} is not one of the store's: {', '.join(CATEGORIES)}")
         if not isinstance(entry.get("featured", False), bool):
             fail(entry_id, "featured is true or false")
+        if not isinstance(entry.get("beta", False), bool):
+            fail(entry_id, "beta is true or false")
         if not isinstance(entry.get("private", False), bool):
             fail(entry_id, "private is true or false")
         if not isinstance(entry.get("follow", False), bool):
@@ -2446,12 +2466,14 @@ def main(check: bool = False, built: "Path | None" = None):
                 ],
                 "icon": icon_url,
                 # The Extension Store's shelf copy. The store's own words
-                # (category, featured, from extensions.toml) and the
+                # (category, featured, beta, from extensions.toml) and the
                 # author's (screenshots, and what the manifest adds), for a
                 # page drawn before anything is downloaded. Browse copy like
                 # the rest: the review sheet reads the verified package.
+                # A Lumi from before `beta` ignores it and draws no tag.
                 "category": entry["category"],
                 "featured": entry.get("featured", False),
+                "beta": entry.get("beta", False),
                 "screenshots": shot_urls,
                 # `{youtube, poster}` or null: the demo video, as the id
                 # `video_of` read out of the author's link and the picture

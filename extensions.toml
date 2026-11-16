@@ -14,6 +14,9 @@
 #                            # decided in review, not by the author
 # featured = true            # optional: among the plates turning over at the
 #                            # top of Discover, in this file's order
+# beta = true                # optional: a Beta tag beside its name in Lumi
+#                            # and on lumikeys.app; deleting the line lifts
+#                            # it, with no new version
 # private = true             # first-party only: closed source, fetched with a
 #                            # deploy key (README, "First-party private entries")
 # follow = true              # private only: a newer version on the source's main
