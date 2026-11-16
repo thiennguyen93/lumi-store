@@ -171,3 +171,20 @@ id = "dev.thiennguyen.mic-mute"
 path = "ext/dev.thiennguyen.mic-mute"
 subdir = "."
 category = "Utilities"
+
+# Meeting Notes, live captions for meetings. First-party and closed source,
+# Screenshot's arrangement: a private repo, `update = none` in .gitmodules,
+# fetched with a read-only deploy key of its own (MEETING_DEPLOY_KEY) by
+# scripts/fetch-private.sh. Its React front end under web/ is built by the
+# store. Needs Lumi 1.65.0 (a recording's audio kept, `recordings.keep`, and
+# the item's animated icon, on top of 1.64.0's transcription and voices).
+# In beta: the store's word, lifted by deleting the line.
+[[extension]]
+id = "dev.thiennguyen.meeting"
+path = "ext/dev.thiennguyen.meeting"
+subdir = "."
+web = "web"
+category = "Productivity"
+private = true
+follow = true
+beta = true

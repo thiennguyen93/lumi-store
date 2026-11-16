@@ -125,6 +125,7 @@ jobs:
           LUNAR_CALENDAR_DEPLOY_KEY: ${{ matrix.id == 'dev.thiennguyen.lunar-calendar' && secrets.LUNAR_CALENDAR_DEPLOY_KEY || '' }}
           CLIPBOARD_DEPLOY_KEY: ${{ matrix.id == 'dev.thiennguyen.clipboard' && secrets.CLIPBOARD_DEPLOY_KEY || '' }}
           FLOATING_BROWSER_DEPLOY_KEY: ${{ matrix.id == 'dev.thiennguyen.floating-browser' && secrets.FLOATING_BROWSER_DEPLOY_KEY || '' }}
+          MEETING_DEPLOY_KEY: ${{ matrix.id == 'dev.thiennguyen.meeting' && secrets.MEETING_DEPLOY_KEY || '' }}
         run: scripts/fetch-private.sh "$ID"
 
       # No minisign and no secret: nothing here signs. Node is the
@@ -187,6 +188,7 @@ jobs:
           LUNAR_CALENDAR_DEPLOY_KEY: ${{ secrets.LUNAR_CALENDAR_DEPLOY_KEY }}
           CLIPBOARD_DEPLOY_KEY: ${{ secrets.CLIPBOARD_DEPLOY_KEY }}
           FLOATING_BROWSER_DEPLOY_KEY: ${{ secrets.FLOATING_BROWSER_DEPLOY_KEY }}
+          MEETING_DEPLOY_KEY: ${{ secrets.MEETING_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
       - id: sync
         env:
@@ -219,6 +221,7 @@ jobs:
           LUNAR_CALENDAR_DEPLOY_KEY: ${{ secrets.LUNAR_CALENDAR_DEPLOY_KEY }}
           CLIPBOARD_DEPLOY_KEY: ${{ secrets.CLIPBOARD_DEPLOY_KEY }}
           FLOATING_BROWSER_DEPLOY_KEY: ${{ secrets.FLOATING_BROWSER_DEPLOY_KEY }}
+          MEETING_DEPLOY_KEY: ${{ secrets.MEETING_DEPLOY_KEY }}
         run: scripts/fetch-private.sh
 
       # minisign from Ubuntu's archive. A mirror that stops answering held

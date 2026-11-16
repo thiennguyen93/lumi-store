@@ -22,3 +22,7 @@
 	path = ext/dev.thiennguyen.floating-browser
 	url = git@github.com:thiennguyen93/lumi-floating-browser.git
 	update = none
+[submodule "ext/dev.thiennguyen.meeting"]
+	path = ext/dev.thiennguyen.meeting
+	url = git@github.com:thiennguyen93/lumi-meeting-note.git
+	update = none
