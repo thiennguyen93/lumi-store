@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1] - 2026-11-17
+
+### Changed
+
+- **The menu bar icon shows the microphone alone while your microphones are on**, without the orange dot, which looked like macOS's sign that an app is recording. Muted is still the red slash.
+
 ## [0.4.0] - 2026-11-12
 
 ### Added

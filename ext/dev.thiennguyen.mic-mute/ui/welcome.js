@@ -41,7 +41,7 @@ const barsOf = (at) => FRAMES[at].map(([y, len], i) => `<path d="M${BAR_X[i]} ${
 function itemIcon(look, still = false) {
   if (look === "talking") return `<svg class="ico" viewBox="0 0 36 24" aria-hidden="true">${MIC}<g class="bars"${still ? "" : " data-talk"}>${barsOf(still ? 2 : frame)}</g></svg>`;
   if (look === "muted") return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${MIC_OFF_INK}<path class="slash" d="m2 2 20 20"/></svg>`;
-  return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${MIC}<circle class="dot" cx="19.6" cy="4.4" r="3.6"/></svg>`;
+  return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${MIC}</svg>`;
 }
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;

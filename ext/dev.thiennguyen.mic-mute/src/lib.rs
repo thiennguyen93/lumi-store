@@ -428,11 +428,14 @@ fn dress() -> Result<(), String> {
 }
 
 /// The icon is drawn in colour (0.3.0, `Item::coloured`, Lumi 1.79.0): the
-/// microphone in the bar's own ink, with a red slash when muted and an
-/// orange dot when live — orange being macOS's colour for a microphone in
-/// use, red every meeting app's for muted. The shapes differ as well as the
-/// colours (a slash, a dot), and the tooltip says it, so no state rests on
-/// colour alone. Each file has a `.dark.svg` twin for a dark bar.
+/// microphone in the bar's own ink, with a red slash when muted — red being
+/// every meeting app's colour for muted — and the microphone alone when
+/// live. Live had an orange dot at first, and the owner took it off
+/// (2026-11-17): an orange dot beside a microphone is macOS's own sign that
+/// something is recording, so a microphone merely left on read as one. The
+/// shapes differ (a slash, none), and the tooltip says it, so no state rests
+/// on colour alone. Each file has a `.dark.svg` twin for a dark bar; live's
+/// is the same drawing, kept so every icon is looked up one way.
 fn draw(muted: bool) -> Result<(), String> {
     let (icon, tooltip) = if muted {
         ("icons/muted.svg", "Microphones muted — hold ⌥⌘M to talk, tap to unmute")
