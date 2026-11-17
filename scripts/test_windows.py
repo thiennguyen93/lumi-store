@@ -172,6 +172,20 @@ class AppName(unittest.TestCase):
         self.assertIn("not text", refusal("app-name = 1"))
 
 
+class WindowButtons(unittest.TestCase):
+    def test_a_window_may_keep_close_alone(self):
+        check('window-buttons = "close"')
+        check('window-buttons = "all"')
+        check('window-buttons = "close"\nmaximizable = false\nminimizable = false')
+
+    def test_a_panel_has_no_title_bar_buttons(self):
+        self.assertIn("only a window has", refusal('kind = "panel"\nwindow-buttons = "close"'))
+
+    def test_it_is_all_or_close(self):
+        for wrong in ('window-buttons = "none"', 'window-buttons = "Close"', "window-buttons = true"):
+            self.assertIn('is not "all" or "close"', refusal(wrong), wrong)
+
+
 class AllDesktops(unittest.TestCase):
     def test_a_panel_of_its_own_says_it(self):
         check('kind = "panel"\nall-desktops = true')

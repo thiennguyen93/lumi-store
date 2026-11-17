@@ -425,6 +425,7 @@ OVERLAY_REFUSED = (
     (("titlebar",), "text"),
     (("titlebar-height",), "said"),
     (("app-name", "app_name"), "said"),
+    (("window-buttons",), "said"),
     (("focus",), "said"),
     (("overhang",), "said"),
     (("click-through", "click_through"), "said"),
@@ -922,6 +923,18 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f"the window {name}'s app-name has to be one line")
             elif len(app_name.strip()) > MAX_APP_NAME:
                 fail(entry_id, f"the window {name}'s app-name is longer than {MAX_APP_NAME} characters")
+        # `manifest.rs`'s window-buttons rule (Lumi 1.88), same sentences: a
+        # window's alone — a panel or an overlay has no title bar buttons —
+        # and "all" or "close". No floor: an older Lumi ignores the key and
+        # draws all three buttons, greyed where the manifest also says
+        # maximizable and minimizable false, which is the fallback the docs
+        # ask an author to write beside it.
+        if "window-buttons" in window:
+            buttons = window["window-buttons"]
+            if kind != "window":
+                fail(entry_id, f"the {kind} {name} sets window-buttons, which only a window has: a panel or an overlay has no title bar buttons")
+            elif not isinstance(buttons, str) or buttons.strip() not in ("all", "close"):
+                fail(entry_id, f'the window {name}\'s window-buttons = "{buttons}" is not "all" or "close"')
         # `manifest.rs`'s all-desktops rule (Lumi 1.65), same sentences: a
         # panel's that stands on its own — not a window's, which has the
         # desktop macOS gives it, and not one beside the selection or under
