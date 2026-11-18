@@ -1,4 +1,32 @@
 {
+  "0.4.0": {
+    "notesSha256": "557202ee57e480122795780fc8a3c48dfebddf3e437da54894c336c52035fb6b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Smoother captions and notices that stay out of the way",
+          "items": [
+            "New words glide the captions up instead of jumping them a line at a time",
+            "Corrections only fade in the words that changed, keeping your place while reading",
+            "A speaker's name at the top stays put while their turn continues",
+            "Notices float over the captions instead of making the panel taller",
+            "The newest line stays in sight and the panel stays where you put it"
+          ]
+        },
+        "vi": {
+          "headline": "Phụ đề mượt mà hơn và thông báo không che khuất",
+          "items": [
+            "Từ mới trượt phụ đề lên thay vì nhảy từng dòng",
+            "Chỉnh sửa chỉ làm mờ dần những từ thay đổi, giúp bạn không mất vị trí đang đọc",
+            "Tên người nói ở trên cùng giữ nguyên trong khi lượt nói của họ tiếp tục",
+            "Thông báo nổi phía trên phụ đề thay vì làm bảng cao hơn",
+            "Dòng mới nhất vẫn hiện và bảng ở đúng chỗ bạn đặt"
+          ]
+        }
+      }
+    }
+  },
   "0.3.0": {
     "notesSha256": "6d7ddd8c7ea756c6a433f02a716eacc0d8bd889962de6812f8e714f9cfcd40a6",
     "summary": {
