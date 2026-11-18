@@ -166,7 +166,7 @@ class AppName(unittest.TestCase):
         self.assertIn("only a window has", refusal('kind = "panel"\napp-name = "Notes"'))
 
     def test_it_is_one_line_of_something_and_short(self):
-        self.assertIn("empty app-name", refusal('app-name = "  "'))
+        self.assertIn("app-name is empty", refusal('app-name = "  "'))
         self.assertIn("one line", refusal('app-name = "Two\\nlines"'))
         self.assertIn("longer than 32", refusal(f'app-name = "{"x" * (publish.MAX_APP_NAME + 1)}"'))
         self.assertIn("not text", refusal("app-name = 1"))

@@ -165,6 +165,9 @@ CAPABILITIES = {
     # Lumi 1.81: the `away` event (the screen locked, the Mac or its screens
     # asleep, another user switched in, and each way back).
     "away",
+    # Lumi 1.89: the `launcher` interface and an app of the extension's own
+    # in Applications, described by `[launcher]` (`check_launcher`).
+    "launcher",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -216,6 +219,9 @@ EVENTS = {
     "audio-devices": "audio-devices",
     # Lumi 1.81: the person stepping away from the Mac, and back.
     "away": "away",
+    # Lumi 1.89: the extension's app in Applications put there or taken away
+    # on its Permissions sheet — `menu-shown`'s twin for the launcher switch.
+    "launcher-shown": "launcher",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -225,13 +231,20 @@ PARAM_KINDS = {
 CHOICE_KINDS = {"select", "segmented", "multiselect"}
 # `manifest::MAX_COPIES`: the most copies one `[[window]]` may have.
 MAX_COPIES = 32
-# `manifest::MAX_APP_NAME`: the most characters a window's `app-name` holds.
+# `manifest::MAX_APP_NAME`: the most characters a window's `app-name` holds,
+# and the name of the extension's app in Applications (`app_name_refusal`).
 MAX_APP_NAME = 32
 # Lowercase only, as Lumi's `manifest::is_valid_id` is: the id is a
 # directory name on a case-insensitive filesystem, and a second spelling of
 # an installed id was a takeover of its directory.
-ID_RE = re.compile(r"^[a-z0-9._-]{1,100}$")
-NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+#
+# Both end in `\Z`, never `$`: Python's `$` also matches before a final
+# newline, so "card\n" passed here while Lumi, which asks every character
+# (`is_valid_id`, and each window, node, page, sheet and folder name),
+# refuses it. In the pattern rather than at each caller, so a new caller
+# using `match` cannot reopen it.
+ID_RE = re.compile(r"^[a-z0-9._-]{1,100}\Z")
+NAME_RE = re.compile(r"^[A-Za-z0-9_-]+\Z")
 def suggested_key_problem(text):
     """`manifest::suggested_accelerator`'s refusals, word for word: a
     `[[command]] suggested-key` like "cmd+shift+c"."""
@@ -351,15 +364,21 @@ MAX_CHANGES_VERSIONS = 20
 # write, so whatever an author already uses is accepted as it is:
 # `## 1.2.0`, `## v1.2.0`, `## [1.2.0] - 2026-09-30`,
 # `## [1.2.0](https://…) (2026-09-30)`, `## 1.2.0 (2026-09-30)`.
+#
+# These five are Lumi's `ext::changelog` patterns, spelled as Lumi spells
+# them: `[0-9]`, never `\d`, which in a Python str pattern matches any
+# Unicode digit ("١", "٣"), so "١.0.0" passed here while Lumi refuses it; and
+# `\Z`, never `$`, which in Python also matches before a final newline,
+# where Rust's `$` is the end of the text.
 VERSION_HEADING_RE = re.compile(
     r"^##\s+\[?v?(?P<version>[0-9][^\]\s()]*)\]?(?:\([^)]*\))?"
-    r"(?:\s+(?:[-–—]\s*)?\(?(?P<date>[^)\s]+)\)?)?\s*$"
+    r"(?:\s+(?:[-–—]\s*)?\(?(?P<date>[^)\s]+)\)?)?\s*\Z"
 )
-UNRELEASED_HEADING_RE = re.compile(r"^##\s+\[?unreleased\]?\s*$", re.IGNORECASE)
-SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?$")
+UNRELEASED_HEADING_RE = re.compile(r"^##\s+\[?unreleased\]?\s*\Z", re.IGNORECASE)
+SEMVER_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z.-]+))?\Z")
 # What a manifest may ship as: SEMVER_RE with no pre-release (`check_manifest`).
-RELEASE_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
-DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+RELEASE_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\Z")
+DATE_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}\Z")
 # `release-notes/<id>.json` at the root: the store's own short summary of
 # each version, in English and Vietnamese, for Lumi's update list and the
 # website. The store's words rather than the author's, like `category` —
@@ -391,7 +410,10 @@ def is_valid_ui_path(path: str) -> bool:
         segment
         and not segment.startswith(".")
         and segment != "__lumi__"
-        and UI_SEGMENT_RE.match(segment)
+        # `fullmatch`, not `match`: the pattern's `$` also matches before a
+        # trailing newline, so "index.html\n" passed here while Lumi, which
+        # asks every character, refuses it.
+        and UI_SEGMENT_RE.fullmatch(segment)
         for segment in path.split("/")
     )
 
@@ -408,6 +430,301 @@ OVERLAY_SINCE = (1, 79, 0)
 # older Lumi refuses both words, so the package would be offered to it and
 # fail at install: a manifest naming either names this floor.
 AWAY_SINCE = (1, 81, 0)
+
+# The Lumi that first reads `[switches]`, knows the `launcher` capability and
+# its `[launcher]` table, and tells the `launcher-shown` event. An older Lumi
+# refuses the capability and the event, and passes over both tables without a
+# word — so a switch said only in `[switches]` would start wherever that Lumi
+# starts it. A manifest saying any of them names this floor.
+LAUNCHER_SINCE = (1, 89, 0)
+
+# `manifest::Switch`: every switch Lumi keeps over an extension whose starting
+# position a manifest may say, in `Switch::ALL`'s order — the order Lumi asks
+# them in and lists them in. Each is (its word in `[switches]`, the capability
+# it belongs to, the older `*-default` key read as an alias for it, or None
+# for a switch born into the table). A switch Lumi adds is a line here.
+SWITCHES = (
+    ("preload", "preload", "preload-default"),
+    ("selection-watch", "selection-watch", "selection-watch-default"),
+    ("text-input", "text-input", "text-input-default"),
+    ("launcher", "launcher", None),
+)
+
+# Rust's `char::is_whitespace` (Unicode's White_Space), which Lumi's
+# `str::trim` and `split_whitespace` use. Not Python's `str.isspace`, which
+# also counts U+001C–U+001F: Lumi keeps those in a name and refuses it as "has
+# to be one line", so stripping them here would sign a name Lumi refuses.
+RUST_WHITESPACE = (
+    "\t\n\v\f\r \x85\xa0            "
+    "    　"
+)
+RUST_WHITESPACE_RUN = re.compile(f"[{re.escape(RUST_WHITESPACE)}]+")
+
+
+def rust_trim(text: str) -> str:
+    """Rust's `str::trim`, by RUST_WHITESPACE."""
+    return text.strip(RUST_WHITESPACE)
+
+
+def folded_name(name: str) -> str:
+    """`manifest::folded_name`: an extension's `name` as Lumi shows it where an
+    application's name goes — folded onto one line and cut at MAX_APP_NAME
+    characters with an ellipsis. The menu bar's bold name and the default name
+    of the extension's app are both this, so the two never disagree."""
+    folded = " ".join(word for word in RUST_WHITESPACE_RUN.split(name) if word)
+    if len(folded) > MAX_APP_NAME:
+        return folded[: MAX_APP_NAME - 1].rstrip(RUST_WHITESPACE) + "…"
+    return folded
+
+
+# The script a character is written in, for `script_mix`. Lumi asks the
+# `unicode-script` crate (Unicode's Script property); Python's standard library
+# has no such property, so the store reads it off the character's name, which
+# for nearly every character starts with its script ("CYRILLIC SMALL LETTER
+# A", "THAI CHARACTER KO KAI"). The names are `unicode_script::Script`'s
+# `full_name`s, so a refusal names the scripts in Lumi's words.
+SCRIPT_NAMES = (
+    "Adlam Ahom Anatolian_Hieroglyphs Arabic Armenian Avestan Balinese Bamum Bassa_Vah Batak Bengali "
+    "Beria_Erfe Bhaiksuki Bopomofo Brahmi Braille Buginese Buhid Canadian_Aboriginal Carian "
+    "Caucasian_Albanian Chakma Cham Cherokee Chorasmian Coptic Cuneiform Cypriot Cypro_Minoan Cyrillic "
+    "Deseret Devanagari Dives_Akuru Dogra Duployan Egyptian_Hieroglyphs Elbasan Elymaic Ethiopic Garay "
+    "Georgian Glagolitic Gothic Grantha Greek Gujarati Gunjala_Gondi Gurmukhi Gurung_Khema Han Hangul "
+    "Hanifi_Rohingya Hanunoo Hatran Hebrew Hiragana Imperial_Aramaic Inscriptional_Pahlavi "
+    "Inscriptional_Parthian Javanese Jurchen Kaithi Kannada Katakana Kawi Kayah_Li Kharoshthi "
+    "Khitan_Small_Script Khmer Khojki Khudawadi Kirat_Rai Lao Latin Lepcha Limbu Linear_A Linear_B Lisu "
+    "Lycian Lydian Mahajani Makasar Malayalam Mandaic Manichaean Marchen Masaram_Gondi Medefaidrin "
+    "Meetei_Mayek Mende_Kikakui Meroitic_Cursive Meroitic_Hieroglyphs Miao Modi Mongolian Mro Multani "
+    "Myanmar Nabataean Nag_Mundari Nandinagari New_Tai_Lue Newa Nko Nushu Nyiakeng_Puachue_Hmong Ogham "
+    "Ol_Chiki Ol_Onal Old_Hungarian Old_Italic Old_North_Arabian Old_Permic Old_Persian Old_Sogdian "
+    "Old_South_Arabian Old_Turkic Old_Uyghur Oriya Osage Osmanya Pahawh_Hmong Palmyrene Pau_Cin_Hau "
+    "Phags_Pa Phoenician Proto_Cuneiform Psalter_Pahlavi Rejang Runic Samaritan Saurashtra Seal Sharada "
+    "Shavian Siddham Sidetic SignWriting Sinhala Sogdian Sora_Sompeng Soyombo Sundanese Sunuwar "
+    "Syloti_Nagri Syriac Tagalog Tagbanwa Tai_Le Tai_Tham Tai_Viet Tai_Yo Takri Tamil Tangsa Tangut "
+    "Telugu Thaana Thai Tibetan Tifinagh Tirhuta Todhri Tolong_Siki Toto Tulu_Tigalari Ugaritic Vai "
+    "Vithkuqi Wancho Warang_Citi Yezidi Yi Zanabazar_Square"
+).split()
+# The first words of a character's name → its script, or None for a name that
+# starts like a script's and is Common (shared by every script) in Unicode.
+SCRIPT_BY_NAME = {name.upper().replace("_", " "): name for name in SCRIPT_NAMES if name != "Han"}
+SCRIPT_BY_NAME.update({
+    # Scripts whose characters are named otherwise than the script is.
+    "CANADIAN SYLLABICS": "Canadian_Aboriginal",
+    "EGYPTIAN HIEROGLYPH": "Egyptian_Hieroglyphs",
+    "ANATOLIAN HIEROGLYPH": "Anatolian_Hieroglyphs",
+    "MEROITIC HIEROGLYPHIC": "Meroitic_Hieroglyphs",
+    "PHAGS-PA": "Phags_Pa",
+    "TULU-TIGALARI": "Tulu_Tigalari",
+    "CYPRO-MINOAN": "Cypro_Minoan",
+    "CJK UNIFIED IDEOGRAPH": "Han",
+    "CJK COMPATIBILITY IDEOGRAPH": "Han",
+    "CJK RADICAL": "Han",
+    "KANGXI RADICAL": "Han",
+    "HANGZHOU NUMERAL": "Han",
+    "IDEOGRAPHIC ITERATION": "Han",
+    "IDEOGRAPHIC NUMBER": "Han",
+    "YANGQIN SIGN": "Han",
+    "VIETNAMESE ALTERNATE READING": "Han",
+    "OLD CHINESE": "Han",
+    "CHINESE SMALL": "Han",
+    "HENTAIGANA": "Hiragana",
+    "SQUARE HIRAGANA": "Hiragana",
+    "CIRCLED KATAKANA": "Katakana",
+    "PARENTHESIZED HANGUL": "Hangul",
+    "CIRCLED HANGUL": "Hangul",
+    "PARENTHESIZED KOREAN": "Hangul",
+    "CIRCLED KOREAN": "Hangul",
+    "ROMAN NUMERAL": "Latin",
+    "SMALL ROMAN NUMERAL": "Latin",
+    "ARABIC-INDIC": "Arabic",
+    "EXTENDED ARABIC-INDIC": "Arabic",
+    "RUMI": "Arabic",
+    "GREEK MUSICAL": "Greek",
+    # Named for a script, and Common or Inherited all the same.
+    "COPTIC EPACT": None,
+    "IDEOGRAPHIC ANNOTATION": None,
+    "CYRILLIC DASIA": None,
+    "CYRILLIC PSILI": None,
+})
+# Words a name puts before its script without changing it: FULLWIDTH LATIN
+# CAPITAL LETTER A is Latin, HALFWIDTH KATAKANA LETTER A Katakana.
+NAME_QUALIFIERS = ("FULLWIDTH ", "HALFWIDTH ", "MODIFIER LETTER ", "SUPERSCRIPT ", "SUBSCRIPT ", "VERTICAL ")
+# The characters whose name says otherwise than their script, one by one:
+# KELVIN SIGN is Latin, ARABIC COMMA is Common, ARABIC FATHA Inherited.
+SCRIPT_OF_CHARACTER = {}
+for _spans, _script in (
+    ("00AA 00BA 212A 212B 2132 214E", "Latin"),
+    ("2126 1018E", "Greek"),
+    ("A673", "Cyrillic"),
+    ("058D 058E", "Armenian"),
+    ("060B FDFC", "Arabic"),
+    ("02EA 02EB", "Bopomofo"),
+    (
+        "0374 0385 037E 0387 0605 060C 061B 061F 0640 064B-0655 0670 06DD 08E2 0951-0954 0964 0965 0E3F "
+        "10FB 16EB-16ED 1802 1803 1805 271D 30FB A92E A9CF FF65 FF9E FF9F",
+        None,
+    ),
+):
+    for _span in _spans.split():
+        _first, _, _last = _span.partition("-")
+        for _point in range(int(_first, 16), int(_last or _first, 16) + 1):
+            SCRIPT_OF_CHARACTER[chr(_point)] = _script
+# UTS #31's Recommended scripts (Table 4), the ones a name may write beside
+# Latin (`GeneralSecurityProfile::identifier_allowed`, for `script_mix`).
+RECOMMENDED_SCRIPTS = {
+    "Arabic", "Armenian", "Bengali", "Bopomofo", "Cyrillic", "Devanagari", "Ethiopic", "Georgian", "Greek",
+    "Gujarati", "Gurmukhi", "Han", "Hangul", "Hebrew", "Hiragana", "Kannada", "Katakana", "Khmer", "Lao",
+    "Latin", "Malayalam", "Myanmar", "Oriya", "Sinhala", "Tamil", "Telugu", "Thaana", "Thai", "Tibetan",
+}
+# UTS #39's moderately restrictive sets with Han: a name in any of them stands.
+SCRIPTS_WITH_HAN = (
+    {"Latin", "Han", "Hiragana", "Katakana"},
+    {"Latin", "Han", "Bopomofo"},
+    {"Latin", "Han", "Hangul"},
+)
+
+
+def script_of(letter: str):
+    """The script `letter` is written in, by `unicode_script::Script`'s
+    `full_name`, or None for one that is Common, Inherited or unknown — which
+    `script_mix` leaves out, as Lumi does.
+
+    Read off the character's name, so it is an approximation, measured
+    (2026-11-18) against `unicode-script` 0.5.9 over every character Python
+    3.15's database names (159,801): it agrees on all but eleven, and those
+    eleven are characters Lumi gives a script and this reads as Common, so a
+    name holding one could pass here and be refused by Lumi — six Avestan
+    punctuation marks (U+10B3A–U+10B3F), three combining Greek musical marks
+    (U+1D242–U+1D244) and two Latin modifier colons (U+10781, U+10782). Not
+    one of them could pass for a letter of another script. A character newer
+    than the Python running this has no name and reads as Common too: CI's
+    Python is older than Lumi's Unicode, so a name using a letter of the
+    newest Unicode versions is checked as though that letter were not
+    there."""
+    if letter in SCRIPT_OF_CHARACTER:
+        return SCRIPT_OF_CHARACTER[letter]
+    name = unicodedata.name(letter, "")
+    if not name:
+        return None
+    # "CJK UNIFIED IDEOGRAPH-4E2D": the code point is part of the last word.
+    name = re.sub(r"-[0-9A-F]{4,6}$", " X", name)
+    combining = name.startswith("COMBINING ")
+    if combining:
+        name = name[len("COMBINING "):]
+    modifier = name.startswith("MODIFIER LETTER ")
+    while name.startswith(NAME_QUALIFIERS):
+        name = next(name[len(word):] for word in NAME_QUALIFIERS if name.startswith(word))
+    words = name.split(" ")
+    # The longest run of first words that names a script, with a word after
+    # it: SEAL is an emoji's whole name, and SEAL LETTER A a Seal letter.
+    for count in range(min(4, len(words) - 1), 0, -1):
+        head = " ".join(words[:count])
+        if head in SCRIPT_BY_NAME:
+            script = SCRIPT_BY_NAME[head]
+            # COMBINING LATIN SMALL LETTER A is Inherited; COMBINING CYRILLIC
+            # TITLO and COMBINING DEVANAGARI DIGIT ZERO are their scripts'.
+            if combining and script in ("Latin", "Greek"):
+                return None
+            return script
+    if combining:
+        return None
+    # MODIFIER LETTER SMALL H is Latin and MODIFIER LETTER SMALL BETA Greek:
+    # the letter it is a modifier of says which. SQUARE APAATO (㌀) is
+    # Katakana, as the letters it squares are.
+    if modifier or name.startswith("SQUARE "):
+        decomposed = unicodedata.normalize("NFKD", letter)
+        if decomposed != letter:
+            script = script_of(decomposed[0])
+            if modifier or script == "Katakana":
+                return script
+        if modifier and words[0] in ("SMALL", "CAPITAL"):
+            return "Latin"
+    return None
+
+
+def identifier_allowed(letter: str, script: str) -> bool:
+    """`GeneralSecurityProfile::identifier_allowed` (UTS #39's Identifier_Status
+    Allowed), approximated: a letter or mark of a Recommended script that
+    NFKC leaves alone. `script_mix` asks it only of the letters written beside
+    Latin, in the one script other than Latin a name may hold.
+
+    Measured (2026-11-18) against `unicode-security` 0.1.3 over the 4,221
+    characters of the 21 scripts where the answer can change a verdict
+    (Arabic, Thai, Devanagari and the rest of RECOMMENDED_SCRIPTS other than
+    Latin, Cyrillic, Greek and the scripts that stand beside Han): it allows
+    825 archaic, liturgical and uncommon-use letters and marks Lumi does not
+    — Ethiopic's and Georgian's old letters, Arabic's Quranic signs,
+    Hebrew's cantillation — so a Latin name beside one of those passes here
+    and is refused by Lumi; and it refuses every digit, number, punctuation
+    mark and symbol, 116 of which Lumi allows (Arabic-Indic and Thai digits
+    among them). The modern letters every living language in those scripts
+    is written with agree. Exact would be Unicode's IdentifierStatus.txt for
+    those scripts, 251 ranges, which the standard library does not carry."""
+    return (
+        script in RECOMMENDED_SCRIPTS
+        and unicodedata.category(letter)[0] in "LM"
+        and unicodedata.normalize("NFKC", letter) == letter
+    )
+
+
+def script_mix(name: str):
+    """`manifest::script_mix`: Unicode's moderately restrictive level (UTS #39
+    §5.2) asked of the scripts `name`'s letters are written in — None for a
+    name that meets it, else the mix, in Lumi's words. Spaces, digits, marks
+    and emoji (Common and Inherited) are left out; a name stands in one
+    script, in Latin with Han and its companions, or in Latin beside one other
+    Recommended script that is not Cyrillic or Greek, the two whose letters
+    pass for Latin. A lookalike in one script ("Арр", all Cyrillic) passes:
+    that is Lumi's skeleton comparison's to catch, against the apps on the
+    Mac."""
+    letters = [(letter, script_of(letter)) for letter in name]
+    letters = [(letter, script) for letter, script in letters if script is not None]
+    scripts = []
+    for _, script in letters:
+        if script not in scripts:
+            scripts.append(script)
+    if len(scripts) <= 1:
+        return None
+    if any(all(script in companions for script in scripts) for companions in SCRIPTS_WITH_HAN):
+        return None
+    if len(scripts) == 2 and "Latin" in scripts:
+        other = scripts[1] if scripts[0] == "Latin" else scripts[0]
+        recommended = all(identifier_allowed(letter, script) for letter, script in letters if script == other)
+        if recommended and other not in ("Cyrillic", "Greek"):
+            return None
+    return (
+        f"{' and '.join(scripts)} letters — a name may be in one script, or Latin beside one other "
+        "(never Cyrillic or Greek, whose letters pass for Latin), or Latin with Han and its companions"
+    )
+
+
+def app_name_refusal(name: str):
+    """`manifest::app_name_refusal`: what is wrong with a name the Mac shows as
+    an application's — a window's `app-name`, the extension's app in
+    Applications — or None. A phrase to follow the key's own name ("is
+    empty"), so each caller says which key it was, and one rule for every such
+    name, so two keys never accept different names."""
+    if not name:
+        return "is empty"
+    # Rust's `char::is_control`: Unicode's Cc, a line break among them.
+    if any(unicodedata.category(c) == "Cc" for c in name):
+        return "has to be one line"
+    if len(name) > MAX_APP_NAME:
+        return f"is longer than {MAX_APP_NAME} characters"
+    mix = script_mix(name)
+    return f"mixes {mix}" if mix else None
+
+
+def file_name_refusal(name: str):
+    """`manifest::file_name_refusal`: why `name` cannot be the name of a bundle
+    in a folder, or None. A `/` is a folder, a `:` is what Finder shows a `/`
+    as, and a leading `.` hides the app from Finder and Spotlight alike."""
+    if "/" in name:
+        return "holds a /, which a file name cannot"
+    if ":" in name:
+        return "holds a :, which Finder shows as a /"
+    if name.startswith("."):
+        return "starts with a full stop, which hides a file from Finder and Spotlight"
+    return None
 
 # `manifest.rs`'s `overlay_refusal`, in its order: every key an overlay does
 # not have — where Lumi places it, what takes the keyboard or the pointer,
@@ -468,13 +785,27 @@ def overlay_refusal(window: dict):
     return None
 
 
+U64_PART_RE = re.compile(r"\+?[0-9]+\Z")
+
+
+def parse_triplet(text: str):
+    """`manifest::parse_triplet`: "major.minor.patch" as three numbers, or
+    None. Each part is what Rust's `u64` parse takes — ASCII digits with an
+    optional leading `+`, below 2**64 — not what `str.isdigit` takes, which
+    is any Unicode digit ("١") and the superscripts ("¹"), the last of which
+    `int` then refuses with a traceback."""
+    parts = text.split(".")
+    if len(parts) != 3 or not all(U64_PART_RE.match(part) for part in parts):
+        return None
+    numbers = tuple(int(part) for part in parts)
+    return numbers if all(number < 2**64 for number in numbers) else None
+
+
 def version_tuple(text: str) -> tuple:
     """A `min-lumi-version` as numbers to compare — (0, 0, 0) for one that is
-    missing or not three numbers, which is below every floor this checks."""
-    parts = str(text).strip().split(".")
-    if len(parts) != 3 or not all(part.isdigit() for part in parts):
-        return (0, 0, 0)
-    return tuple(int(part) for part in parts)
+    missing or not three numbers, which is below every floor this checks.
+    Trimmed as Lumi trims it (`rust_trim`)."""
+    return parse_triplet(rust_trim(str(text))) or (0, 0, 0)
 
 
 def fail(entry_id: str, why: str):
@@ -554,6 +885,17 @@ def check_manifest(entry_id: str, manifest: dict):
             f"version {ext['version']!r} is not three numbers like 1.2.0 — Lumi never offers an update "
             "past a pre-release; ask for beta = true in extensions.toml instead",
         )
+    # `manifest::parse`'s floor, same sentence: a `min-lumi-version` Lumi cannot
+    # read as three numbers refuses the whole manifest, so one only a floor
+    # below would have noticed (and then named as too low) is refused here.
+    floor = ext.get("min-lumi-version", ext.get("min_lumi_version", ""))
+    if not isinstance(floor, str):
+        fail(entry_id, f"min-lumi-version = {floor!r} is not text")
+    if rust_trim(floor) and parse_triplet(rust_trim(floor)) is None:
+        fail(
+            entry_id,
+            f"min-lumi-version {json.dumps(rust_trim(floor), ensure_ascii=False)} is not a plain major.minor.patch number",
+        )
     for word in ext.get("capabilities", []):
         if word not in CAPABILITIES:
             fail(entry_id, f"capability {word!r} is not one the host offers ({sorted(CAPABILITIES)})")
@@ -610,29 +952,13 @@ def check_manifest(entry_id: str, manifest: dict):
             )
     if "clipboard-ocr" in ext.get("events", []) and "clipboard" not in ext.get("events", []):
         fail(entry_id, 'hearing "clipboard-ocr" needs "clipboard" too — the text names a copy the extension has to have heard')
-    # `manifest.rs`'s `preload-default`: where the preload switch starts, so
-    # only beside the permission that has the switch.
-    if "preload-default" in ext or "preload_default" in ext:
-        start = ext.get("preload-default", ext.get("preload_default"))
-        if not isinstance(start, bool):
-            fail(entry_id, f"preload-default = {start!r} is not true or false")
-        if "preload" not in ext.get("capabilities", []):
-            fail(entry_id, "preload-default says where the preload switch starts, which needs the preload capability — add it to capabilities")
-    # And `selection-watch-default`, the same way for the selection-watch
-    # switch.
-    if "selection-watch-default" in ext or "selection_watch_default" in ext:
-        start = ext.get("selection-watch-default", ext.get("selection_watch_default"))
-        if not isinstance(start, bool):
-            fail(entry_id, f"selection-watch-default = {start!r} is not true or false")
-        if "selection-watch" not in ext.get("capabilities", []):
-            fail(entry_id, "selection-watch-default says where the selection-watch switch starts, which needs the selection-watch capability — add it to capabilities")
-    # And `text-input-default`, for the typing switch.
-    if "text-input-default" in ext or "text_input_default" in ext:
-        start = ext.get("text-input-default", ext.get("text_input_default"))
-        if not isinstance(start, bool):
-            fail(entry_id, f"text-input-default = {start!r} is not true or false")
-        if "text-input" not in ext.get("capabilities", []):
-            fail(entry_id, "text-input-default says where the text-input switch starts, which needs the text-input capability — add it to capabilities")
+    # `manifest.rs`'s `switches_of`: where each of Lumi's switches starts, in
+    # `[switches]` or by a switch's older `*-default` key.
+    check_switches(entry_id, manifest)
+    # And `manifest.rs`'s `launcher_of`: the extension's app in Applications.
+    # What its `window` and `tab` name is checked once the windows and tabs
+    # are (`check_launcher_targets`, below).
+    launcher = check_launcher(entry_id, manifest)
     # And `menu-bar-item-heading`, whether the menu bar item's menu starts
     # with the extension's name — only beside the capability that draws one.
     if "menu-bar-item-heading" in ext or "menu_bar_item_heading" in ext:
@@ -908,21 +1234,21 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f"the window {name}'s capturable = {window['capturable']!r} is not true or false")
         # `manifest.rs`'s app-name rule (Lumi 1.65), same sentences: a
         # window's alone — a panel never brings Lumi's menu bar forward — and
-        # one line of 1 to 32 characters once trimmed. An older Lumi ignores
-        # the key, and its menu bar reads Lumi there.
+        # held to `app_name_refusal` once trimmed, the rule the extension's
+        # app in Applications is held to too (one line of 1 to 32 characters,
+        # and since Lumi 1.89 no mix of scripts that makes a lookalike). An
+        # older Lumi ignores the key, and its menu bar reads Lumi there; one
+        # before 1.89 accepts any mix, so the stricter rule needs no floor.
         if "app-name" in window:
             app_name = window["app-name"]
             if kind == "panel":
                 fail(entry_id, f"the panel {name} sets app-name, which only a window has: a panel never brings Lumi's menu bar forward")
             elif not isinstance(app_name, str):
                 fail(entry_id, f"the window {name}'s app-name = {app_name!r} is not text")
-            elif not app_name.strip():
-                fail(entry_id, f"the window {name} sets an empty app-name")
-            # Rust's `char::is_control`: Unicode's Cc, a line break among them.
-            elif any(unicodedata.category(c) == "Cc" for c in app_name.strip()):
-                fail(entry_id, f"the window {name}'s app-name has to be one line")
-            elif len(app_name.strip()) > MAX_APP_NAME:
-                fail(entry_id, f"the window {name}'s app-name is longer than {MAX_APP_NAME} characters")
+            else:
+                problem = app_name_refusal(rust_trim(app_name))
+                if problem:
+                    fail(entry_id, f"the window {name}'s app-name {problem}")
         # `manifest.rs`'s window-buttons rule (Lumi 1.88), same sentences: a
         # window's alone — a panel or an overlay has no title bar buttons —
         # and "all" or "close". No floor: an older Lumi ignores the key and
@@ -1105,7 +1431,9 @@ def check_manifest(entry_id: str, manifest: dict):
     check_page_tabs(entry_id, manifest)
     check_sheets(entry_id, manifest)
     check_shortcuts(entry_id, manifest)
-    check_tabs(entry_id, manifest)
+    tabs = check_tabs(entry_id, manifest)
+    # `manifest.rs`'s `launcher_targets`, asked once the manifest is whole.
+    check_launcher_targets(entry_id, manifest, launcher, tabs)
     check_folders(entry_id, manifest)
     for noun, path in declared_pages(entry_id, manifest):
         if not is_valid_ui_path(path):
@@ -1127,6 +1455,224 @@ def check_manifest(entry_id: str, manifest: dict):
                 "name (lowercase words joined by '-') nor an .svg file under ui/",
             )
     return ext
+
+
+def lumi_floor(ext: dict) -> tuple:
+    """The manifest's `min-lumi-version` (or `min_lumi_version`), as numbers."""
+    return version_tuple(ext.get("min-lumi-version") or ext.get("min_lumi_version") or "")
+
+
+def check_switches(entry_id: str, manifest: dict):
+    """`[switches]`, with the older `*-default` keys read into it, held to
+    Lumi's `manifest::switches_of` in its order and with its sentences: every
+    value true or false (serde's, before anything else is asked), every word
+    a switch's, no switch said both ways, and none said without its
+    capability, whichever spelling said it. One table, as in Lumi: a switch
+    Lumi adds is a line in SWITCHES and nothing here."""
+    ext = manifest["extension"]
+    table = manifest.get("switches", {})
+    if not isinstance(table, dict):
+        fail(entry_id, "[switches] is a table of where each switch starts: [switches] preload = false")
+    for word in sorted(table):
+        if not isinstance(table[word], bool):
+            fail(entry_id, f"[switches] {word} = {table[word]!r} is not true or false")
+    aliases = {}
+    for word, _, alias in SWITCHES:
+        if alias is None:
+            continue
+        spellings = [key for key in (alias, alias.replace("-", "_")) if key in ext]
+        if len(spellings) > 1:
+            fail(entry_id, f"{alias} is said twice, once as {spellings[1]} — keep {alias}")
+        if spellings:
+            start = ext[spellings[0]]
+            if not isinstance(start, bool):
+                fail(entry_id, f"{alias} = {start!r} is not true or false")
+            aliases[word] = alias
+    known = [word for word, _, _ in SWITCHES]
+    said = {}
+    for word in sorted(table):
+        if word not in known:
+            fail(entry_id, f"[switches] names {word}, which is no switch Lumi keeps — the switches are {', '.join(known)}")
+        said[word] = f"[switches] {word}"
+    for word, alias in aliases.items():
+        if word in said:
+            fail(entry_id, f"{alias} and [switches] {word} both say where the {word} switch starts — keep the [switches] one")
+        said[word] = alias
+    for word, capability, _ in SWITCHES:
+        if word in said and capability not in ext.get("capabilities", []):
+            fail(
+                entry_id,
+                f"{said[word]} says where the {word} switch starts, which needs the {capability} capability — "
+                "add it to capabilities",
+            )
+    if table and lumi_floor(ext) < LAUNCHER_SINCE:
+        fail(
+            entry_id,
+            "[switches] is read from Lumi 1.89.0 — an older Lumi passes over the table, and every switch it "
+            'names starts where that Lumi starts it; set min-lumi-version to "1.89.0" or later',
+        )
+
+
+def check_launcher(entry_id: str, manifest: dict):
+    """`[launcher]`, the extension's app in Applications, held to Lumi's
+    `manifest::launcher_of` with its sentences. None for a manifest without
+    the `launcher` capability — and a `[launcher]` table without it is
+    refused — else what the app is, worked out: `{name, icon, opens, window,
+    tab, switch_on}`, for `check_launcher_targets` once the rest is read.
+
+    The name is `[launcher] name`, trimmed and held to `app_name_refusal`
+    and `file_name_refusal`; or else the extension's `name`, folded as the
+    menu bar folds it, any `/` or `:` made a `-` and leading full stops
+    taken off, held to `app_name_refusal` alone and refused with the key to
+    set instead. The icon is a `.svg` under ui/ (that it ships is
+    `check_ui`'s), never a Lucide name. `opens` is "page" (the default,
+    which may name a `tab`), "window" (which names one), "run" or "none"
+    (which name neither)."""
+    ext = manifest["extension"]
+    raw = manifest.get("launcher")
+    # serde reads the table before anything is checked, so a key of the
+    # wrong type refuses the manifest whatever the capabilities say.
+    if raw is not None:
+        if not isinstance(raw, dict):
+            fail(entry_id, "[launcher] is a table: name, icon, opens, window, tab and switch-on")
+        for key in ("name", "icon", "opens", "window", "tab"):
+            if key in raw and not isinstance(raw[key], str):
+                fail(entry_id, f"[launcher] {key} = {raw[key]!r} is not text")
+        if "switch-on" in raw and "switch_on" in raw:
+            fail(entry_id, "[launcher] says switch-on twice, once as switch_on — keep switch-on")
+        for key in ("switch-on", "switch_on"):
+            if key in raw and not isinstance(raw[key], bool):
+                fail(entry_id, f"[launcher] switch-on = {raw[key]!r} is not true or false")
+    if "launcher" not in ext.get("capabilities", []):
+        if raw is not None:
+            fail(
+                entry_id,
+                "[launcher] says what the extension's app in Applications is, which needs the launcher "
+                "capability — add it to capabilities",
+            )
+        return None
+    raw = raw or {}
+    if "name" in raw:
+        name = rust_trim(raw["name"])
+        problem = app_name_refusal(name) or file_name_refusal(name)
+        if problem:
+            fail(entry_id, f"[launcher] name {problem}")
+    else:
+        folded = folded_name(ext.get("name", "")).replace("/", "-").replace(":", "-")
+        name = folded.lstrip(".").lstrip(RUST_WHITESPACE)
+        problem = app_name_refusal(name)
+        if problem:
+            fail(
+                entry_id,
+                f"the extension's name, as its app in Applications would carry it, {problem} — set "
+                "[launcher] name to the name the app should have",
+            )
+    icon = rust_trim(raw.get("icon", ""))
+    if icon:
+        if icon.endswith(".svg"):
+            if not is_valid_ui_path(icon):
+                fail(entry_id, "[launcher] icon has to be an SVG file under ui/, as a command's icon file is")
+        elif LUCIDE_RE.match(icon):
+            fail(
+                entry_id,
+                f"[launcher] icon names the Lucide icon {icon}; an app's icon is a picture of the extension's "
+                "own — point it at an SVG file under ui/",
+            )
+        else:
+            fail(entry_id, "[launcher] icon has to be an SVG file under ui/, as a command's icon file is")
+    window = rust_trim(raw.get("window", "")) or None
+    tab = rust_trim(raw.get("tab", "")) or None
+    opens = rust_trim(raw["opens"]) if "opens" in raw else "page"
+    if opens == "page":
+        if window:
+            fail(entry_id, '[launcher] window says which window opening the app opens, which needs opens = "window"')
+    elif opens == "window":
+        if not window:
+            fail(entry_id, '[launcher] opens = "window" needs window, the name of the [[window]] to open')
+        if tab:
+            fail(entry_id, '[launcher] tab says which tab of its page opening the app shows, which needs opens = "page"')
+    elif opens == "run":
+        if window or tab:
+            fail(
+                entry_id,
+                "[launcher] opens = \"run\" hands the opening to the extension's own code, so it takes neither "
+                "window nor tab",
+            )
+    elif opens == "none":
+        # Nothing at all: for an extension whose being on is the whole of it
+        # (a way to type, a muted microphone), where opening the app is a way
+        # to switch it on and no more.
+        if window or tab:
+            fail(entry_id, '[launcher] opens = "none" opens nothing, so it takes neither window nor tab')
+    else:
+        fail(
+            entry_id,
+            f'[launcher] opens is {json.dumps(opens, ensure_ascii=False)}; it may be "page", "window", "run" or "none"',
+        )
+    if lumi_floor(ext) < LAUNCHER_SINCE:
+        fail(
+            entry_id,
+            "the launcher capability, its [launcher] table and the launcher-shown event are read from Lumi "
+            '1.89.0 — an older Lumi refuses the manifest; set min-lumi-version to "1.89.0" or later',
+        )
+    return {
+        "name": name,
+        "icon": icon or None,
+        "opens": opens,
+        "window": window,
+        "tab": tab,
+        "switch_on": raw.get("switch-on", raw.get("switch_on", True)),
+    }
+
+
+def check_launcher_targets(entry_id: str, manifest: dict, launcher, tabs: dict):
+    """`manifest::launcher_targets`: what `[launcher] opens` names is the
+    manifest's to open — a `window` some `[[window]]` answers to (a copy's
+    name too) that is not placed beside a selection or under the menu bar
+    item, which have nowhere to be without what they stand beside; and a
+    `tab` its page draws, spelled as a call from it arrives (`:about`,
+    `:page:<name>`, Lumi's `tab_labels::addressed`). `tabs` is what
+    `check_tabs` answered."""
+    if launcher is None:
+        return
+    if launcher["opens"] == "window":
+        named = launcher["window"]
+        answering = None
+        for window in manifest.get("window", []):
+            own = window.get("name", "")
+            copies = window.get("copies")
+            names = [f"{own}-{k}" for k in range(1, copies + 1)] if isinstance(copies, int) else [own]
+            if named in names:
+                answering = window
+                break
+        if answering is None:
+            fail(entry_id, f"[launcher] window is {named}, which no [[window]] is called")
+        if str(answering.get("position", "")).strip() in ("selection", "menu-bar-item"):
+            fail(
+                entry_id,
+                f"[launcher] window is {named}, which Lumi places beside what opened it — beside a selection, "
+                "or under the menu bar item — so opening the app has nowhere to put it",
+            )
+    elif launcher["opens"] == "page" and launcher["tab"]:
+        tab = launcher["tab"]
+        word = tab[1:] if tab.startswith(":") else None
+        if word in BUILTIN_TABS:
+            if tabs[word]["hidden"]:
+                fail(
+                    entry_id,
+                    f"[launcher] tab is {tab}: the manifest hides the {BUILTIN_TABS[word]} tab, so its label "
+                    "would never be seen",
+                )
+        elif word is not None and word.startswith("page:"):
+            page = word[len("page:"):]
+            if page not in [str(declared.get("name", "")) for declared in manifest.get("page", [])]:
+                fail(entry_id, f"[launcher] tab is {tab}: the manifest declares no [[page]] named {page}")
+        else:
+            fail(
+                entry_id,
+                f"[launcher] tab is {tab}: {json.dumps(tab, ensure_ascii=False)} is not one of your tabs — name "
+                "it as a call from it arrives: :about, :settings, :shortcuts, :changelog or :page:<name>",
+            )
 
 
 KNOWN_FOLDERS = ("pictures",)
@@ -2316,6 +2862,19 @@ def check_ui(entry_id: str, manifest: dict, ui_dir: Path):
             # The installer's own ceiling for a command mark, icon.svg's.
             if mark_path.stat().st_size > MAX_ICON:
                 fail(entry_id, f"the command {command.get('name')}'s icon ui/{mark} is past {MAX_ICON} bytes")
+    # The extension's app in Applications (Lumi 1.89), by the installer's same
+    # two rules: its `[launcher] icon` ships, and is no bigger than icon.svg
+    # may be. Lumi draws it into the app. Joined only once it is a plain path
+    # under ui/, the rule `check_launcher` already refused anything else by.
+    launcher = manifest.get("launcher")
+    if "launcher" in manifest.get("extension", {}).get("capabilities", []) and isinstance(launcher, dict):
+        drawn = rust_trim(str(launcher.get("icon", "")))
+        if drawn.endswith(".svg") and is_valid_ui_path(drawn):
+            drawn_path = ui_dir / drawn
+            if not drawn_path.is_file():
+                fail(entry_id, f"[launcher] icon draws the app from {drawn}, and the package ships no ui/{drawn} file")
+            if drawn_path.stat().st_size > MAX_ICON:
+                fail(entry_id, f"[launcher] icon ui/{drawn} is past {MAX_ICON} bytes")
     ui_members(entry_id, ui_dir)
 
 
