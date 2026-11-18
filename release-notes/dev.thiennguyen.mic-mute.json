@@ -1,4 +1,24 @@
 {
+  "0.4.1": {
+    "notesSha256": "13fa2366e0d1605d7eb7687a4aac7d93cc663d966b6e139b678cac8ecc9d5818",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clearer menu bar icon when microphones are on",
+          "items": [
+            "The menu bar icon no longer shows an orange dot when microphones are on, only the microphone itself"
+          ]
+        },
+        "vi": {
+          "headline": "Biểu tượng thanh menu rõ ràng hơn khi micro đang bật",
+          "items": [
+            "Biểu tượng thanh menu chỉ hiện micro khi micro đang bật, bỏ chấm cam trông giống dấu hiệu đang ghi âm"
+          ]
+        }
+      }
+    }
+  },
   "0.4.0": {
     "notesSha256": "31ce2181e231bc2a47f9932a218232fbdc076a4554c45993c635495a91f3d47d",
     "summary": {
