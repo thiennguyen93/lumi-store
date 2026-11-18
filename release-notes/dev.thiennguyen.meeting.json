@@ -1,0 +1,62 @@
+{
+  "0.2.0": {
+    "notesSha256": "3d35b6a875177fe024b8cfcdad930a15942dadfa99d1c2f6668ec486c4279565",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "A new look following Apple's design guidelines",
+          "items": [
+            "The window now has a sidebar for meetings, toolbar buttons for commands, and an inspector for details",
+            "Start Transcription moved to the sidebar foot and shows recording time with Pause and Stop while recording",
+            "Settings opens in its own window with panes for General, Transcription, Captions, Translation and more",
+            "Live Captions panel shows only captions, time and mark until you point at it to reveal controls",
+            "You can now copy a single line with its speaker from hover buttons or the menu",
+            "Full screen mode moves the sidebar button and recorder into the corner"
+          ]
+        },
+        "vi": {
+          "headline": "Giao diện mới theo hướng dẫn thiết kế của Apple",
+          "items": [
+            "Cửa sổ giờ có thanh bên cho cuộc họp, nút lệnh trên thanh công cụ và bảng chi tiết",
+            "Bắt đầu Phiên âm chuyển xuống chân thanh bên và hiện thời gian ghi với Tạm dừng và Dừng khi đang ghi",
+            "Cài đặt mở trong cửa sổ riêng với các mục Chung, Phiên âm, Phụ đề, Dịch, Người nói, Lưu trữ và Giới thiệu",
+            "Bảng Phụ đề Trực tiếp chỉ hiện phụ đề, thời gian và biểu tượng cho đến khi bạn chỉ vào để hiện điều khiển",
+            "Giờ bạn có thể sao chép một dòng kèm người nói từ nút di chuột hoặc trình đơn",
+            "Chế độ toàn màn hình chuyển nút thanh bên và bộ ghi vào góc"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.0": {
+    "notesSha256": "4838684b0c607e720032f9298b627afb6d51b04b65f6c6bdbcca5b885e13d4cb",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Live captions for your meetings, with speaker identification",
+          "items": [
+            "Captions float above your call, showing who said what as they speak",
+            "Set a second language and each line appears in the language it was spoken in",
+            "Click any caption to translate it, or turn on live translation for everything",
+            "Every meeting is saved as a transcript you can read, copy or export",
+            "Name speakers to save voice profiles, so they are identified in future meetings",
+            "Record your own voice so your lines show as Me in every call"
+          ]
+        },
+        "vi": {
+          "headline": "Phụ đề trực tiếp cho cuộc họp với nhận dạng người nói",
+          "items": [
+            "Phụ đề hiển thị phía trên cuộc gọi, cho biết ai nói gì khi họ đang nói",
+            "Đặt ngôn ngữ thứ hai và mỗi dòng xuất hiện bằng ngôn ngữ được nói",
+            "Nhấp vào phụ đề bất kỳ để dịch hoặc bật dịch trực tiếp cho tất cả",
+            "Mỗi cuộc họp được lưu thành bản ghi âm có thể đọc, sao chép hoặc xuất",
+            "Đặt tên người nói để lưu hồ sơ giọng nói, họ sẽ được nhận dạng trong các cuộc họp sau",
+            "Ghi âm giọng nói của bạn để dòng của bạn hiển thị là Tôi trong mọi cuộc gọi"
+          ]
+        }
+      }
+    }
+  }
+}

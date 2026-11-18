@@ -1,4 +1,30 @@
 {
+  "0.7.0": {
+    "notesSha256": "a91272ac0d39744d65215475142518bd5c35caf8beb6c994f0b0ca9fee4b11be",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Quick access from Lumi's menu",
+          "items": [
+            "Keyboard Cleaner now appears in Lumi's menu to open the keyboard tab or lock immediately",
+            "The lock lasts as long as your settings say and follows your trackpad preference",
+            "Hold esc and right shift for 2 seconds to unlock as always",
+            "Requires Lumi 1.82 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Truy cập nhanh từ menu Lumi",
+          "items": [
+            "Keyboard Cleaner xuất hiện trong menu Lumi với hai tùy chọn: mở tab bàn phím hoặc khóa bàn phím ngay",
+            "Thời gian khóa theo cài đặt của bạn và tuân theo tùy chọn trackpad",
+            "Giữ esc và shift phải trong 2 giây để mở khóa như thường lệ",
+            "Yêu cầu Lumi 1.82 trở lên"
+          ]
+        }
+      }
+    }
+  },
   "0.6.2": {
     "notesSha256": "1ef0c66f4bcb57f2f3465706bbcd1c89fa79d016c95dcd7d038c5b8212b61ab8",
     "summary": {
@@ -416,28 +442,6 @@
           "headline": "Sửa lỗi phát hiện phím fn với delete và phím mũi tên",
           "items": [
             "Phím fn giờ được nhận diện đúng khi nhấn cùng delete hoặc phím mũi tên"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.8": {
-    "notesSha256": "ce082e33045d3eeed1ae82867b759e98b4374e7ad68b2fbecf577ad34ca485e5",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Globe key can now be tested",
-          "items": [
-            "Globe key can now be tested by pressing it with delete or an arrow key",
-            "Tooltip and notes explain how to test the Globe key"
-          ]
-        },
-        "vi": {
-          "headline": "Có thể kiểm tra phím Globe",
-          "items": [
-            "Phím Globe giờ có thể kiểm tra bằng cách nhấn cùng phím delete hoặc phím mũi tên",
-            "Chú thích và ghi chú hướng dẫn cách kiểm tra phím Globe"
           ]
         }
       }
