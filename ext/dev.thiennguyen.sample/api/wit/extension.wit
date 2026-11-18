@@ -935,6 +935,172 @@ interface voices {
     forget: func(id: string) -> result<bool, string>;
 }
 
+/// The models your extension's own model UI lists, downloads and chooses
+/// from: every model of a task this Mac can use, Lumi can download for it,
+/// or the person could set up in Settings › AI — Lumi Models, Apple Speech's
+/// languages (macOS 26), the AI apps on this Mac and online providers — and
+/// your extension's own model for each task, used when a request names none.
+///
+/// **No new capability.** A text model costs `ai`; a speech or speakers
+/// model costs `speech`: what `ai.prepare` and `transcribe.prepare` cost.
+/// `download` and `cancel` name a model of any task, and are refused for one
+/// whose task your extension does not declare.
+///
+/// **Every download asks the person**, in Lumi's own panel, with the model,
+/// its size and its licence — as `prepare` does, for the model you name —
+/// and only from a press. `download` answers once the person answered, not
+/// once the model is in: what comes down is told to your pages as
+/// `lumi:models` events, `{v, kind: "progress", id, state, done, total,
+/// mine, cancellable, message}`, about four times a second while it runs —
+/// for every download, the person's in Settings included, since what is
+/// here changes what you may use; `mine` when your extension asked for it,
+/// `cancellable` when `cancel` stops it too; a stop is told as `cancelled`
+/// at once, and nothing of that download after it — and
+/// `{v, kind: "changed"}` when a switch, a default, a key or a choice
+/// changes what `catalog` lists. A page opened mid-download reads where it
+/// stands from `catalog`. **A failure is an event, not a state**: `state`
+/// `failed` with Lumi's sentence in `message`, a whole sentence to show as
+/// it is; the model is `downloadable` again in `catalog`, so a page that
+/// offers Try Again keeps the last failure itself.
+///
+/// **Removing and switching models stay the person's.** A model they switched
+/// off is listed `switched-off` and never downloaded for you; nothing here
+/// removes a model or moves a switch. Your choice shows on your extension's
+/// page under Settings › AI › Extensions & Privacy, where the person can put
+/// it back to their default — your pages hear `changed`.
+///
+/// Added to 0.3 in Lumi 1.90.0 without a new world version.
+interface models {
+    use ai.{place};
+
+    /// What a model is for.
+    enum task {
+        /// Writing text: `ai`.
+        text,
+        /// Turning speech into text: `transcribe`.
+        speech,
+        /// Telling speakers apart in a recording: `transcribe`'s `speakers`.
+        speakers,
+    }
+
+    /// How far a download has come.
+    record progress {
+        /// Bytes down, and bytes to come down in all. Apple Speech's
+        /// languages count to 1000, since macOS gives no size.
+        done: u64,
+        total: u64,
+        /// Waiting its turn behind another download: nothing has come down
+        /// yet. Lumi downloads one at a time.
+        waiting: bool,
+        /// Your extension asked for it.
+        mine: bool,
+        /// `cancel` stops it: your extension asked for it, and a stop can
+        /// end it. macOS's downloads of Apple Speech's languages cannot be
+        /// stopped once they began: offer no Cancel for them.
+        cancellable: bool,
+    }
+
+    /// Where a model stands.
+    variant state {
+        /// Here and switched on: a request may name it.
+        ready,
+        /// Here, and switched off by the person: never offered, and never
+        /// downloaded for an extension.
+        switched-off,
+        /// Coming down, or waiting its turn.
+        downloading(progress),
+        /// Lumi can download it for this Mac: `download`.
+        downloadable,
+        /// Only the person can set it up, in Settings › AI — an online
+        /// provider with no key, an AI app not running, a provider this copy
+        /// of Lumi's plan does not take. Lumi's sentence says what to do.
+        not-set-up(string),
+    }
+
+    /// One model, or one provider the person has not set up yet.
+    record entry {
+        /// `provider:model`: what a request's `model` and `choose` take. A
+        /// provider not set up is listed once, its id the provider's alone,
+        /// and is no model to choose. An Apple Speech language is
+        /// `apple-speech:<locale>`; chosen, it is Apple Speech, and the
+        /// language it hears is the request's.
+        id: string,
+        name: string,
+        /// Its provider's name.
+        provider: string,
+        task: task,
+        place: place,
+        /// What it hears or writes well, as language ids; empty when the
+        /// list says nothing.
+        languages: list<string>,
+        /// What a download brings down, where Lumi knows.
+        download-bytes: option<u64>,
+        /// The memory it holds while it runs, where Lumi knows.
+        memory-bytes: option<u64>,
+        /// The list's pick for this Mac.
+        recommended: bool,
+        /// Its licence's name, accepted in Lumi's panel and never here.
+        licence: option<string>,
+        state: state,
+        /// The person's default for the task.
+        is-default: bool,
+        /// Your extension's own choice for the task (`choose`).
+        is-chosen: bool,
+        /// What a request naming no model runs on while your extension has
+        /// chosen none — "Lumi's default": the person's default where it is
+        /// ready, else the first ready model, this Mac first. For a request
+        /// naming no language; a recording's language may rank another of
+        /// Lumi Models' models first.
+        runs-by-default: bool,
+    }
+
+    /// Why a download was not asked for.
+    enum refused {
+        /// The person said not now in Lumi's panel.
+        declined,
+        /// Here, and switched off by the person.
+        switched-off,
+        /// Not a model Lumi downloads — online, an app's own, or not in
+        /// Lumi's list — or it does not run on this Mac.
+        not-here,
+        /// Not from a press; AI, or your extension's AI, switched off; or a
+        /// model of a task your extension does not declare.
+        not-allowed,
+    }
+
+    /// Every model of `task`, on this Mac first: here, coming down,
+    /// downloadable, switched off, or a provider to set up. A provider set
+    /// up lists every model it has — those the person switched on `ready`,
+    /// the rest `switched-off` — from the list Lumi keeps for it, never
+    /// fetched for a catalog; an app's own models (Ollama's, LM Studio's)
+    /// are downloaded in that app, and `download` refuses them `not-here`.
+    /// Asks the AI apps on this Mac whether they answer, as Settings › AI
+    /// does; one that does not is `not-set-up` in its page's own words.
+    /// Claude Code runs on this Mac and sends text online: its `place` is
+    /// `online`.
+    catalog: func(task: task) -> result<list<entry>, string>;
+
+    /// Ask the person to download model `id` from `catalog`, in Lumi's own
+    /// panel, and answer once they answered: true when it is coming down or
+    /// already here; false when they said Download and it could not start,
+    /// told as a `failed` step with Lumi's sentence. Only from a press.
+    download: func(id: string) -> result<bool, refused>;
+
+    /// Stop download `id` if your extension asked for it and a stop can end
+    /// it (`progress.cancellable`): false for one it did not, one already
+    /// over, or one macOS will not stop. A stop is told to your pages as
+    /// `cancelled` at once.
+    cancel: func(id: string) -> result<bool, string>;
+
+    /// Make model `id` your extension's own for the task — an entry's id
+    /// from `task`'s catalog, or the id `ai.models` or `transcribe.models`
+    /// lists: a request naming no model runs on it, before the person's
+    /// default, while it is ready — one switched off, removed or not yet
+    /// downloaded is passed over with the request's `fell-back` sentence.
+    /// None goes back to the person's default.
+    choose: func(task: task, id: option<string>) -> result<_, string>;
+}
+
 /// Recordings made into files of this extension's own. Lumi hears a source
 /// — the microphone, what the Mac plays, or both, as a call — compresses it,
 /// and when the recording ends writes it as an M4A file among your blobs,
@@ -1640,8 +1806,10 @@ interface ui {
     /// panel. For a panel at `position = "menu-bar-item"`, `at` is which of
     /// the item's edges it lines up with and `side` "below" or "" (Lumi
     /// 1.61). For a panel at `position = "window"`, `at` is which of the
-    /// other window's edges it lines up with and `side` "above" or "below";
-    /// the window stays the manifest's (Lumi 1.66). A panel at any other
+    /// other window's edges it lines up with and `side` "above" or "below",
+    /// or "trailing" or "leading" — beside it across, `at` then lining it
+    /// up down that edge (Lumi 1.90); the window stays the manifest's (Lumi
+    /// 1.66), and an arrowed panel is refused a side across. A panel at any other
     /// position is refused. Added in Lumi 1.47.
     set-anchor: func(name: string, at: string, side: string) -> result<_, string>;
 
@@ -2528,6 +2696,29 @@ interface menu-bar-item {
     set-shown: func(shown: bool) -> result<_, string>;
 }
 
+/// Your app in Applications — needs the `launcher` capability (Lumi 1.89.0).
+/// Lumi writes it, named and drawn as your manifest says (`launcher-name`,
+/// `launcher-icon`, else your `name` and `icon.svg`), in a folder of
+/// Applications where Spotlight, Launchpad and the Dock find it. Whether it
+/// is there at install is `[switches] launcher`, on unless you say `false`.
+///
+/// Opening it switches you on if you were off, then runs your `run-ui` with
+/// the window `:launcher` and `{"v":1,"turnedOn":…}`, as a press of the
+/// person's: open a window, start something, or do nothing at all. Lumi
+/// opens nothing of its own.
+interface launcher {
+    /// Whether your app is in Applications: one switch, kept by Lumi, that
+    /// your own settings, the "Show … in Applications" switch on your
+    /// Permissions sheet, and the person deleting the app in Finder all
+    /// move. Hear `"launcher-shown"` to be told when the person moves it.
+    shown: func() -> result<bool, string>;
+    /// Put your app in Applications, or take it out. Putting it there needs
+    /// a press of the person's — a command, or one of your windows — so an
+    /// app they deleted is never put back by a run nobody pressed. Taking it
+    /// out works from any run but an uninstall.
+    set-shown: func(shown: bool) -> result<_, string>;
+}
+
 /// Timers: Lumi runs the extension's `on-event("timer", …)` at times it
 /// set — with every one of its windows closed, and after Lumi restarts. A
 /// timer is a name of the extension's own, a time and how it repeats. Lumi
@@ -2951,9 +3142,10 @@ interface feature-flags {
 }
 
 /// The Mac's sound devices, and holding one's input muted. A hold is yours
-/// until you release it, you are switched off or uninstalled, the person
-/// presses Unmute in Lumi's menu, or Lumi quits; Lumi puts the device back as
-/// it was once the last hold goes. You can never unmute a device you did not
+/// until you release it, you are switched off or uninstalled, or the person
+/// presses Unmute in Lumi's menu; Lumi puts the device back as it was once
+/// the last hold goes. Lumi ending — a quit, a restart, a crash — keeps every
+/// hold, the device still muted, for the next launch to take up. You can never unmute a device you did not
 /// mute: no function here writes an unmute, and a device somebody else
 /// unmuted after you held it stays as they left it (`as-held` says so).
 ///
@@ -3081,6 +3273,7 @@ world extension {
     import ai;
     import transcribe;
     import voices;
+    import models;
     import recordings;
     import audio-levels;
     import clipboard;
@@ -3099,6 +3292,7 @@ world extension {
     import permissions;
     import menu;
     import menu-bar-item;
+    import launcher;
     import timers;
     import schedules;
     import time-zone;

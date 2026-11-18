@@ -709,6 +709,81 @@ pub mod voices {
     }
 }
 
+/// The models your own model UI lists, downloads and chooses from: every
+/// model of a task this Mac can use, Lumi can download for it, or the person
+/// could set up in Settings › AI — Lumi Models, Apple Speech's languages on
+/// macOS 26, the AI apps on this Mac and online providers — and your
+/// extension's own model for each task, used when a request names none.
+/// A text model costs `ai`; a speech or speakers model costs `speech`. Needs
+/// Lumi 1.90.0.
+///
+/// Every download asks the person in Lumi's own panel, and only from a
+/// press. [`download`](models::download) answers once they answered; what
+/// comes down is told to your windows as `lumi:models` events —
+/// `{v, kind: "progress", id, state, done, total, mine, message}` while it
+/// runs (for every download, the person's in Settings too; `mine` when you
+/// asked for it) and `{v, kind: "changed"}` when a switch, a default, a key
+/// or a choice changes what [`catalog`](models::catalog) lists. A failure is
+/// a `failed` step with Lumi's sentence, not a state: keep it to offer Try
+/// Again. Removing and switching models stay the person's.
+///
+/// ```ignore
+/// use lumi_extension_api::models::{self, State, Task};
+///
+/// // From a press in your Models window:
+/// for entry in models::catalog(Task::Speech)? {
+///     match entry.state {
+///         State::Downloadable => { models::download(&entry.id).ok(); }
+///         State::Ready if !entry.is_chosen => models::choose(Task::Speech, Some(&entry.id))?,
+///         State::NotSetUp(why) => show(&entry.name, &why),
+///         _ => {}
+///     }
+/// }
+/// ```
+pub mod models {
+    use super::lumi::ext::models as wit;
+
+    pub use super::lumi::ext::ai::Place;
+    pub use wit::{Entry, Progress, Refused, State, Task};
+
+    /// Every model of `task`, on this Mac first: ready, switched off by the
+    /// person, coming down (with how far), downloadable, or a provider not
+    /// set up yet, with Lumi's sentence saying what to do. Asks the AI apps
+    /// on this Mac whether they answer.
+    pub fn catalog(task: Task) -> Result<Vec<Entry>, String> {
+        wit::catalog(task)
+    }
+
+    /// Ask the person to download model `id` (an [`Entry::id`]) in Lumi's
+    /// own panel, with its size and licence: `true` once they said Download
+    /// (or it is already here or coming down), `false` when it could not
+    /// start — told as a `failed` `lumi:models` step with Lumi's sentence.
+    /// Never a model the person switched off. Only from a press.
+    pub fn download(id: &str) -> Result<bool, Refused> {
+        wit::download(id)
+    }
+
+    /// Stop download `id` if your extension asked for it and a stop can end
+    /// it — `Progress::cancellable` says so before the press; macOS's
+    /// downloads of Apple Speech's languages cannot be stopped. False for
+    /// one it did not, one already over, or one macOS will not stop. A stop
+    /// is told to your windows as `cancelled` at once.
+    pub fn cancel(id: &str) -> Result<bool, String> {
+        wit::cancel(id)
+    }
+
+    /// Make model `id` — an [`Entry::id`] from `task`'s catalog, or the id
+    /// `ai::models` or `transcribe::models` lists — your extension's own for
+    /// the task, or `None` for the person's default again. A request naming no
+    /// model runs on it while it is ready; one switched off, removed or not
+    /// downloaded yet is passed over with the answer's `fell_back` sentence.
+    /// The person sees your choice on your page in Settings › AI and can put
+    /// it back to their default; your windows then hear `changed`.
+    pub fn choose(task: Task, id: Option<&str>) -> Result<(), String> {
+        wit::choose(task, id)
+    }
+}
+
 /// Recordings made into files of your own: what Lumi hears, compressed and
 /// written as an M4A blob in your storage when the recording ends. Needs the
 /// `keep-audio` capability, beside `microphone` or `system-audio` — and
@@ -1239,8 +1314,10 @@ pub fn set_position(name: &str, position: &str) -> Result<(), String> {
 /// at `position = "menu-bar-item"`, `at` is which of the item's edges it
 /// lines up with, and `side` `"below"` or `""` — it always goes below (Lumi
 /// 1.61.0). For a panel at `position = "window"`, `at` is which of the other
-/// window's edges it lines up with and `side` `"above"` or `"below"`; the
-/// window stays the manifest's (Lumi 1.66.0). A panel at any other position
+/// window's edges it lines up with and `side` `"above"` or `"below"` — or
+/// `"trailing"` or `"leading"`, beside it across, `at` then lining it up down
+/// that edge (Lumi 1.90.0) — the window stays the manifest's (Lumi 1.66.0),
+/// and a panel with `arrow = true` is refused a side across. A panel at any other position
 /// is refused. Needs Lumi 1.47.0 or later — say so with `min-lumi-version`.
 pub fn set_anchor(name: &str, at: &str, side: &str) -> Result<(), String> {
     lumi::ext::ui::set_anchor(name, at, side)
@@ -2214,6 +2291,78 @@ pub mod menu {
     }
 }
 
+/// Your app in Applications: Lumi writes it, and Spotlight, Launchpad and
+/// the Dock find it. Declare the `launcher` capability, and say in
+/// `[launcher]` what it is called, how it is drawn and what opening it does:
+///
+/// ```toml
+/// [launcher]
+/// name = "Metronome"     # else your extension's name
+/// icon = "app.svg"       # an SVG under ui/, else your icon.svg
+/// opens = "window"       # "page" (your page in Lumi), "window" or "run"
+/// window = "main"
+/// switch-on = true       # opened while you are off: switch you on first
+/// ```
+///
+/// With `opens = "run"`, the opening is yours to answer, as a `run_ui` call
+/// for the window [`WINDOW`]:
+///
+/// ```ignore
+/// fn run_ui(window: String, request: String) -> Result<String, String> {
+///     if let Some(opened) = launcher::opened(&window, &request) {
+///         // Opened from Spotlight or the Dock: a press of the person's.
+///         start_recording(opened.turned_on)?;
+///         return Ok(String::new());
+///     }
+///     // … your windows' requests …
+/// }
+/// ```
+///
+/// Whether the app is there at all is one switch, kept by Lumi, that the
+/// person moves on your Permissions sheet (or by deleting the app) and you
+/// move with [`set_shown`]. Where it starts is `[switches] launcher`, on
+/// unless you say `false`.
+///
+/// Needs Lumi 1.89.0 or later — say so with `min-lumi-version`.
+pub mod launcher {
+    use super::lumi::ext::launcher as wit;
+
+    /// The `run-ui` window an opening of your app arrives as, when your
+    /// `[launcher]` says `opens = "run"`.
+    pub const WINDOW: &str = ":launcher";
+
+    /// One opening of your app.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct Opened {
+        /// Whether opening it switched you on: you were off, and your
+        /// `[launcher]` says `switch-on`.
+        pub turned_on: bool,
+    }
+
+    /// `Some` when `run_ui` was called because the person opened your app,
+    /// rather than by one of your windows.
+    pub fn opened(window: &str, request: &str) -> Option<Opened> {
+        if window != WINDOW {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(request).ok()?;
+        Some(Opened { turned_on: value.get("turnedOn")?.as_bool()? })
+    }
+
+    /// Whether your app is in Applications. Hear `"launcher-shown"` to be
+    /// told when the person moves the switch.
+    pub fn shown() -> Result<bool, String> {
+        wit::shown()
+    }
+
+    /// Put your app in Applications, or take it out. Putting it there needs a
+    /// press of the person's — a command, or one of your windows — so an app
+    /// they deleted is never put back by a run nobody pressed.
+    pub fn set_shown(shown: bool) -> Result<(), String> {
+        wit::set_shown(shown)
+    }
+}
+
 /// An item of your own in the menu bar, beside Lumi's icon: an icon, a few
 /// characters, or both — a state somebody wants at a glance without opening
 /// a menu.
@@ -3085,7 +3234,8 @@ pub mod microphone_use {
 /// until they press something of yours again, a hold from a run nobody
 /// pressed is refused with `refused`. `audio-devices-row = false` in
 /// `[extension]` leaves the row out, for an extension that draws its own.
-/// Switched off, removed or quitting Lumi, your holds go.
+/// Switched off or removed, your holds go; quitting Lumi keeps them for its
+/// next launch.
 ///
 /// Hear `events = ["audio-devices"]` to be told the whole set whenever a
 /// device comes or goes, a default moves, a mute or a volume changes, or one
