@@ -1,4 +1,28 @@
 {
+  "0.5.0": {
+    "notesSha256": "bcb0f964531f6d452f837a3632296ee21e211b23f202e6fcb445888f55869bae",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Open Mic Mute from Spotlight, Dock, or Launchpad",
+          "items": [
+            "You can now open Mic Mute from Spotlight, the Dock, or Launchpad",
+            "When Mic Mute is off, opening it takes you to its page in Lumi where you can turn it on",
+            "Requires Lumi 1.89.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Mở Mic Mute từ Spotlight, Dock hoặc Launchpad",
+          "items": [
+            "Giờ bạn có thể mở Mic Mute từ Spotlight, Dock hoặc Launchpad",
+            "Khi Mic Mute đang tắt, mở nó sẽ đưa bạn đến trang của nó trong Lumi để bật",
+            "Yêu cầu Lumi 1.89.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
   "0.4.1": {
     "notesSha256": "13fa2366e0d1605d7eb7687a4aac7d93cc663d966b6e139b678cac8ecc9d5818",
     "summary": {

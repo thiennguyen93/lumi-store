@@ -1,4 +1,24 @@
 {
+  "0.91.1": {
+    "notesSha256": "98d41acf3c2b9d4b0480486f4bfea94a4f664c8bb35b42db74c35745024b4f41",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Under-the-hood improvements",
+          "items": [
+            "Internal project maintenance with no user-facing changes"
+          ]
+        },
+        "vi": {
+          "headline": "Cải tiến nội bộ",
+          "items": [
+            "Bảo trì dự án nội bộ, không có thay đổi gì cho người dùng"
+          ]
+        }
+      }
+    }
+  },
   "0.91.0": {
     "notesSha256": "128acb120faecce760a95626520933cb58dc932ed1e40c255da40afd47e2be44",
     "summary": {
@@ -432,26 +452,6 @@
           "items": [
             "Các nút trong hướng dẫn giờ đây giữ nguyên vị trí khi nhấn thay vì thu nhỏ và di chuyển",
             "Tùy chọn hỏi trước khi hiển thị vẫn hiện nhưng mờ đi trong bước Touch ID khi lịch sử đã khóa"
-          ]
-        }
-      }
-    }
-  },
-  "0.80.3": {
-    "notesSha256": "1d7a982b55b4eb7e9c17b21546eb008288e86acf21b4a2c954fca45e8a1ac0dd",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Privacy mode indicator removed from title bar",
-          "items": [
-            "The eye icon in the title bar has been removed to avoid confusion with the pin button"
-          ]
-        },
-        "vi": {
-          "headline": "Đã xóa biểu tượng chế độ riêng tư khỏi thanh tiêu đề",
-          "items": [
-            "Biểu tượng con mắt trên thanh tiêu đề đã được xóa để tránh nhầm lẫn với nút ghim"
           ]
         }
       }
