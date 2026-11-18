@@ -192,6 +192,22 @@ PROMO = """<!doctype html>
   .callout .body {{ margin-top: 6px; font-size: 21px; line-height: 1.4; }}
   .callout .body b {{ color: {color}; }}
   .mark {{ position: absolute; left: 28px; bottom: 26px; width: 52px; height: 52px; }}
+  /* A stretch of the menu bar over a panel that hangs from its item
+     (`menubar`): the item pressed, the panel's arrow under it. */
+  .menubar {{
+    position: absolute; display: grid; align-items: center;
+    border-radius: 10px; background: {menubar_bg}; color: {menubar_ink};
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 60px, #000 calc(100% - 60px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 60px, #000 calc(100% - 60px), transparent);
+  }}
+  .menubar .side {{ display: flex; align-items: center; height: 100%; }}
+  .menubar .side.left {{ justify-content: flex-end; }}
+  .menubar .glyph {{ display: grid; place-items: center; height: 100%; }}
+  .menubar .glyph svg {{ fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }}
+  .menubar .clock {{ white-space: nowrap; font-weight: 500; }}
+  .menubar .item {{ display: grid; place-items: center; height: 100%; background: {menubar_pressed}; }}
+  .menubar .item img {{ display: block; {menubar_filter} }}
+  .arrow {{ position: absolute; width: 0; height: 0; border-style: solid; border-color: transparent; }}
 </style></head>
 <body>
   <h1>{headline}</h1>
@@ -207,6 +223,7 @@ PROMO = """<!doctype html>
     {lights}
     <iframe src="/{page}"></iframe>
   </div>
+  {menubar}
   {callout}
   <img class="mark" src="/__icon__" alt="" style="{mark_side}">
 </body></html>
@@ -254,6 +271,72 @@ def app_icon(bundle_id: str) -> "bytes | None":
     return data if data.startswith(b"\x89PNG\r\n\x1a\n") else None
 
 
+# The glyphs beside the item in `menubar`'s stretch of the menu bar, Lucide's
+# (ISC), at 24 units: Bluetooth and the volume on its left, then the item,
+# then Wi-Fi, the battery and Control Center's two switches on its right,
+# and the clock last.
+MENU_BAR_LEFT = (
+    '<path d="m7 7 10 10-5 5V2l5 5L7 17"/>',
+    '<path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/>',
+)
+MENU_BAR_RIGHT = (
+    '<path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/>',
+    '<path d="M10 10v4"/><path d="M14 10v4"/><path d="M22 14v-4"/><path d="M6 10v4"/><rect x="2" y="6" width="16" height="12" rx="2"/>',
+    '<rect width="20" height="8" x="2" y="4" rx="4"/><circle cx="16" cy="8" r="2"/><rect width="20" height="8" x="2" y="12" rx="4"/><circle cx="8" cy="16" r="2"/>',
+)
+
+
+def menu_bar(bar: dict, dark: bool, left: int, top: int, width: int, zoom: float, ui_dir: "Path | None") -> str:
+    """`menubar` of a shot: a stretch of the menu bar standing over the
+    window, its item — `item`, a template image the package ships under ui/,
+    black on clear as Lumi asks of one — pressed and centred over the
+    window's middle, as a panel at `position = "menu-bar-item"` with
+    `anchor = { at = "center" }` hangs, with the panel's arrow under it.
+    Drawn at the window's `zoom`: the menu bar's 24 points, an item 18
+    points tall, the glyphs beside it 16. The stretch runs on each side as
+    far as the picture lets it, at most 380 pixels, fading out over its
+    last 60, so it may be longer on
+    one side than the other while its item still stands over the middle:
+    the item's width is worked out from its file's viewBox."""
+    unit = zoom
+    height = round(24 * unit)
+    arrow = round(9 * unit)
+    middle = left + width // 2
+    before = min(380, middle - 20)
+    after = min(380, 1280 - 20 - middle)
+    glyph = round(16 * unit)
+    gap = round(10 * unit)
+    pad = round(6 * unit)
+    tall = round(18 * unit)
+    aspect = 1.0
+    try:
+        box = re.search(r'viewBox="\s*[-\d.]+\s+[-\d.]+\s+([\d.]+)\s+([\d.]+)', (ui_dir / bar["item"]).read_text())
+        if box and float(box.group(2)) > 0:
+            aspect = float(box.group(1)) / float(box.group(2))
+    except (OSError, TypeError):
+        pass
+    item_width = round(tall * aspect) + 2 * pad
+
+    def glyphs(paths: "tuple[str, ...]") -> str:
+        return "".join(
+            f'<span class="glyph" style="padding: 0 {gap // 2}px"><svg viewBox="0 0 24 24" width="{glyph}" height="{glyph}"'
+            f' stroke-width="2">{path}</svg></span>'
+            for path in paths
+        )
+
+    item = (
+        f'<span class="item" style="width: {item_width}px; border-radius: {pad}px">'
+        f'<img src="/{bar["item"]}" alt="" style="height: {tall}px"></span>'
+    )
+    clock = f'<span class="clock" style="padding: 0 {gap // 2}px; font-size: {round(13 * unit)}px">{bar.get("clock", "Thu 18 Nov 9:41")}</span>'
+    return (
+        f'<div class="menubar" style="left: {middle - before}px; top: {top - arrow - 2 - height}px; width: {before + after}px;'
+        f' height: {height}px; grid-template-columns: {before - item_width // 2}px {item_width}px 1fr">'
+        f'<span class="side left">{glyphs(MENU_BAR_LEFT)}</span>{item}<span class="side">{glyphs(MENU_BAR_RIGHT)}{clock}</span></div>'
+        f'<div class="arrow" style="left: {middle - arrow}px; top: {top - arrow}px; border-width: 0 {arrow}px {arrow}px;'
+        f' border-bottom-color: {"#121212" if dark else "#ffffff"}"></div>'
+    )
+
 CALLOUT = """<div class="callout" style="{side}">
     <div class="head"><img src="/__icon__" alt="">{title}{beta}</div>
     <div class="label">{label}</div>
@@ -261,7 +344,7 @@ CALLOUT = """<div class="callout" style="{side}">
   </div>"""
 
 
-def promo_page(spec: dict, n: int, name: str) -> str:
+def promo_page(spec: dict, n: int, name: str, ui_dir: "Path | None" = None) -> str:
     """Shot `n` (from 1) of a promo spec, as the page to photograph. The
     spec is the store maintainer's own file; its strings are written in as
     they are, markup included, so a callout can bold the word it is about."""
@@ -284,21 +367,31 @@ def promo_page(spec: dict, n: int, name: str) -> str:
     # the page draws, on the picture's background.
     clear = bool(shot.get("transparent"))
     width = round(int(shot.get("width", 820 if panel else 1000)) * zoom)
+    left = (
+        int(shot["left"])
+        if "left" in shot
+        else (1280 - width) // 2
+        + (0 if not callout else 60 if callout.get("side") == "left" else -60 if panel else 0)
+    )
+    top = int(shot.get("top", 300))
     page = shot["page"]
     page += ("&" if "?" in page else "?") + f"theme={'dark' if dark else 'light'}"
     return PROMO.format(
         # The window leans away from the callout, so the card covers less
         # of what the picture is showing.
-        left=int(shot["left"])
-        if "left" in shot
-        else (1280 - width) // 2
-        + (0 if not callout else 60 if callout.get("side") == "left" else -60 if panel else 0),
+        left=left,
         width=width,
         zoom=zoom,
         shadow="none" if clear else "0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08)",
         theme="dark" if dark else "light",
         height=round(int(shot.get("height", 560)) * zoom),
-        top=int(shot.get("top", 300)),
+        top=top,
+        menubar=menu_bar(shot["menubar"], dark, left, top, width, zoom, ui_dir) if shot.get("menubar") else "",
+        menubar_bg="rgba(40, 40, 44, 0.92)" if dark else "rgba(246, 246, 248, 0.94)",
+        menubar_ink="#f5f5f7" if dark else "#1d1d1f",
+        menubar_pressed="rgba(255, 255, 255, 0.18)" if dark else "rgba(0, 0, 0, 0.1)",
+        # A template image is black on clear; the menu bar draws it in its ink.
+        menubar_filter="filter: invert(1) brightness(0.96);" if dark else "",
         radius=16 if panel else 12,
         bar_hidden='style="display: none"' if panel or unified else "",
         bar_height=0 if panel or unified else 38,
@@ -437,7 +530,7 @@ def handler_for(
                 if not 1 <= n <= len(shots):
                     self.send_error(404)
                     return
-                data = promo_page(promo, n, name).encode()
+                data = promo_page(promo, n, name, ui_dir).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(data)))

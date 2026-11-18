@@ -261,6 +261,10 @@ taken the same way every time, without a Lumi build:
   window from where it would stand; `zoom` draws a small page larger, its
   `width` and `height` still the page's own; `transparent` drops the
   window's background and shadow, for a see-through panel;
+  `menubar` (`{ "item": "<file under ui/>" }`, and `clock` for its time)
+  draws a stretch of the menu bar over the window, the item pressed over
+  its middle and the panel's arrow under it, for a panel at
+  `position = "menu-bar-item"` — leave room above the window with `top`;
   and `"beta": true` beside `color`, for an entry that is `beta = true`,
   draws the Beta tag beside the name on every callout;
 - `scripts/preview/shots/<id>-<n>.js` — an optional scene run in the page

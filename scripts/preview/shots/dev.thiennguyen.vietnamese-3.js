@@ -26,7 +26,9 @@
     }
     return fetched(url, init);
   };
-  await Promise.all([win.reread(), win.readKey()]);
+  // The key row is shortcut.js's `keyRow`, held in the page's own `const`
+  // rather than on its window.
+  await Promise.all([win.reread(), win.eval("shortcut.read()")]);
   // Down to Escape's switch, high enough to stand clear of the callout over
   // the window's corner; the rows above it fade under the tab's top edge.
   const escape = doc.querySelector('[data-switch="escRestore"]');
