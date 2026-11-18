@@ -638,8 +638,25 @@ class BesideAnotherWindow(unittest.TestCase):
         self.assertIn("beside itself", beside_pill_refusal('anchor = { window = "menu" }'))
 
     def test_it_goes_above_or_below(self):
-        self.assertIn('goes "above" or "below"', beside_pill_refusal('anchor = { window = "pill", side = "pointer" }'))
+        self.assertIn('goes "above", "below", "trailing" or "leading"', beside_pill_refusal('anchor = { window = "pill", side = "pointer" }'))
         self.assertIn("beside a window stands at", beside_pill_refusal('anchor = { window = "pill", at = "middle" }'))
+
+    def test_it_may_stand_across_it_from_lumi_1_90(self):
+        """Lumi 1.90: to its right or left, a submenu beside its menu — and
+        beside a panel as beside any window. An older Lumi refuses both
+        words, so the manifest names 1.90.0; an arrow never points across."""
+        floored = BESIDE_BASE.replace('version = "1.0.0"', 'version = "1.0.0"\nmin-lumi-version = "1.90.0"')
+        for side in ("trailing", "leading"):
+            fields = f'anchor = {{ window = "pill", at = "start", side = "{side}", follow = true }}\nfocus = false'
+            publish.check_manifest("dev.you.thing", tomllib.loads(floored.format(fields=fields)))
+            self.assertIn('set min-lumi-version to "1.90.0"', beside_pill_refusal(fields))
+        self.assertIn('goes "above", "below", "trailing" or "leading"', beside_pill_refusal('anchor = { window = "pill", side = "right" }'))
+        arrowed = 'anchor = { window = "pill", side = "trailing" }\nmaterial = "popover"\narrow = true'
+        with self.assertRaises(SystemExit) as caught:
+            publish.check_manifest("dev.you.thing", tomllib.loads(floored.format(fields=arrowed)))
+        self.assertIn("leave arrow out", str(caught.exception.code))
+        # Beside the selection, still above, below or the pointer's side.
+        self.assertIn('"above", "below" or "pointer"', refusal('kind = "panel"\nposition = "selection"\nanchor = { side = "trailing" }'))
 
     def test_it_has_no_place_of_its_own(self):
         for key in ("remember-frame = true", "restore = true", "copies = 4"):

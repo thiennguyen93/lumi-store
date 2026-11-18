@@ -426,6 +426,12 @@ HOLD_SINCE = (1, 79, 0)
 # at install: a manifest declaring one names this floor.
 OVERLAY_SINCE = (1, 79, 0)
 
+# The Lumi that first stands a panel beside another window across it, to its
+# right or left (`anchor` side "trailing" or "leading") — a submenu beside its
+# menu. An older Lumi refuses both words, so the package would be offered to
+# it and fail at install: a manifest saying either names this floor.
+ACROSS_SINCE = (1, 90, 0)
+
 # The Lumi that first tells the `away` event and knows its capability. An
 # older Lumi refuses both words, so the package would be offered to it and
 # fail at install: a manifest naming either names this floor.
@@ -1148,7 +1154,8 @@ def check_manifest(entry_id: str, manifest: dict):
         # 1.61), or beside another of its windows' (Lumi 1.66), its words or
         # nothing, same sentences. Under the item it is an edge alone: there
         # is no side above the menu bar. Beside a window it names the window,
-        # which no other position has, and goes above or below it.
+        # which no other position has, and goes above or below it — or beside
+        # it across, to its right or left (Lumi 1.90, a floor of its own).
         beside_window = position == "window" and kind == "panel"
         anchor = window.get("anchor", {}) if beside_window else window.get("anchor")
         if beside_window:
@@ -1179,8 +1186,16 @@ def check_manifest(entry_id: str, manifest: dict):
             if beside_window:
                 if at not in ("", "start", "end", "center", "pointer"):
                     fail(entry_id, f'the panel {name} asks for anchor at {at!r}; a panel beside a window stands at "start", "end", "center" or "pointer"')
-                if side not in ("", "above", "below"):
-                    fail(entry_id, f'the panel {name} asks for anchor side {side!r}; a panel beside a window goes "above" or "below"')
+                if side not in ("", "above", "below", "trailing", "leading"):
+                    fail(entry_id, f'the panel {name} asks for anchor side {side!r}; a panel beside a window goes "above", "below", "trailing" or "leading"')
+                if side in ("trailing", "leading"):
+                    floor = ext.get("min-lumi-version") or ext.get("min_lumi_version") or ""
+                    if version_tuple(floor) < ACROSS_SINCE:
+                        fail(
+                            entry_id,
+                            f'the panel {name} stands beside its window across (anchor side {side!r}), which Lumi '
+                            'places from 1.90.0 — an older Lumi refuses the manifest; set min-lumi-version to "1.90.0" or later',
+                        )
             if under_item:
                 if side:
                     fail(
@@ -1192,7 +1207,7 @@ def check_manifest(entry_id: str, manifest: dict):
                     fail(entry_id, f'the panel {name} asks for anchor at {at!r}; a panel under the menu bar item stands at "start", "end", "center" or "pointer"')
             if at not in ("", "start", "end", "center", "pointer"):
                 fail(entry_id, f'the panel {name} asks for anchor at {at!r}; a panel beside the selection stands at "start", "end", "center" or "pointer"')
-            if side not in ("", "above", "below", "pointer"):
+            if not beside_window and side not in ("", "above", "below", "pointer"):
                 fail(entry_id, f'the panel {name} asks for anchor side {side!r}; a panel beside the selection goes "above", "below" or "pointer"')
         # `manifest.rs`'s scroll rule (Lumi 1.53): a panel beside the
         # selection's alone, "hide" or "follow", same sentences. An older
@@ -1355,6 +1370,16 @@ def check_manifest(entry_id: str, manifest: dict):
                 fail(entry_id, f'the panel {name} points an arrow, which is cut into its glass — give it a material other than "clear"')
             if arrow and "overhang" in window:
                 fail(entry_id, f"the panel {name} sets arrow and overhang; the arrow stands in a band beside the panel, so leave overhang out")
+            # Its band is above and below the panel (Lumi 1.90): an arrow
+            # points up or down, never across.
+            asked = window.get("anchor")
+            across = str(asked.get("side", "")).strip() if isinstance(asked, dict) else ""
+            if arrow and across in ("trailing", "leading"):
+                fail(
+                    entry_id,
+                    f'the panel {name} sets arrow and stands beside its window across (anchor side "{across}"); '
+                    "an arrow points up or down at what a panel stands below or above, so leave arrow out",
+                )
         # `manifest.rs`'s title bar rule, same sentences.
         titlebar = str(window.get("titlebar", "")).strip()
         if titlebar == "unified" and kind == "panel":
