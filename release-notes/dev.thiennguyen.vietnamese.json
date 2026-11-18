@@ -1,4 +1,26 @@
 {
+  "0.1.17": {
+    "notesSha256": "00297377d3adcbee5140cf1d131a6daf8790ec4cec5d85f033f9ff0dda8e3c43",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Choose how the menu bar icon looks",
+          "items": [
+            "The menu bar now shows V or E as a plain letter by default",
+            "You can pick the plain letter, a bordered letter, or the filled box in Settings"
+          ]
+        },
+        "vi": {
+          "headline": "Tùy chỉnh biểu tượng trên thanh menu",
+          "items": [
+            "Thanh menu giờ hiển thị chữ V hoặc E dạng chữ thường theo mặc định",
+            "Bạn có thể chọn chữ thường, chữ có viền, hoặc hộp tô đầy trong Cài đặt"
+          ]
+        }
+      }
+    }
+  },
   "0.1.16": {
     "notesSha256": "5dc345532cfc2475dc82c84c4819d63ee3b6845f8484e5ca354717097b4bd8f6",
     "summary": {
