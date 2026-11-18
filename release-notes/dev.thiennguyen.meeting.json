@@ -1,4 +1,32 @@
 {
+  "0.5.0": {
+    "notesSha256": "0e998ce02d690c169996f4be8ebd05d1bbcb023ad578f748882522a4d193c486",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Record your voice, and the window follows live captions in real time",
+          "items": [
+            "Record your voice in English or Vietnamese, switching the language as you read",
+            "The Meeting Notes window now updates in real time as Live Captions changes, not half a minute behind",
+            "Opening Meeting Notes from Live Captions now shows the meeting being recorded, not the last one you viewed",
+            "Notes started during a call now stop and save when the call ends, no matter how you started them",
+            "The Speakers pane keeps Settings tall enough so Record Your Voice no longer runs off the bottom"
+          ]
+        },
+        "vi": {
+          "headline": "Ghi âm giọng nói và cửa sổ theo dõi phụ đề trực tiếp ngay lập tức",
+          "items": [
+            "Ghi âm giọng nói bằng tiếng Anh hoặc tiếng Việt, chuyển đổi ngôn ngữ khi bạn đọc",
+            "Cửa sổ Meeting Notes giờ cập nhật ngay khi Live Captions thay đổi, không còn chậm nửa phút",
+            "Mở Meeting Notes từ Live Captions giờ hiển thị cuộc họp đang ghi, không phải cuộc họp bạn xem lần trước",
+            "Ghi chú bắt đầu trong cuộc gọi giờ dừng và lưu khi cuộc gọi kết thúc, bất kể bạn bắt đầu thế nào",
+            "Ngăn Speakers giữ Settings đủ cao để Record Your Voice không còn bị cắt ở cuối cửa sổ"
+          ]
+        }
+      }
+    }
+  },
   "0.4.0": {
     "notesSha256": "557202ee57e480122795780fc8a3c48dfebddf3e437da54894c336c52035fb6b",
     "summary": {
