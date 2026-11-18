@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "lumi-vietnamese-ext"
-version = "0.1.16"
+version = "0.1.17"
 dependencies = [
  "gonhanh-core",
  "lumi-extension-api",

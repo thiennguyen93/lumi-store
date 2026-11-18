@@ -500,14 +500,25 @@ fn drew_no_item(version: &str) -> bool {
     }
 }
 
+/// The `menuBarIcon` setting: how the V and E are drawn.
+const MENU_BAR_ICON: &str = "menuBarIcon";
+
 /// The menu bar item's icon: V while typing is on, E while it is off — the
-/// letters every Vietnamese input method shows — each a key with its letter
-/// cut out, shipped under `ui/` and drawn by Lumi in the menu bar's ink.
-pub fn menu_bar_icon(on: bool) -> &'static str {
-    if on {
-        "menu-bar-v.svg"
-    } else {
-        "menu-bar-e.svg"
+/// letters every Vietnamese input method shows — shipped under `ui/` and
+/// drawn by Lumi in the menu bar's ink. Drawn as the `menuBarIcon` setting
+/// says: the bare letter (`"letter"`, the default, and what anything this
+/// build does not know reads as), the letter in a key drawn as its border
+/// (`"outlined"`), or a key with the letter cut out (`"boxed"`, the only
+/// icon before 0.1.17). V and E of one look are one size, so a switch
+/// between them never moves the items beside them.
+pub fn menu_bar_icon(on: bool, settings: &serde_json::Value) -> &'static str {
+    match (settings.get(MENU_BAR_ICON).and_then(|value| value.as_str()), on) {
+        (Some("boxed"), true) => "menu-bar-v.svg",
+        (Some("boxed"), false) => "menu-bar-e.svg",
+        (Some("outlined"), true) => "menu-bar-v-outlined.svg",
+        (Some("outlined"), false) => "menu-bar-e-outlined.svg",
+        (_, true) => "menu-bar-v-letter.svg",
+        (_, false) => "menu-bar-e-letter.svg",
     }
 }
 
@@ -539,13 +550,30 @@ fn draw_menu() -> Result<(), String> {
     menu::set_rows(&menu_entries(on, &settings))?;
     // The popover, when it is up, shows the same; `false` when it is not.
     let _ = lumi::post(POPOVER, &popover_now(on, &settings).to_string());
+    // And the Settings tab, whose Menu bar icon choices show the V or E the
+    // menu bar shows; `false` when it is not up, which asks again on load.
+    let _ = lumi::post(SETTINGS_TAB, &typing_said(on).to_string());
     Ok(())
+}
+
+/// The Settings tab, as `lumi::post` and `run_ui` name it.
+const SETTINGS_TAB: &str = ":settings";
+
+/// What the Settings tab sends (`POST /__lumi__/call`) to learn whether
+/// typing is on, as it loads and as it comes back into view.
+const TYPING_ASKED: &str = "typing";
+
+/// Whether typing is on, as the Settings tab is told it: answered to
+/// [`TYPING_ASKED`] and posted whenever the V or E is drawn again, so its
+/// Menu bar icon choices draw the letter the menu bar shows.
+pub fn typing_said(on: bool) -> serde_json::Value {
+    serde_json::json!({ "v": 1, "typing": on })
 }
 
 /// The V or E in the menu bar, and its tooltip, for typing `on`.
 fn draw_item(on: bool, settings: &serde_json::Value) -> Result<(), String> {
     let language = settings.get("language").and_then(|value| value.as_str());
-    menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on)).tooltip(menu_bar_tooltip(on, language)))
+    menu_bar_item::set(&menu_bar_item::Item::icon(menu_bar_icon(on, settings)).tooltip(menu_bar_tooltip(on, language)))
 }
 
 /// The look the popover is drawn in, by the `popoverAppearance` setting:
@@ -569,6 +597,12 @@ fn apply_appearance() -> Result<(), String> {
 
 /// What the Settings tab sends after it saves the popover's appearance.
 const APPEARANCE_CHANGED: &str = "appearance";
+
+/// What the Settings tab sends after it saves the menu bar icon's look
+/// (`menuBarIcon`): nothing tells a component its settings changed, and Lumi
+/// draws the item it last stored until somebody sets it again, so the page
+/// asks for the V or E to be drawn in the new look.
+const ICON_CHANGED: &str = "icon";
 
 /// What the Settings tab sends (`POST /__lumi__/call`) after it saves a new
 /// display language. Nothing tells a component its settings changed, and the
@@ -679,6 +713,12 @@ impl Guest for VietnameseTyping {
         }
         if window == ":settings" && request == APPEARANCE_CHANGED {
             return apply_appearance().map(|()| String::new());
+        }
+        if window == SETTINGS_TAB && request == TYPING_ASKED {
+            return Ok(typing_said(text_input::enabled()?).to_string());
+        }
+        if window == ":settings" && request == ICON_CHANGED {
+            return draw_item(text_input::enabled()?, &lumi::settings()).map(|()| String::new());
         }
         if window == ":settings" && request == PREVIEW_SOUND {
             switch_sound(true);
@@ -1207,12 +1247,24 @@ mod tests {
     /// package ships, and its tooltip in the display language.
     #[test]
     fn the_menu_bar_item_shows_the_switch() {
-        assert_eq!(menu_bar_icon(true), "menu-bar-v.svg");
-        assert_eq!(menu_bar_icon(false), "menu-bar-e.svg");
-        for on in [true, false] {
-            let file = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("ui").join(menu_bar_icon(on));
-            assert!(file.is_file(), "{} ships", file.display());
+        let letter = serde_json::json!({});
+        assert_eq!(menu_bar_icon(true, &letter), "menu-bar-v-letter.svg");
+        assert_eq!(menu_bar_icon(false, &letter), "menu-bar-e-letter.svg");
+        let boxed = serde_json::json!({ "menuBarIcon": "boxed" });
+        assert_eq!(menu_bar_icon(true, &boxed), "menu-bar-v.svg");
+        assert_eq!(menu_bar_icon(false, &boxed), "menu-bar-e.svg");
+        let outlined = serde_json::json!({ "menuBarIcon": "outlined" });
+        assert_eq!(menu_bar_icon(true, &outlined), "menu-bar-v-outlined.svg");
+        assert_eq!(menu_bar_icon(false, &outlined), "menu-bar-e-outlined.svg");
+        // A look this build does not know is the default's.
+        assert_eq!(menu_bar_icon(true, &serde_json::json!({ "menuBarIcon": "round" })), "menu-bar-v-letter.svg");
+        for look in [letter, outlined, boxed] {
+            for on in [true, false] {
+                let file = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("ui").join(menu_bar_icon(on, &look));
+                assert!(file.is_file(), "{} ships", file.display());
+            }
         }
+        assert_eq!(typing_said(false), serde_json::json!({ "v": 1, "typing": false }));
         assert_eq!(menu_bar_tooltip(true, Some("en")), "Vietnamese typing is on");
         assert_eq!(menu_bar_tooltip(false, None), "Gõ tiếng Việt: đang tắt");
     }

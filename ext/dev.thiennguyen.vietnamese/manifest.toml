@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.16"
+version = "0.1.17"
 description = "Vietnamese typing for your Mac, with Telex or VNI and no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
@@ -199,6 +199,29 @@ name = "perApp"
 label = "Remember on or off for each app"
 kind = "bool"
 default = "true"
+
+# How the V and E in the menu bar are drawn: the bare letter, which most
+# Vietnamese input methods show and is the default; the letter in a key drawn
+# as its border; or a key with the letter cut out, the only look before
+# 0.1.17. Only on the Settings tab: the menu and
+# the popover hold the typing's switches, not its looks.
+[[settings]]
+name = "menuBarIcon"
+label = "Menu bar icon"
+kind = "select"
+default = "letter"
+
+[[settings.options]]
+value = "letter"
+label = "V or E"
+
+[[settings.options]]
+value = "outlined"
+label = "V or E with a border"
+
+[[settings.options]]
+value = "boxed"
+label = "V or E in a filled box"
 
 # The popover's look, on its own: Lumi's Appearance, or light or dark for it
 # alone (`lumi::set_theme`). Its glass and its page both follow it. Only on

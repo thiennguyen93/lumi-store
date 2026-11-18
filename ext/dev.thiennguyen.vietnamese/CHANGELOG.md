@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.17] - 2026-11-18
+
+### Added
+
+- **Menu bar icon** (Biểu tượng trên menu bar) on the Settings tab: the V or E as a plain letter, with a border round it, or in a filled box as before. Each choice shows the letter the menu bar shows now.
+
+### Changed
+
+- The V or E in the menu bar is a plain letter unless you choose the box on the Settings tab.
+
 ## [0.1.16] - 2026-11-18
 
 ### Added
