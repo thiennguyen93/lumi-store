@@ -1,4 +1,26 @@
 {
+  "0.1.16": {
+    "notesSha256": "5dc345532cfc2475dc82c84c4819d63ee3b6845f8484e5ca354717097b4bd8f6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Open the extension from Spotlight to turn Vietnamese typing on",
+          "items": [
+            "Open Lumi Gõ tiếng Việt from Spotlight, Dock or Launchpad to turn Vietnamese typing on when it is off",
+            "Requires Lumi 1.89.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Mở tiện ích từ Spotlight để bật gõ tiếng Việt",
+          "items": [
+            "Mở Lumi Gõ tiếng Việt từ Spotlight, Dock hoặc Launchpad để bật gõ tiếng Việt khi đang tắt",
+            "Yêu cầu Lumi 1.89.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
   "0.1.15": {
     "notesSha256": "df987e937d9f5befbe95630c2c4504023a22bae076f19140942dd291cc7606dd",
     "summary": {

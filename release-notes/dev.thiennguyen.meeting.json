@@ -1,4 +1,30 @@
 {
+  "0.3.0": {
+    "notesSha256": "6d7ddd8c7ea756c6a433f02a716eacc0d8bd889962de6812f8e714f9cfcd40a6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Meeting Notes can now be opened as a standalone application",
+          "items": [
+            "Meeting Notes can be opened from Spotlight, the Dock, or Launchpad",
+            "Opening Meeting Notes as an application shows its window ready to start a meeting",
+            "Opening the application while Meeting Notes is off turns it on automatically",
+            "Requires Lumi 1.89.0"
+          ]
+        },
+        "vi": {
+          "headline": "Meeting Notes giờ có thể mở như một ứng dụng độc lập",
+          "items": [
+            "Meeting Notes có thể mở từ Spotlight, Dock hoặc Launchpad",
+            "Mở Meeting Notes dưới dạng ứng dụng sẽ hiển thị cửa sổ sẵn sàng bắt đầu cuộc họp",
+            "Mở ứng dụng khi Meeting Notes đang tắt sẽ tự động bật nó lên",
+            "Yêu cầu Lumi 1.89.0"
+          ]
+        }
+      }
+    }
+  },
   "0.2.0": {
     "notesSha256": "3d35b6a875177fe024b8cfcdad930a15942dadfa99d1c2f6668ec486c4279565",
     "summary": {
