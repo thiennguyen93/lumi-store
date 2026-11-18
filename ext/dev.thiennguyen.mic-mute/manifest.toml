@@ -5,7 +5,7 @@
 [extension]
 id = "dev.thiennguyen.mic-mute"
 name = "Mic Mute"
-version = "0.4.1"
+version = "0.5.0"
 description = "Mute every microphone on your Mac with one key, and keep it muted until you press it again."
 author = "Thien Nguyen"
 summary = "Press ⌥⌘M to mute every microphone on your Mac at once — built-in, USB and Bluetooth — and a microphone you plug in while muted is muted too. Hold ⌥⌘M to talk, or tap it to unmute and each one is back as it was. The menu bar icon says which it is."
@@ -25,7 +25,10 @@ video = "https://youtu.be/6UuLgj8nhFQ"
 # press and never hear the release — and the icon drawn in colour and the
 # glow round the screen (`kind = "overlay"`). 1.77.0 brought the
 # `audio-devices` capability and event this is built on.
-min-lumi-version = "1.81.0"
+# 1.89.0: the `launcher` capability and `[launcher]` below — the app in
+# Applications — which an older Lumi refuses. What set the floor before it
+# is said above.
+min-lumi-version = "1.89.0"
 # `audio-devices` to hold every input muted and hear devices come and go;
 # `menu-bar-item` for the icon that says whether the microphones are muted,
 # and the panel a click on it opens; `menu` for the row in that icon's menu
@@ -34,7 +37,7 @@ min-lumi-version = "1.81.0"
 # page load; `away` to hear the screen lock and unlock, for "Mute when the
 # screen locks" — declared whether that is on or off, since a manifest
 # cannot ask for it later.
-capabilities = ["audio-devices", "away", "menu", "menu-bar-item", "preload"]
+capabilities = ["audio-devices", "away", "menu", "menu-bar-item", "preload", "launcher"]
 # Mic Mute draws its own state in the menu bar, so Lumi's "Microphone muted
 # by Mic Mute — Unmute" row would say it twice. Switching Mic Mute off, or
 # quitting Lumi, still unmutes everything.
@@ -53,6 +56,14 @@ overlay-row = false
 # The person stepping away: the screen locking mutes every microphone when
 # "Mute when the screen locks" is on, and its unlock says so.
 events = ["audio-devices", "away"]
+
+# Mic Mute in Applications (Lumi 1.89.0): opened while Mic Mute is switched
+# off, it does not switch itself on — muting microphones is the person's to
+# start — and opens its page in Lumi, where its switch is. On, opening it
+# does nothing.
+[launcher]
+opens = "none"
+switch-on = false
 
 # The Settings tab is Mic Mute's own page (settings.html): the key, what
 # shows while it is held, drawn as a picture of each, and the virtual

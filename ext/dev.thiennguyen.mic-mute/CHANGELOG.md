@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0] - 2026-11-18
+
+### Added
+
+- **Mic Mute in Applications**: open it from Spotlight, the Dock or Launchpad. While Mic Mute is switched off, it opens Mic Mute's page in Lumi, where you can switch it on; it never switches itself on.
+- Needs Lumi 1.89.0.
+
 ## [0.4.1] - 2026-11-17
 
 ### Changed

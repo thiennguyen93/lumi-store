@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.16] - 2026-11-18
+
+### Added
+
+- **Lumi Gõ tiếng Việt in Applications**: open it from Spotlight, the Dock or Launchpad to switch Vietnamese typing back on when it is off. No window opens; the V in the menu bar shows it is on.
+- Needs Lumi 1.89.0.
+
 ## [0.1.15] - 2026-11-04
 
 ### Fixed

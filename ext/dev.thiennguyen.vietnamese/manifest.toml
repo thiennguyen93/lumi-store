@@ -6,7 +6,7 @@
 [extension]
 id = "dev.thiennguyen.vietnamese"
 name = "Lumi Gõ tiếng Việt"
-version = "0.1.15"
+version = "0.1.16"
 description = "Vietnamese typing for your Mac, with Telex or VNI and no input method to install."
 author = "Thien Nguyen"
 summary = "Type Vietnamese in any app with Telex (tieengs → tiếng) or VNI (tie61ng → tiếng), switched on and off from Lumi's menu bar or a shortcut you choose, and remembered for each app. Every key you type passes through it to become Vietnamese, and nothing else: it holds no network access, keeps no keys, and Lumi lets it change only the word you are typing."
@@ -28,7 +28,10 @@ video = "https://youtu.be/qhMTPz81R3w"
 # sentence ended from; 1.62.0 is what the
 # toggle's `tap+fn+shift` below needs, 1.61.0 `text-input`, `front-app`
 # and `menu-bar-item`.)
-min-lumi-version = "1.74.0"
+# 1.89.0: the `launcher` capability and `[launcher]` below — the app in
+# Applications — which an older Lumi refuses. What set the floor before it
+# is said above.
+min-lumi-version = "1.89.0"
 # `text-input`: every key of the word, answered in a sealed run. The review
 # sheet says it loudest and adds a warning; Lumi refuses it beside
 # `network` or `ai`, and this extension holds neither.
@@ -43,7 +46,7 @@ min-lumi-version = "1.74.0"
 # `sound`: a marimba's two notes as the switch moves, played by Lumi from the
 # run the switch is pressed in — only while "Play a sound when switching" is
 # on, which starts off.
-capabilities = ["text-input", "front-app", "menu", "menu-bar-item", "preload", "sound"]
+capabilities = ["text-input", "front-app", "menu", "menu-bar-item", "preload", "sound", "launcher"]
 # No "Lumi Gõ tiếng Việt is playing — Stop" row in Lumi's menu: the switch's
 # sound lasts a third of a second, over before anybody could open a menu, and
 # a row that comes and goes with every press is a row that says nothing.
@@ -61,6 +64,12 @@ menu-bar-item-settings = false
 # VoiceOver's, which presses the V or E rather than clicking it.
 menu-bar-item-right-click = "toggle"
 events = ["text-input", "text-input-enabled", "front-app"]
+
+# Lumi Gõ tiếng Việt in Applications (Lumi 1.89.0): opening it switches the
+# typing on if it was off, and opens nothing — the V in the menu bar is the
+# answer. Already on, opening it does nothing.
+[launcher]
+opens = "none"
 
 [[command]]
 name = "toggle"
