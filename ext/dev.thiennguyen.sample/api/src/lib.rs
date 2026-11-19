@@ -479,7 +479,7 @@ pub mod flags {
 pub mod ai {
     use super::lumi::ext::ai as wit;
 
-    pub use wit::{Answer, Failure, FailureKind, Format, Model, Place, Request, Thinking, Usage};
+    pub use wit::{Answer, CallLimits, Failure, FailureKind, Format, Model, Place, Request, Thinking, Usage};
 
     /// Whether a model answers now. Asks the engines on this Mac.
     pub fn ready() -> Result<bool, String> {
@@ -493,6 +493,14 @@ pub mod ai {
     /// when a model answers then. Only from a press. Lumi 1.64.0.
     pub fn prepare(language: Option<&str>) -> Result<bool, String> {
         wit::prepare(language)
+    }
+
+    /// What a call to `model` — `None` for the model a call would run on
+    /// now — is held to: the most characters of `input` it takes and the
+    /// longest answer. Split a long text only past `input_chars`. Lumi
+    /// 1.91.0.
+    pub fn limits(model: Option<&str>) -> Result<CallLimits, String> {
+        wit::limits(model)
     }
 
     /// The models your extension may ask for now, the person's default
@@ -1348,6 +1356,20 @@ pub fn set_theme(name: &str, theme: &str) -> Result<(), String> {
 /// say so with `min-lumi-version`.
 pub fn set_pinned(name: &str, pinned: bool) -> Result<(), String> {
     lumi::ext::ui::set_pinned(name, pinned)
+}
+
+/// Let one of your panels down among the ordinary windows, or float it
+/// again. `false` puts it at an ordinary window's level, just behind the
+/// window holding the keyboard, so it stops covering a window the person is
+/// working in; `true` puts it back at the level it had. For a panel that
+/// floats over every app — a captions strip, a player — while one of your
+/// own windows is in use: let it down when that window takes the keyboard,
+/// float it again when the window lets go of it or the panel is pressed.
+/// Every opening floats it again. Only a panel that is up, from a request
+/// your page sends for something the person did — its `focus` and `blur`
+/// count. Needs Lumi 1.91.0 or later — say so with `min-lumi-version`.
+pub fn set_floating(name: &str, floating: bool) -> Result<(), String> {
+    lumi::ext::ui::set_floating(name, floating)
 }
 
 /// Bring one of your windows that is up to the front of the windows at its

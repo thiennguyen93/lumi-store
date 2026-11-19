@@ -531,6 +531,25 @@ interface ai {
     /// The models this extension may ask for, the person's default first.
     models: func() -> result<list<model>, string>;
 
+    /// What a call is held to, planned before it is made.
+    record call-limits {
+        /// The most characters of `input` a call takes: the least of the
+        /// person's longest input, Apple Intelligence's 6,000, and what a
+        /// model on this Mac holds with the memory free for it — room left
+        /// for instructions of up to 2,000 characters and the longest
+        /// answer. Planned, not counted: a call within it is never refused
+        /// for its length.
+        input-chars: u32,
+        /// The longest answer, in tokens: the person's. `max-tokens` may ask
+        /// for fewer.
+        answer-tokens: u32,
+    }
+
+    /// What a call to `model` — or, with none, to the model a call would
+    /// run on now — is held to, so a long text is split only where it must
+    /// be. Refused when no model answers. Added in Lumi 1.91.0.
+    limits: func(model: option<string>) -> result<call-limits, string>;
+
     /// Ask, and wait for the whole answer: for a command, which has no
     /// window to stream into. Waits as long as the person takes to answer
     /// whether the text may leave this Mac, and the model to answer. Only
@@ -1836,6 +1855,18 @@ interface ui {
     /// up, and only for something the person did in one of your windows.
     /// Added in Lumi 1.29.
     set-pinned: func(name: string, pinned: bool) -> result<_, string>;
+
+    /// Let one of your panels down among the ordinary windows, or float it
+    /// again: `false` puts it at an ordinary window's level, just behind the
+    /// window that holds the keyboard, so it stops covering a window the
+    /// person is working in; `true` puts it back at the level it had. For a
+    /// panel that floats over every app — a captions strip, a player — while
+    /// one of your own windows is in use: let it down when that window takes
+    /// the keyboard and float it again when it lets go, or when the panel is
+    /// pressed. Every opening floats it again. Only a panel that is up, and
+    /// only for something the person did in one of your windows — a page's
+    /// focus and blur count. Added in Lumi 1.91.
+    set-floating: func(name: string, floating: bool) -> result<_, string>;
 
     /// Bring one of your windows that is up to the front of the windows at
     /// its level, without the keyboard: the window holding it keeps it. For
