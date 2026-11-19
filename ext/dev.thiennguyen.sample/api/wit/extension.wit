@@ -547,7 +547,7 @@ interface ai {
 
     /// What a call to `model` — or, with none, to the model a call would
     /// run on now — is held to, so a long text is split only where it must
-    /// be. Refused when no model answers. Added in Lumi 1.91.0.
+    /// be. Refused when no model answers. Added in Lumi 1.92.0.
     limits: func(model: option<string>) -> result<call-limits, string>;
 
     /// Ask, and wait for the whole answer: for a command, which has no

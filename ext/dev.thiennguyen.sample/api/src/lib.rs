@@ -498,7 +498,7 @@ pub mod ai {
     /// What a call to `model` — `None` for the model a call would run on
     /// now — is held to: the most characters of `input` it takes and the
     /// longest answer. Split a long text only past `input_chars`. Lumi
-    /// 1.91.0.
+    /// 1.92.0.
     pub fn limits(model: Option<&str>) -> Result<CallLimits, String> {
         wit::limits(model)
     }
