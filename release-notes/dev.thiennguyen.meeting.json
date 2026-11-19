@@ -1,4 +1,88 @@
 {
+  "0.8.0": {
+    "notesSha256": "8df775dddc106c3726f99117009f203650987aff42871af7d462c1d0316cb7a0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "View transcripts as chat bubbles, paragraphs or lines, and search them",
+          "items": [
+            "View transcripts as chat bubbles, paragraphs or lines with adjustable text size and timestamps",
+            "Select lines to play, copy or translate them, and name speakers directly from the transcript",
+            "Search finds words across all meetings, showing matches you can jump between with keyboard shortcuts",
+            "Follow along while playing keeps the current line visible and highlights speaker turns on the scrubber",
+            "Click through captions lets mouse actions pass through the caption text to windows underneath",
+            "Transcript and summary are now separate tabs under each meeting title"
+          ]
+        },
+        "vi": {
+          "headline": "Xem bản ghi dạng chat, đoạn văn hoặc dòng, và tìm kiếm trong đó",
+          "items": [
+            "Xem bản ghi dạng bong bóng chat, đoạn văn hoặc từng dòng với cỡ chữ điều chỉnh được và dấu thời gian",
+            "Chọn dòng để phát, sao chép hoặc dịch, và đặt tên người nói ngay từ bản ghi",
+            "Tìm kiếm từ trong tất cả cuộc họp, hiện kết quả có thể nhảy qua lại bằng phím tắt",
+            "Theo dõi khi phát giữ dòng hiện tại luôn hiện và tô sáng lượt nói trên thanh trượt",
+            "Nhấp xuyên qua phụ đề cho phép chuột tương tác với cửa sổ bên dưới chữ phụ đề",
+            "Bản ghi và tóm tắt giờ là hai thẻ riêng dưới tiêu đề cuộc họp"
+          ]
+        }
+      }
+    }
+  },
+  "0.7.0": {
+    "notesSha256": "4d4c2a0e77866360448de2d6a483bf577990f4dd7004925be769bda0fe2932c0",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Summarize meetings with action items and custom templates",
+          "items": [
+            "Summarize a meeting into overview, action items and sections, with times to jump back to the transcript",
+            "Long meetings are read in parts when needed, with progress shown and the option to stop",
+            "Settings let you pick the text model, default template and language, and create your own templates",
+            "The player is now a bar at the bottom of the transcript, always in the same place",
+            "Live captions step behind the Meeting Notes window while you work in it, then float over other apps again",
+            "Menus now follow macOS appearance instead of Lumi's, and captions stay visible over full screen apps"
+          ]
+        },
+        "vi": {
+          "headline": "Tóm tắt cuộc họp với danh sách công việc và mẫu tùy chỉnh",
+          "items": [
+            "Tóm tắt cuộc họp thành tổng quan, công việc cần làm và các phần bạn chọn, kèm thời gian để quay lại bản ghi",
+            "Cuộc họp dài được đọc từng phần khi cần, hiển thị tiến độ và có thể dừng lại",
+            "Cài đặt cho phép chọn mô hình văn bản, mẫu và ngôn ngữ mặc định, cũng như tạo mẫu riêng",
+            "Trình phát giờ là thanh ở cuối bản ghi, luôn ở cùng một vị trí",
+            "Phụ đề trực tiếp lui ra sau cửa sổ Meeting Notes khi bạn làm việc, rồi nổi lên trên ứng dụng khác",
+            "Menu giờ theo giao diện macOS thay vì Lumi, và phụ đề vẫn hiện trên ứng dụng toàn màn hình"
+          ]
+        }
+      }
+    }
+  },
+  "0.6.0": {
+    "notesSha256": "1923d32840ad1f643ca99c4ed2280305a7742800e69b5b1a20335e3cacf50963",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Choose models, hide captions with Escape, and more",
+          "items": [
+            "Press Escape to hide Live Captions after clicking the panel",
+            "Choose and download speech, speaker, and translation models in Settings",
+            "Settings window shows Meeting Notes Settings at the top like other Mac apps"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn mô hình, ẩn phụ đề bằng Escape và nhiều hơn nữa",
+          "items": [
+            "Nhấn Escape để ẩn Phụ Đề Trực Tiếp sau khi nhấp vào bảng điều khiển",
+            "Chọn và tải xuống mô hình nhận dạng giọng nói, người nói và dịch trong Cài Đặt",
+            "Cửa sổ Cài Đặt hiển thị Cài Đặt Meeting Notes ở trên cùng như ứng dụng Mac khác"
+          ]
+        }
+      }
+    }
+  },
   "0.5.0": {
     "notesSha256": "0e998ce02d690c169996f4be8ebd05d1bbcb023ad578f748882522a4d193c486",
     "summary": {
