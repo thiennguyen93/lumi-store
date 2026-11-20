@@ -568,7 +568,7 @@ pub mod transcribe {
     use super::lumi::ext::transcribe as wit;
 
     pub use super::lumi::ext::translation::Readiness;
-    pub use wit::{Failure, FailureKind, Heard, Levels, Model, Place, Playing, Request, Segment, Source, Speaker, Speakers, Transcript, Word};
+    pub use wit::{Failure, FailureKind, Heard, Hearing, Levels, Model, Place, Playing, Request, Segment, Source, Speaker, Speakers, Transcript, Word};
 
     /// How ready this Mac is to hear `language` (`""` for any) with
     /// `speakers`: `Installed` when a model runs now, `Downloadable` when
@@ -627,6 +627,23 @@ pub mod transcribe {
     /// event says `continues` when it went on. Only from a press.
     pub fn start_after(request: &Request, previous: u64) -> Result<u64, Failure> {
         wit::start_after(request, previous)
+    }
+
+    /// [`complete`], heard as `hearing` says — `Hearing { sides: true }` for
+    /// a call's two sides kept apart, as `recordings::keep` writes them —
+    /// and told to your own windows as it is heard, as [`start`] tells it:
+    /// `started` with the recording's id, `progress`, each `segment`, then
+    /// `done` or `failed`. A window can draw how far it has got and
+    /// [`cancel`] it while your run waits for the whole transcript. A blob
+    /// only. Only from a press. Lumi 1.93.0 or later.
+    pub fn complete_with(request: &Request, hearing: Hearing) -> Result<Transcript, Failure> {
+        wit::complete_with(request, hearing)
+    }
+
+    /// [`start`] for a recording in your storage, heard as `hearing` says.
+    /// A blob only. Only from a press. Lumi 1.93.0 or later.
+    pub fn start_with(request: &Request, hearing: Hearing) -> Result<u64, Failure> {
+        wit::start_with(request, hearing)
     }
 
     /// Stop recording `id`: what was said up to now is still heard, and its

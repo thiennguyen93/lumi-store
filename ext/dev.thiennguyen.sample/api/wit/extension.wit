@@ -595,8 +595,9 @@ interface ai {
 /// the longest recording or the Mac going away is still heard to its end.
 ///
 /// **What a model is sent.** The sound, your `hints` and `languages`, and
-/// nothing else of the person's. Every speech model in this version runs on
-/// this Mac. An extension declaring `text-input` may not declare `speech`.
+/// nothing else of the person's — to a model on this Mac, or to one online
+/// on the person's own key, which Lumi asks them about first. An extension
+/// declaring `text-input` may not declare `speech`.
 ///
 /// Added to 0.3 in Lumi 1.64.0 without a new world version.
 interface transcribe {
@@ -862,6 +863,32 @@ interface transcribe {
     /// event says `continues` with `previous`'s id when it went on. Only
     /// from a press.
     start-after: func(request: request, previous: u64) -> result<u64, failure>;
+
+    /// How `complete-with` and `start-with` hear a recording from storage,
+    /// beyond what its request says. Added in Lumi 1.93.0.
+    record hearing {
+        /// The recording's first two channels are a call's two sides — the
+        /// microphone in the first, what the Mac played in the second, as
+        /// `recordings.keep` writes its `sides` — and each is heard as a
+        /// stream of its own, as a live `call` is: every segment's `heard`
+        /// says `microphone` or `system-audio`, and voices are told apart
+        /// within each side. A recording of one channel is refused. False:
+        /// every channel mixed into one, as `complete` and `start` hear it.
+        sides: bool,
+    }
+
+    /// `complete`, heard as `hearing` says, and told to your windows as it
+    /// is heard, under the recording's id — `started`, `progress`, each
+    /// `segment`, then `done` or `failed`, as `start` tells them — so one
+    /// can draw how far it has got, and `cancel` it, while your run waits
+    /// for the whole transcript: a meeting of several recordings heard one
+    /// after another in the one run a press began. A blob only. Only from
+    /// a press. Added in Lumi 1.93.0.
+    complete-with: func(request: request, hearing: hearing) -> result<transcript, failure>;
+
+    /// `start` for a recording from storage, heard as `hearing` says. A
+    /// blob only. Only from a press. Added in Lumi 1.93.0.
+    start-with: func(request: request, hearing: hearing) -> result<u64, failure>;
 
     /// Stop recording `id`: what was said up to now is still heard, and its
     /// transcript told. False when no recording of yours has that id.
