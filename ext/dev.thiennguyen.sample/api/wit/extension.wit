@@ -2563,6 +2563,31 @@ interface files {
     /// nothing after; this is the one to use when what happens next depends
     /// on the file having been saved. Added in Lumi 1.36.
     save: func(blob: string, name: string) -> result<bool, string>;
+
+    /// What `save-shown` tells back of a file the person saved: enough to
+    /// say "Saved “Notes.pdf” to Downloads" and show it in Finder, never
+    /// where it is.
+    record saved {
+        /// The file's own name as written — the one the person kept or
+        /// typed in the panel, with its extension.
+        name: string,
+        /// The folder's own name, such as "Downloads" — never its path.
+        folder: string,
+        /// For `reveal-saved`. It means nothing outside this extension and
+        /// this launch of Lumi; the path stays Lumi's.
+        token: string,
+    }
+
+    /// `save`, telling back what the person may be shown of the file:
+    /// `none` when they cancel. Its rules are `save`'s. Added in Lumi
+    /// 1.94.0.
+    save-shown: func(blob: string, name: string) -> result<option<saved>, string>;
+    /// Show the file `save-shown` wrote in Finder, selected, bringing
+    /// Finder forward — "Show in Finder" beside "Saved". Only for something
+    /// the person did. A token Lumi does not know — another launch, another
+    /// extension's — or a file no longer where it was saved is this call's
+    /// error. Added in Lumi 1.94.0.
+    reveal-saved: func(token: string) -> result<_, string>;
 }
 
 /// macOS's own "is it you?" dialog — Touch ID, an Apple Watch or the login

@@ -2056,7 +2056,7 @@ pub mod folders {
 pub mod files {
     use super::lumi::ext::files as wit;
 
-    pub use wit::Opened;
+    pub use wit::{Opened, Saved};
 
     /// Ask the person for files of `types` — uniform type identifiers such
     /// as `public.image`; empty for any file — one at a time or `multiple`,
@@ -2085,6 +2085,23 @@ pub mod files {
     /// [`storage::blob_save`]: super::storage::blob_save
     pub fn save(blob: &str, name: &str) -> Result<bool, String> {
         wit::save(blob, name)
+    }
+
+    /// [`save`], telling back what the person may be shown of the file: its
+    /// name as written — the one they kept or typed — and its folder's own
+    /// name, for "Saved “Notes.pdf” to Downloads"; `None` when they cancel.
+    /// Its `token` is for [`reveal_saved`]; the path stays Lumi's. Needs
+    /// Lumi 1.94.0.
+    pub fn save_shown(blob: &str, name: &str) -> Result<Option<Saved>, String> {
+        wit::save_shown(blob, name)
+    }
+
+    /// Show the file [`save_shown`] wrote in Finder, selected — "Show in
+    /// Finder" beside your "Saved". Only while answering a press. A token
+    /// from another launch of Lumi, or a file moved away since, is an
+    /// error. Needs Lumi 1.94.0.
+    pub fn reveal_saved(token: &str) -> Result<(), String> {
+        wit::reveal_saved(token)
     }
 }
 
