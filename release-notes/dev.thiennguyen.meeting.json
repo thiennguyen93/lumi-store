@@ -1,4 +1,64 @@
 {
+  "0.10.0": {
+    "notesSha256": "a7230fa994781771c9a213787340b5aca537964e377ff4f9fd5ec489ba42fdba",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Welcome tour, folders, export to PDF and more formats, and calendar",
+          "items": [
+            "A welcome tour walks you through setup on first launch and can be replayed from Settings",
+            "Pin meetings or organize them in folders you can create, rename, drag to reorder, and sort",
+            "Export a meeting to PDF, HTML, Markdown or plain text with your choice of template and content",
+            "Your name replaces Me in every meeting when you set it in Settings under Speakers",
+            "Meetings are named after their calendar events and show who was invited",
+            "Quick Translate button translates the entire meeting at once into your chosen language"
+          ]
+        },
+        "vi": {
+          "headline": "Hướng dẫn ban đầu, thư mục, xuất PDF và nhiều định dạng, lịch",
+          "items": [
+            "Hướng dẫn chào mừng giới thiệu cách thiết lập khi mở lần đầu và có thể xem lại từ Cài đặt",
+            "Ghim cuộc họp hoặc sắp xếp vào thư mục bạn tạo, đổi tên, kéo để sắp xếp và phân loại",
+            "Xuất cuộc họp sang PDF, HTML, Markdown hoặc văn bản thuần với mẫu và nội dung bạn chọn",
+            "Tên bạn thay thế Tôi trong mọi cuộc họp khi đặt trong Cài đặt mục Người nói",
+            "Cuộc họp được đặt tên theo sự kiện lịch và hiển thị danh sách người được mời",
+            "Nút Dịch nhanh dịch toàn bộ cuộc họp sang ngôn ngữ bạn chọn chỉ trong một lần"
+          ]
+        }
+      }
+    }
+  },
+  "0.9.0": {
+    "notesSha256": "3ea60d872a40f92e45b62078ae3bbba620065686460450131b469acc2457358b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Refine transcripts, listen again with better models, and more",
+          "items": [
+            "Refine cleans up finished meetings: Light removes filler words, Full also fixes grammar with AI",
+            "See original words, what changed when refining, or the refined version, and revert lines or meetings back",
+            "Listen Again rehears saved audio with a stronger model for more accurate words and speakers",
+            "Meetings can clean themselves up when they end, with Light refining by default for calls over 3 minutes",
+            "Start Transcription now shows live captions and closes the window so you follow over the call",
+            "A volume slider appears when you hover over the speaker button in the audio player"
+          ]
+        },
+        "vi": {
+          "headline": "Tinh chỉnh bản ghi, nghe lại với mô hình tốt hơn và nhiều hơn nữa",
+          "items": [
+            "Tinh chỉnh làm sạch cuộc họp: Light loại từ thừa trên máy này, Full sửa ngữ pháp bằng AI bạn chọn",
+            "Xem từ ngữ gốc, những thay đổi khi tinh chỉnh hoặc phiên bản đã chỉnh, và hoàn nguyên dòng hoặc cuộc họp",
+            "Nghe Lại phát âm thanh đã lưu với mô hình mạnh hơn để có từ ngữ và người nói chính xác hơn",
+            "Cuộc họp tự động làm sạch khi kết thúc, mặc định dùng Light cho cuộc gọi trên 3 phút",
+            "Bắt Đầu Ghi Âm giờ hiển thị phụ đề trực tiếp và đóng cửa sổ để bạn theo dõi cuộc gọi",
+            "Thanh âm lượng xuất hiện khi di chuột qua nút loa trong trình phát"
+          ]
+        }
+      }
+    }
+  },
   "0.8.2": {
     "notesSha256": "de0ec985c26d97ffb553eb15255521f19f253835894d367e5e5326352db6927b",
     "summary": {
