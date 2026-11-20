@@ -168,6 +168,11 @@ CAPABILITIES = {
     # Lumi 1.89: the `launcher` interface and an app of the extension's own
     # in Applications, described by `[launcher]` (`check_launcher`).
     "launcher",
+    # Lumi 1.94: the `calendar` interface and event (the person's events and
+    # who is invited, never their notes) and the `reminders` interface and
+    # event (reminders added to the person's lists) — each only with the
+    # extension's own grant (`grants`).
+    "calendar", "reminders",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -222,6 +227,9 @@ EVENTS = {
     # Lumi 1.89: the extension's app in Applications put there or taken away
     # on its Permissions sheet — `menu-shown`'s twin for the launcher switch.
     "launcher-shown": "launcher",
+    # Lumi 1.94: something on the calendars, or in Reminders, changing.
+    "calendar-changed": "calendar",
+    "reminders-changed": "reminders",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -449,6 +457,11 @@ def beside_names(anchor) -> list[str]:
     named = str(named or "").strip()
     return [named] if named else []
 
+
+# The Lumi that first knows the `calendar` and `reminders` capabilities and
+# tells their events. An older Lumi refuses the words, so the package would be
+# offered to it and fail at install: a manifest naming one names this floor.
+CALENDAR_SINCE = (1, 94, 0)
 
 # The Lumi that first tells the `away` event and knows its capability. An
 # older Lumi refuses both words, so the package would be offered to it and
@@ -973,6 +986,15 @@ def check_manifest(entry_id: str, manifest: dict):
                 entry_id,
                 'the away event and capability are told from Lumi 1.81.0 — an older Lumi refuses the manifest; '
                 'set min-lumi-version to "1.81.0" or later',
+            )
+    calendar_words = {"calendar", "reminders", "calendar-changed", "reminders-changed"}
+    if calendar_words & (set(ext.get("events", [])) | set(declared)):
+        floor = ext.get("min-lumi-version") or ext.get("min_lumi_version") or ""
+        if version_tuple(floor) < CALENDAR_SINCE:
+            fail(
+                entry_id,
+                'the calendar and reminders capabilities and events are told from Lumi 1.94.0 — an older Lumi '
+                'refuses the manifest; set min-lumi-version to "1.94.0" or later',
             )
     if "clipboard-ocr" in ext.get("events", []) and "clipboard" not in ext.get("events", []):
         fail(entry_id, 'hearing "clipboard-ocr" needs "clipboard" too — the text names a copy the extension has to have heard')
