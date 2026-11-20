@@ -60,7 +60,10 @@
 //! `text-input` run, the one told a key —, [`front_app`] needs
 //! `front-app`, [`microphone_use`] needs `microphone-use` — its `sites`
 //! `microphone-sites` too — [`offer`] needs `offer`, [`audio_devices`]
-//! needs `audio-devices` and [`away`] needs `away`. `alert`, `settings`, `profiles`, [`storage`],
+//! needs `audio-devices`, [`away`] needs `away`, [`grants`] needs the
+//! capability that uses the grant asked about, [`calendar`] needs `calendar`
+//! and [`reminders`] `reminders` — each with its grant too.
+//! `alert`, `settings`, `profiles`, [`storage`],
 //! [`owner`], [`hyper_key_enabled`] and [`hold`] (which only reads your params)
 //! cost nothing but budget — every host call spends
 //! from one per-run allowance, so a loop of two hundred alerts ends the
@@ -3918,6 +3921,171 @@ pub mod hold {
             assert_eq!(of("not json"), None);
         }
     }
+}
+
+/// The macOS permissions your capabilities use, granted to your extension
+/// alone. macOS grants a permission to Lumi, never to an extension inside it;
+/// Lumi grants each extension its own share, and [`request`](grants::request)
+/// asks for both: macOS's own dialog while macOS has never been asked —
+/// allowing it there allows Lumi and your extension —, Lumi's own sheet with
+/// your extension's name once Lumi has it, and nothing when you are allowed
+/// already. It waits for the person's answer and says where you stand.
+///
+/// ```ignore
+/// use lumi_extension_api::grants::{self, Grant, State};
+/// match grants::request(Grant::Calendars)? {
+///     State::Allowed => { /* read the calendar */ }
+///     State::Refused => grants::open_system_settings(Grant::Calendars)?,
+///     _ => {} // not now: a later press asks again
+/// }
+/// ```
+///
+/// `request` and `open_system_settings` answer only something the person
+/// did — a command or a press in one of your windows; `check` asks nothing
+/// and works anywhere. Each grant needs the capability that uses it:
+/// `screen-recording` `screen`, `microphone` `microphone`, `system-audio`
+/// `system-audio`, `calendars` `calendar`, `reminders` `reminders`. The
+/// person sees and changes your grants on your Permissions sheet. Supersedes
+/// [`permissions`].
+///
+/// Needs Lumi 1.94.0 — say so with `min-lumi-version`.
+pub mod grants {
+    use super::lumi::ext::grants as wit;
+
+    pub use wit::{Grant, State};
+
+    /// Where your extension stands with `grant` now. Asks nothing.
+    pub fn check(grant: Grant) -> Result<State, String> {
+        wit::check(grant)
+    }
+
+    /// Ask for `grant` as the person's press, and wait for the answer:
+    /// macOS's dialog, Lumi's sheet, or nothing when you are allowed.
+    pub fn request(grant: Grant) -> Result<State, String> {
+        wit::request(grant)
+    }
+
+    /// System Settings at the grant's list, where Lumi's switch is.
+    pub fn open_system_settings(grant: Grant) -> Result<(), String> {
+        wit::open_system_settings(grant)
+    }
+}
+
+/// The events on the person's calendars — every account Calendar on this Mac
+/// shows — read, never changed. An event's notes are never handed over; the
+/// web addresses in its url, location and notes are, as
+/// [`Event::links`](calendar::Event::links). What an event means is yours.
+///
+/// Hear `events = ["calendar-changed"]` to be told something on the
+/// calendars changed — [`changed`](calendar::changed) — and read again.
+///
+/// ```ignore
+/// let now: u64 = 1_763_640_000_000; // the moment you care about, in ms
+/// for event in lumi::calendar::events(now, now + 60 * 60 * 1000)? {
+///     // event.title, event.start, event.attendees, event.links
+/// }
+/// ```
+///
+/// Needs the `calendar` capability, the `calendars` grant (see [`grants`]),
+/// macOS 14 and Lumi 1.94.0 — say so with `min-lumi-version`. A call without
+/// the grant is refused with `not-allowed:`.
+pub mod calendar {
+    use super::lumi::ext::calendar as wit;
+
+    pub use wit::{Answer, Availability, CalendarInfo, CalendarKind, Event, Person, PersonKind, Role, Status};
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a change arrives
+    /// as.
+    pub const EVENT: &str = "calendar-changed";
+
+    /// Every calendar that holds events.
+    pub fn calendars() -> Result<Vec<CalendarInfo>, String> {
+        wit::calendars()
+    }
+
+    /// The events overlapping `from` to `to` (milliseconds since the Unix
+    /// epoch, at most 31 days apart), earliest first.
+    pub fn events(from: u64, to: u64) -> Result<Vec<Event>, String> {
+        wit::events(from, to)
+    }
+
+    /// One occurrence read again; `None` once it is gone.
+    pub fn read(id: &str, occurrence: u64) -> Result<Option<Event>, String> {
+        wit::read(id, occurrence)
+    }
+
+    /// Calendar, at that event's day. Only for something the person did.
+    pub fn show(id: &str, occurrence: u64) -> Result<(), String> {
+        wit::show(id, occurrence)
+    }
+
+    /// When the change happened, in milliseconds since the Unix epoch, when
+    /// [`Guest::on_event`](crate::Guest::on_event) was called with one.
+    pub fn changed(name: &str, payload: &str) -> Option<u64> {
+        super::changed_at(EVENT, name, payload)
+    }
+}
+
+/// Reminders added to the person's lists. Your extension adds reminders and
+/// reads back only whether the ones it added are done — never another
+/// reminder.
+///
+/// ```ignore
+/// use lumi::reminders::{self, NewReminder, Priority};
+/// let ids = reminders::add(
+///     &[NewReminder { title: "Send the notes".into(), notes: None, url: None, due: None, priority: Priority::None }],
+///     None,
+/// )?;
+/// ```
+///
+/// Hear `events = ["reminders-changed"]` to be told something in Reminders
+/// changed — [`changed`](reminders::changed) — and ask [`done`](reminders::done)
+/// again.
+///
+/// Needs the `reminders` capability, the `reminders` grant (see [`grants`]),
+/// macOS 14 and Lumi 1.94.0 — say so with `min-lumi-version`. `add` answers
+/// only something the person did.
+pub mod reminders {
+    use super::lumi::ext::reminders as wit;
+
+    pub use super::lumi::ext::timers::Day;
+    pub use wit::{NewReminder, Priority, ReminderList};
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a change arrives
+    /// as.
+    pub const EVENT: &str = "reminders-changed";
+
+    /// Every list a reminder can be added to.
+    pub fn lists() -> Result<Vec<ReminderList>, String> {
+        wit::lists()
+    }
+
+    /// Add `items` in order to the list `into` (`None`: the person's default
+    /// list) and answer their ids in the same order. At most 50 at once.
+    pub fn add(items: &[NewReminder], into: Option<&str>) -> Result<Vec<String>, String> {
+        wit::add(items, into)
+    }
+
+    /// Whether each reminder you added is done, in the order asked; `None`
+    /// for one that is gone or not yours.
+    pub fn done(ids: &[String]) -> Result<Vec<Option<bool>>, String> {
+        wit::done(ids)
+    }
+
+    /// When the change happened, in milliseconds since the Unix epoch, when
+    /// [`Guest::on_event`](crate::Guest::on_event) was called with one.
+    pub fn changed(name: &str, payload: &str) -> Option<u64> {
+        super::changed_at(EVENT, name, payload)
+    }
+}
+
+/// The `at` of an event told as `{"v":1, "at"}`, when `name` is `event`.
+fn changed_at(event: &str, name: &str, payload: &str) -> Option<u64> {
+    if name != event {
+        return None;
+    }
+    let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+    value.get("at")?.as_u64()
 }
 
 /// The person's automations and Lumi's own settings, read-only, as the live

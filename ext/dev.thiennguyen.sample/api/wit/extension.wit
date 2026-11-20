@@ -2424,6 +2424,11 @@ interface snippets {
 /// Added to 0.3 in Lumi 1.33 without a new world version: an existing
 /// component imports nothing new and is unaffected, and one that calls this
 /// needs a Lumi that has it, which its manifest's `min-lumi-version` says.
+///
+/// Superseded by `grants` in Lumi 1.94.0, which grants each extension its
+/// own share: from then `check` says `granted` only when Lumi and your
+/// extension both have it, and `ask` and `request` ask as `grants.request`
+/// does.
 interface permissions {
     enum permission {
         /// Capturing the screen — `screen.capture`, `select-area`,
@@ -3348,6 +3353,266 @@ interface audio-devices {
     set-default: func(id: string, scope: scope) -> result<_, string>;
 }
 
+/// The macOS permissions your extension's capabilities use, granted to your
+/// extension alone. macOS grants a permission to Lumi, never to an extension
+/// inside it; Lumi grants each extension its own share of it, and asks for
+/// both in one call, `request`:
+///
+/// - while macOS has never been asked for it, `request` brings macOS's own
+///   dialog at once, and allowing it there allows Lumi and your extension,
+///   the one that asked;
+/// - once Lumi has it, `request` brings Lumi's own sheet, worded with your
+///   extension's name, and allowing it there allows your extension alone;
+///   "Don't Allow" refuses it this time, and a later press asks again;
+/// - refused in System Settings, nothing can be asked: `open-system-settings`
+///   shows the person Lumi's switch.
+///
+/// The person sees each grant of yours on your Permissions sheet and turns it
+/// off or on there; removing your extension forgets them. A grant is
+/// reachable only by an extension declaring the capability that uses it:
+/// `screen-recording` needs `screen`, `microphone` needs `microphone`,
+/// `system-audio` needs `system-audio`, `calendars` needs `calendar` and
+/// `reminders` needs `reminders`. The calls those capabilities make need the
+/// grant too, and a call refused for want of it says `not-allowed:`.
+///
+/// `check` asks nothing and answers any run. `request` and
+/// `open-system-settings` answer only something the person did — a command
+/// or a press in one of your windows — never `on-event` or a lifecycle hook;
+/// `request` waits for the person's answer, and their time answering is not
+/// counted against the run. Every call costs budget.
+///
+/// Supersedes `permissions`, which keeps working: its `check` says
+/// `granted` only when Lumi and your extension both have Screen Recording.
+/// Added to 0.3 in Lumi 1.94.0 without a new world version.
+interface grants {
+    enum grant {
+        /// Capturing the screen. Needs the `screen` capability.
+        screen-recording,
+        /// Hearing the microphone in a recording. Needs `microphone`.
+        microphone,
+        /// Hearing what this Mac plays in a recording. Needs `system-audio`.
+        system-audio,
+        /// Reading the calendars. Needs `calendar`.
+        calendars,
+        /// Adding reminders. Needs `reminders`.
+        reminders,
+    }
+
+    enum state {
+        /// Your extension may use it now.
+        allowed,
+        /// Not asked yet — of macOS, or of the person for your extension:
+        /// `request` asks.
+        not-asked,
+        /// macOS was asked and the person allowed it; macOS applies it once
+        /// Lumi opens again (Screen Recording, which offers Quit & Reopen).
+        pending,
+        /// Refused for Lumi in System Settings: nothing can be asked, and
+        /// `open-system-settings` shows the switch.
+        refused,
+        /// Withheld by whoever manages this Mac: neither the person nor
+        /// System Settings can change it.
+        restricted,
+        /// This Mac cannot give it: its macOS is older than the grant needs.
+        unavailable,
+    }
+
+    /// Where your extension stands with `g` now. Asks nothing.
+    check: func(g: grant) -> result<state, string>;
+    /// Ask for `g` as the person's press: macOS's dialog while macOS has
+    /// never been asked, Lumi's sheet once Lumi has it, nothing when your
+    /// extension is allowed already. Waits for the answer and says where
+    /// your extension stands after it.
+    request: func(g: grant) -> result<state, string>;
+    /// System Settings at the grant's list, where Lumi's switch is.
+    open-system-settings: func(g: grant) -> result<_, string>;
+}
+
+/// The events on the person's calendars — every account Calendar on this
+/// Mac shows — read, never changed. What an event says is told, its people
+/// included; its notes are never handed over, only the web addresses found
+/// in its url, its location and its notes, as `links`, so a dial-in code or
+/// an agenda stays where it was. What an event means is yours to decide.
+///
+/// Hear `calendar-changed` (`events = ["calendar-changed"]`) to be told
+/// something on the calendars changed: `{"v":1, "at"}` — read again, since
+/// macOS does not say what changed. Changes within a second are told as one.
+///
+/// Needs the `calendar` capability and the `calendars` grant (see `grants`):
+/// without the grant every call is refused with `not-allowed:`, and below
+/// macOS 14 with `unavailable:`. Reads answer any run, an event's included;
+/// `show` only something the person did. Every call costs budget. Added to
+/// 0.3 in Lumi 1.94.0 without a new world version.
+interface calendar {
+    /// What sort of calendar it is.
+    enum calendar-kind {
+        local,
+        cal-dav,
+        exchange,
+        subscription,
+        birthdays,
+        other,
+    }
+
+    record calendar-info {
+        id: string,
+        title: string,
+        /// `#rrggbb`.
+        color: string,
+        /// The account it belongs to, as Calendar names it.
+        account: string,
+        kind: calendar-kind,
+    }
+
+    /// A person's answer to an invitation.
+    enum answer {
+        unknown,
+        pending,
+        accepted,
+        declined,
+        tentative,
+        delegated,
+        completed,
+        in-process,
+    }
+
+    enum role {
+        unknown,
+        required,
+        optional,
+        chair,
+        non-participant,
+    }
+
+    enum person-kind {
+        unknown,
+        person,
+        room,
+        %resource,
+        group,
+    }
+
+    record person {
+        name: option<string>,
+        /// The address macOS has for them, when it is an email address.
+        email: option<string>,
+        /// The person at this Mac.
+        me: bool,
+        answer: answer,
+        role: role,
+        kind: person-kind,
+    }
+
+    enum status {
+        none,
+        confirmed,
+        tentative,
+        cancelled,
+    }
+
+    enum availability {
+        not-supported,
+        busy,
+        free,
+        tentative,
+        unavailable,
+    }
+
+    record event {
+        /// With `occurrence`, names one occurrence of a repeating event;
+        /// stable on this Mac while the event stays on its calendar.
+        id: string,
+        /// This occurrence's start as first scheduled, in milliseconds since
+        /// the Unix epoch.
+        occurrence: u64,
+        /// The calendar server's id for it, the same on every device; none
+        /// where the server gives none.
+        external-id: option<string>,
+        /// A `calendar-info.id`.
+        calendar: string,
+        title: string,
+        /// Milliseconds since the Unix epoch.
+        start: u64,
+        end: u64,
+        all-day: bool,
+        location: option<string>,
+        /// Every http and https address in the event's url, its location and
+        /// its notes, in that order, each once.
+        links: list<string>,
+        repeats: bool,
+        status: status,
+        availability: availability,
+        organizer: option<person>,
+        attendees: list<person>,
+    }
+
+    /// Every calendar that holds events.
+    calendars: func() -> result<list<calendar-info>, string>;
+    /// The events overlapping `start` to `end`, in milliseconds since the Unix
+    /// epoch, at most 31 days apart, on every calendar, earliest first.
+    events: func(start: u64, end: u64) -> result<list<event>, string>;
+    /// One occurrence read again; none once it is gone.
+    read: func(id: string, occurrence: u64) -> result<option<event>, string>;
+    /// Calendar, at that event's day. Only for something the person did.
+    show: func(id: string, occurrence: u64) -> result<_, string>;
+}
+
+/// Reminders added to the person's lists. macOS grants Lumi Reminders only
+/// whole; your extension gets less: it adds reminders, and reads back only
+/// whether the ones it added are done — never another reminder.
+///
+/// Hear `reminders-changed` (`events = ["reminders-changed"]`) to be told
+/// something in Reminders changed: `{"v":1, "at"}` — ask `done` again.
+/// Changes within a second are told as one.
+///
+/// Needs the `reminders` capability and the `reminders` grant (see `grants`):
+/// without the grant every call is refused with `not-allowed:`, and below
+/// macOS 14 with `unavailable:`. `add` answers only something the person did;
+/// `lists` and `done` any run. Every call costs budget. Added to 0.3 in Lumi
+/// 1.94.0 without a new world version.
+interface reminders {
+    use timers.{day};
+
+    record reminder-list {
+        id: string,
+        title: string,
+        /// `#rrggbb`.
+        color: string,
+        /// The account it belongs to, as Reminders names it.
+        account: string,
+        /// The list a new reminder goes to when none is named.
+        is-default: bool,
+    }
+
+    enum priority {
+        none,
+        low,
+        medium,
+        high,
+    }
+
+    record new-reminder {
+        /// One line, at most 500 characters.
+        title: string,
+        /// At most 4000 characters.
+        notes: option<string>,
+        url: option<string>,
+        /// The day it is due, on the person's calendar; none for no date.
+        due: option<day>,
+        priority: priority,
+    }
+
+    /// Every list a reminder can be added to.
+    lists: func() -> result<list<reminder-list>, string>;
+    /// Add `items` in order to the list `into` — a `reminder-list.id`; none
+    /// for the person's default list — and answer their ids, in the same
+    /// order. At most 50 at once. Only for something the person did.
+    add: func(items: list<new-reminder>, into: option<string>) -> result<list<string>, string>;
+    /// Whether each reminder you added is done, in the order asked; none for
+    /// one that is gone, or that your extension did not add.
+    done: func(ids: list<string>) -> result<list<option<bool>>, string>;
+}
+
 world extension {
     import selection;
     import transforms;
@@ -3388,6 +3653,9 @@ world extension {
     import owner;
     import feature-flags;
     import audio-devices;
+    import grants;
+    import calendar;
+    import reminders;
 
     /// Run one of the commands the manifest declares.
     ///
@@ -3489,5 +3757,10 @@ world extension {
     /// `microphone-use` (Lumi 1.65.0, the `microphone-use` capability) is
     /// the apps using a microphone changing — the whole set each time; see
     /// `microphone-use`.
+    ///
+    /// `calendar-changed` (Lumi 1.94.0, the `calendar` capability) and
+    /// `reminders-changed` (Lumi 1.94.0, the `reminders` capability) are
+    /// something on the calendars or in Reminders changing: `{"v":1, "at"}`,
+    /// read again; see `calendar` and `reminders`.
     export on-event: func(name: string, payload: string) -> result<_, string>;
 }
