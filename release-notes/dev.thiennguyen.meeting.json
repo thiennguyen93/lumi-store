@@ -1,4 +1,60 @@
 {
+  "0.8.2": {
+    "notesSha256": "de0ec985c26d97ffb553eb15255521f19f253835894d367e5e5326352db6927b",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Summaries write themselves, live translation keeps up, captions adapt",
+          "items": [
+            "Escape closes Settings after closing any menu, sheet, shortcut recorder, or field in it",
+            "A summary writes itself in as the model writes it, with progress shown for long meetings",
+            "Live Translation translates each sentence as soon as it is said, not after the speaker pauses",
+            "Live Captions appear from the moment Lumi starts and step aside while you watch the meeting window",
+            "A meeting is summarized automatically when it ends if it lasted 3 minutes or more",
+            "The menu bar panel no longer has Live Captions or Live Translation switches"
+          ]
+        },
+        "vi": {
+          "headline": "Tóm tắt tự viết, dịch trực tiếp theo kịp, phụ đề thích ứng",
+          "items": [
+            "Escape đóng Cài đặt sau khi đóng menu, sheet, bộ ghi phím tắt hoặc trường nhập đang mở",
+            "Tóm tắt tự viết ra khi mô hình viết, hiển thị tiến độ cho cuộc họp dài",
+            "Dịch Trực tiếp dịch từng câu ngay khi nói xong, không đợi người nói dừng lại",
+            "Phụ đề Trực tiếp xuất hiện ngay khi Lumi khởi động và tránh ra khi bạn xem cửa sổ cuộc họp",
+            "Cuộc họp được tóm tắt tự động khi kết thúc nếu kéo dài từ 3 phút trở lên",
+            "Bảng thanh menu không còn công tắc Phụ đề Trực tiếp hay Dịch Trực tiếp"
+          ]
+        }
+      }
+    }
+  },
+  "0.8.1": {
+    "notesSha256": "2c2c24fa221a3d9cb701fb65b2acade99c7807fe85b244d2d7d16ba5fe72f968",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Chat bubbles keep their speaker visible as you scroll",
+          "items": [
+            "A long chat bubble's speaker stays visible at the top as you scroll through it",
+            "The inspector's speakers and other controls now appear at full strength instead of faint",
+            "Unchecked speakers are dimmed so the ones you want to see stand out",
+            "Nothing peeks above the speaker label when scrolling through long turns"
+          ]
+        },
+        "vi": {
+          "headline": "Bong bóng chat giữ tên người nói khi cuộn",
+          "items": [
+            "Tên người nói của bong bóng chat dài vẫn hiển thị ở trên cùng khi bạn cuộn",
+            "Các người nói trong thanh kiểm tra và các điều khiển khác giờ hiển thị rõ thay vì mờ nhạt",
+            "Người nói bỏ chọn được làm mờ để những người bạn muốn xem nổi bật hơn",
+            "Không còn chữ nhô lên trên nhãn người nói khi cuộn qua các đoạn dài"
+          ]
+        }
+      }
+    }
+  },
   "0.8.0": {
     "notesSha256": "8df775dddc106c3726f99117009f203650987aff42871af7d462c1d0316cb7a0",
     "summary": {
