@@ -658,6 +658,28 @@ class BesideAnotherWindow(unittest.TestCase):
         # Beside the selection, still above, below or the pointer's side.
         self.assertIn('"above", "below" or "pointer"', refusal('kind = "panel"\nposition = "selection"\nanchor = { side = "trailing" }'))
 
+    def test_it_may_stand_beside_whichever_of_several_asked_from_lumi_1_93(self):
+        """Lumi 1.93: `anchor = { window = ["a", "b"] }` stands the panel
+        beside whichever listed window's page asked — each declared, not
+        itself, named once. An older Lumi refuses the list, so the manifest
+        names 1.93.0."""
+        three = BESIDE_BASE.replace('version = "1.0.0"', 'version = "1.0.0"\nmin-lumi-version = "1.93.0"') + (
+            '\n[[window]]\nname = "main"\npath = "main.html"\n'
+        )
+        publish.check_manifest("dev.you.thing", tomllib.loads(three.format(fields='anchor = { window = ["pill", "main"], at = "end", side = "below" }')))
+        for fields, said in (
+            ('anchor = { window = ["pill", "nope"] }', "declares no window as"),
+            ('anchor = { window = ["pill", "menu"] }', "beside itself"),
+            ('anchor = { window = ["pill", " "] }', "lists a window with no name"),
+            ('anchor = { window = ["pill", "pill"] }', "names 'pill' twice"),
+            ("anchor = { window = [] }", "names none"),
+        ):
+            with self.subTest(fields), self.assertRaises(SystemExit) as caught:
+                publish.check_manifest("dev.you.thing", tomllib.loads(three.format(fields=fields)))
+            self.assertIn(said, str(caught.exception.code))
+        self.assertIn('set min-lumi-version to "1.93.0"', beside_pill_refusal('anchor = { window = ["pill"] }'))
+        self.assertIn("only a panel at position", refusal('kind = "panel"\nposition = "selection"\nanchor = { window = ["pill"] }'))
+
     def test_it_has_no_place_of_its_own(self):
         for key in ("remember-frame = true", "restore = true", "copies = 4"):
             self.assertIn("beside another of the extension's windows", beside_pill_refusal(f'anchor = {{ window = "pill" }}\n{key}'))

@@ -432,6 +432,24 @@ OVERLAY_SINCE = (1, 79, 0)
 # it and fail at install: a manifest saying either names this floor.
 ACROSS_SINCE = (1, 90, 0)
 
+# The Lumi that first stands a panel beside whichever of several windows
+# asked for it (`anchor = { window = ["settings", "main"] }`). An older Lumi
+# refuses a list where it reads one name, so the package would be offered to
+# it and fail at install: a manifest listing several names this floor.
+BESIDE_SEVERAL_SINCE = (1, 93, 0)
+
+
+def beside_names(anchor) -> list[str]:
+    """The windows a panel's `anchor.window` names, each trimmed: one name,
+    or several from Lumi 1.93.0 (`manifest.rs`'s `RawBeside::names`); none
+    for "" or []."""
+    named = anchor.get("window") if isinstance(anchor, dict) else None
+    if isinstance(named, list):
+        return [str(one).strip() for one in named]
+    named = str(named or "").strip()
+    return [named] if named else []
+
+
 # The Lumi that first tells the `away` event and knows its capability. An
 # older Lumi refuses both words, so the package would be offered to it and
 # fail at install: a manifest naming either names this floor.
@@ -1159,10 +1177,26 @@ def check_manifest(entry_id: str, manifest: dict):
         beside_window = position == "window" and kind == "panel"
         anchor = window.get("anchor", {}) if beside_window else window.get("anchor")
         if beside_window:
-            named = str(anchor.get("window", "")).strip() if isinstance(anchor, dict) else ""
+            named = beside_names(anchor)
             if not named:
                 fail(entry_id, f'the panel {name} opens beside another window and names none; add anchor = {{ window = "…" }}')
-        elif isinstance(anchor, dict) and str(anchor.get("window", "")).strip():
+            # Several (Lumi 1.93): beside whichever of them asked — each
+            # named, none twice, same sentences; an older Lumi refuses the
+            # list, so it names its floor.
+            if "" in named:
+                fail(entry_id, f"the panel {name} lists a window with no name in anchor window")
+            twice = next((one for k, one in enumerate(named) if one in named[:k]), None)
+            if twice is not None:
+                fail(entry_id, f"the panel {name} names {twice!r} twice in anchor window")
+            if isinstance(anchor.get("window"), list):
+                floor = ext.get("min-lumi-version") or ext.get("min_lumi_version") or ""
+                if version_tuple(floor) < BESIDE_SEVERAL_SINCE:
+                    fail(
+                        entry_id,
+                        f"the panel {name} stands beside whichever of several windows asked (anchor window a list), "
+                        'which Lumi reads from 1.93.0 — an older Lumi refuses the manifest; set min-lumi-version to "1.93.0" or later',
+                    )
+        elif beside_names(anchor):
             fail(entry_id, f'the window {name} sets anchor window, which only a panel at position = "window" has')
         # Going where its window goes (Lumi 1.69): that position's alone too,
         # a yes or a no — an older Lumi refuses the key, so a manifest saying
@@ -1431,13 +1465,14 @@ def check_manifest(entry_id: str, manifest: dict):
         if (str(window.get("kind", "")).strip() or "window") != "panel":
             continue
         own = window.get("name", "")
-        beside = str((window.get("anchor") or {}).get("window", "")).strip()
         copies = window.get("copies")
         own_names = [f"{own}-{k}" for k in range(1, copies + 1)] if isinstance(copies, int) else [own]
-        if beside in own_names:
-            fail(entry_id, f"the panel {own} stands beside itself; anchor window names another window")
-        if beside not in answering and beside not in copied:
-            fail(entry_id, f"the panel {own} stands beside {beside!r}, which the manifest declares no window as")
+        # Each window it names, one or several (Lumi 1.93).
+        for beside in beside_names(window.get("anchor") or {}):
+            if beside in own_names:
+                fail(entry_id, f"the panel {own} stands beside itself; anchor window names another window")
+            if beside not in answering and beside not in copied:
+                fail(entry_id, f"the panel {own} stands beside {beside!r}, which the manifest declares no window as")
     # `manifest.rs`'s rule that one item opens one panel (Lumi 1.61): a
     # second would leave which one a click opens to the order they are listed
     # in, same sentence.
