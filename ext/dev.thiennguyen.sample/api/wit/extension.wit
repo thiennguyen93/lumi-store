@@ -890,6 +890,29 @@ interface transcribe {
     /// blob only. Only from a press. Added in Lumi 1.93.0.
     start-with: func(request: request, hearing: hearing) -> result<u64, failure>;
 
+    /// How `start-live` hears a live source, beyond what its request says.
+    /// Added in Lumi 1.95.0.
+    record live {
+        /// An earlier recording of this extension's to go on from the voices
+        /// of, as `start-after`'s `previous` is; none for a recording of its
+        /// own.
+        after: option<u64>,
+        /// The model that writes the text while it is still being said — an
+        /// id from `models.live-text` — while the request's model writes
+        /// each utterance's final: a model cheap to run as it hears, so the
+        /// model writing the lines is never asked for partials. None, or a
+        /// model that cannot hear now, and the request's model writes both,
+        /// as `start` does; `started` names the one that runs, as
+        /// `partialsModel`. Only where the request asks for partials.
+        partials: option<string>,
+    }
+
+    /// `start` for a live source, heard as `live` says: going on from an
+    /// earlier recording's voices, the text while it is said written by
+    /// another model, or both. A live source only. Only from a press.
+    /// Added in Lumi 1.95.0.
+    start-live: func(request: request, live: live) -> result<u64, failure>;
+
     /// Stop recording `id`: what was said up to now is still heard, and its
     /// transcript told. False when no recording of yours has that id.
     stop: func(id: u64) -> result<bool, string>;
@@ -1145,6 +1168,16 @@ interface models {
     /// downloaded is passed over with the request's `fell-back` sentence.
     /// None goes back to the person's default.
     choose: func(task: task, id: option<string>) -> result<_, string>;
+
+    /// The models that can write the text while it is still being said,
+    /// beside the model that writes each line (`transcribe.start-live`'s
+    /// `partials`): Lumi Models' models made for it, here, coming down or
+    /// to download, and the languages of Apple Speech, which hears one at a
+    /// time. Entries as `catalog`'s, their `task` `speech`; none is anybody's
+    /// default or choice, since only the recording that names one runs it.
+    /// A download is `download`'s, for an extension that may hear speech.
+    /// Added in Lumi 1.95.0.
+    live-text: func() -> result<list<entry>, string>;
 }
 
 /// Recordings made into files of this extension's own. Lumi hears a source

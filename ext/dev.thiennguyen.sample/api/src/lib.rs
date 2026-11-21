@@ -571,7 +571,7 @@ pub mod transcribe {
     use super::lumi::ext::transcribe as wit;
 
     pub use super::lumi::ext::translation::Readiness;
-    pub use wit::{Failure, FailureKind, Heard, Hearing, Levels, Model, Place, Playing, Request, Segment, Source, Speaker, Speakers, Transcript, Word};
+    pub use wit::{Failure, FailureKind, Heard, Hearing, Levels, Live, Model, Place, Playing, Request, Segment, Source, Speaker, Speakers, Transcript, Word};
 
     /// How ready this Mac is to hear `language` (`""` for any) with
     /// `speakers`: `Installed` when a model runs now, `Downloadable` when
@@ -647,6 +647,16 @@ pub mod transcribe {
     /// A blob only. Only from a press. Lumi 1.93.0 or later.
     pub fn start_with(request: &Request, hearing: Hearing) -> Result<u64, Failure> {
         wit::start_with(request, hearing)
+    }
+
+    /// [`start`] for a live source, heard as `live` says: going on from an
+    /// earlier recording's voices (`after`, as [`start_after`]'s
+    /// `previous`), and the text while it is said written by the model
+    /// `partials` names — an id from [`crate::models::live_text`] — beside
+    /// the request's model, which then writes only each line. A live source
+    /// only. Only from a press. Lumi 1.95.0 or later.
+    pub fn start_live(request: &Request, live: &Live) -> Result<u64, Failure> {
+        wit::start_live(request, live)
     }
 
     /// Stop recording `id`: what was said up to now is still heard, and its
@@ -809,6 +819,15 @@ pub mod models {
     /// it back to their default; your windows then hear `changed`.
     pub fn choose(task: Task, id: Option<&str>) -> Result<(), String> {
         wit::choose(task, id)
+    }
+
+    /// The models that can write the text while it is still being said, for
+    /// [`crate::transcribe::start_live`]'s `partials`: Lumi Models' models
+    /// made for it and Apple Speech's languages, as [`catalog`] lists
+    /// entries, their task `Speech`. None is anybody's default or choice. A
+    /// download is [`download`]'s. Needs `speech`. Lumi 1.95.0 or later.
+    pub fn live_text() -> Result<Vec<Entry>, String> {
+        wit::live_text()
     }
 }
 
