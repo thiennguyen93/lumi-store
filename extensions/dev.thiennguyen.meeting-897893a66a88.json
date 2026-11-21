@@ -1,0 +1,237 @@
+[
+ {
+  "version": "0.12.0",
+  "date": "2026-11-21",
+  "notes": "### Added\n\n- **Words While Speaking**, in Settings › Transcription: choose the model that writes the grey words while someone talks — Apple Speech, or Nemotron 3.5 Streaming, which hears both of a meeting's languages. Speech Recognition still writes each line when they pause, so the words come steadily and the graphics chip is mostly free for the call, though they're less accurate until the pause. Same as Speech Recognition, as before, is the default; a model not on this Mac downloads when you pick it, and a change applies from the next meeting. Needs Lumi 1.95.\n- **Translate While Speaking**, in Settings › Translation: with Live Translation on, each sentence is translated before the speaker pauses, as before. Turn it off to translate only each finished line.\n\n### Changed\n\n- **Chat shows a line's actions as you point at it**: Play, Translate, Copy and More beside the bubble, as Paragraphs and Lines show them. The View popover's help is one line.\n- **Click a line to play it**, and again to pause it, under the pointing hand; ⌘-click or ⇧-click selects lines. A click used to select and a double-click to play. A line with no audio still selects on a click.\n- **Play is Pause while its line plays**, in every layout, and Play again goes on where it stopped. The bars that show a turn playing stand at the speaker's outer edge in Chat, and in place of the speaker's initial in Paragraphs and Lines, so nothing moves when a line starts or stops, and Name… coming and going under the pointer leaves no gap beside them.\n- **Your own turns in Chat read \"0:32 Me\"**, your name at the bubble's edge as other speakers' names are at theirs.\n- **Chat's bubbles stop at a comfortable line length** on a wide window — about 65 characters, at every text size.\n- **Unlink a meeting's event by pressing it again** in the event menu, where it is ticked; None is gone.\n- **In Live Captions, a speaker not known yet is three blinking dots**, as the main window shows words still being heard, where a still \"…\" stood.\n\n### Fixed\n\n- **A turn says which sentences are not translated yet.** In Chat and Paragraphs, a sentence with no translation shows Translate where its translation would be, a press away; half a turn's translation read as all of it.\n- **A finished meeting opens at its start**, not on its last lines. A meeting being transcribed still follows what is said.\n- **The bar for several selected lines no longer hides the last ones.**\n- In Chat, words fade under the speaker's name as they scroll past it, rather than being cut at its edge.\n- **The event menu fits what it holds.** With no event near the meeting it is its heading and Open in Calendar, no wider than they are.\n- **With translations beside the words, each language's name stands over its column**, in Lines and Paragraphs. On a wide window the original language's name stood well left of its words.",
+  "notesSha256": "e3680cbad79a64595b4ec3005da24bb2a243811360804e5937ff883c8c6860b9",
+  "summary": null
+ },
+ {
+  "version": "0.11.0",
+  "date": "2026-11-21",
+  "notes": "### Added\n\n- **Merge speakers and assign lines.** When one person was heard as two, right-click a line and choose Merge “Speaker 3” Into, or press Merge… beside the speaker in the inspector. When a line went to the wrong person, Assign To moves it — or every selected line — to anyone in the meeting, to you, or to a New Speaker. Both have Undo, and both wait until the meeting ends.\n\n### Fixed\n\n- **Name… opens its card whole**, in the transcript over the turns below it — upward near the transcript's foot — and in the inspector, with no scrollbar of its own. In Lines, a turn's header now holds at the top as you scroll, and its text follows View's size.\n- **Listen Again keeps My Voice.** On a call heard again, someone beside you at your microphone was folded into your lines as Me; now, as in Live Captions, only your voice is Me and anyone else there stays their own speaker. In a room, your lines are Me too.",
+  "notesSha256": "a8424c4a1d444d427ac4e6d480387c7f3f2b3cdc1fedc56200a37210b481eaba",
+  "summary": null
+ },
+ {
+  "version": "0.10.0",
+  "date": "2026-11-21",
+  "notes": "### Added\n\n- **A Welcome tour on a fresh install.** The microphone and system audio, your language and its speech model (downloading in the background), your calendar, your name, Keep Audio and summaries, and the keys that start a meeting. Again from Settings › About › Welcome Tour….\n- **Pin and folders.** Right-click a meeting to Pin it or Move To a folder, or drag it there. New Folder (⇧⌘N) is named in place, folders keep the order you drag them, and Delete Folder keeps its meetings, with Undo. Sort By date, title or length. The meeting being transcribed stays at the top, in Now.\n- **Export… (⇧⌘E) makes a PDF, HTML, Markdown or plain text file** from one sheet: a template — Standard, Minutes or Columns — and the paper; the summary, any version of it, or Summarize… or Regenerate… there; the transcript refined or as heard, its translations (Translate… if there are none yet) and timestamps. Customization names you another way in that file, or leaves out the AI models' names. The preview is the file: PDF and HTML zoom, Markdown and plain text copy — Markdown's Formatted view as rich text. An HTML file has its own Light, Dark and System. Every file ends with \"Made with Lumi Meeting Notes\". Saved, the message names the file and its folder, with Show in Finder.\n- **Your Name in place of \"Me\"** in every meeting, earlier ones too: Settings › Speakers › Your Name.\n- **Quick Translate.** In a meeting with nothing translated, the translate button translates it at once into your Settings' language with your translator, a ring round it showing how far.\n- **Meetings named after their calendar events** (Settings › General › Calendar). The event button beside the date links another event or opens it in Calendar; the inspector shows who was invited. Reads your calendar, never changes it.\n- **Offers for meetings in a room** as a calendar event with a place starts (Settings › General › Offer For › In-Person Meetings); a call still heard 5 minutes after its event ends offers Stop and Save.\n- **Add to Reminders** from the Action Items heading: the items you tick, with a date. Done in Reminders shows done here.\n\n### Changed\n\n- **The sidebar slides** out and in (⌘B), its button beside New Folder.\n- **The window shows its name**, Lumi Meeting Notes, at the middle of its title bar.\n\n### Fixed\n\n- **Settings › Storage** gives the transcripts' size without the audio, always shows the Audio section, and Delete All Audio works with hundreds of meetings.\n- **Messages** stay at the middle of the window's foot.\n- **The Summary tab** shows a spinner, not No Summary Yet, while the summary is read.\n\nNeeds Lumi 1.94.0.",
+  "notesSha256": "a7230fa994781771c9a213787340b5aca537964e377ff4f9fd5ec489ba42fdba",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour, folders, export to PDF and more formats, and calendar",
+     "items": [
+      "A welcome tour walks you through setup on first launch and can be replayed from Settings",
+      "Pin meetings or organize them in folders you can create, rename, drag to reorder, and sort",
+      "Export a meeting to PDF, HTML, Markdown or plain text with your choice of template and content",
+      "Your name replaces Me in every meeting when you set it in Settings under Speakers",
+      "Meetings are named after their calendar events and show who was invited",
+      "Quick Translate button translates the entire meeting at once into your chosen language"
+     ]
+    },
+    "vi": {
+     "headline": "Hướng dẫn ban đầu, thư mục, xuất PDF và nhiều định dạng, lịch",
+     "items": [
+      "Hướng dẫn chào mừng giới thiệu cách thiết lập khi mở lần đầu và có thể xem lại từ Cài đặt",
+      "Ghim cuộc họp hoặc sắp xếp vào thư mục bạn tạo, đổi tên, kéo để sắp xếp và phân loại",
+      "Xuất cuộc họp sang PDF, HTML, Markdown hoặc văn bản thuần với mẫu và nội dung bạn chọn",
+      "Tên bạn thay thế Tôi trong mọi cuộc họp khi đặt trong Cài đặt mục Người nói",
+      "Cuộc họp được đặt tên theo sự kiện lịch và hiển thị danh sách người được mời",
+      "Nút Dịch nhanh dịch toàn bộ cuộc họp sang ngôn ngữ bạn chọn chỉ trong một lần"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.9.0",
+  "date": "2026-11-20",
+  "notes": "### Added\n\n- **Refine and Translate.** In the Transcript tab, Refine and Translate… cleans up a meeting that has ended. Light takes out ums and words said twice, on this Mac, with no AI. Full also fixes punctuation, grammar and your Custom Vocabulary terms with the text model you choose, and leaves out any change that would alter what was said. Translate All translates every line not yet translated, or all of them again once every line is. The sheet says how long it takes and which AI calls go where before you start; Stop keeps what's done.\n- **Original, Changes and Refined.** See the refined words, what refining changed — taken out struck through, put in underlined — or the words as heard. Revert to Original puts lines, or the whole meeting, back as heard. ⌘Z undoes the last refine or revert, and ⇧⌘Z redoes it. Copy and Export take the version shown.\n- **Listen Again.** Hears a meeting's kept audio again with a stronger speech model on this Mac, for truer words and speakers: on a call your lines stay Me, and someone the live transcript mixed up is told apart. The words heard live stay as Original, and the summary's times follow the new lines.\n- **Meetings clean themselves up as they end.** Settings › Transcription › After a Meeting: Light by default, for meetings of 3 minutes or more; Full and Listen Again can follow, with the models you choose.\n- **Volume in the player.** A speaker button mutes playback; hover over it for a volume slider.\n- **⌘B shows or hides the sidebar.**\n- **A Changelog tab** beside About on Meeting Notes' page in Lumi's Settings.\n\n### Changed\n\n- **Start Transcription shows Live Captions and closes the Meeting Notes window**, wherever you press it, so you follow the meeting over the call; open Meeting Notes again to read along. To keep the window, set Settings › General › When Transcription Starts to Keep Window Open.\n- **Show Translations beside View.** A translate button shows or hides translations, and turns Live Translation on or off while a meeting is heard.\n- **Summary choices wait for Regenerate.** A new template, model or language no longer rewrites the summary at once.\n- **Icons in the meeting menus**, as macOS menus have them.\n\n### Fixed\n\n- **Settings… opens Meeting Notes Settings.** With the Meeting Notes window in front, Meeting Notes › Settings… and ⌘, open its Settings window and leave the window where it is.\n- **The View and date popovers open over the transcript**, no longer under a speaker's name held at the top.",
+  "notesSha256": "3ea60d872a40f92e45b62078ae3bbba620065686460450131b469acc2457358b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Refine transcripts, listen again with better models, and more",
+     "items": [
+      "Refine cleans up finished meetings: Light removes filler words, Full also fixes grammar with AI",
+      "See original words, what changed when refining, or the refined version, and revert lines or meetings back",
+      "Listen Again rehears saved audio with a stronger model for more accurate words and speakers",
+      "Meetings can clean themselves up when they end, with Light refining by default for calls over 3 minutes",
+      "Start Transcription now shows live captions and closes the window so you follow over the call",
+      "A volume slider appears when you hover over the speaker button in the audio player"
+     ]
+    },
+    "vi": {
+     "headline": "Tinh chỉnh bản ghi, nghe lại với mô hình tốt hơn và nhiều hơn nữa",
+     "items": [
+      "Tinh chỉnh làm sạch cuộc họp: Light loại từ thừa trên máy này, Full sửa ngữ pháp bằng AI bạn chọn",
+      "Xem từ ngữ gốc, những thay đổi khi tinh chỉnh hoặc phiên bản đã chỉnh, và hoàn nguyên dòng hoặc cuộc họp",
+      "Nghe Lại phát âm thanh đã lưu với mô hình mạnh hơn để có từ ngữ và người nói chính xác hơn",
+      "Cuộc họp tự động làm sạch khi kết thúc, mặc định dùng Light cho cuộc gọi trên 3 phút",
+      "Bắt Đầu Ghi Âm giờ hiển thị phụ đề trực tiếp và đóng cửa sổ để bạn theo dõi cuộc gọi",
+      "Thanh âm lượng xuất hiện khi di chuột qua nút loa trong trình phát"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.8.2",
+  "date": "2026-11-20",
+  "notes": "### Added\n\n- **Escape closes Settings.** A menu or a sheet open in it, a shortcut being recorded, or a field you're typing in takes Escape first; press it again to close the window.\n\n### Changed\n\n- **A summary writes itself in as the model writes it.** While the transcript is read, the Summary tab shows what's happening where \"No Summary Yet\" stood, with Stop, and a long meeting's progress fills the ring round its mark. When the model starts writing, the mark moves up to a line that stays at the top as you scroll, and the overview and each item appear as they're written. Regenerate keeps the summary you have, dimmed, until the new one starts.\n- **Live Translation keeps up with a long turn.** Each sentence is translated as soon as it's said, while the speaker goes on, instead of once they pause; the rest of the caption follows when it ends. A sentence heard differently a moment later is translated again. With macOS translating (Settings › Translation Engine), the words still being said are translated too, dimmed, and replaced as more is said, then by the caption's own translation when it ends; the AI is never asked for these.\n- **Live Captions are ready from the moment Lumi starts**, as the menu bar item's panel is, so the first meeting shows them at once. Lumi's Preload switch for Meeting Notes covers them too.\n- **Live Captions step out of the way while you're in the Meeting Notes window watching the meeting being heard**, since the window already shows its words, and come back over every app as soon as you switch to another app or close the window (closing needs Lumi 1.93.0). Start or Resume pressed in the window starts the meeting from there, without the captions flashing up first. Captions you hid yourself stay hidden, and they stay put while Live Translation is by the AI.\n- **A meeting is summarized by itself as it ends.** Settings › Summaries' Automatically Summarize When a Meeting Ends, on unless you turn it off, writes the summary with the Default Template as the Meeting Notes window opens on a meeting of 3 minutes or more, in place of Offer to Summarize; Lumi's card at a call's end offers Resume. Set as Default under Templates picks the template.\n- **Templates says which are built in**: they're listed under BUILT-IN, yours under YOUR TEMPLATES. A built-in opens with View…, and − says why it can't delete one.\n- **The menu bar item's panel has no Live Captions or Live Translation switch any more.** Show Live Captions appears there while you record and the captions are out of sight, and the Meeting Notes window's translate button turns Live Translation on and off while it shows the meeting being heard.\n- **A meeting that ends opens in the Meeting Notes window**, and Live Captions go away, instead of staying up to say it was saved: stopped, ended after a pause, or stopped by itself when the call ended.\n\n### Fixed\n\n- **The menu bar item no longer goes on showing a recording after it stopped**: now and then its wave kept moving beside a clock standing at the meeting's last second, with nothing being heard.",
+  "notesSha256": "de0ec985c26d97ffb553eb15255521f19f253835894d367e5e5326352db6927b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Summaries write themselves, live translation keeps up, captions adapt",
+     "items": [
+      "Escape closes Settings after closing any menu, sheet, shortcut recorder, or field in it",
+      "A summary writes itself in as the model writes it, with progress shown for long meetings",
+      "Live Translation translates each sentence as soon as it is said, not after the speaker pauses",
+      "Live Captions appear from the moment Lumi starts and step aside while you watch the meeting window",
+      "A meeting is summarized automatically when it ends if it lasted 3 minutes or more",
+      "The menu bar panel no longer has Live Captions or Live Translation switches"
+     ]
+    },
+    "vi": {
+     "headline": "Tóm tắt tự viết, dịch trực tiếp theo kịp, phụ đề thích ứng",
+     "items": [
+      "Escape đóng Cài đặt sau khi đóng menu, sheet, bộ ghi phím tắt hoặc trường nhập đang mở",
+      "Tóm tắt tự viết ra khi mô hình viết, hiển thị tiến độ cho cuộc họp dài",
+      "Dịch Trực tiếp dịch từng câu ngay khi nói xong, không đợi người nói dừng lại",
+      "Phụ đề Trực tiếp xuất hiện ngay khi Lumi khởi động và tránh ra khi bạn xem cửa sổ cuộc họp",
+      "Cuộc họp được tóm tắt tự động khi kết thúc nếu kéo dài từ 3 phút trở lên",
+      "Bảng thanh menu không còn công tắc Phụ đề Trực tiếp hay Dịch Trực tiếp"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.8.1",
+  "date": "2026-11-19",
+  "notes": "### Changed\n\n- **A long Chat bubble's speaker stays in sight across the column**, on a band in the window's own background at the top of the transcript, with the words passing under it, instead of floating over them.\n\n### Fixed\n\n- **The inspector's speakers no longer look switched off.** They were drawn at a faint strength, as were Save Voice Profile and a summary template's fields; they're at full strength now, their checkboxes drawn as a Mac's, and a speaker you uncheck is dimmed so the ones shown stand out.\n- **Nothing shows above what stays at the transcript's top**: a sliver of words used to peek over a held turn's header or a bubble's speaker.",
+  "notesSha256": "2c2c24fa221a3d9cb701fb65b2acade99c7807fe85b244d2d7d16ba5fe72f968",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Chat bubbles keep their speaker visible as you scroll",
+     "items": [
+      "A long chat bubble's speaker stays visible at the top as you scroll through it",
+      "The inspector's speakers and other controls now appear at full strength instead of faint",
+      "Unchecked speakers are dimmed so the ones you want to see stand out",
+      "Nothing peeks above the speaker label when scrolling through long turns"
+     ]
+    },
+    "vi": {
+     "headline": "Bong bóng chat giữ tên người nói khi cuộn",
+     "items": [
+      "Tên người nói của bong bóng chat dài vẫn hiển thị ở trên cùng khi bạn cuộn",
+      "Các người nói trong thanh kiểm tra và các điều khiển khác giờ hiển thị rõ thay vì mờ nhạt",
+      "Người nói bỏ chọn được làm mờ để những người bạn muốn xem nổi bật hơn",
+      "Không còn chữ nhô lên trên nhãn người nói khi cuộn qua các đoạn dài"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.8.0",
+  "date": "2026-11-19",
+  "notes": "### Added\n\n- **Choose how the transcript reads.** View, beside the tabs, lays it out as Chat (bubbles, yours on the right, as Messages draws them), Paragraphs or Lines, with translations below the words or side by side, four text sizes (⌘+ ⌘−), and Timestamps, Follow Along While Playing and Speaker Colors.\n- **Select lines and act on them.** Click, ⇧- or ⌘-click, or ↑ ↓; ⌘C copies, ⌘A selects all, Return plays. Several selected get a bar with Play, Copy and Translate; right-click for Copy with Names and Times, Select Whole Turn, Name and Hide. Name… beside an unnamed speaker names them right there.\n- **Follow along while it plays**: the line heard is lit and kept in sight; scroll away and Back to Now Playing returns to it.\n- **See who spoke where on the player's scrubber**: point at it and the turn under the pointer lights up, with a tooltip naming the speaker, the time a click plays from, and when the turn starts and ends. ⇧-click plays the turn from its start.\n- **Appearance in the toolbar**: a click goes System, Light, Dark; right-click to pick one. The same setting as Settings › General.\n- **Every speech model that heard a meeting**, with when it took over, in Details, under the title and in exports.\n- **Search finds what was said** in every meeting's transcript, translations and summary. The sidebar shows the meetings that hold your words, their matches and two of their lines: click one to open the meeting there. Without accents a word finds every accent (\"hop\" finds họp, hộp and hợp); quotes keep a phrase in order.\n- **Move from match to match** with ‹ › beside the search, Return or ⌘G (⇧⌘G back), the summary's matches included; each tab says how many it holds. ⌘F goes to the search.\n- **Click Through Captions**, in Settings › Live Captions: the captions' text lets clicks, scrolls and hovers through to what's under it; the bar and the panel's edges still take them.\n- **Keys for Start, Pause and Stop Transcription**: ⌃⌥⌘1, ⌃⌥⌘2 and ⌃⌥⌘3 in every app, as the menu bar item's rows. Change or clear them in Settings › General › Shortcuts.\n\n### Changed\n\n- **Transcript and Summary are two tabs** under the meeting's title, ⌘1 and ⌘2; the title heads the page over the date and who spoke. Point at a summary's time to read its lines; click it to see them in the transcript, and Back to Summary (⌘[) to return. The player stays under both tabs, and a meeting opens on the tab you left. ⌥⌘S is gone with the pane.\n- **The transcript opens as Chat**, headed by when it was heard, the model and the language, with quiets of 15 s or more said between turns. A long bubble keeps its speaker's name in sight as you scroll through it.\n- **A meeting where nothing was said says so**, in place of the tabs.\n\n### Fixed\n\n- **Stop on a paused meeting shows it saved** in the window open beside it.\n- **The toolbar's buttons work while the search is open**, and the empty field stays open, so the toolbar doesn't move under your pointer; click elsewhere or press Escape to close it.\n- **Share is off when there's nothing to share**, as Show Translations is.\n- **A meeting is named by the first speech model that heard it**, not the one a change left it on.\n- **A narrow transcript stays readable**: translations go under the words, and Lines lets its buttons go.",
+  "notesSha256": "8df775dddc106c3726f99117009f203650987aff42871af7d462c1d0316cb7a0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "View transcripts as chat bubbles, paragraphs or lines, and search them",
+     "items": [
+      "View transcripts as chat bubbles, paragraphs or lines with adjustable text size and timestamps",
+      "Select lines to play, copy or translate them, and name speakers directly from the transcript",
+      "Search finds words across all meetings, showing matches you can jump between with keyboard shortcuts",
+      "Follow along while playing keeps the current line visible and highlights speaker turns on the scrubber",
+      "Click through captions lets mouse actions pass through the caption text to windows underneath",
+      "Transcript and summary are now separate tabs under each meeting title"
+     ]
+    },
+    "vi": {
+     "headline": "Xem bản ghi dạng chat, đoạn văn hoặc dòng, và tìm kiếm trong đó",
+     "items": [
+      "Xem bản ghi dạng bong bóng chat, đoạn văn hoặc từng dòng với cỡ chữ điều chỉnh được và dấu thời gian",
+      "Chọn dòng để phát, sao chép hoặc dịch, và đặt tên người nói ngay từ bản ghi",
+      "Tìm kiếm từ trong tất cả cuộc họp, hiện kết quả có thể nhảy qua lại bằng phím tắt",
+      "Theo dõi khi phát giữ dòng hiện tại luôn hiện và tô sáng lượt nói trên thanh trượt",
+      "Nhấp xuyên qua phụ đề cho phép chuột tương tác với cửa sổ bên dưới chữ phụ đề",
+      "Bản ghi và tóm tắt giờ là hai thẻ riêng dưới tiêu đề cuộc họp"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.7.0",
+  "date": "2026-11-19",
+  "notes": "### Added\n\n- **Summarize a meeting.** A Summary pane under the transcript writes an overview, the action items and the sections of a template — General, 1:1, Stand-up, Interview, Customer Call or one of your own — each item with the time it was said: click the time to see those lines in the transcript. Template, model and language are right above it; choosing another writes a new version, and the one before stays a click away with your edits. Edit any item in place, tick action items, choose who owns them; Copy Summary and Copy Action Items paste as Markdown. The summary is written by the text model you set up in Lumi, on this Mac or online — Lumi asks before anything leaves it — and the meeting takes the summary's title while it still has the one Meeting Notes gave it. Drag the pane taller or shorter, make it larger, or fold it away with ⌥⌘S. Needs Lumi 1.92.0.\n- **Long meetings are read in parts** when the model you chose can't read them whole, then put together, with a bar of how far it got, the time left and Stop. A stretch that couldn't be read is said at the top of the summary.\n- **No text model yet?** Summarize offers one to download, in Lumi's own panel, and goes on once it's ready.\n- **Settings › Summaries**: the Text Model, the template and language a summary starts with, and your own templates — a name, instructions, and the sections you want in your order.\n- **Summarize from the card when a call ends.** For notes of 3 minutes or more, Lumi's card offers Summarize instead of Resume, and the window opens on the meeting writing it. Turn it off in Settings › Summaries.\n- **Exports include the summary.** Export as Markdown or Plain Text puts the summary ahead of the transcript, each item with the time of what it came from; Share › Copy Summary copies it.\n\n### Changed\n\n- **The player is a bar at the foot of the transcript**, in the same place whatever the window shows, with no Close; Space plays and pauses.\n- **Scroll to Top and Scroll to Bottom** appear as you scroll a long transcript or summary; Home, End, ⌘↑ and ⌘↓ go there too.\n- **Alerts' buttons are drawn as macOS's**, one line each.\n- **Live Captions step back while you work in Meeting Notes.** With the Meeting Notes or Settings window in use, the captions no longer cover it: they go behind it, and float over every app again as soon as you go back to another app, or when you click them. Needs Lumi 1.91.0.\n\n### Fixed\n\n- **Menus are drawn in macOS's appearance.** The model pop-ups' menus in Settings, their submenus and Live Captions' ⋯ menu follow macOS's light or dark, as a Mac menu does; they used to follow Lumi's Appearance where you had set it apart from macOS.\n- **Live Captions stay in sight over an app in full screen.** They now follow you onto every desktop and over every app in full screen; they used to stay behind on the desktop the meeting was started from, so a call watched in full screen showed no captions.",
+  "notesSha256": "4d4c2a0e77866360448de2d6a483bf577990f4dd7004925be769bda0fe2932c0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Summarize meetings with action items and custom templates",
+     "items": [
+      "Summarize a meeting into overview, action items and sections, with times to jump back to the transcript",
+      "Long meetings are read in parts when needed, with progress shown and the option to stop",
+      "Settings let you pick the text model, default template and language, and create your own templates",
+      "The player is now a bar at the bottom of the transcript, always in the same place",
+      "Live captions step behind the Meeting Notes window while you work in it, then float over other apps again",
+      "Menus now follow macOS appearance instead of Lumi's, and captions stay visible over full screen apps"
+     ]
+    },
+    "vi": {
+     "headline": "Tóm tắt cuộc họp với danh sách công việc và mẫu tùy chỉnh",
+     "items": [
+      "Tóm tắt cuộc họp thành tổng quan, công việc cần làm và các phần bạn chọn, kèm thời gian để quay lại bản ghi",
+      "Cuộc họp dài được đọc từng phần khi cần, hiển thị tiến độ và có thể dừng lại",
+      "Cài đặt cho phép chọn mô hình văn bản, mẫu và ngôn ngữ mặc định, cũng như tạo mẫu riêng",
+      "Trình phát giờ là thanh ở cuối bản ghi, luôn ở cùng một vị trí",
+      "Phụ đề trực tiếp lui ra sau cửa sổ Meeting Notes khi bạn làm việc, rồi nổi lên trên ứng dụng khác",
+      "Menu giờ theo giao diện macOS thay vì Lumi, và phụ đề vẫn hiện trên ứng dụng toàn màn hình"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.0",
+  "date": "2026-11-18",
+  "notes": "### Added\n\n- **Escape hides Live Captions** once you have clicked the panel, as its Hide button does; with its ⋯ menu open, Escape closes the menu first.\n- **Choose and download models in Settings.** Speech Recognition, Speakers Model and Text Model are pop-ups that offer every model Lumi knows: ready on this Mac or online — Lumi Models, Apple Speech, apps such as Ollama and LM Studio, services you have a key for, Claude Code — the ones Lumi can download, with their sizes, and the ones that can't run here, saying why. A provider's models, and the ones that can't run here, open in a submenu beside the menu, as a Mac menu's do. Lumi asks before anything is downloaded; it comes down with a bar, with Cancel where the download can be stopped (macOS's own language downloads can't be), and Meeting Notes uses it once it's ready. Transcription's On This Mac shows the speech model, the speakers model and the translation together. Your choice is kept by Lumi, which shows it under Settings › AI › Extensions & Privacy, where Use My Default puts it back. Needs Lumi 1.90.0.\n\n### Changed\n\n- **Settings shows its name on the title bar's top row**, Meeting Notes Settings, beside the window's buttons, with the panes' buttons under it, as a Mac app's settings window does; it stays the same whichever pane is open.",
+  "notesSha256": "1923d32840ad1f643ca99c4ed2280305a7742800e69b5b1a20335e3cacf50963",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Choose models, hide captions with Escape, and more",
+     "items": [
+      "Press Escape to hide Live Captions after clicking the panel",
+      "Choose and download speech, speaker, and translation models in Settings",
+      "Settings window shows Meeting Notes Settings at the top like other Mac apps"
+     ]
+    },
+    "vi": {
+     "headline": "Chọn mô hình, ẩn phụ đề bằng Escape và nhiều hơn nữa",
+     "items": [
+      "Nhấn Escape để ẩn Phụ Đề Trực Tiếp sau khi nhấp vào bảng điều khiển",
+      "Chọn và tải xuống mô hình nhận dạng giọng nói, người nói và dịch trong Cài Đặt",
+      "Cửa sổ Cài Đặt hiển thị Cài Đặt Meeting Notes ở trên cùng như ứng dụng Mac khác"
+     ]
+    }
+   }
+  }
+ }
+]
