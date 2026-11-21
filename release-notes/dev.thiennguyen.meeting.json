@@ -1,4 +1,62 @@
 {
+  "0.12.0": {
+    "notesSha256": "e3680cbad79a64595b4ec3005da24bb2a243811360804e5937ff883c8c6860b9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Streaming transcription, live translation, and refined playback",
+          "items": [
+            "Choose between Apple Speech or Nemotron streaming for words while speaking",
+            "Turn off live translation to translate only finished lines instead of mid-sentence",
+            "Click a line to play it and click again to pause, with visual feedback at the speaker",
+            "Chat shows play, translate, copy and more actions when you point at each line",
+            "Selected lines no longer hide behind the action bar at the bottom",
+            "Finished meetings now open at the start instead of scrolling to the end"
+          ]
+        },
+        "vi": {
+          "headline": "Phiên âm trực tiếp, dịch ngay và cải thiện phát lại",
+          "items": [
+            "Chọn giữa Apple Speech hoặc Nemotron streaming cho từ đang được nói",
+            "Tắt dịch trực tiếp để chỉ dịch các dòng hoàn chỉnh thay vì dịch giữa câu",
+            "Nhấp vào dòng để phát và nhấp lại để tạm dừng, với hiệu ứng trực quan tại người nói",
+            "Chat hiển thị các thao tác phát, dịch, sao chép khi bạn trỏ vào từng dòng",
+            "Các dòng đã chọn không còn bị che bởi thanh thao tác ở dưới cùng",
+            "Cuộc họp đã kết thúc giờ mở từ đầu thay vì cuộn xuống cuối"
+          ]
+        }
+      }
+    }
+  },
+  "0.11.0": {
+    "notesSha256": "a8424c4a1d444d427ac4e6d480387c7f3f2b3cdc1fedc56200a37210b481eaba",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Merge speakers and reassign lines after your meeting",
+          "items": [
+            "Merge two speakers when one person was heard as two different voices",
+            "Move lines to the correct speaker when someone was misidentified",
+            "Rename dialog now appears properly sized without its own scrollbar",
+            "Turn headers stay visible at the top as you scroll through the transcript",
+            "Listen Again now keeps others near your microphone as separate speakers"
+          ]
+        },
+        "vi": {
+          "headline": "Gộp người nói và chỉnh dòng sau cuộc họp",
+          "items": [
+            "Gộp hai người nói khi một người bị nhận diện thành hai giọng khác nhau",
+            "Chuyển dòng cho đúng người khi bị nhận diện nhầm",
+            "Hộp thoại đổi tên hiện ra với kích thước phù hợp, không có thanh cuộn riêng",
+            "Tiêu đề lượt nói giữ nguyên ở trên khi bạn cuộn văn bản",
+            "Nghe Lại giữ người khác gần micro của bạn là người nói riêng biệt"
+          ]
+        }
+      }
+    }
+  },
   "0.10.0": {
     "notesSha256": "a7230fa994781771c9a213787340b5aca537964e377ff4f9fd5ec489ba42fdba",
     "summary": {
