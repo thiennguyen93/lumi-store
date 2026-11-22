@@ -3570,7 +3570,8 @@ interface calendar {
         all-day: bool,
         location: option<string>,
         /// Every http and https address in the event's url, its location and
-        /// its notes, in that order, each once.
+        /// its notes, in that order, each once. The notes themselves are not
+        /// here: `notes` reads them, one occurrence at a time.
         links: list<string>,
         repeats: bool,
         status: status,
@@ -3586,6 +3587,11 @@ interface calendar {
     events: func(start: u64, end: u64) -> result<list<event>, string>;
     /// One occurrence read again; none once it is gone.
     read: func(id: string, occurrence: u64) -> result<option<event>, string>;
+    /// One occurrence's notes as written, their blank ends trimmed; none
+    /// where it has none or is gone. They can hold dial-in codes and
+    /// passcodes: read them only for an event the person chose, and keep
+    /// them as you would the person's own words. Added in Lumi 1.97.0.
+    notes: func(id: string, occurrence: u64) -> result<option<string>, string>;
     /// Calendar, at that event's day. Only for something the person did.
     show: func(id: string, occurrence: u64) -> result<_, string>;
 }

@@ -627,7 +627,10 @@ pub mod transcribe {
     /// recording of yours: a voice heard there keeps its label, a new one is
     /// numbered after them. Live, with speakers told apart, and within ten
     /// minutes of `previous` ending; otherwise as [`start`]. The `started`
-    /// event says `continues` when it went on. Only from a press.
+    /// event says `continues` when it went on. Where `previous` heard one
+    /// app, the app the person picked is heard again without Lumi asking,
+    /// while it still runs (Lumi 1.96.0); you are never told which. Only
+    /// from a press.
     pub fn start_after(request: &Request, previous: u64) -> Result<u64, Failure> {
         wit::start_after(request, previous)
     }
@@ -4031,6 +4034,13 @@ pub mod calendar {
     /// One occurrence read again; `None` once it is gone.
     pub fn read(id: &str, occurrence: u64) -> Result<Option<Event>, String> {
         wit::read(id, occurrence)
+    }
+
+    /// One occurrence's notes as written, their blank ends trimmed; `None`
+    /// where it has none or is gone. They can hold dial-in codes and
+    /// passcodes: read them only for an event the person chose. Lumi 1.97.0.
+    pub fn notes(id: &str, occurrence: u64) -> Result<Option<String>, String> {
+        wit::notes(id, occurrence)
     }
 
     /// Calendar, at that event's day. Only for something the person did.
