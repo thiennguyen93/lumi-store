@@ -1,4 +1,32 @@
 {
+  "0.15.0": {
+    "notesSha256": "d852d6b92353f0261f1b3b22987df0b5e8ee2909cfa52a58fcbe74bba6f2bf79",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Event notes in the inspector and smoother summary animations",
+          "items": [
+            "The inspector shows notes from the linked calendar event, with joining info folded away",
+            "Each summary now says which model wrote it, like Claude Opus or just AI if unknown",
+            "The summary icon animates smoothly between states instead of jumping around",
+            "Summaries from refined transcripts no longer say heard again underneath",
+            "Open now works immediately after updating instead of being briefly refused"
+          ]
+        },
+        "vi": {
+          "headline": "Ghi chú sự kiện trong thanh tra và hoạt ảnh tóm tắt mượt hơn",
+          "items": [
+            "Thanh tra hiển thị ghi chú từ sự kiện lịch đã liên kết, thông tin tham gia được gấp lại",
+            "Mỗi bản tóm tắt giờ ghi rõ mô hình nào đã viết, như Claude Opus hoặc AI nếu không rõ",
+            "Biểu tượng tóm tắt chuyển động mượt mà giữa các trạng thái thay vì nhảy đột ngột",
+            "Tóm tắt từ bản ghi đã tinh chỉnh không còn ghi nghe lại bên dưới nữa",
+            "Mở hoạt động ngay sau khi cập nhật thay vì bị từ chối trong giây lát"
+          ]
+        }
+      }
+    }
+  },
   "0.14.1": {
     "notesSha256": "554dbc420cb23dcf6d1f938b77690718a2bf659548745948ae62e75df3030bc9",
     "summary": {
