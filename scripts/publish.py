@@ -1517,6 +1517,7 @@ def check_manifest(entry_id: str, manifest: dict):
     # `manifest.rs`'s `launcher_targets`, asked once the manifest is whole.
     check_launcher_targets(entry_id, manifest, launcher, tabs)
     check_folders(entry_id, manifest)
+    check_agents(entry_id, manifest)
     for noun, path in declared_pages(entry_id, manifest):
         if not is_valid_ui_path(path):
             fail(entry_id, f"the {noun} points at {path!r}, which is not a plain relative path")
@@ -1537,6 +1538,32 @@ def check_manifest(entry_id: str, manifest: dict):
                 "name (lowercase words joined by '-') nor an .svg file under ui/",
             )
     return ext
+
+
+COMPACT_THINKING = ("off", "thread", "low", "medium", "high")
+
+
+def check_agents(entry_id: str, manifest: dict):
+    """`[[agent]] compact-thinking`, held to Lumi's `manifest::agents_of` with
+    its sentence: how hard summarizing a long chat thinks, one of
+    `COMPACT_THINKING` (`agent::compact::Thinking::parse`), said one way. A
+    Lumi before it passes over the key and summarizes thinking off, which is
+    also its default, so no floor is asked."""
+    for agent in manifest.get("agent", []):
+        if not isinstance(agent, dict):
+            continue
+        name = agent.get("name", "")
+        spellings = [key for key in ("compact-thinking", "compact_thinking") if key in agent]
+        if len(spellings) > 1:
+            fail(entry_id, f"the agent {name} says compact-thinking twice, once as compact_thinking — keep compact-thinking")
+        if not spellings:
+            continue
+        word = agent[spellings[0]]
+        if not isinstance(word, str) or word.strip() not in COMPACT_THINKING + ("",):
+            fail(
+                entry_id,
+                f'the agent {name} compacts thinking "{word}"; compact-thinking is off, thread, low, medium or high',
+            )
 
 
 def lumi_floor(ext: dict) -> tuple:
