@@ -1,4 +1,28 @@
 {
+  "0.16.0": {
+    "notesSha256": "c7d65f3268d402c5a30d8094e139a6b9157c87c073e02da2441d7a4e12fda7b8",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Quit Meeting Notes without closing Lumi",
+          "items": [
+            "You can now quit Meeting Notes from its menu while keeping Lumi running",
+            "Meetings in progress are saved before quitting, with all final words included",
+            "The Details button now shows an info symbol and says Show Details or Hide Details"
+          ]
+        },
+        "vi": {
+          "headline": "Thoát Meeting Notes mà không đóng Lumi",
+          "items": [
+            "Giờ bạn có thể thoát Meeting Notes từ menu mà vẫn giữ Lumi chạy",
+            "Cuộc họp đang diễn ra sẽ được lưu trước khi thoát, bao gồm cả lời nói cuối cùng",
+            "Nút chi tiết giờ hiển thị biểu tượng thông tin và ghi Hiện chi tiết hoặc Ẩn chi tiết"
+          ]
+        }
+      }
+    }
+  },
   "0.15.0": {
     "notesSha256": "d852d6b92353f0261f1b3b22987df0b5e8ee2909cfa52a58fcbe74bba6f2bf79",
     "summary": {
