@@ -531,6 +531,182 @@ pub mod ai {
     }
 }
 
+/// Conversations grounded on your sources, kept by Lumi. Costs `ai`. Lumi
+/// 1.98.0 or later. Ask `available` before you draw an assistant: while it
+/// answers false, every other function is refused.
+///
+/// You hand Lumi what a conversation is about — your sources, as passages
+/// with your own ids — and the person's question, naming one of your
+/// manifest's `[[agent]]`s. Lumi keeps the thread, fits the sources into the
+/// model, sends the earlier messages as real turns, checks every citation
+/// against the passages it was given, and asks the person once per question
+/// before anything leaves the Mac.
+pub mod agent {
+    use super::lumi::ext::agent as wit;
+
+    pub use super::lumi::ext::ai::{Failure, FailureKind, Place, Thinking, Usage};
+    pub use wit::{
+        Answer, Ask, Cite, CompactOptions, Document, EmbedState, FileCite, FileEntry, FileInfo, FileKind, FileState, HeldIn, LibraryCite, LibraryInfo, MessageCite, ModelAbilities,
+        Passage, PassageCite, Quote, Reading, Ref, Side, Source, TextAbilities, ThreadInfo, TitleBy,
+    };
+
+    /// Whether Lumi's agent is there on this Mac.
+    pub fn available() -> bool {
+        wit::available()
+    }
+
+    /// Ask, and have the answer streamed to your own windows as
+    /// `lumi:agent` events, returning the call's id at once. Lumi writes the
+    /// question and the answer into the thread. Only from a press.
+    pub fn start(ask: &Ask) -> Result<u64, Failure> {
+        wit::start(ask)
+    }
+
+    /// Ask, and wait for the whole answer: for a command. Only from a press.
+    pub fn complete(ask: &Ask) -> Result<Answer, Failure> {
+        wit::complete(ask)
+    }
+
+    /// Stop call `id`; what came so far is kept as stopped.
+    pub fn cancel(id: u64) -> Result<bool, String> {
+        wit::cancel(id)
+    }
+
+    /// Ask message `n` of `thread` again, with the sources given now.
+    pub fn again(thread: &str, n: u32, ask: &Ask) -> Result<u64, Failure> {
+        wit::again(thread, n, ask)
+    }
+
+    /// Summarize thread `thread`'s messages so far, by its model and
+    /// asked about as any send; told as `lumi:agent` `compacting`, then
+    /// `compacted` or `compact-failed`. `options.thinking` overrides the
+    /// agent's `compact-thinking`. Returns the call's id. Only from a press.
+    pub fn compact(thread: &str, options: &CompactOptions) -> Result<u64, String> {
+        wit::compact(thread, options)
+    }
+
+    /// Your threads, newest first; `None` for every subject.
+    pub fn threads(subject: Option<&str>) -> Result<Vec<ThreadInfo>, String> {
+        wit::threads(subject)
+    }
+
+    /// A thread and its messages, as JSON.
+    pub fn thread(id: &str) -> Result<String, String> {
+        wit::thread(id)
+    }
+
+    pub fn delete_thread(id: &str) -> Result<bool, String> {
+        wit::delete_thread(id)
+    }
+
+    /// Delete every thread about `subject`; how many went.
+    pub fn delete_subject(subject: &str) -> Result<u32, String> {
+        wit::delete_subject(subject)
+    }
+
+    /// The passages thread `id`'s answers cited: exchange `n`'s, or all.
+    pub fn ref_cites(id: &str, n: Option<u32>) -> Result<Vec<PassageCite>, String> {
+        wit::ref_cites(id, n)
+    }
+
+    /// A new thread about `subject`, starting with message `n`'s exchange of
+    /// thread `id`.
+    pub fn fork(id: &str, n: u32, subject: &str) -> Result<String, String> {
+        wit::fork(id, n, subject)
+    }
+
+    /// The person's name for thread `id`, at most 80 characters; empty puts
+    /// back its first question. Lumi never names over it. False when there
+    /// is no such thread.
+    pub fn set_title(id: &str, title: &str) -> Result<bool, String> {
+        wit::set_title(id, title)
+    }
+
+    /// Words added after one of your agents' instructions; empty removes them.
+    pub fn set_instructions(agent: &str, extra: &str) -> Result<(), String> {
+        wit::set_instructions(agent, extra)
+    }
+
+    /// The libraries your agents may read.
+    pub fn libraries() -> Result<Vec<LibraryInfo>, String> {
+        wit::libraries()
+    }
+
+    pub fn library_create(name: &str, model: Option<&str>) -> Result<(), String> {
+        wit::library_create(name, model)
+    }
+
+    /// Add a document, or replace the one with its id. A document made from
+    /// a file (`Document::file`) holds the file while it is in the library,
+    /// and is cited in the file.
+    pub fn library_put(library: &str, doc: &Document) -> Result<(), String> {
+        wit::library_put(library, doc)
+    }
+
+    /// Take a document out; a file it was made from is let go.
+    pub fn library_remove(library: &str, id: &str) -> Result<bool, String> {
+        wit::library_remove(library, id)
+    }
+
+    pub fn library_documents(library: &str, after: Option<&str>) -> Result<Vec<String>, String> {
+        wit::library_documents(library, after)
+    }
+
+    pub fn library_set_model(library: &str, model: Option<&str>) -> Result<(), String> {
+        wit::library_set_model(library, model)
+    }
+
+    pub fn library_reindex(library: &str) -> Result<(), String> {
+        wit::library_reindex(library)
+    }
+
+    pub fn library_drop(library: &str) -> Result<bool, String> {
+        wit::library_drop(library)
+    }
+
+    /// A blob of your storage as a file the person added to a chat, held
+    /// staged until a question names it in `refs` (`Ref::File`). Lumi takes
+    /// the blob out of your storage and keeps the one copy. Only from a
+    /// press. A PDF, a Word or an RTF document, or a picture, stays reading
+    /// while Lumi's reader reads it.
+    pub fn attach(blob: &str, name: &str) -> Result<FileInfo, String> {
+        wit::attach(blob, name)
+    }
+
+    /// Let a staged file go. A file in a chat goes with the chat, one in a
+    /// library with its document.
+    pub fn detach(id: &str) -> Result<bool, String> {
+        wit::detach(id)
+    }
+
+    /// A file you hold, staged or in a chat.
+    pub fn file(id: &str) -> Result<FileInfo, String> {
+        wit::file(id)
+    }
+
+    /// Every file you hold, oldest first, with the threads and libraries
+    /// holding it and how far each library is with it.
+    pub fn files() -> Result<Vec<FileEntry>, String> {
+        wit::files()
+    }
+
+    /// Take a file out of every chat and library, and remove it.
+    pub fn delete_file(id: &str) -> Result<bool, String> {
+        wit::delete_file(id)
+    }
+
+    /// Offer a file's original through Lumi's Save panel. Only from a press.
+    pub fn save_file(id: &str) -> Result<(), String> {
+        wit::save_file(id)
+    }
+
+    /// Every ready text model's abilities — thinks, stops thinking, sees —
+    /// and the most thinking the person allows.
+    pub fn abilities() -> Result<TextAbilities, String> {
+        wit::abilities()
+    }
+}
+
 /// Speech to text: the microphone, what the Mac plays, both at once in a
 /// call, or a recording in your storage, heard by the speech model the
 /// person chose in Settings › AI. You get text, never the sound. Costs

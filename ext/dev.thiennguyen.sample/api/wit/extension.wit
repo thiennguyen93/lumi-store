@@ -3652,6 +3652,497 @@ interface reminders {
     done: func(ids: list<string>) -> result<list<option<bool>>, string>;
 }
 
+/// Conversations grounded on your sources, kept by Lumi. Added in Lumi
+/// 1.98.0. Ask `available` before you draw an assistant: while it answers
+/// false, every other function is refused.
+///
+/// You hand Lumi what the conversation is about — your **sources**, as
+/// passages with your own ids — and the person's question. Lumi keeps the
+/// **thread** (the questions, the answers and what they cited, never your
+/// sources), fits the sources into the model the person set up, sends the
+/// earlier messages as real turns, checks every citation against the
+/// passages it was given, and asks the person once per question before
+/// anything leaves this Mac.
+///
+/// Every function costs `ai`, and the person switching your extension's AI
+/// off in Settings › AI refuses them all. An ask names one of your
+/// manifest's `[[agent]]`s: who the assistant is is yours, how every
+/// assistant handles sources and citations is Lumi's.
+interface agent {
+    use ai.{place, thinking, usage, failure};
+
+    /// One passage of a source: a line of a transcript, a paragraph.
+    record passage {
+        /// Your own id for it, at most 32 characters: a citation names it.
+        id: string,
+        text: string,
+        /// Who said or wrote it, shown to the model before the text.
+        label: option<string>,
+        /// A short stamp shown to the model before it ("12:03"), so a
+        /// question about time can be answered.
+        stamp: option<string>,
+        /// Any number of yours (a time in milliseconds), kept with each
+        /// citation of this passage, so you can find it again after your
+        /// ids change.
+        position: option<u64>,
+        /// Sent whatever else has to be left out.
+        always: bool,
+    }
+
+    /// What a conversation is about, handed again with every ask: Lumi keeps
+    /// no copy.
+    record source {
+        id: string,
+        title: option<string>,
+        /// Free text of yours ("transcript", "document"); Lumi never reads it.
+        kind: option<string>,
+        /// Its passages are in order (a transcript): what is left out between
+        /// two passages sent is marked as left out.
+        ordered: bool,
+        /// More passages will be appended to it (a meeting still going).
+        growing: bool,
+        passages: list<passage>,
+        /// The id of a thread this source supports (the lines another
+        /// thread's answers cited): fitted with that reference, ahead of
+        /// your other sources, and left out when it is gone. A source
+        /// backing a thread the question does not point at is refused.
+        backs: option<string>,
+    }
+
+    /// How much of the sources an answer reads.
+    enum reading {
+        /// What fits the model: everything when it fits, else the passages
+        /// marked `always`, those nearest the question and the latest.
+        fit,
+        /// Every passage, in parts, then one answer from the parts.
+        whole,
+    }
+
+    /// Which side of an exchange a quote is from.
+    enum side {
+        question,
+        answer,
+    }
+
+    /// One message, quoted into a question.
+    record quote {
+        /// Its thread; none for the thread being asked in.
+        thread: option<string>,
+        /// The exchange's number in it.
+        n: u32,
+        side: side,
+        /// The part the person chose, as shown; none for the whole message.
+        /// Must be found in the message, or the ask is refused.
+        text: option<string>,
+    }
+
+    /// What a question points at in your threads.
+    variant ref {
+        /// A whole other thread of yours, read when the question is
+        /// answered, up to the exchange it had reached when asked.
+        thread(string),
+        /// One message, its words kept as they are now.
+        quote(quote),
+        /// A file `attach` holds: staged for this question, or added to
+        /// the thread before.
+        file(string),
+        /// One of your own libraries, searched for this question though
+        /// the agent does not list it: at most 5 a question.
+        library(string),
+    }
+
+    /// One question.
+    record ask {
+        /// One of your manifest's `[[agent]]` names. A thread keeps the agent
+        /// it began with.
+        agent: string,
+        /// The thread to continue; none starts a new one about `subject`.
+        thread: option<string>,
+        /// What the thread is about, in your own words (a document's id): at
+        /// most 200 characters, never shown to the model.
+        subject: string,
+        /// The person's question, at most 8,000 characters.
+        question: string,
+        sources: list<source>,
+        /// This ask's note to the model, sent with the question after the
+        /// sources: at most 2,000 characters.
+        note: string,
+        /// `provider:model` from `ai.models`, or none: the thread's last
+        /// model, then the person's default.
+        model: option<string>,
+        /// "question" for the question's own language, which Lumi detects;
+        /// "same" for the sources'; a language id (`vi`); none to say nothing.
+        answer-language: option<string>,
+        /// None for the agent's own `max-tokens`.
+        max-tokens: option<u32>,
+        /// None for the thread's last level, then the agent's own `thinking`.
+        thinking: option<thinking>,
+        /// None for the agent's own `reading`.
+        reading: option<reading>,
+        /// A new thread's life, in days; none keeps it until it is deleted.
+        expires-days: option<u32>,
+        /// What the question points at: at most 5 threads, 5 quotes and 5
+        /// libraries, and the files added to it. Kept with the question;
+        /// `again` reads them as kept.
+        refs: list<ref>,
+        /// Fewer of the agent's libraries for this ask; never more. None
+        /// for all of them.
+        libraries: option<list<string>>,
+    }
+
+    /// A passage of one of your sources.
+    record passage-cite {
+        source: string,
+        passage: string,
+        /// The passage's `position` as it was handed.
+        position: option<u64>,
+    }
+
+    /// A message of another of your threads.
+    record message-cite {
+        thread: string,
+        n: u32,
+        /// The thread's title, for a chip.
+        title: string,
+        /// The thread's subject, as you gave it.
+        subject: string,
+    }
+
+    /// A passage of a library: Lumi's documentation, or a library of yours.
+    record library-cite {
+        library: string,
+        doc: string,
+        chunk: string,
+        title: string,
+        /// Where to read it, for a link.
+        url: option<string>,
+    }
+
+    /// Where in a file a citation points.
+    record file-cite {
+        /// The file's id, as `attach` answered it.
+        file: string,
+        /// Its name, for a chip.
+        name: string,
+        /// A PDF's page, from 1.
+        page: option<u32>,
+        /// A text's lines, a table's rows or a document's paragraphs, from 1.
+        lines: option<tuple<u32, u32>>,
+        /// The cited text's place on the page or the picture, as shares of
+        /// its width and height, 0 to 1: x, y, width, height.
+        frame: option<tuple<f32, f32, f32, f32>>,
+    }
+
+    variant cite {
+        passage(passage-cite),
+        message(message-cite),
+        library(library-cite),
+        file(file-cite),
+    }
+
+    /// An answer, as Lumi wrote it into the thread.
+    record answer {
+        thread: string,
+        /// The message's number in the thread.
+        n: u32,
+        /// Markdown. Each citation is `[k]`, where `cites[k-1]` is what it
+        /// names; a number the model made up is taken out.
+        text: string,
+        cites: list<cite>,
+        /// The sources did not hold the answer: `text` says so.
+        not-found: bool,
+        /// `provider:model` that answered.
+        model: string,
+        model-name: string,
+        place: place,
+        fell-back: option<string>,
+        thought: bool,
+        /// The level the model was asked to think at, held to the person's
+        /// most; none for a model that cannot think.
+        thinking: option<thinking>,
+        /// From its first thought to its first word, in milliseconds; none
+        /// when it did not think. What it thought is in `thread`'s JSON.
+        thought-ms: option<u64>,
+        cut-short: bool,
+        usage: usage,
+        ms: u64,
+        /// What the answer read, as JSON: `{v, whole, parts, digest,
+        /// earlier, chars, libraries}`.
+        read: string,
+    }
+
+    /// Who gave a thread its title.
+    enum title-by {
+        /// Its first question, until it is named.
+        question,
+        /// Lumi, from its first exchange.
+        model,
+        /// The person, with `set-title`.
+        person,
+    }
+
+    /// One of your threads.
+    record thread-info {
+        id: string,
+        subject: string,
+        agent: string,
+        /// Its first question, until Lumi names it from its first answer or
+        /// the person renames it.
+        title: string,
+        titled: title-by,
+        /// Milliseconds since 1970.
+        created: u64,
+        updated: u64,
+        messages: u32,
+        /// The model that answered last.
+        model: option<string>,
+        /// When it expires, in milliseconds since 1970; none if it never does.
+        expires: option<u64>,
+        /// How many of your other threads quote this one: what deleting it
+        /// takes from them.
+        quoted: u32,
+        /// How many files the thread holds.
+        files: u32,
+        /// The thinking level its last question asked for; none when no
+        /// question named one, so it follows the agent's own.
+        thinking: option<thinking>,
+    }
+
+    /// What a file is, as Lumi told it by its bytes.
+    enum file-kind {
+        text,
+        markdown,
+        csv,
+        json,
+        code,
+        pdf,
+        word,
+        rtf,
+        picture,
+    }
+
+    enum file-state {
+        reading,
+        ready,
+        failed,
+    }
+
+    /// A file Lumi holds for your agents, staged or in a chat.
+    record file-info {
+        /// Lumi's id for it.
+        id: string,
+        /// The person's name for it, as shown: one line, never a path.
+        name: string,
+        kind: file-kind,
+        /// Its size, in bytes.
+        size: u64,
+        /// A PDF's pages.
+        pages: option<u32>,
+        /// A picture's width and height, in pixels.
+        pixels: option<tuple<u32, u32>>,
+        /// Characters of text read from it.
+        chars: u64,
+        state: file-state,
+        /// While `reading`: how far, of how many (pages, or 1 of 1).
+        progress: option<tuple<u32, u32>>,
+        /// Lumi's words for its chip, if any: "4 pages read from a scan".
+        note: option<string>,
+        /// Why it could not be read, when `failed`: Lumi's sentence.
+        failure: option<string>,
+        /// In a chat already: `detach` refuses it.
+        sent: bool,
+    }
+
+    /// What one ready text model can do, for a composer.
+    record model-abilities {
+        /// `provider:model`, as `ai.models` names it.
+        model: string,
+        /// It can be asked to think before it answers.
+        thinks: bool,
+        /// It can be told not to think at all. One that cannot still thinks
+        /// a little at `off`, the least Lumi can ask of it.
+        stops-thinking: bool,
+        /// It takes pictures.
+        sees: bool,
+    }
+
+    /// Every ready text model's abilities, and the most thinking the person
+    /// allows.
+    record text-abilities {
+        /// The most thinking the person allows in Settings › AI: an ask
+        /// above it is lowered.
+        most-thinking: thinking,
+        models: list<model-abilities>,
+    }
+
+    /// One document of a library of yours.
+    record document {
+        /// Your own id for it.
+        id: string,
+        title: string,
+        /// The text itself, or
+        text: option<string>,
+        /// already cut into passages, or
+        passages: option<list<passage>>,
+        /// a file `attach` answered: its passages as Lumi read them, never
+        /// read again, and the file kept while a library holds it. A
+        /// citation of it is a `file` cite, at its page and lines.
+        file: option<string>,
+        /// Where a citation of it leads.
+        url: option<string>,
+        stamp: option<string>,
+    }
+
+    /// A library one of your agents may read.
+    record library-info {
+        name: string,
+        documents: u32,
+        chunks: u32,
+        /// The embedding model it is pinned to; none follows Lumi's.
+        model: option<string>,
+        /// The name of the model it is embedded with now, pinned or Lumi's;
+        /// none when no embedding model is on this Mac.
+        model-name: option<string>,
+        /// While it is being embedded: how far, of how many.
+        indexing: option<tuple<u32, u32>>,
+        updated: u64,
+    }
+
+    /// How far one library is with one of your files. The numbers count
+    /// the library's chunks, as `library-info.chunks` does.
+    variant embed-state {
+        /// Not embedded yet: the file is still being read, or waits its
+        /// turn.
+        waiting,
+        /// Being embedded now: chunks done, of how many.
+        embedding(tuple<u32, u32>),
+        /// Embedded, in this many chunks.
+        embedded(u32),
+        /// No embedding model is on this Mac: kept, and not searched until
+        /// one is.
+        unembedded,
+    }
+
+    /// A library holding one of your files.
+    record held-in {
+        library: string,
+        embed: embed-state,
+    }
+
+    /// One file Lumi holds for you, and what holds it.
+    record file-entry {
+        info: file-info,
+        /// When it was added, in milliseconds since 1970.
+        added: u64,
+        /// The threads holding it.
+        threads: list<string>,
+        /// The libraries holding it, each with how far it is.
+        libraries: list<held-in>,
+    }
+
+    /// How one `compact` press writes the thread again, shorter.
+    record compact-options {
+        /// How hard it thinks: `off`, `thread` (the thread's own level),
+        /// `low`, `medium` or `high`; none for what the agent's
+        /// `compact-thinking` says.
+        thinking: option<string>,
+    }
+
+    /// Whether Lumi's agent is there on this Mac. Every other function is
+    /// refused while it is not.
+    available: func() -> bool;
+
+    /// Ask, and have the answer streamed to your extension's own windows as
+    /// `lumi:agent` events, returning the call's id at once. Lumi writes the
+    /// question and the answer into the thread itself. Only from a press.
+    start: func(ask: ask) -> result<u64, failure>;
+    /// Ask, and wait for the whole answer: for a command. Only from a press.
+    complete: func(ask: ask) -> result<answer, failure>;
+    /// Stop call `id`; what came so far is kept in the thread as stopped.
+    cancel: func(id: u64) -> result<bool, string>;
+    /// Ask message `n` again, with the sources given now, the thread's
+    /// question as it was. `ask.question` is not read. Only from a press.
+    again: func(thread: string, n: u32, ask: ask) -> result<u64, failure>;
+    /// Compact thread `thread` now, as Claude Code's `/compact`: every
+    /// message so far, written again shorter by the thread's model and
+    /// asked about as any send. The result is told as `lumi:agent`
+    /// `compacting`, then `compacted` or `compact-failed`, and later
+    /// questions read it in place of those messages. Returns the call's id,
+    /// which `cancel` stops. Refused while the thread is answering or has no
+    /// answer yet. Only from a press.
+    compact: func(thread: string, options: compact-options) -> result<u64, string>;
+
+    /// Your threads, newest first; none for every subject. Expired threads
+    /// are gone.
+    threads: func(subject: option<string>) -> result<list<thread-info>, string>;
+    /// A thread and its messages, as JSON: `{v, thread, messages}`.
+    thread: func(id: string) -> result<string, string>;
+    delete-thread: func(id: string) -> result<bool, string>;
+    /// Delete every thread about `subject`; how many went.
+    delete-subject: func(subject: string) -> result<u32, string>;
+    /// The passages thread `id`'s answers cited: exchange `n`'s, or all.
+    ref-cites: func(id: string, n: option<u32>) -> result<list<passage-cite>, string>;
+    /// A new thread about `subject` starting with message `n`'s exchange of
+    /// thread `id`; its id.
+    fork: func(id: string, n: u32, subject: string) -> result<string, string>;
+    /// The person's name for thread `id`, at most 80 characters on one
+    /// line; empty puts back its first question. Lumi never names over it.
+    /// False when there is no such thread.
+    set-title: func(id: string, title: string) -> result<bool, string>;
+    /// Words added after one of your agents' instructions, kept by Lumi
+    /// until changed; empty removes them. At most 2,000 characters.
+    set-instructions: func(agent: string, extra: string) -> result<_, string>;
+
+    /// Read a blob of your storage as a file the person added, and hold it,
+    /// staged, until a question names it in `refs` or `detach` lets it go.
+    /// The blob is taken out of your storage: Lumi keeps the one copy.
+    /// `name` is shown and sent as its title. Answers at once, `reading`;
+    /// told as `lumi:agent` `file` until `ready` or `failed`. Only from a
+    /// press. A PDF, a Word or an RTF document, or a picture, stays
+    /// `reading` while Lumi's reader reads it. A picture is sent as itself
+    /// to a model that `sees`, and as the text read from it to one that
+    /// does not.
+    attach: func(blob: string, name: string) -> result<file-info, string>;
+    /// Let a staged file go. A file in a chat goes with the chat, one in a
+    /// library with the library's document: `delete-file` takes it out of
+    /// both.
+    detach: func(id: string) -> result<bool, string>;
+    /// A file you hold, staged or in a chat.
+    file: func(id: string) -> result<file-info, string>;
+    /// Every file you hold — staged, in a chat or in a library — oldest
+    /// first, with the threads and libraries holding it.
+    files: func() -> result<list<file-entry>, string>;
+    /// Take file `id` out of every chat and every library, and remove it. A
+    /// question that added it keeps its ref, marked `gone`. False when
+    /// there is no such file.
+    delete-file: func(id: string) -> result<bool, string>;
+    /// Offer file `id`'s original through Lumi's Save panel, under its
+    /// name. Answers once the panel is up. Only from a press.
+    save-file: func(id: string) -> result<_, string>;
+    /// Every ready text model's abilities, and the person's most thinking:
+    /// one call when a composer reads its models.
+    abilities: func() -> result<text-abilities, string>;
+
+    /// The libraries your agents may read.
+    libraries: func() -> result<list<library-info>, string>;
+    /// A library of your own, embedded with `model` (an embedding model of
+    /// `models.catalog`), or with none whatever Lumi's libraries use.
+    library-create: func(name: string, model: option<string>) -> result<_, string>;
+    /// Add a document, or replace the one with its id. Your pages hear its
+    /// embedding as `lumi:agent` `indexing`.
+    library-put: func(library: string, doc: document) -> result<_, string>;
+    /// Take a document out. A file it was made from is let go: removed once
+    /// no chat or library holds it.
+    library-remove: func(library: string, id: string) -> result<bool, string>;
+    /// Its documents' ids, after `after`, at most 500 at a time.
+    library-documents: func(library: string, after: option<string>) -> result<list<string>, string>;
+    library-set-model: func(library: string, model: option<string>) -> result<_, string>;
+    library-reindex: func(library: string) -> result<_, string>;
+    /// The library and every document of it gone; its files let go as
+    /// `library-remove` lets one go.
+    library-drop: func(library: string) -> result<bool, string>;
+}
+
 world extension {
     import selection;
     import transforms;
@@ -3695,6 +4186,7 @@ world extension {
     import grants;
     import calendar;
     import reminders;
+    import agent;
 
     /// Run one of the commands the manifest declares.
     ///
