@@ -547,7 +547,7 @@ pub mod agent {
     pub use super::lumi::ext::ai::{Failure, FailureKind, Place, Thinking, Usage};
     pub use wit::{
         Answer, Ask, Cite, CompactOptions, Document, EmbedState, FileCite, FileEntry, FileInfo, FileKind, FileState, HeldIn, LibraryCite, LibraryInfo, MessageCite, ModelAbilities,
-        Passage, PassageCite, Quote, Reading, Ref, Side, Source, TextAbilities, ThreadInfo, TitleBy,
+        Passage, PassageCite, Quote, Reading, Ref, Sent, Side, SlashArguments, SlashCommand, SlashCommandBy, SlashLine, SlashNeeds, Source, TextAbilities, ThreadInfo, TitleBy,
     };
 
     /// Whether Lumi's agent is there on this Mac.
@@ -583,6 +583,23 @@ pub mod agent {
     /// agent's `compact-thinking`. Returns the call's id. Only from a press.
     pub fn compact(thread: &str, options: &CompactOptions) -> Result<u64, String> {
         wit::compact(thread, options)
+    }
+
+    /// The slash commands agent `agent` answers to — Lumi's `/clear`,
+    /// `/compact`, `/retry`, `/title` and `/think` first, then its own
+    /// `[[agent.slash-command]]`s — for your `/` menu.
+    pub fn slash_commands(agent: &str) -> Result<Vec<SlashCommand>, String> {
+        wit::slash_commands(agent)
+    }
+
+    /// The person's line, which may be a slash command: call it on every
+    /// Enter in place of [`start`], with `ask.question` the line as typed.
+    /// A line that names no command is asked as `start` asks it; a prompt
+    /// command is asked with its template; one of Lumi's runs on
+    /// `ask.thread`; one of your handled commands comes back as
+    /// [`Sent::Yours`] for you to carry out. Only from a press.
+    pub fn send(ask: &Ask) -> Result<Sent, Failure> {
+        wit::send(ask)
     }
 
     /// Your threads, newest first; `None` for every subject.
@@ -1628,8 +1645,10 @@ pub use lumi::ext::ui::Size;
 /// Send `message` (JSON text) to one of your own windows or pages — a
 /// window by its manifest `name`, or `":about"`, `":settings"`,
 /// `":page:<name>"`. The page hears it as a `lumi:message` event whose
-/// `detail` is the JSON. `Ok(false)`: not on screen, nothing sent — but a
-/// panel put away that keeps its page (`keep-alive`, Lumi 1.45) is told. Works
+/// `detail` is the JSON. `Ok(false)`: not on screen, or (Lumi 1.99) a window
+/// just opened whose page is still loading — nothing sent; keep it where the
+/// page's first `call` reads it. A panel put away that keeps its page
+/// (`keep-alive`, Lumi 1.45) is told. Works
 /// from [`Guest::on_event`], and reaches a page even while Lumi is behind
 /// another app — the way to keep an open page current.
 pub fn post(window: &str, message: &str) -> Result<bool, String> {

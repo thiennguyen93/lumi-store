@@ -1970,8 +1970,9 @@ interface ui {
     /// or embedded pages: a declared window by its manifest `name`, or a
     /// page by `:about`, `:settings` or `:page:<name>`. It arrives as a
     /// `lumi:message` event on the page's `window`, its `detail` the parsed
-    /// JSON. `false` when that window or page is not on screen, so nothing
-    /// was sent — a post is not queued. A panel put away that keeps its page
+    /// JSON. `false` when that window or page is not on screen, or (from
+    /// Lumi 1.99) its page has not finished loading, so nothing was sent —
+    /// a post is not queued. A panel put away that keeps its page
     /// (`keep-alive`, Lumi 1.45) is told all the same: that page is the one
     /// shown again. The one way to reach a page while
     /// Lumi is not in front, from `on-event` included: data flows to the
@@ -4048,6 +4049,87 @@ interface agent {
         thinking: option<string>,
     }
 
+    /// Who carries a slash command out.
+    enum slash-command-by {
+        /// One of Lumi's own: `/clear`, `/compact`, `/retry`, `/title`,
+        /// `/think`.
+        lumi,
+        /// One of your agent's `[[agent.slash-command]]`s with a `prompt`:
+        /// Lumi asks its template.
+        prompt,
+        /// One of yours with `handled = true`: `send` gives it back to you.
+        extension,
+    }
+
+    /// What may follow a slash command's name.
+    enum slash-arguments {
+        /// Nothing: words after it are refused. A menu sends it the moment
+        /// it is chosen.
+        none,
+        /// Words may follow it.
+        optional,
+        /// It is refused without words after it. A menu waits for them.
+        required,
+    }
+
+    /// What a chat must hold before a slash command can run in it, so a
+    /// menu can grey it rather than send it to be refused.
+    enum slash-needs {
+        /// Runs anywhere, a new chat included.
+        nothing,
+        /// A chat: `ask.thread`.
+        chat,
+        /// A chat with a question in it.
+        question,
+        /// A chat with an answer in it.
+        answer,
+    }
+
+    /// One slash command, for your `/` menu.
+    record slash-command {
+        /// As it is typed, without the slash: `compact`, or `lumi:compact`
+        /// for one of Lumi's whose name one of yours took.
+        name: string,
+        /// One line. Lumi's own are in English; your menu may show words of
+        /// its own for them, since `send` reads the name alone.
+        description: string,
+        /// What may follow the name: `[focus]`.
+        argument-hint: option<string>,
+        arguments: slash-arguments,
+        /// The only words that may follow it, for a menu to offer: `off`,
+        /// `low`, `medium` and `high` for `/think`. Empty for any.
+        choices: list<string>,
+        needs: slash-needs,
+        by: slash-command-by,
+    }
+
+    /// One of your handled commands, as it was typed.
+    record slash-line {
+        name: string,
+        /// The rest of the line, trimmed; empty for none.
+        arguments: string,
+    }
+
+    /// What sending a line did.
+    variant sent {
+        /// An ordinary question, a prompt command or `/retry`: the ask's
+        /// id, told as `start`'s are.
+        asked(u64),
+        /// `/compact`: the compaction's id, told as `compact`'s are.
+        compacting(u64),
+        /// `/clear`: your next ask starts a new thread (`thread: none`).
+        /// This one is kept.
+        cleared,
+        /// `/title`: the thread's title now. Without words Lumi names it
+        /// again from its chat, told as a `titled` event when it has.
+        titled(string),
+        /// `/think`: the level the thread's next asks think at, held to the
+        /// person's most.
+        thinking(thinking),
+        /// One of your own handled commands, for you to carry out.
+        yours(slash-line),
+    }
+
     /// Whether Lumi's agent is there on this Mac. Every other function is
     /// refused while it is not.
     available: func() -> bool;
@@ -4071,6 +4153,16 @@ interface agent {
     /// which `cancel` stops. Refused while the thread is answering or has no
     /// answer yet. Only from a press.
     compact: func(thread: string, options: compact-options) -> result<u64, string>;
+    /// The slash commands `agent` answers to, Lumi's first, then its own in
+    /// your manifest's order: what your `/` menu lists.
+    slash-commands: func(agent: string) -> result<list<slash-command>, string>;
+    /// The person's line, which may be a slash command: what a composer
+    /// calls on every Enter, in place of `start`. `ask.question` is the
+    /// line as typed. A line whose first word is `/` and a name the agent
+    /// answers to runs that command on `ask.thread`; any other line, a
+    /// `/word` that names none included, is asked as `start` asks it. Only
+    /// from a press.
+    send: func(ask: ask) -> result<sent, failure>;
 
     /// Your threads, newest first; none for every subject. Expired threads
     /// are gone.
