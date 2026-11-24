@@ -332,7 +332,8 @@ CATEGORIES = ["Productivity", "Writing", "Windows", "Design", "Developer", "Util
 # key — so the ceilings are the store's: few enough to download on a
 # page open, small enough that Lumi can hand each one to its webview
 # inline (it serves them as data: URIs; the CSP takes no remote images).
-MAX_SCREENSHOTS = 4
+# Lumi's page shows any number, in a strip that scrolls and a lightbox.
+MAX_SCREENSHOTS = 8
 MAX_SCREENSHOT = 1024 * 1024
 SCREENSHOT_KINDS = {b"\x89PNG\r\n\x1a\n": "png", b"\xff\xd8\xff": "jpg"}
 # `[extension] video`: one demo video for the extension's page, as a link
