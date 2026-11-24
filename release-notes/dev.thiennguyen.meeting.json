@@ -1,4 +1,34 @@
 {
+  "0.18.0": {
+    "notesSha256": "c631d3f438c99a178e759e34d54221df2bd84b09cbdde33b573a4f1ea2e26398",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Citations play each passage, file previews in their own window",
+          "items": [
+            "Citations now play and show each passage separately when lines are far apart",
+            "File previews open in their own movable window like Quick Look",
+            "Answers note when they searched libraries by words instead of meaning",
+            "Tall menus now scroll instead of extending past the window edge",
+            "Libraries shows loading state and error messages with retry option",
+            "Record button in Get Started opens directly to voice recording settings"
+          ]
+        },
+        "vi": {
+          "headline": "Trích dẫn phát từng đoạn, xem trước tệp trong cửa sổ riêng",
+          "items": [
+            "Trích dẫn giờ phát và hiện từng đoạn riêng khi các dòng cách xa nhau",
+            "Xem trước tệp mở trong cửa sổ riêng di chuyển được như Quick Look",
+            "Câu trả lời ghi chú khi tìm trong thư viện theo từ thay vì theo nghĩa",
+            "Menu cao giờ cuộn thay vì vượt ra ngoài cửa sổ",
+            "Thư viện hiện trạng thái đang tải và thông báo lỗi với nút thử lại",
+            "Nút ghi âm trong Bắt Đầu mở thẳng cài đặt ghi âm giọng nói"
+          ]
+        }
+      }
+    }
+  },
   "0.17.0": {
     "notesSha256": "355a38813ae5b1aadf99838a8d77d25d9d89732e457345d198ec2544d620388f",
     "summary": {
@@ -520,36 +550,6 @@
             "Bảng Phụ đề Trực tiếp chỉ hiện phụ đề, thời gian và biểu tượng cho đến khi bạn chỉ vào để hiện điều khiển",
             "Giờ bạn có thể sao chép một dòng kèm người nói từ nút di chuột hoặc trình đơn",
             "Chế độ toàn màn hình chuyển nút thanh bên và bộ ghi vào góc"
-          ]
-        }
-      }
-    }
-  },
-  "0.1.0": {
-    "notesSha256": "4838684b0c607e720032f9298b627afb6d51b04b65f6c6bdbcca5b885e13d4cb",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Live captions for your meetings, with speaker identification",
-          "items": [
-            "Captions float above your call, showing who said what as they speak",
-            "Set a second language and each line appears in the language it was spoken in",
-            "Click any caption to translate it, or turn on live translation for everything",
-            "Every meeting is saved as a transcript you can read, copy or export",
-            "Name speakers to save voice profiles, so they are identified in future meetings",
-            "Record your own voice so your lines show as Me in every call"
-          ]
-        },
-        "vi": {
-          "headline": "Phụ đề trực tiếp cho cuộc họp với nhận dạng người nói",
-          "items": [
-            "Phụ đề hiển thị phía trên cuộc gọi, cho biết ai nói gì khi họ đang nói",
-            "Đặt ngôn ngữ thứ hai và mỗi dòng xuất hiện bằng ngôn ngữ được nói",
-            "Nhấp vào phụ đề bất kỳ để dịch hoặc bật dịch trực tiếp cho tất cả",
-            "Mỗi cuộc họp được lưu thành bản ghi âm có thể đọc, sao chép hoặc xuất",
-            "Đặt tên người nói để lưu hồ sơ giọng nói, họ sẽ được nhận dạng trong các cuộc họp sau",
-            "Ghi âm giọng nói của bạn để dòng của bạn hiển thị là Tôi trong mọi cuộc gọi"
           ]
         }
       }
