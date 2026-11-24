@@ -89,3 +89,42 @@ class Agents(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+SLASH_HEAD = '[extension]\nid = "dev.you.thing"\ncapabilities = ["ai"]\nmin-lumi-version = "1.100.0"\n'
+
+
+def command(body: str) -> str:
+    return f"[[agent.slash-command]]\n{body}\n"
+
+
+class SlashCommands(unittest.TestCase):
+    """`[[agent.slash-command]]`, as Lumi 1.100.0's `slash_commands_of` reads it."""
+
+    def test_a_prompt_and_a_handled_command_are_taken(self):
+        publish.check_agents(
+            "dev.you.thing",
+            manifest(command('name = "email"\ndescription = "Draft a follow-up email"\nargument-hint = "[to whom]"\nprompt = "commands/email.md"') + command('name = "missed"\ndescription = "What did I miss?"\nhandled = true'), SLASH_HEAD),
+        )
+        publish.check_agents("dev.you.thing", manifest(command('name = "ask"\ndescription = "D"\nargument-hint = "a question"\narguments = "required"\nhandled = true'), SLASH_HEAD))
+
+    def test_the_floor_is_lumi_1_100_0(self):
+        self.assertIn("set min-lumi-version to 1.100.0", refusal(command('name = "missed"\ndescription = "D"\nhandled = true')))
+
+    def test_each_rule_is_refused_in_lumis_sentence(self):
+        bad = lambda body: refusal(command(body), SLASH_HEAD)  # noqa: E731
+        self.assertIn("is one of Lumi's own", bad('name = "compact"\ndescription = "D"\nhandled = true'))
+        self.assertIn("begins with a lowercase letter", bad('name = "Email"\ndescription = "D"\nhandled = true'))
+        self.assertIn("begins with a lowercase letter", bad('name = "lumi:x"\ndescription = "D"\nhandled = true'))
+        self.assertIn("has no description", bad('name = "email"\nhandled = true'))
+        self.assertIn("needs a prompt file", bad('name = "email"\ndescription = "D"'))
+        self.assertIn("one or the other", bad('name = "email"\ndescription = "D"\nprompt = "e.md"\nhandled = true'))
+        self.assertIn("not a plain relative path into ui/", bad('name = "email"\ndescription = "D"\nprompt = "../e.md"'))
+        self.assertIn("one line of at most 100 characters", bad(f'name = "email"\ndescription = "{"x" * 101}"\nhandled = true'))
+        self.assertIn("argument-hint is one line of at most 40", bad(f'name = "email"\ndescription = "D"\nargument-hint = "{"x" * 41}"\nhandled = true'))
+        self.assertIn("needs an argument-hint", bad('name = "ask"\ndescription = "D"\narguments = "required"\nhandled = true'))
+        self.assertIn("has no argument-hint", bad('name = "ask"\ndescription = "D"\nargument-hint = "[x]"\narguments = "none"\nhandled = true'))
+        self.assertIn("none, optional or required", bad('name = "ask"\ndescription = "D"\narguments = "maybe"\nhandled = true'))
+        self.assertIn("two slash commands named /email", refusal(command('name = "email"\ndescription = "D"\nhandled = true') * 2, SLASH_HEAD))
+        many = "".join(command(f'name = "c{k}"\ndescription = "D"\nhandled = true') for k in range(33))
+        self.assertIn("at most 32", refusal(many, SLASH_HEAD))

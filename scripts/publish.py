@@ -1562,6 +1562,19 @@ LIBRARY_RE = re.compile(r"^[a-z0-9_-]+$")
 # it does not load on an older one.
 AGENT_SINCE = (1, 98, 0)
 
+# `[[agent.slash-command]]`, Lumi 1.100.0's (`manifest::slash_commands_of`,
+# `agent::slash`): its limits by the same names, Lumi's own command names,
+# and the floor — an older Lumi passes over the key, and its agent answers
+# to none of them.
+SLASH_SINCE = (1, 100, 0)
+MAX_SLASH_COMMANDS = 32
+MAX_SLASH_NAME = 32
+MAX_SLASH_DESCRIPTION = 100
+MAX_SLASH_HINT = 40
+BUILT_IN_SLASH = ("clear", "compact", "retry", "title", "think")
+SLASH_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+SLASH_TAKES = ("none", "optional", "required")
+
 
 def check_agents(entry_id: str, manifest: dict):
     """`[[agent]]`, held to Lumi's `manifest::agents_of` in its order and with
@@ -1640,6 +1653,61 @@ def check_agents(entry_id: str, manifest: dict):
                 kept.append(library)
             if len(kept) > MAX_AGENT_LIBRARIES:
                 fail(entry_id, f"the agent {name} reads {len(kept)} libraries; at most {MAX_AGENT_LIBRARIES}")
+        check_slash_commands(entry_id, ext, name, agent)
+
+
+def check_slash_commands(entry_id: str, ext: dict, agent: str, raw: dict):
+    """An agent's `[[agent.slash-command]]`s, held to Lumi's
+    `manifest::slash_commands_of` in its order and with its sentences: at
+    most `MAX_SLASH_COMMANDS`, a name of its own that is none of Lumi's, a
+    one-line description, an argument hint of one line, `arguments` agreeing
+    with the hint, and a prompt file or `handled = true`, never both nor
+    neither. Plus the floor: from Lumi 1.100.0."""
+    commands = raw.get("slash-command", raw.get("slash_command"))
+    if commands is None:
+        return
+    if lumi_floor(ext) < SLASH_SINCE:
+        fail(entry_id, f"the agent {agent}'s slash commands are read from Lumi 1.100.0 — an older Lumi passes over them; set min-lumi-version to 1.100.0 or later")
+    if len(commands) > MAX_SLASH_COMMANDS:
+        fail(entry_id, f"the agent {agent} declares {len(commands)} slash commands; at most {MAX_SLASH_COMMANDS}")
+    kept = []
+    for command in commands:
+        if not isinstance(command, dict):
+            continue
+        name = rust_trim(str(command.get("name", "")))
+        if not SLASH_NAME_RE.match(name) or len(name) > MAX_SLASH_NAME:
+            fail(
+                entry_id,
+                f"the agent {agent} has a slash command named {json.dumps(name)}; a name begins with a lowercase letter and holds only lowercase letters, digits and '-', up to {MAX_SLASH_NAME} of them",
+            )
+        if name in BUILT_IN_SLASH:
+            fail(entry_id, f"the agent {agent}'s slash command /{name} is one of Lumi's own; name it something else")
+        if name in kept:
+            fail(entry_id, f"the agent {agent} has two slash commands named /{name}")
+        kept.append(name)
+        description = rust_trim(str(command.get("description", "")))
+        if not description:
+            fail(entry_id, f"the slash command /{name} of the agent {agent} has no description — say in one line what it does, for the / menu")
+        if len(description) > MAX_SLASH_DESCRIPTION or any(ch < " " for ch in description):
+            fail(entry_id, f"the slash command /{name}'s description is one line of at most {MAX_SLASH_DESCRIPTION} characters")
+        hint = rust_trim(str(command.get("argument-hint", command.get("argument_hint", ""))))
+        if len(hint) > MAX_SLASH_HINT or any(ch < " " for ch in hint):
+            fail(entry_id, f"the slash command /{name}'s argument-hint is one line of at most {MAX_SLASH_HINT} characters")
+        takes = rust_trim(str(command.get("arguments", "")))
+        if takes and takes not in SLASH_TAKES:
+            fail(entry_id, f"the slash command /{name}'s arguments are {json.dumps(takes)}; they are none, optional or required")
+        if takes == "required" and not hint:
+            fail(entry_id, f"the slash command /{name} requires arguments, so it needs an argument-hint saying what they are")
+        if takes == "none" and hint:
+            fail(entry_id, f"the slash command /{name} takes no arguments, so it has no argument-hint")
+        prompt = rust_trim(str(command.get("prompt", "")))
+        handled = command.get("handled", False) is True
+        if prompt and handled:
+            fail(entry_id, f"the slash command /{name} has a prompt and handled = true; it is one or the other")
+        if prompt and not is_valid_ui_path(prompt):
+            fail(entry_id, f"the slash command /{name}'s prompt is at {json.dumps(prompt)}, which is not a plain relative path into ui/")
+        if not prompt and not handled:
+            fail(entry_id, f"the slash command /{name} needs a prompt file, or handled = true for one your extension carries out")
 
 
 def lumi_floor(ext: dict) -> tuple:
