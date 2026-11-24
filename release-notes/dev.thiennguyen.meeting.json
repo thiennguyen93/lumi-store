@@ -1,4 +1,32 @@
 {
+  "0.17.0": {
+    "notesSha256": "355a38813ae5b1aadf99838a8d77d25d9d89732e457345d198ec2544d620388f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Ask questions about your meetings and get answers with citations",
+          "items": [
+            "Ask questions during or after a meeting and see which lines the answer came from",
+            "Drop files into a chat and get answers that cite specific passages",
+            "Create libraries of files that any chat can search and reference",
+            "Choose custom colors for captions and translations that adapt to light or dark backgrounds",
+            "Adjust caption appearance with simpler controls that update as you choose"
+          ]
+        },
+        "vi": {
+          "headline": "Đặt câu hỏi về cuộc họp và nhận câu trả lời có trích dẫn",
+          "items": [
+            "Hỏi trong hoặc sau cuộc họp và xem câu trả lời đến từ dòng nào",
+            "Thả tệp vào đoạn chat và nhận câu trả lời trích dẫn đoạn cụ thể",
+            "Tạo thư viện tệp mà bất kỳ đoạn chat nào cũng có thể tìm và tham khảo",
+            "Chọn màu tùy chỉnh cho phụ đề và bản dịch thích ứng với nền sáng hoặc tối",
+            "Điều chỉnh giao diện phụ đề bằng các nút điều khiển đơn giản hơn, cập nhật ngay khi chọn"
+          ]
+        }
+      }
+    }
+  },
   "0.16.0": {
     "notesSha256": "c7d65f3268d402c5a30d8094e139a6b9157c87c073e02da2441d7a4e12fda7b8",
     "summary": {
