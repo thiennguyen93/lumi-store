@@ -1542,28 +1542,103 @@ def check_manifest(entry_id: str, manifest: dict):
 
 COMPACT_THINKING = ("off", "thread", "low", "medium", "high")
 
+# `manifest.rs`'s agent limits, by the same names.
+MAX_AGENTS = 4
+MAX_AGENT_NAME = 32
+MAX_AGENT_LABEL = 40
+MAX_AGENT_DESCRIPTION = 200
+MAX_AGENT_LIBRARIES = 8
+MOST_AGENT_TOKENS = 32_768
+AGENT_THINKING = ("off", "low", "medium", "high")
+AGENT_READING = ("fit", "whole")
+AGENT_GROUNDING = ("sources", "sources-and-knowledge")
+# Names Lumi keeps for libraries it has not built: an agent naming one is
+# refused, as `RESERVED_LIBRARIES` is.
+RESERVED_LIBRARIES = ("mine",)
+AGENT_NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+LIBRARY_RE = re.compile(r"^[a-z0-9_-]+$")
+# The first Lumi whose world has the agent interface: a component importing
+# it does not load on an older one.
+AGENT_SINCE = (1, 98, 0)
+
 
 def check_agents(entry_id: str, manifest: dict):
-    """`[[agent]] compact-thinking`, held to Lumi's `manifest::agents_of` with
-    its sentence: how hard summarizing a long chat thinks, one of
-    `COMPACT_THINKING` (`agent::compact::Thinking::parse`), said one way. A
-    Lumi before it passes over the key and summarizes thinking off, which is
-    also its default, so no floor is asked."""
-    for agent in manifest.get("agent", []):
+    """`[[agent]]`, held to Lumi's `manifest::agents_of` in its order and with
+    its sentences — the `ai` capability, at most `MAX_AGENTS`, a name of
+    letters, digits, '-' and '_', no name twice, no `tools`, a label, a
+    one-line description, the instructions a plain path into ui/, the
+    thinking, max-tokens, reading and grounding words, the libraries' names
+    — and `compact-thinking`, said one way. Plus the floor Lumi cannot ask
+    of itself: a component that imports the agent loads from Lumi 1.98.0."""
+    agents = manifest.get("agent", [])
+    if not agents:
+        return
+    ext = manifest.get("extension") or {}
+    if "ai" not in ext.get("capabilities", []):
+        fail(entry_id, "an [[agent]] answers with the AI the person set up in Lumi, so it needs the ai capability")
+    if len(agents) > MAX_AGENTS:
+        fail(entry_id, f"the manifest declares {len(agents)} agents; at most {MAX_AGENTS}")
+    if lumi_floor(ext) < AGENT_SINCE:
+        fail(entry_id, "an [[agent]] answers from Lumi 1.98.0, whose world has the agent interface — set min-lumi-version to 1.98.0 or later")
+    seen = []
+    for agent in agents:
         if not isinstance(agent, dict):
             continue
-        name = agent.get("name", "")
+        name = str(agent.get("name", ""))
+        if not name or len(name) > MAX_AGENT_NAME or not AGENT_NAME_RE.match(name):
+            fail(entry_id, f"the agent name may hold only letters, digits, '-' and '_', up to {MAX_AGENT_NAME} of them: {json.dumps(name)}")
+        if name in seen:
+            fail(entry_id, f"two agents are named {name}")
+        seen.append(name)
+        if "tools" in agent:
+            fail(entry_id, f"the agent {name} declares tools, which this version of Lumi does not run")
+        label = rust_trim(str(agent.get("label", "")))
+        if not label:
+            fail(entry_id, f'the agent {name} has no label — say what the person calls it, such as "Meeting Assistant"')
+        if len(label) > MAX_AGENT_LABEL or any(ch < " " for ch in label):
+            fail(entry_id, f"the agent {name}'s label is one line of at most {MAX_AGENT_LABEL} characters")
+        description = rust_trim(str(agent.get("description", "")))
+        if len(description) > MAX_AGENT_DESCRIPTION or any(ch < " " for ch in description):
+            fail(entry_id, f"the agent {name}'s description is one line of at most {MAX_AGENT_DESCRIPTION} characters")
+        instructions = rust_trim(str(agent.get("instructions", "")))
+        if instructions and not is_valid_ui_path(instructions):
+            fail(entry_id, f"the agent {name}'s instructions are at {json.dumps(instructions)}, which is not a plain relative path into ui/")
+        thinking = rust_trim(str(agent.get("thinking", "")))
+        if thinking and thinking not in AGENT_THINKING:
+            fail(entry_id, f"the agent {name} thinks {json.dumps(thinking)}; an agent's thinking is off, low, medium or high")
         spellings = [key for key in ("compact-thinking", "compact_thinking") if key in agent]
         if len(spellings) > 1:
             fail(entry_id, f"the agent {name} says compact-thinking twice, once as compact_thinking — keep compact-thinking")
-        if not spellings:
-            continue
-        word = agent[spellings[0]]
-        if not isinstance(word, str) or word.strip() not in COMPACT_THINKING + ("",):
-            fail(
-                entry_id,
-                f'the agent {name} compacts thinking "{word}"; compact-thinking is off, thread, low, medium or high',
-            )
+        if spellings:
+            word = agent[spellings[0]]
+            if not isinstance(word, str) or word.strip() not in COMPACT_THINKING + ("",):
+                fail(
+                    entry_id,
+                    f'the agent {name} compacts thinking "{word}"; compact-thinking is off, thread, low, medium or high',
+                )
+        tokens = agent.get("max-tokens", agent.get("max_tokens", 2_048))
+        if not isinstance(tokens, int) or isinstance(tokens, bool) or not 16 <= tokens <= MOST_AGENT_TOKENS:
+            fail(entry_id, f"the agent {name}'s max-tokens is {tokens}; it is 16 to {MOST_AGENT_TOKENS}")
+        reading = rust_trim(str(agent.get("reading", "")))
+        if reading and reading not in AGENT_READING:
+            fail(entry_id, f"the agent {name} reads {json.dumps(reading)}; an agent's reading is fit or whole")
+        grounding = rust_trim(str(agent.get("grounding", "")))
+        if grounding and grounding not in AGENT_GROUNDING:
+            fail(entry_id, f"the agent {name}'s grounding is {json.dumps(grounding)}; it is sources or sources-and-knowledge")
+        libraries = agent.get("libraries")
+        if libraries is not None:
+            kept = []
+            for library in libraries:
+                library = rust_trim(str(library))
+                if not library or len(library) > 64 or not LIBRARY_RE.match(library):
+                    fail(entry_id, f"the agent {name} reads a library named {json.dumps(library)}; a library's name holds only lowercase letters, digits, '-' and '_', up to 64 of them")
+                if library in RESERVED_LIBRARIES:
+                    fail(entry_id, f"the agent {name} reads the library {library}, which this version of Lumi does not have")
+                if library in kept:
+                    fail(entry_id, f"the agent {name} names the library {library} twice")
+                kept.append(library)
+            if len(kept) > MAX_AGENT_LIBRARIES:
+                fail(entry_id, f"the agent {name} reads {len(kept)} libraries; at most {MAX_AGENT_LIBRARIES}")
 
 
 def lumi_floor(ext: dict) -> tuple:
