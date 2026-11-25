@@ -136,7 +136,9 @@ after review.
    that tab, hides it or draws it with a page of your own; the same table
    does the same for About, Settings and Shortcuts.
 
-   The store publishes your newest 20 sections, named by their content.
+   The store publishes your newest 20 sections for Lumi's store page (as
+   many as fit in 32 KB), and every section for lumikeys.app's What's new,
+   each file named by its content.
    After a release merges, the store proposes a short summary of it in
    English and Vietnamese — a headline and up to six plain sentences, for
    Lumi's update list and lumikeys.app — as a PR adding

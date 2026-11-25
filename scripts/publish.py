@@ -363,8 +363,12 @@ MAX_DETAILS = 16 * 1024
 # per release, the newest on top and equal to the manifest's `version` —
 # so a bump without notes, or notes without a bump, fails the PR. The
 # author's words, for developers; store-only like STORE.md. The source
-# keeps the whole history; the store publishes the newest few, since Lumi
-# downloads them on a page open.
+# keeps the whole history and the store publishes it twice: the newest
+# few as `changelog`, since Lumi downloads them on a page open and every
+# shipped Lumi refuses one over 48 KB (`MAX_CHANGELOG` in its store.rs),
+# and every release as `history`, for lumikeys.app's What's new — which
+# showed Meeting Notes from 0.11.0 when its first was 0.1.0, because the
+# trimmed file was the only one published (2026-11-25).
 MAX_CHANGELOG_SOURCE = 256 * 1024
 MAX_CHANGE_NOTES = 4 * 1024
 MAX_CHANGES = 32 * 1024
@@ -3072,25 +3076,48 @@ def summaries_of(entry_id: str, releases: list) -> dict:
     return stored
 
 
-def changes_json(releases: list, summaries: dict) -> bytes:
-    """The published history: the newest releases that fit, each with the
-    hash of its notes and the store's summary when it was written for
-    exactly those notes — `null` otherwise, and readers show the notes.
-    Same bytes for the same input, so its content-hashed name only moves
-    when something in it does."""
+def release_rows(releases: list, summaries: dict) -> list:
+    """Each release with the hash of its notes and the store's summary
+    when it was written for exactly those notes — `null` otherwise, and
+    readers show the notes. One rule for `changes_json` and
+    `history_json`, so the two files never disagree about a release they
+    both hold."""
     out = []
-    for release in releases[:MAX_CHANGES_VERSIONS]:
+    for release in releases:
         sha = notes_sha256(release["notes"])
         stored = summaries.get(release["version"])
         summary = stored["summary"] if stored and stored["notesSha256"] == sha else None
         out.append({**release, "notesSha256": sha, "summary": summary})
-    def encode(items):
-        return (json.dumps(items, ensure_ascii=False, indent=1) + "\n").encode("utf-8")
+    return out
+
+
+def encode_rows(rows: list) -> bytes:
+    """Same bytes for the same rows, so a content-hashed name only moves
+    when something in them does."""
+    return (json.dumps(rows, ensure_ascii=False, indent=1) + "\n").encode("utf-8")
+
+
+def changes_json(releases: list, summaries: dict) -> bytes:
+    """The history Lumi reads: the newest releases that fit, at most
+    MAX_CHANGES_VERSIONS and MAX_CHANGES bytes. The ceiling is not ours to
+    raise — a shipped Lumi refuses a file over 48 KB and its store page
+    then shows no release notes at all — so the whole history goes out
+    beside it as `history_json`."""
+    out = release_rows(releases[:MAX_CHANGES_VERSIONS], summaries)
     # Oldest dropped first; the newest always stays (it is at most
     # MAX_CHANGE_NOTES plus a summary, well under the ceiling).
-    while len(out) > 1 and len(encode(out)) > MAX_CHANGES:
+    while len(out) > 1 and len(encode_rows(out)) > MAX_CHANGES:
         out.pop()
-    return encode(out)
+    return encode_rows(out)
+
+
+def history_json(releases: list, summaries: dict) -> bytes:
+    """Every release `CHANGELOG.md` holds, `changes_json`'s rows untrimmed,
+    for lumikeys.app's What's new, which lists a version a line and opens
+    one on a press. Bounded by the source (MAX_CHANGELOG_SOURCE, each
+    version's notes at most MAX_CHANGE_NOTES) and by the summaries, which
+    are short; nothing in Lumi reads it."""
+    return encode_rows(release_rows(releases, summaries))
 
 
 def check_ui(entry_id: str, manifest: dict, ui_dir: Path):
@@ -3248,6 +3275,7 @@ def main(check: bool = False, built: "Path | None" = None):
         details_url = published(entry_id, details, "md") if details is not None else ""
         icon_url = published(entry_id, icon.read_bytes(), "svg") if icon is not None else ""
         changelog_url = published(entry_id, changes_json(releases, summaries), "json")
+        history_url = published(entry_id, history_json(releases, summaries), "json")
         if check:
             newest = releases[0]
             summarized = summaries.get(newest["version"], {}).get("notesSha256") == notes_sha256(newest["notes"])
@@ -3311,8 +3339,15 @@ def main(check: bool = False, built: "Path | None" = None):
                 # summary}]`, newest first — the author's CHANGELOG.md
                 # sections, and the store's short en/vi summary of each
                 # (`release-notes/<id>.json`, or null while none matches
-                # the notes). Named by its content, like `details`.
+                # the notes). Named by its content, like `details`. The
+                # newest MAX_CHANGES_VERSIONS that fit in MAX_CHANGES bytes,
+                # since Lumi downloads it on a page open.
                 "changelog": changelog_url,
+                # The same rows for every release, untrimmed — lumikeys.app's
+                # What's new. Lumi ignores it (its store rows are not
+                # deny_unknown_fields), so a file of any length here never
+                # reaches the app's 48 KB refusal.
+                "history": history_url,
                 # `{number, url}` or null: the entry's thread in the repo's
                 # Extensions discussions (`discussions.py`). Lumi reads
                 # the hearts on it live from GitHub — the index says which

@@ -96,6 +96,21 @@ class ChangesJson(unittest.TestCase):
         self.assertEqual(out[0]["summary"], summary())
         self.assertIsNone(out[1]["summary"])
 
+    def test_the_history_holds_every_release_and_the_same_rows(self):
+        big = [{"version": f"1.{n}.0", "date": "", "notes": "x" * 3000} for n in range(30, 0, -1)]
+        fresh = {"notesSha256": publish.notes_sha256("x" * 3000), "summary": summary()}
+        summaries = {"1.30.0": fresh, "1.1.0": fresh}
+        trimmed = json.loads(publish.changes_json(big, summaries))
+        history = json.loads(publish.history_json(big, summaries))
+        self.assertLess(len(trimmed), 30)
+        self.assertEqual([r["version"] for r in history], [r["version"] for r in big])
+        self.assertEqual(history[: len(trimmed)], trimmed)
+        self.assertEqual(history[-1]["summary"], summary())
+        self.assertGreater(len(publish.history_json(big, summaries)), publish.MAX_CHANGES)
+
+    def test_the_history_is_the_same_bytes_for_the_same_input(self):
+        self.assertEqual(publish.history_json(self.releases, {}), publish.history_json(self.releases, {}))
+
     def test_vietnamese_stays_readable(self):
         vi = summary(headline="Ghim bảng điều khiển")
         data = publish.changes_json(self.releases[:1], {"1.30.0": {"notesSha256": publish.notes_sha256("- change 30"), "summary": vi}})
