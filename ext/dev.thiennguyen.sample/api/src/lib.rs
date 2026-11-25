@@ -3541,6 +3541,37 @@ pub mod microphone_use {
     }
 }
 
+/// Which apps are playing audio — every process playing to any output
+/// device, named by the app responsible for it, as [`microphone_use`] names
+/// the ones capturing. One app is one entry, and Lumi itself is never in it.
+/// What is played, how loud and to which device is not told. Needs the
+/// `audio-output-use` capability, macOS 14 and Lumi 1.102.0.
+pub mod audio_output_use {
+    use super::lumi::ext::audio_output_use as wit;
+    pub use super::microphone_use::AppUsing;
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name the set arrives
+    /// as.
+    pub const EVENT: &str = "audio-output-use";
+
+    /// Every app playing audio now, by name.
+    pub fn apps() -> Result<Vec<AppUsing>, String> {
+        Ok(wit::apps()?
+            .into_iter()
+            .map(|app| AppUsing { id: app.app, name: app.name, since: app.since })
+            .collect())
+    }
+
+    /// The whole set, when [`Guest::on_event`](crate::Guest::on_event) was
+    /// called with it.
+    pub fn changed(name: &str, payload: &str) -> Option<Vec<AppUsing>> {
+        if name != EVENT {
+            return None;
+        }
+        super::microphone_use::changed(super::microphone_use::EVENT, payload)
+    }
+}
+
 /// The Mac's sound devices, and holding one's input muted until you let go —
 /// for a system-wide microphone mute, say. Lumi puts each device back as it
 /// was once nobody holds it, and **you can never unmute a device you did not
@@ -4046,6 +4077,128 @@ pub mod offer {
         Some(Pressed {
             id: offer.get("id")?.as_u64()?,
             data: offer.get("data").and_then(serde_json::Value::as_str).map(str::to_string),
+        })
+    }
+
+    /// The [`Guest::on_event`](crate::Guest::on_event) name a kept press's
+    /// end arrives as. Hear it with `events = ["kept-press"]`, beside `offer`.
+    pub const KEPT_EVENT: &str = "kept-press";
+
+    /// The moment a kept press waits for: one app of `apps` — a bundle id,
+    /// or the name of a process with none — or a browser holding a
+    /// microphone while it shows one of `sites` (hosts; `*.` for any
+    /// subdomain), of which everything asked holds at once: `microphone`, it
+    /// holds a microphone; `audio_output`, it plays audio. At least one of
+    /// the two; `sites` only with `microphone`. Held `after` milliseconds, at
+    /// most 10000; an app it already holds counts from the press. At most 16
+    /// apps and 16 sites, at least one in all.
+    ///
+    /// Watching costs what it watches: `microphone-use`,
+    /// `audio-output-use`, and for `sites` `microphone-sites` and Lumi's
+    /// Accessibility grant.
+    #[derive(Debug, Clone, PartialEq, Eq, Default)]
+    pub struct Moment {
+        pub apps: Vec<String>,
+        pub sites: Vec<String>,
+        pub microphone: bool,
+        pub audio_output: bool,
+        pub after: u32,
+    }
+
+    /// A press to keep until its moment.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Kept {
+        /// One of your `[[command]]`s, by name: what runs, as the press,
+        /// when the moment comes.
+        pub command: String,
+        /// At most 256 bytes, handed back to the command as it was.
+        pub data: Option<String>,
+        /// What it waits for.
+        pub moment: Moment,
+        /// Until when it is kept, in milliseconds since the Unix epoch;
+        /// later than now and at most 4 hours ahead.
+        pub until: u64,
+        /// What Lumi's menu says it waits for, in your words: one line, at
+        /// most 60 characters. Lumi writes none of them.
+        pub text: String,
+    }
+
+    /// Keep this run's press until `kept.moment`, then run `kept.command` as
+    /// it, once — or let it go at `kept.until`. Only from a press (a command
+    /// or one of your windows); replaces yours that is kept. Answers its
+    /// id. While it waits Lumi rings its menu bar icon and lists it in its
+    /// menu, as your name, `kept.text` and the time it lasts until, with
+    /// Cancel. Needs Lumi 1.102.0.
+    ///
+    /// ```ignore
+    /// // Start listening when Keynote takes the microphone, not before.
+    /// let id = lumi::offer::keep(&lumi::offer::Kept {
+    ///     command: "coach".into(),
+    ///     data: None,
+    ///     moment: lumi::offer::Moment {
+    ///         apps: vec!["com.apple.Keynote".into()],
+    ///         microphone: true,
+    ///         after: 2_000,
+    ///         ..Default::default()
+    ///     },
+    ///     until: rehearsal_end,
+    ///     text: "Coach when Keynote rehearses".into(),
+    /// })?;
+    /// ```
+    pub fn keep(kept: &Kept) -> Result<u64, String> {
+        wit::keep(&wit::Kept {
+            command: kept.command.clone(),
+            data: kept.data.clone(),
+            moment: wit::Moment {
+                apps: kept.moment.apps.clone(),
+                sites: kept.moment.sites.clone(),
+                microphone: kept.moment.microphone,
+                audio_output: kept.moment.audio_output,
+                after: kept.moment.after,
+            },
+            until: kept.until,
+            text: kept.text.clone(),
+        })
+    }
+
+    /// Let kept press `id` go unrun; true when it was still kept.
+    pub fn let_go(id: u64) -> Result<bool, String> {
+        wit::let_go(id)
+    }
+
+    /// The kept press a command's run is, read from the run's `params` —
+    /// `None` for a run that came from anywhere else. Its id is
+    /// [`keep`]'s answer.
+    pub fn kept(params: &str) -> Option<Pressed> {
+        let value: serde_json::Value = serde_json::from_str(params).ok()?;
+        let kept = value.get("kept")?;
+        Some(Pressed {
+            id: kept.get("id")?.as_u64()?,
+            data: kept.get("data").and_then(serde_json::Value::as_str).map(str::to_string),
+        })
+    }
+
+    /// How a kept press ended, as `kept-press` tells it.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct KeptEnded {
+        /// What [`keep`] answered.
+        pub id: u64,
+        /// True when it ran; false when its time was over, it was let go
+        /// (by you, or by the person's Cancel) or replaced.
+        pub ran: bool,
+        pub at: u64,
+    }
+
+    /// The end `on_event(name, payload)` tells, when it is `kept-press`.
+    pub fn kept_ended(name: &str, payload: &str) -> Option<KeptEnded> {
+        if name != KEPT_EVENT {
+            return None;
+        }
+        let value: serde_json::Value = serde_json::from_str(payload).ok()?;
+        Some(KeptEnded {
+            id: value.get("id")?.as_u64()?,
+            ran: value.get("ran")?.as_bool()?,
+            at: value.get("at")?.as_u64()?,
         })
     }
 }

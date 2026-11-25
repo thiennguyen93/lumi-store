@@ -3071,6 +3071,23 @@ interface microphone-use {
     sites: func(app: string) -> result<list<string>, string>;
 }
 
+/// Which apps are playing audio now — the output side of `microphone-use`:
+/// the same fact Core Audio gives, each named by the app responsible for it
+/// (a browser's tabs as the browser), Lumi never among them, never what is
+/// played. Hear `audio-output-use` (`events = ["audio-output-use"]`) to be
+/// told the whole set whenever it changes, and once as it stands when you
+/// start hearing: `{"v":1, "apps":[{"app","name","since"}], "at"}`.
+///
+/// Needs the `audio-output-use` capability, and macOS 14 (refused below).
+/// Every call costs budget. Added to 0.3 in Lumi 1.102.0 without a new
+/// world version.
+interface audio-output-use {
+    use microphone-use.{app-using};
+
+    /// Every app playing audio now, by name.
+    apps: func() -> result<list<app-using>, string>;
+}
+
 /// An offer: one line of your words and one button, drawn by Lumi at the top
 /// right of the display — the press runs one of your `[[command]]`s as the
 /// person's press, so that run may open your windows. The one way a run
@@ -3091,6 +3108,22 @@ interface microphone-use {
 /// Permissions sheet ("May ask you from the background"); `show` is then
 /// refused, and `allowed` says so. Every call costs budget. Added to 0.3 in
 /// Lumi 1.65.0 without a new world version.
+///
+/// **A press kept for a moment** (`keep`, Lumi 1.102.0): an offer the person
+/// has already accepted. A press — a command, or one of your windows — asks
+/// Lumi to keep it until a moment comes, then Lumi runs one of your commands
+/// as that press, once. The moment is a fact about another app: it holds a
+/// microphone, it plays audio, or both, or a browser holding a microphone
+/// shows a host you name. The run carries `{"kept": {"id", "data"}}` in its
+/// params beside the command's defaults, and may do what a press may. While
+/// it waits, Lumi's menu bar icon carries a ring and its menu a row with your
+/// `text` — "‹your name› — ‹text› · until 14:30 — Cancel" — so the person
+/// always sees, and can take back, what will run as theirs. One kept press
+/// per extension; a new one replaces yours. Hear `kept-press`
+/// (`events = ["kept-press"]`, needs `offer`): `{"v":1, "id", "ran", "at"}`,
+/// `ran` true when it ran, false when it ended unrun — its time over, let
+/// go, cancelled from the menu, replaced, or your extension switched off —
+/// told once.
 interface offer {
     record offer {
         /// One line, at most 120 characters: what you are offering.
@@ -3114,6 +3147,47 @@ interface offer {
     /// Whether the person lets you offer from the background — the switch
     /// on your Permissions sheet.
     allowed: func() -> result<bool, string>;
+
+    /// A fact about another app that a kept press waits for: one app of
+    /// `apps` — a bundle id, or the name of a process with none — or a
+    /// browser holding a microphone while it shows one of `sites` (hosts;
+    /// `*.` for any subdomain), of which everything asked holds at once:
+    /// `microphone`, it holds a microphone; `audio-output`, it plays audio.
+    /// At least one of the two; `sites` only with `microphone`. Held `after`
+    /// milliseconds, at most 10000, so a moment's flicker does not count;
+    /// an app it already holds counts from the press. Watching costs what
+    /// it watches: `microphone-use`, `audio-output-use`, and for `sites`
+    /// `microphone-sites` and Lumi's Accessibility grant. At most 16 apps
+    /// and 16 sites, at least one in all.
+    record moment {
+        apps: list<string>,
+        sites: list<string>,
+        microphone: bool,
+        audio-output: bool,
+        after: u32,
+    }
+
+    record kept {
+        /// One of your `[[command]]`s, by name: what runs, as the press,
+        /// when the moment comes.
+        command: string,
+        /// At most 256 bytes, handed back to the command as it was.
+        data: option<string>,
+        moment: moment,
+        /// Until when it is kept, in milliseconds since the Unix epoch;
+        /// later than now and at most 4 hours ahead.
+        until: u64,
+        /// What Lumi's menu says it waits for, in your words: one line, at
+        /// most 60 characters. Lumi writes none of them.
+        text: string,
+    }
+
+    /// Keep this press until `kept.moment`, then run `kept.command` as it,
+    /// once — or let it go at `kept.until`. Only from a press. Replaces
+    /// yours that is kept. Answers its id.
+    keep: func(kept: kept) -> result<u64, string>;
+    /// Let kept press `id` go unrun; true when it was still kept.
+    let-go: func(id: u64) -> result<bool, string>;
 }
 
 /// Sounds of your own, played by Lumi from your component: a cue that
@@ -4354,6 +4428,7 @@ world extension {
     import schedules;
     import time-zone;
     import microphone-use;
+    import audio-output-use;
     import offer;
     import sound;
     import text-input;
