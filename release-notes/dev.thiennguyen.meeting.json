@@ -1,4 +1,24 @@
 {
+  "0.19.1": {
+    "notesSha256": "725364cd2ca8f048daca87a00adb92eab84822359b7bf3a301e5fa0c6870b281",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "More accurate time estimate for Translate All",
+          "items": [
+            "Translate All now shows a more accurate time estimate that reflects the full translation process"
+          ]
+        },
+        "vi": {
+          "headline": "Ước tính thời gian chính xác hơn cho Dịch Tất Cả",
+          "items": [
+            "Dịch Tất Cả giờ hiển thị ước tính thời gian chính xác hơn phản ánh đầy đủ quá trình dịch"
+          ]
+        }
+      }
+    }
+  },
   "0.19.0": {
     "notesSha256": "276980b8db216b9c1a2009fca7289141cb8c65f6c51cea8ea658bc0d84c80c73",
     "summary": {
@@ -524,32 +544,6 @@
             "Tên người nói ở trên cùng giữ nguyên trong khi lượt nói của họ tiếp tục",
             "Thông báo nổi phía trên phụ đề thay vì làm bảng cao hơn",
             "Dòng mới nhất vẫn hiện và bảng ở đúng chỗ bạn đặt"
-          ]
-        }
-      }
-    }
-  },
-  "0.3.0": {
-    "notesSha256": "6d7ddd8c7ea756c6a433f02a716eacc0d8bd889962de6812f8e714f9cfcd40a6",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Meeting Notes can now be opened as a standalone application",
-          "items": [
-            "Meeting Notes can be opened from Spotlight, the Dock, or Launchpad",
-            "Opening Meeting Notes as an application shows its window ready to start a meeting",
-            "Opening the application while Meeting Notes is off turns it on automatically",
-            "Requires Lumi 1.89.0"
-          ]
-        },
-        "vi": {
-          "headline": "Meeting Notes giờ có thể mở như một ứng dụng độc lập",
-          "items": [
-            "Meeting Notes có thể mở từ Spotlight, Dock hoặc Launchpad",
-            "Mở Meeting Notes dưới dạng ứng dụng sẽ hiển thị cửa sổ sẵn sàng bắt đầu cuộc họp",
-            "Mở ứng dụng khi Meeting Notes đang tắt sẽ tự động bật nó lên",
-            "Yêu cầu Lumi 1.89.0"
           ]
         }
       }
