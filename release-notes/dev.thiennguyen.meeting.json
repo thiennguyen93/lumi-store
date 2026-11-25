@@ -1,4 +1,34 @@
 {
+  "0.22.0": {
+    "notesSha256": "94d123e932a7575ed99e09e2c491d126b629f764eb573513f2c6414077fd09e7",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Up Next on the Start page, and Join and Take Notes waits for you",
+          "items": [
+            "The Start page shows your upcoming meetings from the calendar",
+            "Join and Take Notes waits until the call is using your microphone before starting",
+            "The card after a call ends counts down before saving, with Keep Recording and Save Now",
+            "Calendar settings moved to their own pane after General",
+            "Pressing an open menu button now closes it instead of reopening",
+            "Ended meeting notices wait until the call is quiet before appearing"
+          ]
+        },
+        "vi": {
+          "headline": "Danh sách cuộc họp sắp tới và tham gia cuộc gọi thông minh hơn",
+          "items": [
+            "Trang Bắt đầu hiển thị các cuộc họp sắp tới từ lịch của bạn",
+            "Tham gia và Ghi chú đợi đến khi cuộc gọi dùng micrô mới bắt đầu ghi",
+            "Thẻ sau cuộc gọi đếm ngược trước khi lưu, với nút Tiếp tục ghi và Lưu ngay",
+            "Cài đặt Lịch được chuyển sang mục riêng sau mục Chung",
+            "Nhấn nút menu đang mở giờ sẽ đóng menu thay vì mở lại",
+            "Thông báo cuộc họp kết thúc đợi đến khi cuộc gọi im lặng mới xuất hiện"
+          ]
+        }
+      }
+    }
+  },
   "0.21.0": {
     "notesSha256": "92441d79655a9b3faa0f5725b37fdc3949a7e21f6b2b4c04c616bdd061ae02a6",
     "summary": {
@@ -520,30 +550,6 @@
             "Trình phát giờ là thanh ở cuối bản ghi, luôn ở cùng một vị trí",
             "Phụ đề trực tiếp lui ra sau cửa sổ Meeting Notes khi bạn làm việc, rồi nổi lên trên ứng dụng khác",
             "Menu giờ theo giao diện macOS thay vì Lumi, và phụ đề vẫn hiện trên ứng dụng toàn màn hình"
-          ]
-        }
-      }
-    }
-  },
-  "0.6.0": {
-    "notesSha256": "1923d32840ad1f643ca99c4ed2280305a7742800e69b5b1a20335e3cacf50963",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Choose models, hide captions with Escape, and more",
-          "items": [
-            "Press Escape to hide Live Captions after clicking the panel",
-            "Choose and download speech, speaker, and translation models in Settings",
-            "Settings window shows Meeting Notes Settings at the top like other Mac apps"
-          ]
-        },
-        "vi": {
-          "headline": "Chọn mô hình, ẩn phụ đề bằng Escape và nhiều hơn nữa",
-          "items": [
-            "Nhấn Escape để ẩn Phụ Đề Trực Tiếp sau khi nhấp vào bảng điều khiển",
-            "Chọn và tải xuống mô hình nhận dạng giọng nói, người nói và dịch trong Cài Đặt",
-            "Cửa sổ Cài Đặt hiển thị Cài Đặt Meeting Notes ở trên cùng như ứng dụng Mac khác"
           ]
         }
       }
