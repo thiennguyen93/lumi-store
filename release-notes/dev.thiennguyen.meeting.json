@@ -1,4 +1,34 @@
 {
+  "0.19.0": {
+    "notesSha256": "276980b8db216b9c1a2009fca7289141cb8c65f6c51cea8ea658bc0d84c80c73",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Slash commands in Ask, and back and forward navigation",
+          "items": [
+            "Type / in Ask to pick a command like clear, compact, retry, title, or think",
+            "Meeting Notes adds /actions, /decisions, /open, and /email commands in Ask",
+            "After opening a citation, mention, or quote, use ‹ and › or ⌘[ and ⌘] to go back",
+            "Citations now appear as small tokens after punctuation, with long names shortened",
+            "Citations to deleted chats or meetings now show struck through instead of dimmed",
+            "Citations to other meetings' chats now open Meeting Notes on that chat"
+          ]
+        },
+        "vi": {
+          "headline": "Lệnh gạch chéo trong Ask và điều hướng lui tới",
+          "items": [
+            "Gõ / trong Ask để chọn lệnh như clear, compact, retry, title hoặc think",
+            "Meeting Notes thêm lệnh /actions, /decisions, /open và /email trong Ask",
+            "Sau khi mở trích dẫn, đề cập hay trích lời, dùng ‹ và › hoặc ⌘[ và ⌘] để quay lại",
+            "Trích dẫn giờ hiện dạng thẻ nhỏ sau dấu câu, tên dài được rút gọn",
+            "Trích dẫn đến chat hay cuộc họp đã xóa giờ hiện gạch ngang thay vì mờ đi",
+            "Trích dẫn đến chat của cuộc họp khác giờ mở Meeting Notes tại chat đó"
+          ]
+        }
+      }
+    }
+  },
   "0.18.0": {
     "notesSha256": "c631d3f438c99a178e759e34d54221df2bd84b09cbdde33b573a4f1ea2e26398",
     "summary": {
@@ -520,36 +550,6 @@
             "Mở Meeting Notes dưới dạng ứng dụng sẽ hiển thị cửa sổ sẵn sàng bắt đầu cuộc họp",
             "Mở ứng dụng khi Meeting Notes đang tắt sẽ tự động bật nó lên",
             "Yêu cầu Lumi 1.89.0"
-          ]
-        }
-      }
-    }
-  },
-  "0.2.0": {
-    "notesSha256": "3d35b6a875177fe024b8cfcdad930a15942dadfa99d1c2f6668ec486c4279565",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "A new look following Apple's design guidelines",
-          "items": [
-            "The window now has a sidebar for meetings, toolbar buttons for commands, and an inspector for details",
-            "Start Transcription moved to the sidebar foot and shows recording time with Pause and Stop while recording",
-            "Settings opens in its own window with panes for General, Transcription, Captions, Translation and more",
-            "Live Captions panel shows only captions, time and mark until you point at it to reveal controls",
-            "You can now copy a single line with its speaker from hover buttons or the menu",
-            "Full screen mode moves the sidebar button and recorder into the corner"
-          ]
-        },
-        "vi": {
-          "headline": "Giao diện mới theo hướng dẫn thiết kế của Apple",
-          "items": [
-            "Cửa sổ giờ có thanh bên cho cuộc họp, nút lệnh trên thanh công cụ và bảng chi tiết",
-            "Bắt đầu Phiên âm chuyển xuống chân thanh bên và hiện thời gian ghi với Tạm dừng và Dừng khi đang ghi",
-            "Cài đặt mở trong cửa sổ riêng với các mục Chung, Phiên âm, Phụ đề, Dịch, Người nói, Lưu trữ và Giới thiệu",
-            "Bảng Phụ đề Trực tiếp chỉ hiện phụ đề, thời gian và biểu tượng cho đến khi bạn chỉ vào để hiện điều khiển",
-            "Giờ bạn có thể sao chép một dòng kèm người nói từ nút di chuột hoặc trình đơn",
-            "Chế độ toàn màn hình chuyển nút thanh bên và bộ ghi vào góc"
           ]
         }
       }
