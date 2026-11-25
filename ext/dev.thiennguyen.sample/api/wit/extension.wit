@@ -237,6 +237,13 @@ interface translation {
     /// word or two often is not — weigh the confidence.
     detect: func(text: string) -> result<list<guess>, string>;
 
+    /// `detect` for each of `texts`, answered in their order, in one call.
+    /// A run may make 200 calls to Lumi, so text read a sentence at a time
+    /// — a long transcript's lines — is asked here once rather than with a
+    /// `detect` each. At most 1,000 texts and 1 MB in all, each read as
+    /// `detect` reads one.
+    detect-many: func(texts: list<string>) -> result<list<list<guess>>, string>;
+
     /// `request.text` translated. Line by line: blank lines, each line's
     /// indent, and web and email addresses come back as they were; a line
     /// with no words in it is left as it is. Refused over 20,000 characters,
@@ -3684,7 +3691,9 @@ interface agent {
         stamp: option<string>,
         /// Any number of yours (a time in milliseconds), kept with each
         /// citation of this passage, so you can find it again after your
-        /// ids change.
+        /// ids change: `passage-cite`'s, and — for a passage of a library
+        /// document — `position` on the library cite pages and `thread()`
+        /// are told (not `library-cite`, below).
         position: option<u64>,
         /// Sent whatever else has to be left out.
         always: bool,
@@ -3810,6 +3819,10 @@ interface agent {
     }
 
     /// A passage of a library: Lumi's documentation, or a library of yours.
+    /// For a document handed as passages, `chunk` is the passage's id; its
+    /// `position` is told with the cite to pages (`lumi:agent`) and kept in
+    /// `thread()`'s JSON, but is not in this record, which shipped in 0.3
+    /// without it.
     record library-cite {
         library: string,
         doc: string,
@@ -4007,6 +4020,59 @@ interface agent {
         /// While it is being embedded: how far, of how many.
         indexing: option<tuple<u32, u32>>,
         updated: u64,
+    }
+
+    /// What Lumi knows of one of your documents beyond its text, for
+    /// narrowing a search (`library-put-with`): never embedded, never sent
+    /// to a model, and changed with nothing embedded again.
+    record document-facts {
+        /// When it happened or was written, in ms since 1970: a meeting's
+        /// start, a note's writing.
+        at: option<u64>,
+        /// When it ended, for a document that spans time: none is a moment.
+        until: option<u64>,
+        /// Words of yours to narrow by — who was there, what kind it is, a
+        /// project — at most 32, each one line of 1–64 characters. Matched
+        /// whole, without case or marks unless a scope's word has marks.
+        tags: list<string>,
+    }
+
+    /// Which of your documents an ask or a `library-search` reads. Each
+    /// field narrows; one left empty narrows nothing, and an empty scope
+    /// reads everything. It narrows your own libraries alone: Lumi's are
+    /// narrowed by the ask's `libraries`, as ever.
+    record library-scope {
+        /// Only these documents, by your own ids: at most 200.
+        documents: list<string>,
+        /// Only documents whose time reaches this moment (ms) or later.
+        since: option<u64>,
+        /// Only documents whose time begins before this moment. With
+        /// `since` or `before` set, a document with no `at` is left out.
+        before: option<u64>,
+        /// Only documents holding every one of these tags: at most 16.
+        tags: list<string>,
+        /// Only chunks holding a passage with one of these labels (a
+        /// speaker), at most 16: the chunk is read whole, so what was said
+        /// around the line comes with it.
+        labels: list<string>,
+    }
+
+    /// One passage a `library-search` found, best first.
+    record library-hit {
+        library: string,
+        /// Your document's id, and its title as you gave it.
+        doc: string,
+        title: string,
+        /// The chunk, numbered from 1 in its document.
+        chunk: string,
+        /// The chunk's text, as it was embedded and searched.
+        text: string,
+        /// The ids of your passages it holds, for a document handed as
+        /// passages: open the document at the first.
+        passages: list<string>,
+        /// The document's `stamp` and `url`, as you gave them.
+        stamp: option<string>,
+        url: option<string>,
     }
 
     /// How far one library is with one of your files. The numbers count
@@ -4233,6 +4299,27 @@ interface agent {
     /// The library and every document of it gone; its files let go as
     /// `library-remove` lets one go.
     library-drop: func(library: string) -> result<bool, string>;
+    /// Add a document, or replace the one with its id, with what you know
+    /// of it beyond its text. `library-put` is this with no facts, and
+    /// clears those of a document it replaces.
+    library-put-with: func(library: string, doc: document, facts: document-facts) -> result<_, string>;
+    /// A document's facts changed, with nothing embedded again: false when
+    /// the library holds no such document.
+    library-set-facts: func(library: string, id: string, facts: document-facts) -> result<bool, string>;
+    /// A document's facts: none when it has none, or there is no such one.
+    library-facts: func(library: string, id: string) -> result<option<document-facts>, string>;
+    /// `send`, with your libraries' search narrowed to `scope`. The scope is
+    /// kept with the question, so `again` and `/retry` search it again.
+    send-with: func(ask: ask, scope: library-scope) -> result<sent, failure>;
+    /// `start`, narrowed to `scope` as `send-with` is.
+    start-with: func(ask: ask, scope: library-scope) -> result<u64, failure>;
+    /// `complete`, narrowed to `scope` as `send-with` is.
+    complete-with: func(ask: ask, scope: library-scope) -> result<answer, failure>;
+    /// Your library searched for `query` (1–2,000 characters) as an ask
+    /// searches it — by meaning and by word, within `scope` — and its best
+    /// passages, at most `most` (1–50): none when nothing is near enough.
+    /// No model is asked and nothing leaves this Mac. Only from a press.
+    library-search: func(library: string, query: string, most: u32, scope: library-scope) -> result<list<library-hit>, string>;
 }
 
 world extension {

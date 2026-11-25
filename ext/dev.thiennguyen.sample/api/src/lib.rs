@@ -346,6 +346,15 @@ pub mod translation {
         wit::detect(text)
     }
 
+    /// [`detect`] for each of `texts`, answered in their order, in one call
+    /// to Lumi. A run may make 200 calls, so text read a sentence at a time
+    /// — a long transcript's lines — is asked here rather than with a
+    /// `detect` each. At most 1,000 texts and 1 MB in all a call; ask in
+    /// batches past that.
+    pub fn detect_many(texts: &[String]) -> Result<Vec<Vec<Guess>>, String> {
+        wit::detect_many(texts)
+    }
+
     /// `request.text` translated, line by line: blank lines, indents, and
     /// web and email addresses come back as they were. An empty `source` is
     /// Lumi's guess when it is at least 0.8 sure; an empty `target` is the
@@ -546,8 +555,9 @@ pub mod agent {
 
     pub use super::lumi::ext::ai::{Failure, FailureKind, Place, Thinking, Usage};
     pub use wit::{
-        Answer, Ask, Cite, CompactOptions, Document, EmbedState, FileCite, FileEntry, FileInfo, FileKind, FileState, HeldIn, LibraryCite, LibraryInfo, MessageCite, ModelAbilities,
-        Passage, PassageCite, Quote, Reading, Ref, Sent, Side, SlashArguments, SlashCommand, SlashCommandBy, SlashLine, SlashNeeds, Source, TextAbilities, ThreadInfo, TitleBy,
+        Answer, Ask, Cite, CompactOptions, Document, DocumentFacts, EmbedState, FileCite, FileEntry, FileInfo, FileKind, FileState, HeldIn, LibraryCite, LibraryHit, LibraryInfo,
+        LibraryScope, MessageCite, ModelAbilities, Passage, PassageCite, Quote, Reading, Ref, Sent, Side, SlashArguments, SlashCommand, SlashCommandBy, SlashLine, SlashNeeds, Source,
+        TextAbilities, ThreadInfo, TitleBy,
     };
 
     /// Whether Lumi's agent is there on this Mac.
@@ -600,6 +610,24 @@ pub mod agent {
     /// [`Sent::Yours`] for you to carry out. Only from a press.
     pub fn send(ask: &Ask) -> Result<Sent, Failure> {
         wit::send(ask)
+    }
+
+    /// [`send`], with your own libraries' search narrowed to `scope`: only
+    /// the documents, times, tags and passage labels it names. Kept with
+    /// the question, so [`again`] and `/retry` search the same. Only from a
+    /// press.
+    pub fn send_with(ask: &Ask, scope: &LibraryScope) -> Result<Sent, Failure> {
+        wit::send_with(ask, scope)
+    }
+
+    /// [`start`], narrowed to `scope` as [`send_with`] is.
+    pub fn start_with(ask: &Ask, scope: &LibraryScope) -> Result<u64, Failure> {
+        wit::start_with(ask, scope)
+    }
+
+    /// [`complete`], narrowed to `scope` as [`send_with`] is.
+    pub fn complete_with(ask: &Ask, scope: &LibraryScope) -> Result<Answer, Failure> {
+        wit::complete_with(ask, scope)
     }
 
     /// Your threads, newest first; `None` for every subject.
@@ -658,6 +686,31 @@ pub mod agent {
     /// and is cited in the file.
     pub fn library_put(library: &str, doc: &Document) -> Result<(), String> {
         wit::library_put(library, doc)
+    }
+
+    /// [`library_put`], with what you know of the document beyond its text:
+    /// when it happened and tags of your own, for a [`LibraryScope`] to
+    /// narrow by. Never embedded, never sent to a model.
+    pub fn library_put_with(library: &str, doc: &Document, facts: &DocumentFacts) -> Result<(), String> {
+        wit::library_put_with(library, doc, facts)
+    }
+
+    /// A document's facts changed, with nothing embedded again: `false`
+    /// when the library holds no such document.
+    pub fn library_set_facts(library: &str, id: &str, facts: &DocumentFacts) -> Result<bool, String> {
+        wit::library_set_facts(library, id, facts)
+    }
+
+    /// A document's facts, `None` when it has none.
+    pub fn library_facts(library: &str, id: &str) -> Result<Option<DocumentFacts>, String> {
+        wit::library_facts(library, id)
+    }
+
+    /// Your library searched for `query` as an ask searches it, within
+    /// `scope`: its best passages, at most `most` (1–50), with no model
+    /// asked and nothing leaving this Mac. Only from a press.
+    pub fn library_search(library: &str, query: &str, most: u32, scope: &LibraryScope) -> Result<Vec<LibraryHit>, String> {
+        wit::library_search(library, query, most, scope)
     }
 
     /// Take a document out; a file it was made from is let go.
