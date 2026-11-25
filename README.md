@@ -380,6 +380,22 @@ without one.
    covers every extension — so nothing about hearts is ever published
    here. Renaming or deleting the category breaks the job, not the
    release: the index then carries `discussion: null`.
+4. **Cloudflare purge** — `thiennguyen.dev` is Cloudflare in front of
+   Pages, which kept the old `index.json` for about ten minutes after a
+   publish. The `purge` job drops it once Pages serves the new one. It
+   needs:
+   - Repo secret **`CLOUDFLARE_PURGE_TOKEN`**: an API token with only
+     **Zone → Cache Purge → Purge**, for the `thiennguyen.dev` zone alone.
+   - Repo variable **`CLOUDFLARE_ZONE_ID`**: that zone's id, from the
+     zone's Overview page.
+
+   Without them the job warns and the store still publishes. A site that
+   fetches the index from a browser gets a line in the job's `ORIGINS`,
+   because Cloudflare caches one copy per `Origin` header. Excluding
+   `Origin` from the cache key in a Cache Rule for `/lumi-store/*` would
+   make that list unnecessary; Pages answers every origin with
+   `access-control-allow-origin: *`, so nothing relies on the copies
+   being separate.
 
 ## License
 

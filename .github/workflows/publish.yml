@@ -42,6 +42,10 @@
 #          beside the others: one GitHub Discussion per extension, for
 #          hearts and feedback. `discussions: write`, and the private
 #          entries' manifests to title their threads by.
+#   purge  after sign: waits for Pages to serve what sign pushed, then
+#          asks Cloudflare to drop its copies of extensions/index.json.
+#          No checkout and no key but the Cloudflare token, which can
+#          purge the cache and nothing else.
 #
 # **Private entries** (`private = true` in extensions.toml) are the store
 # owner's closed-source extensions: private repos, pinned as submodules
@@ -201,6 +205,9 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
+    outputs:
+      # The gh-pages commit this run pushed, for `purge` to wait on.
+      pages_commit: ${{ steps.push.outputs.commit }}
     steps:
       # Submodules for their files — the manifests, icons and ui/ this job
       # packs — and nothing here runs them: no cargo, no build script, no
@@ -326,6 +333,7 @@ jobs:
       # header. Force-pushed because the branch is an artifact, not
       # history: the source of truth is main plus the submodule pins.
       - name: Publish to gh-pages
+        id: push
         env:
           TOKEN: ${{ github.token }}
         run: |
@@ -337,3 +345,106 @@ jobs:
           git add -A
           git commit -qm "publish ${GITHUB_SHA:0:7}"
           git push -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  # thiennguyen.dev is Cloudflare in front of this repository's Pages site,
+  # and Cloudflare kept the old extensions/index.json for about ten minutes
+  # after every publish. Everything else under extensions/ is named by its
+  # content, so the index is the one file a cache can hold stale — and it is
+  # the file that says which package, changelog and history are current, so
+  # a stale one hides a whole release. Lumi fetches it with no `Origin`
+  # header; lumikeys.app fetches it from the browser, with one. Cloudflare's
+  # default cache key includes the `Origin` header, so each origin holds a
+  # copy of its own, and a purge by URL drops only the copy whose headers it
+  # names (measured 2026-11-25: curl had the new index while
+  # `-H 'origin: https://lumikeys.app'` still got the old one, cached a
+  # minute before the publish). So the purge names the URL bare and once per
+  # site that reads it, from ORIGINS below.
+  #
+  # Pages deploys a push to gh-pages on its own, about half a minute later,
+  # so purging as sign finishes would let the next visitor cache the old
+  # file again: this job waits until Pages reports the very commit sign
+  # pushed as built.
+  #
+  # A purge is not a publish: the packages are already served when this
+  # runs, so it fails loudly (a red run, the cache still stale for ten
+  # minutes) rather than holding anything. With no token set it says so and
+  # stops, so the store publishes before the token exists.
+  purge:
+    needs: sign
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      pages: read
+    env:
+      PAGES_COMMIT: ${{ needs.sign.outputs.pages_commit }}
+      INDEX_URL: https://thiennguyen.dev/lumi-store/extensions/index.json
+      # Every site whose pages fetch the index from a browser. A site added
+      # without a line here is served the old index for ten minutes after a
+      # publish, and nothing else goes wrong.
+      ORIGINS: >-
+        https://lumikeys.app
+        https://store.lumikeys.app
+        https://lumi.thiennguyen.dev
+    steps:
+      - name: Wait for Pages to serve this run's commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for try in $(seq 1 60); do
+            read -r status commit < <(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest" --jq '[.status, .commit] | @tsv')
+            if [ "$commit" = "$PAGES_COMMIT" ]; then
+              case "$status" in
+                built) echo "Pages built ${commit:0:7}"; exit 0 ;;
+                errored) echo "::error::Pages failed to build ${commit:0:7}"; exit 1 ;;
+              esac
+            fi
+            echo "waiting: Pages reports ${status} for ${commit:0:7}, want ${PAGES_COMMIT:0:7}"
+            sleep 10
+          done
+          echo "::error::Pages did not build ${PAGES_COMMIT:0:7} in ten minutes"
+          exit 1
+
+      - name: Purge the index from Cloudflare
+        env:
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_PURGE_TOKEN" ] || [ -z "$CLOUDFLARE_ZONE_ID" ]; then
+            echo "::warning::CLOUDFLARE_PURGE_TOKEN or CLOUDFLARE_ZONE_ID is not set; the index stays cached for about ten minutes (README: Owner setup)"
+            exit 0
+          fi
+          if ! [[ "$CLOUDFLARE_ZONE_ID" =~ ^[0-9a-f]{32}$ ]]; then
+            echo "::error::CLOUDFLARE_ZONE_ID is not a zone id (32 hex digits)"
+            exit 1
+          fi
+          # The bare URL, then the URL as each origin asked for it.
+          body=$(jq -nc --arg url "$INDEX_URL" --arg origins "$ORIGINS" '
+            {files: ([$url] + [$origins | split(" ")[] | select(. != "") | {url: $url, headers: {Origin: .}}])}')
+          answer=$(curl -sS --proto '=https' --max-time 30 --retry 3 --retry-all-errors \
+            -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+            -H "Authorization: Bearer ${CLOUDFLARE_PURGE_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data "$body")
+          if [ "$(jq -r '.success' <<< "$answer")" != "true" ]; then
+            echo "::error::Cloudflare refused the purge: $(jq -c '.errors' <<< "$answer")"
+            exit 1
+          fi
+          echo "purged $(jq '.files | length' <<< "$body") copies of the index"
+
+      # What a visitor and Lumi are now served, held to what Pages built. A
+      # copy that still differs is one this list does not name (a new site,
+      # or Cloudflare keying the cache on something else), so it warns
+      # rather than fails: the copy runs out in ten minutes either way.
+      - name: Check what is served
+        run: |
+          want=$(curl -sS --proto '=https' --max-time 30 --retry 3 \
+            "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${PAGES_COMMIT}/extensions/index.json" | sha256sum | cut -d' ' -f1)
+          for origin in "" $ORIGINS; do
+            got=$(curl -sS --proto '=https' --max-time 30 ${origin:+-H "Origin: $origin"} "$INDEX_URL" | sha256sum | cut -d' ' -f1)
+            if [ "$got" = "$want" ]; then
+              echo "current for ${origin:-no Origin}"
+            else
+              echo "::warning::${origin:-a request with no Origin} is still served an older index"
+            fi
+          done
