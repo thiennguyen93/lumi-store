@@ -4058,6 +4058,52 @@ pub mod offer {
         })
     }
 
+    /// An offer drawn by a page of your own, in place of a line and a
+    /// button.
+    #[derive(Debug, Clone, PartialEq, Eq, Default)]
+    pub struct View {
+        /// A file under your package's `ui/`, as a window's `path` is.
+        pub view: String,
+        /// At most 256 bytes, handed to the page as it was.
+        pub data: Option<String>,
+        /// Milliseconds to wait before it shows, at most 10000.
+        pub after: u32,
+    }
+
+    /// Show `view`'s page in a card, replacing yours that is up or waiting.
+    /// Lumi draws the card — your icon and name, its ✕, its place at the
+    /// top right — and keeps its life, rate and switch as for [`show`];
+    /// your page draws the rest, with no keyboard. Answers its id. Needs
+    /// Lumi 1.102.0.
+    ///
+    /// In the page, `window.lumiOffer` is the card: `data`, as you gave
+    /// it; `life` — `leftMs`, `lifeMs`, `running`, `held` — told again as a
+    /// `lumi-offer` event whenever it changes, so a countdown can be drawn;
+    /// `press(command, data, { keep })`, only right after a real click in
+    /// the card — one press a click — runs one of your `[[command]]`s as the
+    /// person's press and puts the card away, or keeps it; and
+    /// `hold()`, also from a click, keeps it until the person chooses and
+    /// lets it grow past 160 points. The page's own `call`s run as Lumi's,
+    /// not the person's.
+    ///
+    /// ```ignore
+    /// lumi::offer::show_view(&lumi::offer::View {
+    ///     view: "offer/export.html".into(),
+    ///     data: Some(album_id.clone()),
+    ///     after: 0,
+    /// })?;
+    /// ```
+    pub fn show_view(view: &View) -> Result<u64, String> {
+        wit::show_view(&wit::ViewOffer { view: view.view.clone(), data: view.data.clone(), after: view.after })
+    }
+
+    /// Whether offer `id`, yours, is still up or waiting — false once it was
+    /// pressed, put away, ran out of time or was taken back. Needs Lumi
+    /// 1.102.0.
+    pub fn is_up(id: u64) -> Result<bool, String> {
+        wit::is_up(id)
+    }
+
     /// Take back offer `id`, up or waiting; true when it was still there.
     pub fn withdraw(id: u64) -> Result<bool, String> {
         wit::withdraw(id)
@@ -4084,37 +4130,14 @@ pub mod offer {
     /// end arrives as. Hear it with `events = ["kept-press"]`, beside `offer`.
     pub const KEPT_EVENT: &str = "kept-press";
 
-    /// The moment a kept press waits for: one app of `apps` — a bundle id,
-    /// or the name of a process with none — or a browser holding a
-    /// microphone while it shows one of `sites` (hosts; `*.` for any
-    /// subdomain), of which everything asked holds at once: `microphone`, it
-    /// holds a microphone; `audio_output`, it plays audio. At least one of
-    /// the two; `sites` only with `microphone`. Held `after` milliseconds, at
-    /// most 10000; an app it already holds counts from the press. At most 16
-    /// apps and 16 sites, at least one in all.
-    ///
-    /// Watching costs what it watches: `microphone-use`,
-    /// `audio-output-use`, and for `sites` `microphone-sites` and Lumi's
-    /// Accessibility grant.
-    #[derive(Debug, Clone, PartialEq, Eq, Default)]
-    pub struct Moment {
-        pub apps: Vec<String>,
-        pub sites: Vec<String>,
-        pub microphone: bool,
-        pub audio_output: bool,
-        pub after: u32,
-    }
-
-    /// A press to keep until its moment.
+    /// A press to keep until you spend it.
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct Kept {
         /// One of your `[[command]]`s, by name: what runs, as the press,
-        /// when the moment comes.
+        /// when you spend it.
         pub command: String,
         /// At most 256 bytes, handed back to the command as it was.
         pub data: Option<String>,
-        /// What it waits for.
-        pub moment: Moment,
         /// Until when it is kept, in milliseconds since the Unix epoch;
         /// later than now and at most 4 hours ahead.
         pub until: u64,
@@ -4123,42 +4146,35 @@ pub mod offer {
         pub text: String,
     }
 
-    /// Keep this run's press until `kept.moment`, then run `kept.command` as
-    /// it, once — or let it go at `kept.until`. Only from a press (a command
-    /// or one of your windows); replaces yours that is kept. Answers its
-    /// id. While it waits Lumi rings its menu bar icon and lists it in its
-    /// menu, as your name, `kept.text` and the time it lasts until, with
-    /// Cancel. Needs Lumi 1.102.0.
+    /// Keep this run's press until you [`spend`] it — or until `kept.until`,
+    /// when it is let go unrun. Only from a press (a command or one of your
+    /// windows); replaces yours that is kept. Answers its id. While it is
+    /// kept Lumi rings its menu bar icon and lists it in its menu, as your
+    /// name, `kept.text` and the time it lasts until, with Cancel. Needs
+    /// Lumi 1.102.0.
     ///
     /// ```ignore
-    /// // Start listening when Keynote takes the microphone, not before.
+    /// // Pressed: coach the rehearsal once Keynote takes the microphone.
     /// let id = lumi::offer::keep(&lumi::offer::Kept {
     ///     command: "coach".into(),
     ///     data: None,
-    ///     moment: lumi::offer::Moment {
-    ///         apps: vec!["com.apple.Keynote".into()],
-    ///         microphone: true,
-    ///         after: 2_000,
-    ///         ..Default::default()
-    ///     },
     ///     until: rehearsal_end,
     ///     text: "Coach when Keynote rehearses".into(),
     /// })?;
+    /// // Later, in `on_event` for `microphone-use`, when your own reading
+    /// // says the moment came:
+    /// lumi::offer::spend(id)?;
     /// ```
     pub fn keep(kept: &Kept) -> Result<u64, String> {
-        wit::keep(&wit::Kept {
-            command: kept.command.clone(),
-            data: kept.data.clone(),
-            moment: wit::Moment {
-                apps: kept.moment.apps.clone(),
-                sites: kept.moment.sites.clone(),
-                microphone: kept.moment.microphone,
-                audio_output: kept.moment.audio_output,
-                after: kept.moment.after,
-            },
-            until: kept.until,
-            text: kept.text.clone(),
-        })
+        wit::keep(&wit::Kept { command: kept.command.clone(), data: kept.data.clone(), until: kept.until, text: kept.text.clone() })
+    }
+
+    /// Spend kept press `id`: Lumi runs its command now, as the press it
+    /// was, once — from any run, an event's or a timer's. Refused for a
+    /// press that is gone: spent, let go, cancelled, replaced or run out.
+    /// Needs Lumi 1.102.0.
+    pub fn spend(id: u64) -> Result<(), String> {
+        wit::spend(id)
     }
 
     /// Let kept press `id` go unrun; true when it was still kept.
@@ -4183,8 +4199,8 @@ pub mod offer {
     pub struct KeptEnded {
         /// What [`keep`] answered.
         pub id: u64,
-        /// True when it ran; false when its time was over, it was let go
-        /// (by you, or by the person's Cancel) or replaced.
+        /// True when it ran — you spent it; false when its time was over, it
+        /// was let go (by you, or by the person's Cancel) or replaced.
         pub ran: bool,
         pub at: u64,
     }

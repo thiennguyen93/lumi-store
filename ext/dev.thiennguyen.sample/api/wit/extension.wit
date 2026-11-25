@@ -3109,12 +3109,13 @@ interface audio-output-use {
 /// refused, and `allowed` says so. Every call costs budget. Added to 0.3 in
 /// Lumi 1.65.0 without a new world version.
 ///
-/// **A press kept for a moment** (`keep`, Lumi 1.102.0): an offer the person
-/// has already accepted. A press — a command, or one of your windows — asks
-/// Lumi to keep it until a moment comes, then Lumi runs one of your commands
-/// as that press, once. The moment is a fact about another app: it holds a
-/// microphone, it plays audio, or both, or a browser holding a microphone
-/// shows a host you name. The run carries `{"kept": {"id", "data"}}` in its
+/// **A press kept until you spend it** (`keep`, `spend`, Lumi 1.102.0): an
+/// offer the person has already accepted. A press — a command, or one of
+/// your windows — asks Lumi to keep it; later, from any run, your code
+/// decides the moment came and spends it, and Lumi runs one of your commands
+/// as that press, once. What the moment is — an app taking the microphone,
+/// a file appearing, a time — is yours to read. The run carries
+/// `{"kept": {"id", "data"}}` in its
 /// params beside the command's defaults, and may do what a press may. While
 /// it waits, Lumi's menu bar icon carries a ring and its menu a row with your
 /// `text` — "‹your name› — ‹text› · until 14:30 — Cancel" — so the person
@@ -3142,38 +3143,47 @@ interface offer {
 
     /// Show `offer`, replacing yours that is up or waiting. Answers its id.
     show: func(offer: offer) -> result<u64, string>;
+    /// An offer drawn by a page of your own, in place of a line and a
+    /// button. Added in Lumi 1.102.0.
+    record view-offer {
+        /// A file under your package's `ui/`, as a window's `path` is: what
+        /// the card shows under your icon and name.
+        view: string,
+        /// At most 256 bytes, handed to the page as it was.
+        data: option<string>,
+        /// Milliseconds to wait before it shows, at most 10000.
+        after: u32,
+    }
+
+    /// Show `offer`'s page in a card, replacing yours that is up or waiting.
+    /// Lumi draws the card — your icon and name, its ✕, its place — and
+    /// keeps its life, rate and switch as for `show`; the page draws the
+    /// rest, with no keyboard. In the page, `window.lumiOffer` holds the
+    /// card's `data` and `life` (`leftMs`, `lifeMs`, `running`, `held`,
+    /// told again as a `lumi-offer` event when it changes), and
+    /// `lumiOffer.press(command, data, { keep })` runs one of your
+    /// `[[command]]`s as the person's press — only right after a real click
+    /// in the card, one press a click — and puts the card away, or keeps it;
+    /// `lumiOffer.hold()`, also from a click, stops its life until the
+    /// person chooses and lets it grow past 160 points. Its own `call`s run
+    /// as Lumi's, not the person's. Answers its id. Added in Lumi 1.102.0.
+    show-view: func(offer: view-offer) -> result<u64, string>;
     /// Take back offer `id`, up or waiting; true when it was still there.
     withdraw: func(id: u64) -> result<bool, string>;
+    /// Whether offer `id`, yours, is still up or waiting: false once it was
+    /// pressed, put away, ran out of time or was taken back. Added in Lumi
+    /// 1.102.0.
+    is-up: func(id: u64) -> result<bool, string>;
     /// Whether the person lets you offer from the background — the switch
     /// on your Permissions sheet.
     allowed: func() -> result<bool, string>;
 
-    /// A fact about another app that a kept press waits for: one app of
-    /// `apps` — a bundle id, or the name of a process with none — or a
-    /// browser holding a microphone while it shows one of `sites` (hosts;
-    /// `*.` for any subdomain), of which everything asked holds at once:
-    /// `microphone`, it holds a microphone; `audio-output`, it plays audio.
-    /// At least one of the two; `sites` only with `microphone`. Held `after`
-    /// milliseconds, at most 10000, so a moment's flicker does not count;
-    /// an app it already holds counts from the press. Watching costs what
-    /// it watches: `microphone-use`, `audio-output-use`, and for `sites`
-    /// `microphone-sites` and Lumi's Accessibility grant. At most 16 apps
-    /// and 16 sites, at least one in all.
-    record moment {
-        apps: list<string>,
-        sites: list<string>,
-        microphone: bool,
-        audio-output: bool,
-        after: u32,
-    }
-
     record kept {
         /// One of your `[[command]]`s, by name: what runs, as the press,
-        /// when the moment comes.
+        /// when you spend it.
         command: string,
         /// At most 256 bytes, handed back to the command as it was.
         data: option<string>,
-        moment: moment,
         /// Until when it is kept, in milliseconds since the Unix epoch;
         /// later than now and at most 4 hours ahead.
         until: u64,
@@ -3182,10 +3192,16 @@ interface offer {
         text: string,
     }
 
-    /// Keep this press until `kept.moment`, then run `kept.command` as it,
-    /// once — or let it go at `kept.until`. Only from a press. Replaces
-    /// yours that is kept. Answers its id.
+    /// Keep this press until you spend it — or until `kept.until`, when it
+    /// is let go unrun. Only from a press. Replaces yours that is kept.
+    /// While it is kept, Lumi rings its menu bar icon and lists it in its
+    /// menu with `text`, the time it lasts until, and Cancel. Answers its id.
     keep: func(kept: kept) -> result<u64, string>;
+    /// Spend kept press `id`: run its command now, as the press it was,
+    /// once — from any run, an event's or a timer's, whenever your own
+    /// reading says the moment came. Refused for a press that is gone:
+    /// spent, let go, cancelled, replaced or run out.
+    spend: func(id: u64) -> result<_, string>;
     /// Let kept press `id` go unrun; true when it was still kept.
     let-go: func(id: u64) -> result<bool, string>;
 }
