@@ -1,4 +1,32 @@
 {
+  "0.20.0": {
+    "notesSha256": "be531e923465ca40fc2c43a9b9526e5b967f6c6962817969d43bfd519032da71",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Ask questions across meetings, filtered by date and participants",
+          "items": [
+            "You can now narrow a question by date, people, meetings, or what it reads using chips above the field",
+            "Select multiple meetings with command-click or shift-click, then press Ask About These to ask about them",
+            "Questions across meetings now read summaries alongside transcripts for more complete answers",
+            "Long meetings from earlier versions now open without errors",
+            "Citations in answers across meetings now show the correct time and meeting title"
+          ]
+        },
+        "vi": {
+          "headline": "Đặt câu hỏi qua nhiều cuộc họp với bộ lọc ngày và người tham gia",
+          "items": [
+            "Bạn có thể thu hẹp câu hỏi theo ngày, người, cuộc họp hoặc nội dung đọc bằng các chip phía trên ô nhập",
+            "Chọn nhiều cuộc họp bằng command-click hoặc shift-click, sau đó nhấn Hỏi Về Những Cuộc Này",
+            "Câu hỏi qua nhiều cuộc họp giờ đọc cả bản tóm tắt lẫn bản ghi để có câu trả lời đầy đủ hơn",
+            "Các cuộc họp dài từ phiên bản trước giờ mở được mà không bị lỗi",
+            "Trích dẫn trong câu trả lời qua nhiều cuộc họp giờ hiển thị đúng thời gian và tên cuộc họp"
+          ]
+        }
+      }
+    }
+  },
   "0.19.1": {
     "notesSha256": "725364cd2ca8f048daca87a00adb92eab84822359b7bf3a301e5fa0c6870b281",
     "summary": {
@@ -516,34 +544,6 @@
             "Mở Meeting Notes từ Live Captions giờ hiển thị cuộc họp đang ghi, không phải cuộc họp bạn xem lần trước",
             "Ghi chú bắt đầu trong cuộc gọi giờ dừng và lưu khi cuộc gọi kết thúc, bất kể bạn bắt đầu thế nào",
             "Ngăn Speakers giữ Settings đủ cao để Record Your Voice không còn bị cắt ở cuối cửa sổ"
-          ]
-        }
-      }
-    }
-  },
-  "0.4.0": {
-    "notesSha256": "557202ee57e480122795780fc8a3c48dfebddf3e437da54894c336c52035fb6b",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Smoother captions and notices that stay out of the way",
-          "items": [
-            "New words glide the captions up instead of jumping them a line at a time",
-            "Corrections only fade in the words that changed, keeping your place while reading",
-            "A speaker's name at the top stays put while their turn continues",
-            "Notices float over the captions instead of making the panel taller",
-            "The newest line stays in sight and the panel stays where you put it"
-          ]
-        },
-        "vi": {
-          "headline": "Phụ đề mượt mà hơn và thông báo không che khuất",
-          "items": [
-            "Từ mới trượt phụ đề lên thay vì nhảy từng dòng",
-            "Chỉnh sửa chỉ làm mờ dần những từ thay đổi, giúp bạn không mất vị trí đang đọc",
-            "Tên người nói ở trên cùng giữ nguyên trong khi lượt nói của họ tiếp tục",
-            "Thông báo nổi phía trên phụ đề thay vì làm bảng cao hơn",
-            "Dòng mới nhất vẫn hiện và bảng ở đúng chỗ bạn đặt"
           ]
         }
       }
