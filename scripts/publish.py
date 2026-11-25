@@ -173,6 +173,10 @@ CAPABILITIES = {
     # event (reminders added to the person's lists) — each only with the
     # extension's own grant (`grants`).
     "calendar", "reminders",
+    # Lumi 1.102: the `audio-output-use` interface and event (which apps are
+    # playing audio, never what they play) — `microphone-use`'s twin, for
+    # output.
+    "audio-output-use",
 }
 # What Lumi sends through `on-event`, and the capability hearing each costs —
 # `manifest::Event::needs`, `None` for one that costs none. Checked one way
@@ -230,6 +234,11 @@ EVENTS = {
     # Lumi 1.94: something on the calendars, or in Reminders, changing.
     "calendar-changed": "calendar",
     "reminders-changed": "reminders",
+    # Lumi 1.102: the apps playing audio changing, the whole set each time;
+    # and the extension's kept press (`offer.keep`) ending — run, or not —
+    # told once by its id.
+    "audio-output-use": "audio-output-use",
+    "kept-press": "offer",
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -472,6 +481,12 @@ CALENDAR_SINCE = (1, 94, 0)
 # older Lumi refuses both words, so the package would be offered to it and
 # fail at install: a manifest naming either names this floor.
 AWAY_SINCE = (1, 81, 0)
+
+# The Lumi that first knows the `audio-output-use` capability and tells its
+# event, and tells `kept-press` (a press kept with `offer.keep` ending). An
+# older Lumi refuses the words, so the package would be offered to it and
+# fail at install: a manifest naming one names this floor.
+KEPT_PRESS_SINCE = (1, 102, 0)
 
 # The Lumi that first reads `[switches]`, knows the `launcher` capability and
 # its `[launcher]` table, and tells the `launcher-shown` event. An older Lumi
@@ -1000,6 +1015,15 @@ def check_manifest(entry_id: str, manifest: dict):
                 entry_id,
                 'the calendar and reminders capabilities and events are told from Lumi 1.94.0 — an older Lumi '
                 'refuses the manifest; set min-lumi-version to "1.94.0" or later',
+            )
+    kept_words = {"audio-output-use", "kept-press"}
+    if kept_words & (set(ext.get("events", [])) | set(declared)):
+        floor = ext.get("min-lumi-version") or ext.get("min_lumi_version") or ""
+        if version_tuple(floor) < KEPT_PRESS_SINCE:
+            fail(
+                entry_id,
+                'the audio-output-use capability and event and the kept-press event are told from Lumi 1.102.0 — '
+                'an older Lumi refuses the manifest; set min-lumi-version to "1.102.0" or later',
             )
     if "clipboard-ocr" in ext.get("events", []) and "clipboard" not in ext.get("events", []):
         fail(entry_id, 'hearing "clipboard-ocr" needs "clipboard" too — the text names a copy the extension has to have heard')

@@ -296,6 +296,13 @@ class TextInput(unittest.TestCase):
         self.assertIn('set min-lumi-version to "1.81.0"', self.refusal('"away"'))
         publish.check_manifest("dev.you.thing", self.manifest('"away"', 'min-lumi-version = "1.81.0"\nevents = ["away"]'))
 
+    def test_audio_output_use_and_a_kept_press_need_their_words_and_their_floor(self):
+        self.assertIn("needs the audio-output-use capability", self.refusal('"menu"', 'events = ["audio-output-use"]'))
+        self.assertIn("needs the offer capability", self.refusal('"menu"', 'events = ["kept-press"]'))
+        self.assertIn('set min-lumi-version to "1.102.0"', self.refusal('"audio-output-use"'))
+        self.assertIn('set min-lumi-version to "1.102.0"', self.refusal('"offer"', 'min-lumi-version = "1.101.0"\nevents = ["kept-press"]'))
+        publish.check_manifest("dev.you.thing", self.manifest('"audio-output-use", "offer"', 'min-lumi-version = "1.102.0"\nevents = ["audio-output-use", "kept-press"]'))
+
     def test_the_menu_bar_item_heading_needs_the_item(self):
         publish.check_manifest("dev.you.thing", self.manifest('"menu-bar-item"', "menu-bar-item-heading = false"))
         self.assertIn("needs the menu-bar-item capability", self.refusal('"menu"', "menu-bar-item-heading = false"))
