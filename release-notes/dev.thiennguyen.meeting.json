@@ -1,4 +1,30 @@
 {
+  "0.23.0": {
+    "notesSha256": "a7cd90d3da63d169d0a2eaf3a95b4a6a8323ffc66c97f2877dd04b43df6b00b6",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Files open in their own window, and the Changes view is clearer",
+          "items": [
+            "Files from Ask chats or libraries now open in a separate window you can move and resize",
+            "The file preview window remembers its position when you open another file",
+            "The count of changed lines in Changes now aligns with the transcript text",
+            "VoiceOver now reads the line change count in the Changes view"
+          ]
+        },
+        "vi": {
+          "headline": "Tệp mở trong cửa sổ riêng và giao diện Changes rõ ràng hơn",
+          "items": [
+            "Tệp từ Ask hoặc thư viện giờ mở trong cửa sổ riêng có thể di chuyển và thay đổi kích thước",
+            "Cửa sổ xem tệp nhớ vị trí khi bạn mở tệp khác",
+            "Số dòng thay đổi trong Changes giờ căn chỉnh với văn bản phiên âm",
+            "VoiceOver giờ đọc được số dòng thay đổi trong giao diện Changes"
+          ]
+        }
+      }
+    }
+  },
   "0.22.0": {
     "notesSha256": "94d123e932a7575ed99e09e2c491d126b629f764eb573513f2c6414077fd09e7",
     "summary": {
@@ -520,36 +546,6 @@
             "Theo dõi khi phát giữ dòng hiện tại luôn hiện và tô sáng lượt nói trên thanh trượt",
             "Nhấp xuyên qua phụ đề cho phép chuột tương tác với cửa sổ bên dưới chữ phụ đề",
             "Bản ghi và tóm tắt giờ là hai thẻ riêng dưới tiêu đề cuộc họp"
-          ]
-        }
-      }
-    }
-  },
-  "0.7.0": {
-    "notesSha256": "4d4c2a0e77866360448de2d6a483bf577990f4dd7004925be769bda0fe2932c0",
-    "summary": {
-      "lumi_notes": 1,
-      "locales": {
-        "en": {
-          "headline": "Summarize meetings with action items and custom templates",
-          "items": [
-            "Summarize a meeting into overview, action items and sections, with times to jump back to the transcript",
-            "Long meetings are read in parts when needed, with progress shown and the option to stop",
-            "Settings let you pick the text model, default template and language, and create your own templates",
-            "The player is now a bar at the bottom of the transcript, always in the same place",
-            "Live captions step behind the Meeting Notes window while you work in it, then float over other apps again",
-            "Menus now follow macOS appearance instead of Lumi's, and captions stay visible over full screen apps"
-          ]
-        },
-        "vi": {
-          "headline": "Tóm tắt cuộc họp với danh sách công việc và mẫu tùy chỉnh",
-          "items": [
-            "Tóm tắt cuộc họp thành tổng quan, công việc cần làm và các phần bạn chọn, kèm thời gian để quay lại bản ghi",
-            "Cuộc họp dài được đọc từng phần khi cần, hiển thị tiến độ và có thể dừng lại",
-            "Cài đặt cho phép chọn mô hình văn bản, mẫu và ngôn ngữ mặc định, cũng như tạo mẫu riêng",
-            "Trình phát giờ là thanh ở cuối bản ghi, luôn ở cùng một vị trí",
-            "Phụ đề trực tiếp lui ra sau cửa sổ Meeting Notes khi bạn làm việc, rồi nổi lên trên ứng dụng khác",
-            "Menu giờ theo giao diện macOS thay vì Lumi, và phụ đề vẫn hiện trên ứng dụng toàn màn hình"
           ]
         }
       }
