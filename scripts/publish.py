@@ -408,6 +408,17 @@ DATE_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}\Z")
 # file. The shape is Lumi's "What's new" envelope (`lumi_notes`), so one
 # reader serves both; the limits are that reader's.
 RELEASE_NOTES_DIR = ROOT / "release-notes"
+# The file holds a summary for every version `history` publishes, so it
+# grows with the history, bounded only by MAX_CHANGELOG_SOURCE. It was
+# held to MAX_CHANGES * 4 (128 KB) while the bot that writes it kept 20
+# summaries an extension; keeping one per version (Lumi's
+# scripts/store-release-notes.mjs, 2026-11-26) puts Clipboard's 113
+# versions at about 91 KB, a summary being about 0.9 KB, so that ceiling
+# would have refused the whole proposal some forty releases on. The file
+# itself is read only here; a reader downloads `history`, which carries
+# each summary beside its notes, so this bounds a hand-edit and not a
+# page.
+MAX_RELEASE_NOTES = 512 * 1024
 SUMMARY_ENVELOPE = 1
 SUMMARY_LOCALES = ["en", "vi"]
 MAX_SUMMARY_HEADLINE = 70
@@ -3077,7 +3088,7 @@ def summaries_of(entry_id: str, releases: list) -> dict:
     an empty map before the first one is written. The store's own file,
     but edited by hand in review, so held to its shape here — and to
     versions the changelog still has, so it cannot collect strays."""
-    text = store_text(entry_id, RELEASE_NOTES_DIR / f"{entry_id}.json", MAX_CHANGES * 4)
+    text = store_text(entry_id, RELEASE_NOTES_DIR / f"{entry_id}.json", MAX_RELEASE_NOTES)
     if text is None:
         return {}
     try:
