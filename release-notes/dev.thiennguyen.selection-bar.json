@@ -479,23 +479,21 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Change tracking moved into each action's settings",
+          "headline": "Settings reorganized and change tracking moved to individual actions",
           "items": [
-            "Selection Bar's page in Lumi now opens on Settings instead of About",
-            "Show what changed moved into each AI action's own settings under The answer",
-            "Each action remembers its own Show what changed preference separately",
-            "How changes are marked is still shared across all actions",
-            "Change tracking only applies to actions that replace your selected text"
+            "Selection Bar now opens on Settings in Lumi instead of About",
+            "Show what changed moved from Settings to each AI action's sheet under The answer",
+            "Each action now has its own Show what changed toggle, on by default for Fix Spelling & Grammar",
+            "How changes are marked remains a single choice for all actions, accessible from any action sheet"
           ]
         },
         "vi": {
-          "headline": "Theo dõi thay đổi chuyển vào cài đặt từng hành động",
+          "headline": "Sắp xếp lại cài đặt và chuyển theo dõi thay đổi vào từng hành động",
           "items": [
-            "Trang Selection Bar trong Lumi giờ mở ở Cài đặt thay vì Giới thiệu",
-            "Hiển thị nội dung thay đổi chuyển vào cài đặt riêng của từng hành động AI",
-            "Mỗi hành động nhớ tùy chọn Hiển thị nội dung thay đổi riêng của nó",
-            "Cách đánh dấu thay đổi vẫn dùng chung cho tất cả hành động",
-            "Theo dõi thay đổi chỉ áp dụng cho hành động thay thế văn bản đã chọn"
+            "Selection Bar giờ mở ở phần Cài đặt trong Lumi thay vì Giới thiệu",
+            "Hiển thị thay đổi được chuyển từ Cài đặt vào trang của từng hành động AI, dưới phần Câu trả lời",
+            "Mỗi hành động giờ có nút bật tắt Hiển thị thay đổi riêng, mặc định bật cho Sửa chính tả và ngữ pháp",
+            "Cách đánh dấu thay đổi vẫn là một lựa chọn chung cho tất cả hành động, truy cập từ bất kỳ trang hành động nào"
           ]
         }
       }
@@ -507,19 +505,17 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Fixes for saving AI actions and translation settings",
+          "headline": "Fixed AI actions disappearing after being added or edited",
           "items": [
-            "AI actions added or edited in Settings are now saved reliably",
-            "Translation language choices are now saved reliably",
-            "Removing an action from the list is now saved reliably"
+            "AI actions added or edited in Settings no longer disappear when you close the sheet",
+            "Changes to translation settings and removed actions are now saved reliably"
           ]
         },
         "vi": {
-          "headline": "Sửa lỗi lưu hành động AI và cài đặt dịch",
+          "headline": "Sửa lỗi hành động AI biến mất sau khi thêm hoặc chỉnh sửa",
           "items": [
-            "Hành động AI được thêm hoặc chỉnh sửa trong Cài đặt giờ được lưu đáng tin cậy",
-            "Lựa chọn ngôn ngữ dịch giờ được lưu đáng tin cậy",
-            "Xóa hành động khỏi danh sách giờ được lưu đáng tin cậy"
+            "Hành động AI được thêm hoặc chỉnh sửa trong Cài đặt không còn biến mất khi đóng bảng",
+            "Các thay đổi cài đặt dịch thuật và xóa hành động giờ được lưu ổn định"
           ]
         }
       }
@@ -533,13 +529,15 @@
         "en": {
           "headline": "Settings layout improvements",
           "items": [
-            "Switching between Main and While holding ⌥ in Settings no longer shifts the page when the window is narrow"
+            "Switching between Main and While holding ⌥ in Settings no longer shifts the page in narrow windows",
+            "The number of actions under ⋯ now appears as a count on the preview button instead of wrapping text"
           ]
         },
         "vi": {
           "headline": "Cải thiện bố cục Cài đặt",
           "items": [
-            "Chuyển giữa Main và While holding ⌥ trong Cài đặt không còn làm trang nhảy lên xuống khi cửa sổ hẹp"
+            "Chuyển giữa Chính và Khi giữ ⌥ trong Cài đặt không còn làm trang nhảy lên xuống ở cửa sổ hẹp",
+            "Số lượng thao tác trong ⋯ giờ hiện dưới dạng con số trên nút xem trước thay vì văn bản có thể xuống dòng"
           ]
         }
       }
@@ -551,23 +549,25 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "A second bar while holding Option",
+          "headline": "Hold Option for a second set of actions",
           "items": [
-            "Hold Option while the bar is up to see a second set of actions you choose in Settings",
-            "Select text with Option held and the second bar appears right away",
-            "Each bar shows up to eight actions that fit the selection, with the rest under More",
+            "Hold Option while the bar is up to see a different set of actions",
+            "Select text with Option held to show the second bar right away",
+            "Configure the second bar under Actions in Settings, While holding Option tab",
+            "Each bar can have up to eight actions before the rest go under the more menu",
             "An action can appear on both bars with the same settings",
-            "Holding Command while selecting with the mouse keeps the bar from appearing"
+            "Settings now mentions holding Command while selecting to keep the bar from appearing"
           ]
         },
         "vi": {
-          "headline": "Thanh thứ hai khi giữ Option",
+          "headline": "Giữ Option để hiện nhóm thao tác thứ hai",
           "items": [
-            "Giữ Option khi thanh đang hiện để xem nhóm hành động thứ hai bạn chọn trong Cài đặt",
-            "Chọn văn bản với Option đã giữ và thanh thứ hai xuất hiện ngay",
-            "Mỗi thanh hiển thị tối đa tám hành động phù hợp với lựa chọn, phần còn lại ở Thêm",
-            "Một hành động có thể xuất hiện trên cả hai thanh với cùng cài đặt",
-            "Giữ Command khi chọn bằng chuột để thanh không xuất hiện"
+            "Giữ Option khi thanh đang hiện để xem nhóm thao tác khác",
+            "Chọn văn bản với Option đã giữ để thanh thứ hai hiện ngay",
+            "Cấu hình thanh thứ hai trong Cài đặt, mục Actions, thẻ While holding Option",
+            "Mỗi thanh có thể có tối đa tám thao tác trước khi phần còn lại vào menu thêm",
+            "Một thao tác có thể xuất hiện trên cả hai thanh với cùng cài đặt",
+            "Cài đặt giờ ghi chú về việc giữ Command khi chọn để không cho thanh xuất hiện"
           ]
         }
       }
@@ -579,15 +579,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Translation language downloads now work while AI is translating",
+          "headline": "Fixed language download in Translate action",
           "items": [
-            "The Download button for translation languages now works even when AI translation is active"
+            "Fixed the Download button for languages being disabled while AI translation was active"
           ]
         },
         "vi": {
-          "headline": "Tải ngôn ngữ dịch thuật hoạt động khi AI đang dịch",
+          "headline": "Sửa tải ngôn ngữ trong hành động Dịch",
           "items": [
-            "Nút Tải xuống ngôn ngữ dịch thuật giờ hoạt động ngay cả khi đang dùng AI dịch"
+            "Sửa nút Tải xuống ngôn ngữ bị vô hiệu hóa khi đang dùng AI dịch"
           ]
         }
       }
@@ -599,17 +599,17 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Translate and Search settings moved to action rows",
+          "headline": "Translate and Search settings moved to action sheets",
           "items": [
-            "Translate and Search settings now open from a gear icon on each action's row",
-            "The action row shows your current choices like 'For words · macOS' or 'For a short text · Google'"
+            "Translate and Search settings now open in a sheet from the gear icon on their row",
+            "Each action's row shows what you have chosen, like 'For words · macOS' or 'For a short text · Google'"
           ]
         },
         "vi": {
-          "headline": "Cài đặt Dịch và Tìm kiếm chuyển vào hàng thao tác",
+          "headline": "Cài đặt Dịch và Tìm kiếm chuyển vào bảng riêng",
           "items": [
-            "Cài đặt Dịch và Tìm kiếm giờ mở từ biểu tượng bánh răng trên hàng của từng thao tác",
-            "Hàng thao tác hiển thị lựa chọn hiện tại như 'For words · macOS' hoặc 'For a short text · Google'"
+            "Cài đặt Dịch và Tìm kiếm giờ mở trong bảng riêng từ biểu tượng bánh răng trên hàng của chúng",
+            "Mỗi hàng hiển thị những gì bạn đã chọn, như 'Cho từ · macOS' hoặc 'Cho văn bản ngắn · Google'"
           ]
         }
       }
@@ -621,15 +621,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Settings refinement",
+          "headline": "Settings now easier to navigate",
           "items": [
-            "In Settings, clicking an action's row now only selects it; the switch alone toggles it on or off"
+            "In Settings, clicking an action's row now selects it without toggling the switch"
           ]
         },
         "vi": {
-          "headline": "Cải tiến phần Cài đặt",
+          "headline": "Cài đặt dễ điều hướng hơn",
           "items": [
-            "Trong Cài đặt, nhấn vào hàng của hành động giờ chỉ chọn hàng đó; công tắc mới bật tắt hành động"
+            "Trong Cài đặt, nhấn vào hàng của hành động giờ chỉ chọn nó mà không bật tắt công tắc"
           ]
         }
       }
@@ -663,16 +663,16 @@
         "en": {
           "headline": "The bar now follows your text when you scroll",
           "items": [
-            "The bar opened with ⌃⌥⌘Space now follows text as you scroll, just like the bar that appears when you select",
-            "In Chrome and Electron apps, the bar steps aside while scrolling and returns when text location updates",
+            "The bar opened with ⌃⌥⌘Space now follows text as you scroll, just like the bar that appears on selection",
+            "In Chrome and Electron apps, the bar steps aside while scrolling and returns when the text position updates",
             "Requires Lumi 1.53.0 or later"
           ]
         },
         "vi": {
           "headline": "Thanh công cụ giờ theo dõi văn bản khi cuộn",
           "items": [
-            "Thanh mở bằng ⌃⌥⌘Space giờ theo văn bản khi cuộn, giống như thanh xuất hiện khi bạn chọn văn bản",
-            "Trong Chrome và ứng dụng Electron, thanh tạm ẩn khi cuộn và hiện lại khi ứng dụng báo vị trí văn bản",
+            "Thanh mở bằng ⌃⌥⌘Space giờ theo văn bản khi cuộn, giống như thanh xuất hiện khi chọn",
+            "Trong Chrome và ứng dụng Electron, thanh tạm ẩn khi cuộn và hiện lại khi vị trí văn bản cập nhật",
             "Yêu cầu Lumi 1.53.0 trở lên"
           ]
         }
@@ -688,9 +688,9 @@
           "headline": "The bar now follows your text when you scroll",
           "items": [
             "The bar stays visible when you scroll and moves with your selected text",
-            "In most apps the bar switches sides when there is no room on the current side",
-            "In Chrome-based apps the bar steps aside while scrolling and returns when you stop",
-            "If you scroll the text out of view the bar disappears",
+            "In apps like TextEdit, Notes, and Safari, the bar repositions to stay beside your text",
+            "In Chrome-based apps, the bar temporarily steps aside while scrolling and returns when you stop",
+            "If you scroll the selected text out of view, the bar disappears",
             "Requires Lumi 1.53.0 or newer to work"
           ]
         },
@@ -698,10 +698,10 @@
           "headline": "Thanh công cụ giờ theo dõi văn bản khi bạn cuộn",
           "items": [
             "Thanh công cụ vẫn hiển thị khi bạn cuộn và di chuyển theo văn bản đã chọn",
-            "Trong hầu hết ứng dụng thanh công cụ chuyển sang bên kia khi không đủ chỗ",
-            "Trong ứng dụng dựa trên Chrome thanh công cụ tránh sang một bên khi cuộn và quay lại khi bạn dừng",
-            "Nếu bạn cuộn văn bản ra khỏi tầm nhìn thanh công cụ sẽ biến mất",
-            "Yêu cầu Lumi phiên bản 1.53.0 trở lên"
+            "Trong các ứng dụng như TextEdit, Notes và Safari, thanh tự động đổi vị trí để ở cạnh văn bản",
+            "Trong các ứng dụng dựa trên Chrome, thanh tạm lui ra khi cuộn và quay lại khi bạn dừng",
+            "Nếu bạn cuộn văn bản đã chọn ra khỏi màn hình, thanh sẽ biến mất",
+            "Cần Lumi phiên bản 1.53.0 trở lên để hoạt động"
           ]
         }
       }
@@ -722,6 +722,384 @@
           "headline": "Chú thích cho chế độ chỉ hiện biểu tượng",
           "items": [
             "Khi thanh chỉ hiện biểu tượng, di chuột hoặc dùng phím mũi tên sẽ hiện tên nút trong chú thích"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.5": {
+    "notesSha256": "e45df018c0fd7455168ec7b20faaa1d351a759e315541cb76c4f7d55e1cc9a64",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "AI translation with live streaming and model control",
+          "items": [
+            "Choose between macOS translation or your Lumi AI for better tone and idioms",
+            "Translation streams live as the AI writes, with options to stop, copy or replace",
+            "Settings let you pick the model, adjust instructions and control how hard it thinks",
+            "AI can detect languages macOS cannot identify and shows which model translated",
+            "AI translation now works on macOS versions before 26"
+          ]
+        },
+        "vi": {
+          "headline": "Dịch bằng AI với luồng trực tiếp và điều khiển mô hình",
+          "items": [
+            "Chọn giữa dịch bằng macOS hoặc AI của Lumi để có giọng điệu và thành ngữ tốt hơn",
+            "Bản dịch hiện trực tiếp khi AI viết, có thể dừng, sao chép hoặc thay thế",
+            "Cài đặt cho phép chọn mô hình, điều chỉnh hướng dẫn và mức độ suy nghĩ",
+            "AI nhận diện được các ngôn ngữ mà macOS không xác định được và hiển thị mô hình đã dịch",
+            "Dịch bằng AI giờ hoạt động trên các phiên bản macOS trước 26"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.4": {
+    "notesSha256": "8e1177fda7108d2c6067baa56ddf97c9ae3d276efd5e4af23cce9c58760f1d59",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Translate now works in Slack and other Chromium-based apps",
+          "items": [
+            "Translate now works in Slack and other Chromium-based apps where it previously said nothing was selected"
+          ]
+        },
+        "vi": {
+          "headline": "Translate giờ hoạt động trong Slack và các ứng dụng Chromium khác",
+          "items": [
+            "Translate giờ hoạt động trong Slack và các ứng dụng dựa trên Chromium mà trước đây báo không có gì được chọn"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.3": {
+    "notesSha256": "8e6229fc0f25be2ec637eb8297851c92b705d6a8d4862bd60e799005364b7471",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "AI action sheets are easier to use and look cleaner",
+          "items": [
+            "AI action sheets are shorter with Done and Cancel always visible",
+            "Only the settings scroll while the title and buttons stay in place",
+            "Tooltips appear when you hover over (?) icons next to settings that need explanation",
+            "Scrolling no longer reveals the Settings page through gaps in the sheet",
+            "The sheet now aligns properly within its frame instead of sitting slightly left",
+            "Tooltips on dependent settings like Write it over at once are no longer transparent"
+          ]
+        },
+        "vi": {
+          "headline": "Bảng hành động AI dễ dùng hơn và gọn gàng hơn",
+          "items": [
+            "Bảng hành động AI ngắn hơn với nút Xong và Hủy luôn hiển thị",
+            "Chỉ phần cài đặt cuộn còn tiêu đề và nút giữ nguyên vị trí",
+            "Chú giải hiện ra khi di chuột qua biểu tượng (?) bên cạnh cài đặt cần giải thích",
+            "Cuộn không còn để lộ trang Cài đặt qua khe hở trên bảng",
+            "Bảng giờ căn chỉnh đúng trong khung thay vì lệch sang trái một chút",
+            "Chú giải trên cài đặt phụ thuộc như Ghi đè ngay không còn trong suốt"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.2": {
+    "notesSha256": "2439cfb4fe29417ef5bc62e1b27bf1360252b26f5dc386c313ff410e9a2429c4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Choose how AI edits are marked",
+          "items": [
+            "Settings lets you pick how changes are shown: GitHub, GitLab, VS Code, or Track Changes like Word",
+            "Each style is previewed on glass that matches how the card will look",
+            "Removed text is no longer greyed out and struck through, making edits easier to read"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn cách đánh dấu chỉnh sửa của AI",
+          "items": [
+            "Cài đặt giờ cho phép chọn cách hiển thị thay đổi: kiểu GitHub, GitLab, VS Code, hoặc Track Changes như Word",
+            "Mỗi kiểu được xem trước trên nền giống như thẻ sẽ hiển thị",
+            "Văn bản bị xóa không còn bị làm mờ và gạch ngang, giúp đọc chỉnh sửa dễ hơn"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.1": {
+    "notesSha256": "6d6c7c6dbe27ccc3c7556bbf8c4bc2be5243c3ace81b78c22040a6a39f357e58",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "See what changed in AI rewrites",
+          "items": [
+            "A toggle at the top of AI answers that replace your text shows the changes marked or the final result"
+          ]
+        },
+        "vi": {
+          "headline": "Xem những thay đổi trong văn bản AI viết lại",
+          "items": [
+            "Nút chuyển đổi ở đầu câu trả lời AI cho thấy những thay đổi được đánh dấu hoặc kết quả cuối cùng"
+          ]
+        }
+      }
+    }
+  },
+  "0.3.0": {
+    "notesSha256": "a4f75322f6c757cb87817e723644c4d2dec5504da9cf664cc6f02ae4b60a4830",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "AI actions to fix, rewrite, summarize, explain and ask about text",
+          "items": [
+            "AI actions appear on the bar: fix spelling and grammar, rewrite in styles, summarize, explain and ask",
+            "Create custom actions with your own instructions, like composing a reply to a message",
+            "Answers appear on a card as they are written, with options to replace or copy the text",
+            "Change any AI action's instructions, when it appears, which model it uses and how it responds",
+            "Turn on write it over at once to apply fixes and rewrites directly without showing a card first",
+            "Requires Lumi 1.52.0 or later"
+          ]
+        },
+        "vi": {
+          "headline": "Thao tác AI sửa lỗi, viết lại, tóm tắt, giải thích và hỏi văn bản",
+          "items": [
+            "Thao tác AI xuất hiện trên thanh: sửa chính tả, viết lại theo phong cách, tóm tắt, giải thích và hỏi",
+            "Tạo thao tác tùy chỉnh với hướng dẫn riêng, như soạn câu trả lời tin nhắn",
+            "Câu trả lời hiện trên thẻ khi được viết, với tùy chọn thay thế hoặc sao chép",
+            "Thay đổi hướng dẫn, thời điểm xuất hiện, mô hình sử dụng và cách phản hồi của mỗi thao tác AI",
+            "Bật viết đè ngay để áp dụng sửa lỗi và viết lại trực tiếp mà không hiện thẻ trước",
+            "Yêu cầu Lumi phiên bản 1.52.0 trở lên"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.8": {
+    "notesSha256": "ee967a2d777c0500ef36928b662065d7eafaa63926e34198859b36f40593a38c",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed layout in Settings",
+          "items": [
+            "Settings sections now fit their content height correctly"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa bố cục trong Cài đặt",
+          "items": [
+            "Các phần trong Cài đặt giờ vừa khít với nội dung bên trong"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.7": {
+    "notesSha256": "eecca3d2786bfd17b8b43125454f047e3a1fe44244ac1699e48a212e5128403a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "The bar stays put when you return from download prompts",
+          "items": [
+            "The bar stays exactly where it was when you return from the download prompt",
+            "Answers for old selections are dropped if you have selected something new"
+          ]
+        },
+        "vi": {
+          "headline": "Thanh công cụ giữ nguyên vị trí khi quay lại từ hộp thoại tải",
+          "items": [
+            "Thanh công cụ giữ nguyên vị trí khi bạn quay lại từ hộp thoại tải xuống",
+            "Câu trả lời cho văn bản cũ sẽ bị bỏ qua nếu bạn đã chọn văn bản mới"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.6": {
+    "notesSha256": "3642ba1bec78e84b04e4e97b60b0be81190e65a11f5e786500568680acdd0bcc",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed Translate card sizing after download prompt",
+          "items": [
+            "Translate card no longer appears too large with edges cut off after returning from download prompt"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa kích thước thẻ Dịch sau hộp thoại tải xuống",
+          "items": [
+            "Thẻ Dịch không còn hiển thị quá lớn với các cạnh bị cắt sau khi quay lại từ hộp thoại tải xuống"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.5": {
+    "notesSha256": "38afe33b499c6222e268c58cefd0d338d6e3a68e38bd5ed956d33b1aa227bf0d",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Visual refinement",
+          "items": [
+            "The buttons at the bar's edges now match the bar's corner radius"
+          ]
+        },
+        "vi": {
+          "headline": "Cải tiến giao diện",
+          "items": [
+            "Các nút ở hai đầu thanh giờ khớp với độ bo góc của thanh"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.4": {
+    "notesSha256": "2be3807736505269fae880bee82379cdfa2585f400986aec53976dbbd7f48251",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Polished corner rounding on edge buttons",
+          "items": [
+            "Buttons at the edge of the bar now round their outer corners to match the bar itself"
+          ]
+        },
+        "vi": {
+          "headline": "Làm mịn các góc bo tròn của nút ở cạnh",
+          "items": [
+            "Các nút ở cạnh thanh giờ bo tròn góc ngoài khớp với chính thanh đó"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.3": {
+    "notesSha256": "a06d0e2a480b73a8162d71d74281621e62e5e4d404dd2739fc6dae2dff93224e",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Renamed exclusion setting for clarity",
+          "items": [
+            "Not in… under ⋯ on the bar is now Don't pop up in…, matching its behavior more clearly",
+            "Selecting text in excluded apps no longer shows the bar, but the shortcut still works"
+          ]
+        },
+        "vi": {
+          "headline": "Đổi tên cài đặt loại trừ cho rõ ràng hơn",
+          "items": [
+            "Not in… trong menu ⋯ trên thanh giờ là Don't pop up in…, phản ánh chính xác hơn cách hoạt động",
+            "Chọn văn bản trong ứng dụng bị loại trừ sẽ không hiện thanh, nhưng phím tắt vẫn hoạt động"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.2": {
+    "notesSha256": "30482264f82b205adafabb03be8189f47ee2e902e74fb915b2a0f7c09b469681",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed highlight appearing without hovering in Translate",
+          "items": [
+            "Fixed Translate showing a language as highlighted when the card opens without the pointer over it",
+            "Fixed language lists opening with an item highlighted when the pointer is not hovering over it"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa lỗi làm nổi mục khi chưa di chuột trong Translate",
+          "items": [
+            "Sửa lỗi Translate hiển thị ngôn ngữ được làm nổi khi mở thẻ mà con trỏ không ở trên đó",
+            "Sửa lỗi danh sách ngôn ngữ mở ra với mục được làm nổi khi con trỏ không di chuyển qua"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.1": {
+    "notesSha256": "b53d450493d0d1fcd3341c77d4ee21bd7d8bc4dc6d62800521b0b283441e59b9",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixed the bar returning from Translate",
+          "items": [
+            "The bar now shrinks back to its size and place beside the text when you go back from Translate's card"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa thanh công cụ khi quay lại từ Dịch",
+          "items": [
+            "Thanh công cụ giờ thu nhỏ về kích thước và vị trí bên văn bản khi quay lại từ thẻ Dịch"
+          ]
+        }
+      }
+    }
+  },
+  "0.2.0": {
+    "notesSha256": "471262501d29e885288a237118f1f2a0a39643abaacdc4c34e4b3c80602ea20f",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Translate text without leaving your Mac",
+          "items": [
+            "Press Translate on the bar to read your selection in your own language",
+            "The translation appears in a card, made on your Mac by the translator built into macOS",
+            "On a Mac set to English in Vietnam, English becomes Vietnamese and everything else English",
+            "Press either language name to choose another from a list showing what is on your Mac",
+            "Copy puts the translation on the clipboard, Replace writes it over your selection",
+            "When a language is not on your Mac yet, Download opens the macOS prompt"
+          ]
+        },
+        "vi": {
+          "headline": "Dịch văn bản ngay trên máy Mac",
+          "items": [
+            "Nhấn Dịch trên thanh công cụ để đọc nội dung đã chọn bằng ngôn ngữ của bạn",
+            "Bản dịch xuất hiện trong thẻ, được tạo trên máy Mac bằng trình dịch tích hợp sẵn của macOS",
+            "Trên máy Mac đặt tiếng Anh ở Việt Nam, tiếng Anh chuyển sang tiếng Việt và ngược lại",
+            "Nhấn tên ngôn ngữ để chọn ngôn ngữ khác từ danh sách hiển thị những gì có trên máy Mac",
+            "Sao chép đưa bản dịch vào clipboard, Thay thế ghi đè lên nội dung đã chọn",
+            "Khi ngôn ngữ chưa có trên máy Mac, Tải xuống mở hộp thoại của macOS"
+          ]
+        }
+      }
+    }
+  },
+  "0.1.20": {
+    "notesSha256": "95d0e1372460e63ee4feb8d1362691d47d49416540133cb578eb4aa2434ac59a",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Select text and a bar of actions shows up beside it",
+          "items": [
+            "Select text with the mouse or keyboard and a small bar shows up beside it",
+            "Press Escape to back out of menus one level at a time, then close the bar",
+            "Menus with many items scroll sideways and fade at the ends where items are hidden",
+            "The bar waits after a double-click in case a third click makes it a triple-click",
+            "Copy, Search, Open link, New email, answer sums, Format JSON, Case, Lines, Encode and Count",
+            "Press Control-Option-Command-Space to open the bar from the keyboard in any app"
+          ]
+        },
+        "vi": {
+          "headline": "Chọn văn bản và thanh công cụ hiện lên bên cạnh",
+          "items": [
+            "Chọn văn bản bằng chuột hoặc bàn phím và thanh công cụ nhỏ hiện lên bên cạnh",
+            "Nhấn Escape để thoát khỏi menu từng cấp một, sau đó đóng thanh công cụ",
+            "Menu có nhiều mục cuộn ngang và mờ dần ở hai đầu nơi các mục bị ẩn",
+            "Thanh công cụ đợi sau khi nhấp đúp phòng khi nhấp lần ba biến thành nhấp ba",
+            "Sao chép, Tìm kiếm, Mở liên kết, Email mới, tính toán, Định dạng JSON, Chữ hoa/thường, Dòng, Mã hóa và Đếm",
+            "Nhấn Control-Option-Command-Space để mở thanh công cụ từ bàn phím trong bất kỳ ứng dụng nào"
           ]
         }
       }

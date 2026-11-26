@@ -453,17 +453,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Globe key can now be tested",
+          "headline": "Fn and Globe keys can now be tested",
           "items": [
-            "Globe key can now be tested by pressing it with delete or an arrow key",
-            "Tooltip and notes explain how to test the Globe key"
+            "Fn and Globe keys can now be tested by pressing them with Delete or an arrow key"
           ]
         },
         "vi": {
-          "headline": "Có thể kiểm tra phím Globe",
+          "headline": "Có thể kiểm tra phím Fn và Globe",
           "items": [
-            "Phím Globe giờ có thể kiểm tra bằng cách nhấn cùng phím delete hoặc phím mũi tên",
-            "Chú thích và ghi chú hướng dẫn cách kiểm tra phím Globe"
+            "Có thể kiểm tra phím Fn và Globe bằng cách nhấn cùng Delete hoặc phím mũi tên"
           ]
         }
       }
@@ -475,15 +473,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Improved keyboard visibility",
+          "headline": "Improved keyboard view scrolling",
           "items": [
-            "Opening 'Keys this page cannot hear' now scrolls only the notes, keeping the keyboard visible"
+            "Opening Keys this page cannot hear scrolls the notes only; the keyboard stays in view"
           ]
         },
         "vi": {
-          "headline": "Cải thiện hiển thị bàn phím",
+          "headline": "Cải thiện cuộn giao diện bàn phím",
           "items": [
-            "Mở 'Phím trang này không nghe được' giờ chỉ cuộn phần ghi chú, giữ bàn phím luôn hiển thị"
+            "Mở phần Các phím trang này không nghe được chỉ cuộn phần ghi chú; bàn phím vẫn hiển thị"
           ]
         }
       }
@@ -495,25 +493,25 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Keyboard now matches MacBook Pro layout with proper key sizes",
+          "headline": "Keyboard now matches the 2021 and later MacBook Pro",
           "items": [
-            "The keyboard now shows a MacBook Pro layout with real key sizes and shapes",
-            "Function keys are full height with Touch ID shown on the right",
-            "Arrow keys show the correct half-height left and right keys",
-            "Modifier keys display their symbols instead of text labels",
-            "ISO Return key appears as one L-shaped key instead of two separate keys",
-            "Key labels resize to fit when you make the window narrower"
+            "The keyboard now shows real key sizes and layout from 2021 and later MacBook Pros",
+            "Function row is now full height with Touch ID shown",
+            "Left and right arrow keys are now half height to match the hardware",
+            "Modifier keys now show their symbols instead of text labels",
+            "ISO Return key is now drawn as one L-shaped key",
+            "Key labels now scale when you resize the window so they always fit"
           ]
         },
         "vi": {
-          "headline": "Bàn phím hiển thị đúng bố cục MacBook Pro với kích thước thật",
+          "headline": "Bàn phím giờ giống MacBook Pro 2021 trở lên",
           "items": [
-            "Bàn phím hiện theo bố cục MacBook Pro với kích thước và hình dạng thật",
-            "Phím chức năng có chiều cao đầy đủ với Touch ID ở bên phải",
-            "Phím mũi tên trái và phải hiển thị đúng chiều cao một nửa",
-            "Phím bổ trợ hiển thị ký hiệu thay vì chữ",
-            "Phím Return kiểu ISO hiện dạng chữ L liền khối thay vì hai phím riêng",
-            "Nhãn phím tự động co lại khi thu nhỏ cửa sổ"
+            "Bàn phím hiện có kích thước và bố trí thật của MacBook Pro 2021 trở về sau",
+            "Hàng phím chức năng giờ cao đầy đủ và có Touch ID",
+            "Phím mũi tên trái phải giờ cao một nửa như trên máy thật",
+            "Phím bổ trợ giờ hiện ký hiệu thay vì chữ",
+            "Phím Return ISO giờ vẽ thành một phím hình chữ L",
+            "Nhãn phím giờ co giãn theo cửa sổ để luôn vừa khít"
           ]
         }
       }
@@ -527,13 +525,13 @@
         "en": {
           "headline": "Added a hint for testing Caps Lock",
           "items": [
-            "A hint now appears under the keyboard explaining how to test Caps Lock"
+            "Added a hint under the keyboard explaining how to test Caps Lock"
           ]
         },
         "vi": {
           "headline": "Thêm gợi ý kiểm tra phím Caps Lock",
           "items": [
-            "Giờ có gợi ý hiển thị dưới bàn phím hướng dẫn cách kiểm tra phím Caps Lock"
+            "Thêm gợi ý bên dưới bàn phím hướng dẫn cách kiểm tra phím Caps Lock"
           ]
         }
       }
@@ -545,17 +543,17 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Start testing immediately when the tab opens",
+          "headline": "Easier keyboard testing",
           "items": [
-            "The test now captures your keyboard as soon as you open the tab",
-            "When you click away, a cover appears and one click resumes the test"
+            "The test starts as soon as you open it, no click needed",
+            "If the test loses focus, click once to resume testing"
           ]
         },
         "vi": {
-          "headline": "Bắt đầu kiểm tra ngay khi mở tab",
+          "headline": "Kiểm tra bàn phím dễ hơn",
           "items": [
-            "Bàn phím được nhận diện ngay khi bạn mở tab",
-            "Khi nhấp ra ngoài, một lớp phủ xuất hiện và một cú nhấp sẽ tiếp tục kiểm tra"
+            "Bắt đầu kiểm tra ngay khi mở, không cần nhấp chuột",
+            "Nếu mất tiêu điểm, nhấp một lần để tiếp tục kiểm tra"
           ]
         }
       }
@@ -567,15 +565,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Caps Lock now registers when used as Hyper key",
+          "headline": "Caps Lock now works with Hyper key",
           "items": [
-            "Caps Lock now counts as pressed when Lumi's Hyper key is set to toggle Caps Lock on a tap"
+            "Caps Lock counts when Lumi's Hyper key is set to toggle Caps Lock on a tap"
           ]
         },
         "vi": {
-          "headline": "Caps Lock giờ được nhận diện khi dùng làm phím Hyper",
+          "headline": "Caps Lock hoạt động với phím Hyper",
           "items": [
-            "Caps Lock giờ được tính là đã nhấn khi phím Hyper của Lumi được đặt để bật tắt Caps Lock khi chạm"
+            "Caps Lock được tính khi phím Hyper của Lumi được đặt để bật Caps Lock khi nhấn"
           ]
         }
       }
@@ -587,17 +585,17 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Modifier tracking and Caps Lock detection improvements",
+          "headline": "Modifier keys now shown, Caps Lock fix with Hyper key",
           "items": [
-            "The last key pressed now shows which modifier keys were held down",
-            "Caps Lock is now detected even when Hyper key remap is configured but inactive"
+            "The last key pressed now shows which modifier keys were held down with it",
+            "Caps Lock now registers correctly when Hyper key remapping is enabled but not active"
           ]
         },
         "vi": {
-          "headline": "Cải thiện theo dõi phím bổ trợ và phát hiện Caps Lock",
+          "headline": "Hiển thị phím bổ trợ, sửa lỗi Caps Lock với Hyper key",
           "items": [
-            "Phím vừa nhấn giờ hiển thị các phím bổ trợ đang được giữ",
-            "Caps Lock giờ được phát hiện ngay cả khi Hyper key đã cấu hình nhưng chưa hoạt động"
+            "Phím vừa nhấn giờ hiển thị cả các phím bổ trợ được giữ cùng lúc",
+            "Caps Lock giờ được nhận đúng khi bật chế độ Hyper key nhưng chưa hoạt động"
           ]
         }
       }
@@ -609,15 +607,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Caps Lock now works with Hyper key enabled",
+          "headline": "Caps Lock now works with Hyper key",
           "items": [
-            "Caps Lock can now be tested even when Lumi's Hyper key is turned on"
+            "Caps Lock can be tested even when Lumi's Hyper key is turned on"
           ]
         },
         "vi": {
-          "headline": "Caps Lock hoạt động với phím Hyper đã bật",
+          "headline": "Caps Lock hoạt động với phím Hyper",
           "items": [
-            "Caps Lock giờ có thể kiểm tra được ngay cả khi phím Hyper của Lumi đang bật"
+            "Có thể kiểm tra Caps Lock ngay cả khi phím Hyper của Lumi đang bật"
           ]
         }
       }
@@ -632,20 +630,18 @@
           "headline": "First release: test every key and catch double-typing",
           "items": [
             "A keyboard test tab shows a MacBook keyboard that lights up as you press each key",
-            "Counts how many keys you have tested so far",
-            "Shows which keys are currently held down",
-            "Flags keys that register twice from a single press, indicating a worn switch",
-            "Supports both ANSI and ISO keyboard layouts"
+            "The test counts how many keys you have tested so far",
+            "Keys you are holding down are shown separately",
+            "Keys that register twice from one press are flagged as worn"
           ]
         },
         "vi": {
           "headline": "Phiên bản đầu tiên: kiểm tra từng phím và phát hiện gõ kép",
           "items": [
             "Tab kiểm tra bàn phím hiển thị bàn phím MacBook sáng lên khi bạn nhấn từng phím",
-            "Đếm số lượng phím bạn đã kiểm tra",
-            "Hiển thị các phím đang được giữ",
-            "Đánh dấu phím kích hoạt hai lần khi chỉ nhấn một lần, dấu hiệu công tắc bị mòn",
-            "Hỗ trợ cả bố trí bàn phím ANSI và ISO"
+            "Đếm số phím bạn đã kiểm tra",
+            "Hiển thị riêng các phím đang được giữ",
+            "Đánh dấu các phím bị gõ kép do tiếp điểm bị mòn"
           ]
         }
       }

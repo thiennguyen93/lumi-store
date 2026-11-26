@@ -475,14 +475,14 @@
         "en": {
           "headline": "About screen improvements",
           "items": [
-            "About screen now shows what Floating Browser is and lists recent changes",
+            "About screen now shows what Floating Browser is and recent version highlights",
             "About screen no longer stays in front when you bring a page forward"
           ]
         },
         "vi": {
           "headline": "Cải thiện màn hình Giới thiệu",
           "items": [
-            "Màn hình Giới thiệu giờ hiển thị Floating Browser là gì và liệt kê các thay đổi gần đây",
+            "Màn hình Giới thiệu giờ hiển thị mô tả Floating Browser và các tính năng mới gần đây",
             "Màn hình Giới thiệu không còn nằm phía trước khi bạn đưa trang web lên"
           ]
         }
@@ -495,15 +495,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "About page with version history and credits",
+          "headline": "About screen with version history and credits",
           "items": [
-            "About page shows what Floating Browser is, who made it, and recent updates"
+            "About screen shows what Floating Browser is, who made it, and recent updates"
           ]
         },
         "vi": {
-          "headline": "Trang giới thiệu với lịch sử phiên bản",
+          "headline": "Màn hình giới thiệu với lịch sử phiên bản",
           "items": [
-            "Trang giới thiệu hiển thị Floating Browser là gì, ai làm ra và các cập nhật gần đây"
+            "Màn hình giới thiệu hiển thị Floating Browser là gì, ai tạo ra và các cập nhật gần đây"
           ]
         }
       }
@@ -519,7 +519,7 @@
           "items": [
             "Arrow keys navigate menu items and Return or Space selects the highlighted item",
             "Type the first letters of a menu item to jump to it",
-            "Left and right arrows adjust zoom when the zoom row is highlighted",
+            "Left and right arrows adjust zoom when a zoom level is highlighted",
             "Keyboard shortcuts like ⌘T and ⌘Y now work while the menu is open"
           ]
         },
@@ -528,7 +528,7 @@
           "items": [
             "Phím mũi tên di chuyển giữa các mục và Return hoặc Space chọn mục đang sáng",
             "Gõ chữ cái đầu của mục menu để nhảy đến mục đó",
-            "Mũi tên trái phải điều chỉnh zoom khi hàng zoom đang được chọn",
+            "Mũi tên trái phải điều chỉnh mức zoom khi đang chọn một mức zoom",
             "Các phím tắt như ⌘T và ⌘Y giờ hoạt động khi menu đang mở"
           ]
         }
@@ -543,13 +543,13 @@
         "en": {
           "headline": "Menu now opens in its own panel",
           "items": [
-            "The menu opens in its own panel under the icon so a small browser no longer cuts it off"
+            "The icon's menu opens in a panel of its own under the icon, over the page"
           ]
         },
         "vi": {
           "headline": "Menu giờ mở trong bảng riêng",
           "items": [
-            "Menu mở trong bảng riêng bên dưới biểu tượng nên trình duyệt nhỏ không còn che khuất nó"
+            "Menu của biểu tượng giờ mở trong bảng riêng bên dưới biểu tượng, nổi trên trang"
           ]
         }
       }
@@ -563,21 +563,21 @@
         "en": {
           "headline": "Zoom controls, smaller minimum size, and refined menus",
           "items": [
-            "Zoom in, zoom out, and reset with Command-plus, Command-minus, and Command-zero",
+            "Zoom In, Zoom Out and Actual Size in the menu and with ⌘+, ⌘− and ⌘0",
             "Each site remembers its zoom level across tabs and visits",
             "The browser can now be resized down to 368 by 200 pixels",
-            "Menu items for Compact Mode, Desktop Site, and Zoom now have icons",
-            "The light behind Lumi's mark in the pill is now a perfect circle"
+            "Menu items now have icons, and the pill menu shows a proper close button",
+            "The light behind the Lumi mark is now a perfect circle"
           ]
         },
         "vi": {
-          "headline": "Điều khiển thu phóng, kích thước tối thiểu nhỏ hơn và menu tinh chỉnh",
+          "headline": "Điều khiển thu phóng, kích thước nhỏ hơn và menu cải tiến",
           "items": [
-            "Phóng to, thu nhỏ và đặt lại bằng Command-cộng, Command-trừ và Command-không",
-            "Mỗi trang web ghi nhớ mức thu phóng của nó qua các tab và lần truy cập",
+            "Phóng to, Thu nhỏ và Kích thước thực trong menu và với ⌘+, ⌘− và ⌘0",
+            "Mỗi trang web ghi nhớ mức thu phóng qua các tab và lần truy cập",
             "Trình duyệt giờ có thể thu nhỏ xuống 368 x 200 pixel",
-            "Các mục menu Chế độ gọn, Trang dành cho máy tính và Thu phóng giờ có biểu tượng",
-            "Vầng sáng phía sau biểu tượng Lumi trong viên thuốc giờ là hình tròn hoàn hảo"
+            "Các mục menu giờ có biểu tượng và menu viên thuốc hiển thị nút đóng đúng cách",
+            "Ánh sáng phía sau dấu Lumi giờ là hình tròn hoàn hảo"
           ]
         }
       }
@@ -591,14 +591,14 @@
         "en": {
           "headline": "Compact Mode shows site icons and keeps its title centered",
           "items": [
-            "The title in Compact Mode now shows the site's icon before it, just like the tab strip does",
+            "The title in Compact Mode now shows the site icon before it, just like the tab strip does",
             "The title stays centered in Compact Mode even as buttons appear underneath"
           ]
         },
         "vi": {
           "headline": "Chế độ thu gọn hiển thị biểu tượng trang và giữ tiêu đề ở giữa",
           "items": [
-            "Tiêu đề ở chế độ thu gọn giờ hiển thị biểu tượng của trang web phía trước, giống như thanh tab",
+            "Tiêu đề ở chế độ thu gọn giờ hiển thị biểu tượng trang web phía trước, giống như thanh tab",
             "Tiêu đề luôn ở giữa trong chế độ thu gọn ngay cả khi các nút xuất hiện bên dưới"
           ]
         }
@@ -623,7 +623,7 @@
           "items": [
             "Thêm nút phóng to giữa nút thu nhỏ và đóng để chiếm toàn màn hình",
             "Nhấp đúp vào thanh tab hoặc thanh Chế độ gọn để phóng to",
-            "Nút khôi phục đưa trình duyệt về kích thước và vị trí ban đầu"
+            "Nút khôi phục đưa trình duyệt về kích thước và vị trí trước đó"
           ]
         }
       }
@@ -635,15 +635,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Welcome tour follows your chosen appearance",
+          "headline": "Welcome tour respects your appearance choice",
           "items": [
-            "The Welcome tour now uses the appearance you picked in Settings"
+            "The Welcome tour now follows the Appearance setting you chose in Settings"
           ]
         },
         "vi": {
           "headline": "Hướng dẫn đầu tiên theo giao diện bạn chọn",
           "items": [
-            "Hướng dẫn chào mừng giờ dùng giao diện bạn đã chọn trong Cài đặt"
+            "Hướng dẫn chào mừng giờ hiển thị theo cài đặt Giao diện bạn đã chọn"
           ]
         }
       }
@@ -655,19 +655,17 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "The tip now follows the pill as you drag it",
+          "headline": "Tip follows pill and responds to clicks after minimize",
           "items": [
-            "The tip over the pill follows it when you drag, staying beside it and pointing at it",
-            "The tip moves below the pill when you leave the pill at the top of the screen",
-            "The pill rings while its tip is showing, and clicking the pill dismisses the tip"
+            "The tip now follows the pill when you drag it and points from below when the pill is at the top",
+            "The pill rings while its tip is shown and clicking it dismisses the tip after minimize"
           ]
         },
         "vi": {
-          "headline": "Mẹo giờ đây theo viên thuốc khi bạn kéo",
+          "headline": "Mẹo theo viên thuốc và phản hồi cú nhấp sau thu nhỏ",
           "items": [
-            "Mẹo trên viên thuốc theo nó khi bạn kéo, luôn ở bên cạnh và chỉ vào nó",
-            "Mẹo chuyển xuống dưới viên thuốc khi bạn để viên thuốc ở trên cùng màn hình",
-            "Viên thuốc rung khi mẹo đang hiển thị, và nhấp vào viên thuốc sẽ đóng mẹo"
+            "Mẹo giờ theo viên thuốc khi kéo và chỉ từ phía dưới khi viên thuốc ở trên cùng",
+            "Viên thuốc rung khi mẹo hiện và nhấp vào nó sẽ đóng mẹo sau khi thu nhỏ"
           ]
         }
       }
@@ -679,15 +677,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Choose whether the mini player follows what's playing or your last tab",
+          "headline": "Choose whether the mini player follows what's playing or stays put",
           "items": [
-            "A new setting lets you keep the mini player on your last viewed tab even when another tab plays audio or video"
+            "A new setting lets you keep the mini player on your current tab even when another tab plays audio or video"
           ]
         },
         "vi": {
-          "headline": "Chọn trình phát mini theo dõi nội dung đang phát hay tab cuối",
+          "headline": "Chọn trình phát mini theo dõi nội dung phát hay giữ nguyên",
           "items": [
-            "Cài đặt mới giữ trình phát mini ở tab bạn xem cuối ngay cả khi tab khác đang phát âm thanh hoặc video"
+            "Cài đặt mới cho phép giữ trình phát mini ở tab hiện tại ngay cả khi tab khác phát âm thanh hoặc video"
           ]
         }
       }
@@ -701,13 +699,13 @@
         "en": {
           "headline": "Extension Store page now explains what Floating Browser does",
           "items": [
-            "The Extension Store page now describes what you get, how browsing stays private, and how to start"
+            "The Extension Store page now describes what Floating Browser does and how it works"
           ]
         },
         "vi": {
           "headline": "Trang Extension Store giờ giải thích Floating Browser làm gì",
           "items": [
-            "Trang Extension Store giờ mô tả Floating Browser làm gì, cách giữ riêng tư khi duyệt web, và cách bắt đầu"
+            "Trang Extension Store giờ mô tả Floating Browser làm gì và hoạt động như thế nào"
           ]
         }
       }
@@ -721,13 +719,13 @@
         "en": {
           "headline": "Demo video added to the Extension Store",
           "items": [
-            "A demo video now shows how Floating Browser works before you install it"
+            "A demo video now shows the browser in action before you install"
           ]
         },
         "vi": {
-          "headline": "Thêm video giới thiệu vào Cửa hàng Tiện ích",
+          "headline": "Thêm video demo vào Cửa hàng Tiện ích",
           "items": [
-            "Video giới thiệu giờ cho thấy Floating Browser hoạt động như thế nào trước khi cài đặt"
+            "Video demo giờ hiển thị trình duyệt hoạt động trước khi bạn cài đặt"
           ]
         }
       }
@@ -739,25 +737,25 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Close tabs, mini player controls, settings panel, and more",
+          "headline": "Media controls, settings panel, and refined window behavior",
           "items": [
             "Closing the last tab with ⌘W leaves a new tab open; press ⌘W again to close the browser",
             "The mini player shows track title, artist, progress bar you can click or drag, and play/pause on hover",
-            "Album artwork appears on the mini player when available, with the site icon as a small badge",
-            "Settings panel lets you choose album art shape, enable color tinting, and set light or dark appearance",
-            "History and Settings open as tabs at lumi://history and lumi://settings addresses",
-            "YouTube now opens in desktop layout so controls appear when you move the mouse over the video"
+            "Album artwork replaces the site icon in the mini player when available, with the icon as a small badge",
+            "Settings panel lets you choose artwork shape, enable color tinting, and set light or dark appearance",
+            "History and Settings open as special tabs at lumi://history and lumi://settings addresses",
+            "Closing the browser with × now asks for confirmation when pages are open; disable this in Settings"
           ]
         },
         "vi": {
-          "headline": "Đóng thẻ, điều khiển trình phát nhỏ, bảng cài đặt và nhiều hơn nữa",
+          "headline": "Điều khiển phương tiện, bảng cài đặt và cải tiến cửa sổ",
           "items": [
-            "Đóng thẻ cuối bằng ⌘W để lại một thẻ mới; nhấn ⌘W lần nữa để đóng trình duyệt",
-            "Trình phát nhỏ hiển thị tên bài, nghệ sĩ, thanh tiến trình kéo được và nút phát/tạm dừng khi di chuột",
-            "Ảnh bìa album xuất hiện trên trình phát nhỏ khi có sẵn, với biểu tượng trang web làm huy hiệu nhỏ",
-            "Bảng cài đặt cho phép chọn hình dạng ảnh bìa, bật tô màu theo ảnh bìa và đặt giao diện sáng hoặc tối",
-            "Lịch sử và Cài đặt mở dưới dạng thẻ tại địa chỉ lumi://history và lumi://settings",
-            "YouTube giờ mở ở bố cục máy tính để các nút điều khiển hiện ra khi di chuột qua video"
+            "Đóng tab cuối bằng ⌘W để lại tab mới; nhấn ⌘W lần nữa để đóng trình duyệt",
+            "Trình phát mini hiển thị tên bài, nghệ sĩ, thanh tiến trình và nút phát/tạm dừng khi rê chuột",
+            "Ảnh bìa thay biểu tượng trang trong trình phát mini khi có, biểu tượng trang hiện dưới dạng huy hiệu nhỏ",
+            "Bảng cài đặt cho phép chọn hình dạng ảnh bìa, bật tô màu theo ảnh và đặt giao diện sáng hoặc tối",
+            "Lịch sử và Cài đặt mở dưới dạng tab đặc biệt tại địa chỉ lumi://history và lumi://settings",
+            "Đóng trình duyệt bằng × giờ yêu cầu xác nhận khi có trang đang mở; tắt tính năng này trong Cài đặt"
           ]
         }
       }
@@ -769,25 +767,25 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "A small browser that floats over every app",
+          "headline": "A floating browser with tabs, history, and compact mode",
           "items": [
-            "A floating browser at the top-right corner, opened with ⌃⌥⌘B, that goes with you to every desktop",
-            "Up to four tabs along the top, with an address bar that searches and suggests as you type",
-            "Browsing history kept on this Mac, searchable by day in History from the menu",
-            "Compact Mode shrinks the browser to one slim bar with the page title and controls",
-            "Minimize moves it to a small pill in the corner, with audio still playing",
-            "Your tabs and sign-ins stay after Lumi restarts, kept apart from other browsers"
+            "A small browser floats at the top-right corner, opened with ⌃⌥⌘B",
+            "Up to four tabs with an address bar that searches and suggests from your history",
+            "Browsing history kept on this Mac, searchable by day in the History menu",
+            "Compact mode shrinks the browser to a slim bar with the page title",
+            "Minimize to a pill in the corner that keeps playing audio with dancing bars",
+            "Your tabs and login sessions persist after Lumi restarts"
           ]
         },
         "vi": {
-          "headline": "Trình duyệt nhỏ nổi trên mọi ứng dụng",
+          "headline": "Trình duyệt nổi với tab, lịch sử và chế độ thu gọn",
           "items": [
-            "Trình duyệt nổi ở góc trên bên phải, mở bằng ⌃⌥⌘B, theo bạn đến mọi desktop",
-            "Tối đa bốn tab trên cùng, với thanh địa chỉ tìm kiếm và gợi ý khi bạn gõ",
-            "Lịch sử duyệt web lưu trên Mac này, tìm theo ngày trong History từ menu",
-            "Chế độ Thu gọn biến trình duyệt thành một thanh mỏng với tiêu đề trang và nút điều khiển",
-            "Thu nhỏ chuyển thành viên thuốc ở góc màn hình, âm thanh vẫn phát",
-            "Tab và đăng nhập của bạn giữ nguyên sau khi khởi động lại Lumi, tách biệt với trình duyệt khác"
+            "Trình duyệt nhỏ nổi ở góc trên bên phải, mở bằng ⌃⌥⌘B",
+            "Tối đa bốn tab với thanh địa chỉ tìm kiếm và gợi ý từ lịch sử của bạn",
+            "Lịch sử duyệt web lưu trên Mac này, tìm kiếm theo ngày trong menu Lịch sử",
+            "Chế độ thu gọn biến trình duyệt thành thanh mỏng với tiêu đề trang",
+            "Thu nhỏ thành viên thuốc ở góc màn hình vẫn phát âm thanh với thanh nhảy",
+            "Tab và phiên đăng nhập của bạn được giữ nguyên sau khi khởi động lại Lumi"
           ]
         }
       }

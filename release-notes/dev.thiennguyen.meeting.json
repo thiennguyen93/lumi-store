@@ -1,4 +1,24 @@
 {
+  "0.23.1": {
+    "notesSha256": "7a4d9acf3f56da6852759b058d63d83965c7dd86eefa24d3f9e507ae55a54e27",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Store page now includes a demo video",
+          "items": [
+            "The Extension Store page now shows a video demonstrating the main features"
+          ]
+        },
+        "vi": {
+          "headline": "Trang cửa hàng giờ có video giới thiệu",
+          "items": [
+            "Trang Extension Store giờ hiển thị video minh họa các tính năng chính"
+          ]
+        }
+      }
+    }
+  },
   "0.23.0": {
     "notesSha256": "a7cd90d3da63d169d0a2eaf3a95b4a6a8323ffc66c97f2877dd04b43df6b00b6",
     "summary": {
@@ -560,22 +580,20 @@
           "headline": "Summarize meetings with action items and custom templates",
           "items": [
             "Summarize a meeting into overview, action items and sections, with times to jump back to the transcript",
-            "Long meetings are read in parts when needed, with progress shown and the option to stop",
-            "Settings let you pick the text model, default template and language, and create your own templates",
-            "The player is now a bar at the bottom of the transcript, always in the same place",
+            "Long meetings are summarized in parts when needed, with a progress bar and time remaining",
+            "The player is now a bar at the foot of the transcript, always in the same place",
             "Live captions step behind the Meeting Notes window while you work in it, then float over other apps again",
-            "Menus now follow macOS appearance instead of Lumi's, and captions stay visible over full screen apps"
+            "Menus now follow macOS light or dark appearance, and captions stay visible over full screen apps"
           ]
         },
         "vi": {
-          "headline": "Tóm tắt cuộc họp với danh sách công việc và mẫu tùy chỉnh",
+          "headline": "Tóm tắt cuộc họp với công việc cần làm và mẫu tùy chỉnh",
           "items": [
-            "Tóm tắt cuộc họp thành tổng quan, công việc cần làm và các phần bạn chọn, kèm thời gian để quay lại bản ghi",
-            "Cuộc họp dài được đọc từng phần khi cần, hiển thị tiến độ và có thể dừng lại",
-            "Cài đặt cho phép chọn mô hình văn bản, mẫu và ngôn ngữ mặc định, cũng như tạo mẫu riêng",
+            "Tóm tắt cuộc họp thành tổng quan, công việc cần làm và các phần, kèm thời gian để quay lại bản ghi",
+            "Cuộc họp dài được tóm tắt từng phần khi cần, có thanh tiến trình và thời gian còn lại",
             "Trình phát giờ là thanh ở cuối bản ghi, luôn ở cùng một vị trí",
-            "Phụ đề trực tiếp lui ra sau cửa sổ Meeting Notes khi bạn làm việc, rồi nổi lên trên ứng dụng khác",
-            "Menu giờ theo giao diện macOS thay vì Lumi, và phụ đề vẫn hiện trên ứng dụng toàn màn hình"
+            "Phụ đề trực tiếp lui ra sau cửa sổ Meeting Notes khi bạn làm việc trong đó, rồi nổi lên trên ứng dụng khác",
+            "Menu giờ theo giao diện sáng hoặc tối của macOS, và phụ đề vẫn hiển thị trên ứng dụng toàn màn hình"
           ]
         }
       }
@@ -587,19 +605,19 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Choose models, hide captions with Escape, and more",
+          "headline": "Model downloads, Escape to hide, and refined settings",
           "items": [
             "Press Escape to hide Live Captions after clicking the panel",
-            "Choose and download speech, speaker, and translation models in Settings",
-            "Settings window shows Meeting Notes Settings at the top like other Mac apps"
+            "Choose and download speech, speaker, and text models directly in Settings",
+            "Settings window now shows Meeting Notes Settings in the title bar"
           ]
         },
         "vi": {
-          "headline": "Chọn mô hình, ẩn phụ đề bằng Escape và nhiều hơn nữa",
+          "headline": "Tải mô hình, ẩn bằng Escape và cài đặt được cải thiện",
           "items": [
-            "Nhấn Escape để ẩn Phụ Đề Trực Tiếp sau khi nhấp vào bảng điều khiển",
-            "Chọn và tải xuống mô hình nhận dạng giọng nói, người nói và dịch trong Cài Đặt",
-            "Cửa sổ Cài Đặt hiển thị Cài Đặt Meeting Notes ở trên cùng như ứng dụng Mac khác"
+            "Nhấn Escape để ẩn Live Captions sau khi nhấp vào bảng điều khiển",
+            "Chọn và tải xuống mô hình nhận dạng giọng nói, người nói và văn bản ngay trong Cài đặt",
+            "Cửa sổ Cài đặt hiện hiển thị Meeting Notes Settings trên thanh tiêu đề"
           ]
         }
       }
@@ -611,23 +629,23 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Record your voice, and the window follows live captions in real time",
+          "headline": "Record in English or Vietnamese, and see live updates",
           "items": [
-            "Record your voice in English or Vietnamese, switching the language as you read",
-            "The Meeting Notes window now updates in real time as Live Captions changes, not half a minute behind",
-            "Opening Meeting Notes from Live Captions now shows the meeting being recorded, not the last one you viewed",
-            "Notes started during a call now stop and save when the call ends, no matter how you started them",
-            "The Speakers pane keeps Settings tall enough so Record Your Voice no longer runs off the bottom"
+            "You can now record your voice in English or Vietnamese",
+            "The window shows what Live Captions shows as it happens, not half a minute later",
+            "Opening Meeting Notes from Live Captions now shows the meeting being recorded",
+            "Notes stop when your call ends, no matter how you started them",
+            "The Record Your Voice panel no longer runs off the bottom of the window"
           ]
         },
         "vi": {
-          "headline": "Ghi âm giọng nói và cửa sổ theo dõi phụ đề trực tiếp ngay lập tức",
+          "headline": "Ghi âm tiếng Anh hoặc tiếng Việt và xem cập nhật trực tiếp",
           "items": [
-            "Ghi âm giọng nói bằng tiếng Anh hoặc tiếng Việt, chuyển đổi ngôn ngữ khi bạn đọc",
-            "Cửa sổ Meeting Notes giờ cập nhật ngay khi Live Captions thay đổi, không còn chậm nửa phút",
-            "Mở Meeting Notes từ Live Captions giờ hiển thị cuộc họp đang ghi, không phải cuộc họp bạn xem lần trước",
-            "Ghi chú bắt đầu trong cuộc gọi giờ dừng và lưu khi cuộc gọi kết thúc, bất kể bạn bắt đầu thế nào",
-            "Ngăn Speakers giữ Settings đủ cao để Record Your Voice không còn bị cắt ở cuối cửa sổ"
+            "Giờ bạn có thể ghi âm bằng tiếng Anh hoặc tiếng Việt",
+            "Cửa sổ hiển thị những gì Live Captions đang hiển thị ngay lập tức, không còn chậm nửa phút",
+            "Mở Meeting Notes từ Live Captions giờ hiển thị cuộc họp đang được ghi",
+            "Ghi chú dừng khi cuộc gọi kết thúc, bất kể bạn bắt đầu như thế nào",
+            "Bảng Ghi Âm Giọng Nói không còn bị tràn ra ngoài cửa sổ"
           ]
         }
       }
@@ -639,23 +657,21 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Smoother captions and notices that stay out of the way",
+          "headline": "Smoother captions and notices that don't push text around",
           "items": [
             "New words glide the captions up instead of jumping them a line at a time",
-            "Corrections only fade in the words that changed, keeping your place while reading",
-            "A speaker's name at the top stays put while their turn continues",
+            "Corrections only fade in the words that changed, so you keep your place while reading",
             "Notices float over the captions instead of making the panel taller",
-            "The newest line stays in sight and the panel stays where you put it"
+            "A speaker's name at the top stays put while their turn continues"
           ]
         },
         "vi": {
-          "headline": "Phụ đề mượt mà hơn và thông báo không che khuất",
+          "headline": "Phụ đề mượt mà hơn và thông báo không đẩy văn bản đi",
           "items": [
-            "Từ mới trượt phụ đề lên thay vì nhảy từng dòng",
-            "Chỉnh sửa chỉ làm mờ dần những từ thay đổi, giúp bạn không mất vị trí đang đọc",
-            "Tên người nói ở trên cùng giữ nguyên trong khi lượt nói của họ tiếp tục",
-            "Thông báo nổi phía trên phụ đề thay vì làm bảng cao hơn",
-            "Dòng mới nhất vẫn hiện và bảng ở đúng chỗ bạn đặt"
+            "Từ mới trượt phụ đề lên thay vì nhảy từng dòng một",
+            "Chỉnh sửa chỉ làm mờ dần những từ thay đổi để bạn không mất vị trí đang đọc",
+            "Thông báo nổi trên phụ đề thay vì làm bảng cao hơn",
+            "Tên người nói ở trên cùng giữ nguyên trong khi lượt nói của họ tiếp tục"
           ]
         }
       }
@@ -667,19 +683,19 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Meeting Notes can now be opened as a standalone application",
+          "headline": "Meeting Notes can now open as a standalone app",
           "items": [
-            "Meeting Notes can be opened from Spotlight, the Dock, or Launchpad",
-            "Opening Meeting Notes as an application shows its window ready to start a meeting",
-            "Opening the application while Meeting Notes is off turns it on automatically",
+            "Meeting Notes can now be opened from Spotlight, the Dock, or Launchpad",
+            "Opening Meeting Notes as an app shows its window ready to start a meeting",
+            "Opening the app while Meeting Notes is off turns it on automatically",
             "Requires Lumi 1.89.0"
           ]
         },
         "vi": {
           "headline": "Meeting Notes giờ có thể mở như một ứng dụng độc lập",
           "items": [
-            "Meeting Notes có thể mở từ Spotlight, Dock hoặc Launchpad",
-            "Mở Meeting Notes dưới dạng ứng dụng sẽ hiển thị cửa sổ sẵn sàng bắt đầu cuộc họp",
+            "Meeting Notes giờ có thể mở từ Spotlight, Dock hoặc Launchpad",
+            "Mở Meeting Notes dưới dạng ứng dụng sẽ hiện cửa sổ sẵn sàng bắt đầu cuộc họp",
             "Mở ứng dụng khi Meeting Notes đang tắt sẽ tự động bật nó lên",
             "Yêu cầu Lumi 1.89.0"
           ]
@@ -696,22 +712,22 @@
           "headline": "A new look following Apple's design guidelines",
           "items": [
             "The window now has a sidebar for meetings, toolbar buttons for commands, and an inspector for details",
-            "Start Transcription moved to the sidebar foot and shows recording time with Pause and Stop while recording",
-            "Settings opens in its own window with panes for General, Transcription, Captions, Translation and more",
-            "Live Captions panel shows only captions, time and mark until you point at it to reveal controls",
-            "You can now copy a single line with its speaker from hover buttons or the menu",
-            "Full screen mode moves the sidebar button and recorder into the corner"
+            "Start Transcription moved to the sidebar footer and shows recording time with Pause and Stop",
+            "Settings now opens in its own window with separate panes for each category",
+            "Live Captions panel stays minimal while reading and shows controls when you point at it",
+            "You can now copy a single line with the speaker name from hover buttons or the menu",
+            "The sidebar has a full screen button that moves the recorder to the corner"
           ]
         },
         "vi": {
           "headline": "Giao diện mới theo hướng dẫn thiết kế của Apple",
           "items": [
             "Cửa sổ giờ có thanh bên cho cuộc họp, nút lệnh trên thanh công cụ và bảng chi tiết",
-            "Bắt đầu Phiên âm chuyển xuống chân thanh bên và hiện thời gian ghi với Tạm dừng và Dừng khi đang ghi",
-            "Cài đặt mở trong cửa sổ riêng với các mục Chung, Phiên âm, Phụ đề, Dịch, Người nói, Lưu trữ và Giới thiệu",
-            "Bảng Phụ đề Trực tiếp chỉ hiện phụ đề, thời gian và biểu tượng cho đến khi bạn chỉ vào để hiện điều khiển",
-            "Giờ bạn có thể sao chép một dòng kèm người nói từ nút di chuột hoặc trình đơn",
-            "Chế độ toàn màn hình chuyển nút thanh bên và bộ ghi vào góc"
+            "Bắt đầu Phiên âm chuyển xuống chân thanh bên và hiện thời gian ghi với Tạm dừng và Dừng",
+            "Cài đặt mở trong cửa sổ riêng với các ngăn cho từng mục",
+            "Bảng Phụ đề Trực tiếp giữ gọn khi đọc và hiện điều khiển khi bạn rê chuột vào",
+            "Bạn giờ có thể sao chép một dòng kèm tên người nói từ nút rê chuột hoặc trình đơn",
+            "Thanh bên có nút toàn màn hình di chuyển bộ ghi vào góc"
           ]
         }
       }
@@ -725,23 +741,23 @@
         "en": {
           "headline": "Live captions for your meetings, with speaker identification",
           "items": [
-            "Captions float above your call, showing who said what as they speak",
+            "Captions float above your call showing who said what, with saved voice profiles by name",
             "Set a second language and each line appears in the language it was spoken in",
-            "Click any caption to translate it, or turn on live translation for everything",
-            "Every meeting is saved as a transcript you can read, copy or export",
-            "Name speakers to save voice profiles, so they are identified in future meetings",
-            "Record your own voice so your lines show as Me in every call"
+            "Click any caption to translate it, or turn on live translation for every line",
+            "Every meeting is saved as a transcript you can read, search by speaker, and export",
+            "Record your voice so your lines show as Me and Meeting Notes tells you apart from others",
+            "Keep audio with transcripts to listen back at any speed, with mute for playback during calls"
           ]
         },
         "vi": {
           "headline": "Phụ đề trực tiếp cho cuộc họp với nhận dạng người nói",
           "items": [
-            "Phụ đề hiển thị phía trên cuộc gọi, cho biết ai nói gì khi họ đang nói",
-            "Đặt ngôn ngữ thứ hai và mỗi dòng xuất hiện bằng ngôn ngữ được nói",
-            "Nhấp vào phụ đề bất kỳ để dịch hoặc bật dịch trực tiếp cho tất cả",
-            "Mỗi cuộc họp được lưu thành bản ghi âm có thể đọc, sao chép hoặc xuất",
-            "Đặt tên người nói để lưu hồ sơ giọng nói, họ sẽ được nhận dạng trong các cuộc họp sau",
-            "Ghi âm giọng nói của bạn để dòng của bạn hiển thị là Tôi trong mọi cuộc gọi"
+            "Phụ đề hiển thị ai nói gì phía trên cuộc gọi, lưu hồ sơ giọng nói theo tên",
+            "Đặt ngôn ngữ thứ hai để mỗi dòng hiện bằng ngôn ngữ được nói",
+            "Nhấp vào phụ đề để dịch hoặc bật dịch trực tiếp cho mọi dòng",
+            "Mỗi cuộc họp được lưu thành bản ghi âm có thể đọc, tìm theo người nói và xuất ra",
+            "Ghi âm giọng bạn để dòng của bạn hiện là Tôi và Meeting Notes phân biệt bạn với người khác",
+            "Giữ âm thanh cùng bản ghi để nghe lại ở tốc độ bất kỳ, có tắt tiếng khi phát trong cuộc gọi"
           ]
         }
       }
