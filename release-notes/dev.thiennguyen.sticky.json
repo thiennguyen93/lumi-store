@@ -487,7 +487,7 @@
         "vi": {
           "headline": "Ghi chú giờ chạm được thanh menu trên mọi màn hình",
           "items": [
-            "Ghi chú kéo lên đầu màn hình giờ chạm sát thanh menu trên mọi màn hình"
+            "Ghi chú kéo lên đỉnh màn hình giờ chạm sát thanh menu trên mọi màn hình"
           ]
         }
       }
@@ -505,9 +505,9 @@
           ]
         },
         "vi": {
-          "headline": "Chân trang hiển thị thương hiệu Lumi",
+          "headline": "Chân trang hiện hiển thị thương hiệu Lumi",
           "items": [
-            "Chân trang ghi chú giờ có logo Lumi, cho thấy rõ Sticky Notes chạy trong Lumi"
+            "Chân trang ghi chú giờ có dấu hiệu của Lumi để bạn biết Sticky Notes nằm ở đâu"
           ]
         }
       }
@@ -519,15 +519,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Fixed caret position when opening notes that end with pictures",
+          "headline": "Fixed caret placement when opening notes ending with pictures",
           "items": [
-            "Notes ending with a picture now open with the caret below it, so typing no longer replaces the picture"
+            "A note that ends in a picture opens with the caret on the line under it, not with the picture selected"
           ]
         },
         "vi": {
           "headline": "Sửa vị trí con trỏ khi mở ghi chú kết thúc bằng hình ảnh",
           "items": [
-            "Ghi chú kết thúc bằng hình ảnh giờ mở với con trỏ ở dưới, không còn xóa hình khi gõ phím"
+            "Ghi chú kết thúc bằng hình ảnh giờ mở với con trỏ ở dòng bên dưới thay vì chọn hình"
           ]
         }
       }
@@ -541,19 +541,19 @@
         "en": {
           "headline": "Pictures pasted with text now stay in your notes",
           "items": [
-            "Pictures pasted with text now show and stay in the note, from apps or web pages",
+            "Pictures pasted with text now show and stay in the note, from any app or web page",
             "Pictures are downloaded once and kept with the note",
-            "If a picture cannot be downloaded, it becomes a link to its source",
-            "Sticky Notes now asks for network access to download pasted pictures"
+            "Pictures that cannot be downloaded become links instead of broken boxes",
+            "Sticky Notes now asks for network access to download pictures from web pages"
           ]
         },
         "vi": {
           "headline": "Hình ảnh dán kèm văn bản giờ được lưu trong ghi chú",
           "items": [
-            "Hình ảnh dán kèm văn bản giờ hiển thị và lưu trong ghi chú, từ ứng dụng hoặc trang web",
+            "Hình ảnh dán kèm văn bản giờ hiển thị và lưu trong ghi chú, từ bất kỳ ứng dụng hay trang web nào",
             "Hình ảnh được tải về một lần và lưu cùng ghi chú",
-            "Nếu không tải được hình ảnh, nó sẽ trở thành liên kết đến nguồn",
-            "Sticky Notes giờ yêu cầu quyền truy cập mạng để tải hình ảnh được dán"
+            "Hình ảnh không tải được sẽ thành liên kết thay vì ô trống",
+            "Sticky Notes giờ yêu cầu quyền truy cập mạng để tải hình ảnh từ trang web"
           ]
         }
       }
@@ -568,14 +568,14 @@
           "headline": "More notes on screen, better placement",
           "items": [
             "You can now have up to 16 notes on the desktop at once, up from 6",
-            "New notes open slightly below the previous one instead of stacking on top"
+            "New notes open slightly below the previous one so they no longer stack on top"
           ]
         },
         "vi": {
           "headline": "Nhiều ghi chú hơn, sắp xếp tốt hơn",
           "items": [
             "Giờ bạn có thể mở tới 16 ghi chú trên màn hình cùng lúc, tăng từ 6",
-            "Ghi chú mới mở ở vị trí thấp hơn một chút so với ghi chú trước thay vì chồng lên nhau"
+            "Ghi chú mới mở ra phía dưới ghi chú trước đó một chút để không chồng lên nhau"
           ]
         }
       }
@@ -587,15 +587,15 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Fixed the Extensions settings page",
+          "headline": "Cleaner extension settings",
           "items": [
-            "The Extensions settings page now shows two windows to open instead of six buttons that opened empty notes"
+            "Settings now shows two windows to open instead of six buttons that created empty notes"
           ]
         },
         "vi": {
-          "headline": "Sửa trang cài đặt Extensions",
+          "headline": "Cài đặt tiện ích gọn gàng hơn",
           "items": [
-            "Trang cài đặt Extensions giờ hiển thị hai cửa sổ để mở thay vì sáu nút mở ghi chú trống"
+            "Phần cài đặt giờ chỉ hiển thị hai cửa sổ để mở thay vì sáu nút tạo ghi chú trống"
           ]
         }
       }
@@ -609,13 +609,13 @@
         "en": {
           "headline": "Menus no longer get cut off by small notes",
           "items": [
-            "Menus now extend past the note's edge and open upward when near the screen bottom"
+            "Menus now extend past the note's edge and open in the direction with more space"
           ]
         },
         "vi": {
           "headline": "Menu không còn bị cắt bởi ghi chú nhỏ",
           "items": [
-            "Menu giờ mở rộng ra ngoài viền ghi chú và mở lên trên khi gần đáy màn hình"
+            "Menu giờ mở rộng ra ngoài viền ghi chú và mở theo hướng có nhiều không gian hơn"
           ]
         }
       }
@@ -630,16 +630,16 @@
           "headline": "Browse works better with the note you came from",
           "items": [
             "Pressing ⌘P hides the format bar and shows Browse shortcuts instead of word count",
-            "Pressing Esc from Browse returns you to the note where you can keep typing",
-            "Pressing ⇧⌘I from Browse takes you back to the note so you see the picture appear"
+            "Pressing Esc from Browse returns you to the note and restores your typing position",
+            "Pressing ⇧⌘I from Browse returns to the note before you pick a picture"
           ]
         },
         "vi": {
           "headline": "Browse hoạt động tốt hơn với ghi chú bạn đang dùng",
           "items": [
-            "Nhấn ⌘P sẽ ẩn thanh định dạng và hiện phím tắt Browse thay vì số từ",
-            "Nhấn Esc từ Browse đưa bạn về ghi chú để tiếp tục gõ",
-            "Nhấn ⇧⌘I từ Browse đưa bạn về ghi chú để thấy hình ảnh xuất hiện"
+            "Nhấn ⌘P sẽ ẩn thanh định dạng và hiển thị phím tắt Browse thay vì số từ",
+            "Nhấn Esc từ Browse sẽ quay lại ghi chú và giữ nguyên vị trí đang gõ",
+            "Nhấn ⇧⌘I từ Browse sẽ quay lại ghi chú trước khi chọn ảnh"
           ]
         }
       }
@@ -651,17 +651,17 @@
       "lumi_notes": 1,
       "locales": {
         "en": {
-          "headline": "Requires Lumi 1.40.0 to restore notes where you left them",
+          "headline": "Requires Lumi 1.40.0 for better note positioning",
           "items": [
-            "Requires Lumi 1.40.0, which remembers where each note was on your desktop",
-            "Older Lumi versions now prompt you to update before installing Sticky Notes"
+            "Notes now reappear where you left them on the desktop, instead of stacking in a corner",
+            "Older versions of Lumi will prompt you to update before installing this version"
           ]
         },
         "vi": {
-          "headline": "Yêu cầu Lumi 1.40.0 để khôi phục ghi chú đúng vị trí",
+          "headline": "Yêu cầu Lumi 1.40.0 để định vị ghi chú tốt hơn",
           "items": [
-            "Yêu cầu Lumi 1.40.0, phiên bản ghi nhớ vị trí từng ghi chú trên màn hình",
-            "Phiên bản Lumi cũ hơn sẽ yêu cầu cập nhật trước khi cài Sticky Notes"
+            "Ghi chú giờ xuất hiện lại đúng vị trí bạn để trên màn hình, thay vì chồng lên nhau ở góc",
+            "Phiên bản Lumi cũ sẽ yêu cầu bạn cập nhật trước khi cài đặt phiên bản này"
           ]
         }
       }
@@ -676,22 +676,22 @@
           "headline": "The first release: notes that float above every app",
           "items": [
             "Press ⌃⌥⌘N to start a note, ⌃⌥⌘S to bring it back or put it away",
-            "Press ⌘D to leave a note on the desktop, up to six at once, each where you left it",
-            "Format text with headings, to-dos, lists, quotes, code and lines as you type or from the menu",
-            "Add pictures by pasting a screenshot, dropping a file or pressing ⇧⌘I",
-            "Press ⌘P to find any note by what it says, pin notes and open them with ⌘1 through ⌘9",
-            "Recently Deleted keeps deleted notes for 30 days before removing them"
+            "⌘D leaves a note on the desktop until you put it back, up to six at once",
+            "Format as you type or use the / menu: headings, lists, to-dos, quotes, code",
+            "Paste screenshots, drop files, or press ⇧⌘I to add pictures",
+            "⌘P finds any note by what it says; pin notes and open them with ⌘1–⌘9",
+            "Recently Deleted keeps deleted notes for 30 days"
           ]
         },
         "vi": {
           "headline": "Phiên bản đầu tiên: ghi chú nổi trên mọi ứng dụng",
           "items": [
             "Nhấn ⌃⌥⌘N để tạo ghi chú, ⌃⌥⌘S để mở lại hoặc cất đi",
-            "Nhấn ⌘D để để ghi chú trên màn hình, tối đa sáu cùng lúc, mỗi cái ở vị trí bạn để",
-            "Định dạng văn bản với tiêu đề, việc cần làm, danh sách, trích dẫn, mã và đường kẻ",
-            "Thêm hình ảnh bằng cách dán ảnh chụp màn hình, kéo tệp vào hoặc nhấn ⇧⌘I",
-            "Nhấn ⌘P để tìm ghi chú theo nội dung, ghim ghi chú và mở bằng ⌘1 đến ⌘9",
-            "Đã xóa gần đây giữ ghi chú đã xóa trong 30 ngày trước khi xóa hẳn"
+            "⌘D để ghi chú trên màn hình cho đến khi bạn cất lại, tối đa sáu ghi chú",
+            "Định dạng khi gõ hoặc dùng menu /: tiêu đề, danh sách, việc cần làm, trích dẫn, mã",
+            "Dán ảnh chụp màn hình, kéo tệp vào, hoặc nhấn ⇧⌘I để thêm hình",
+            "⌘P tìm ghi chú theo nội dung; ghim ghi chú và mở bằng ⌘1–⌘9",
+            "Đã xóa gần đây giữ ghi chú đã xóa trong 30 ngày"
           ]
         }
       }
