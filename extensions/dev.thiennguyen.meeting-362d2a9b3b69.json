@@ -1,0 +1,414 @@
+[
+ {
+  "version": "0.26.0",
+  "date": "2026-11-27",
+  "notes": "### Changed\n\n- **Start, Chats and Libraries stay in place while the sidebar scrolls.** They stand under the title bar while the meetings scroll under them, and stay while you search, so the results no longer jump up into their place. A faint line under them darkens as the first meetings go under.\n- **A section's heading stays in sight while its meetings go by.** Pinned, Folders, Today, Yesterday and the other headings hold at the top of the list until the next one takes their place. An open folder holds its name under Folders while its meetings go by, and while you search, a found meeting holds its name under its day while its matching lines go by.",
+  "notesSha256": "240835e84b4c9b02fcde73081fd1bc1b0cde97d6465a01e659ae24912dfcb6d7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Headings and controls stay in place while you scroll",
+     "items": [
+      "Start, Chats and Libraries stay under the title bar while meetings scroll beneath them",
+      "Search results no longer jump up when Start, Chats and Libraries disappear",
+      "Section headings like Today and Yesterday stay visible as their meetings scroll past",
+      "An open folder keeps its name at the top while you scroll through its meetings",
+      "When searching, a meeting's name stays visible while its matching lines scroll by"
+     ]
+    },
+    "vi": {
+     "headline": "Các tiêu đề và điều khiển giữ nguyên vị trí khi cuộn",
+     "items": [
+      "Start, Chats và Libraries ở dưới thanh tiêu đề trong khi các cuộc họp cuộn bên dưới",
+      "Kết quả tìm kiếm không còn nhảy lên khi Start, Chats và Libraries biến mất",
+      "Các tiêu đề phần như Hôm nay và Hôm qua vẫn hiển thị khi các cuộc họp cuộn qua",
+      "Thư mục đang mở giữ tên ở trên cùng khi bạn cuộn qua các cuộc họp",
+      "Khi tìm kiếm, tên cuộc họp vẫn hiển thị trong khi các dòng khớp cuộn qua"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.25.1",
+  "date": "2026-11-27",
+  "notes": "### Fixed\n\n- **A long meeting's summary is written again.** With a model that writes long answers, such as Claude Sonnet, the summary of a long meeting could fail with \"The model's answer could not be read as notes\" after trying twice. The summary, and Clean Up and Translate All with the text model, are no longer held to a fixed length: each model writes up to its own limit, and an answer that is still cut short is read again in two parts. **Best with Lumi 1.104.0**, which holds each answer to its own model's limit.",
+  "notesSha256": "fb1919b292507f81b2a6fec1a9a18aa5899230cecde6e809cc847acefa1c6a96",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Summaries of long meetings now complete successfully",
+     "items": [
+      "Summaries of long meetings no longer fail with an error about the answer being unreadable",
+      "Clean Up and Translate All also handle longer answers without failing",
+      "Each model now writes up to its own limit instead of a fixed length",
+      "Answers that are cut short are automatically read in two parts"
+     ]
+    },
+    "vi": {
+     "headline": "Tóm tắt cuộc họp dài giờ hoàn thành được",
+     "items": [
+      "Tóm tắt cuộc họp dài không còn báo lỗi không đọc được câu trả lời",
+      "Dọn dẹp và Dịch tất cả cũng xử lý được câu trả lời dài hơn",
+      "Mỗi mô hình giờ viết đến giới hạn riêng thay vì độ dài cố định",
+      "Câu trả lời bị cắt ngắn sẽ tự động đọc lại thành hai phần"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.25.0",
+  "date": "2026-11-27",
+  "notes": "### Fixed\n\n- **The call-ended card shows its buttons in full.** Continue Recording no longer sits on the card's edge: the buttons have a row of their own under the words, and the meeting's name gets the card's whole width. The countdown also runs on once the pointer leaves the card, where it could stay stopped.\n- **Listen Again no longer says \"Stopping…\" for good after Lumi restarts.** If Lumi quit, restarted for an update or crashed while a meeting was heard again, or Meeting Notes was switched off, the meeting showed \"Stopping…\" with no way out for a quarter of an hour. It now opens as it was left, and Listen Again is there to press again. A summary being written in parts is put right the same way.\n- **Up Next no longer says \"Waiting to join\" for a join that can't start.** If Meeting Notes was switched off or Lumi quit while Join and Take Notes waited for the call, the card went on waiting. It now offers Join and Take Notes again.\n- **The menu bar stops counting a meeting Lumi cut off.** A meeting being recorded when Lumi quit or Meeting Notes was switched off is saved up to that moment as soon as Meeting Notes is back, and Live Captions says so as before.\n- **The next call is offered Take Notes after a switch-off.** An offer Lumi took down no longer holds back the one for another call.\n\nMeeting Notes starts nothing again by itself: what was cut short is a press away. **Needs Lumi 1.103.0.**",
+  "notesSha256": "2c6ad9ff3961864989fd5e990ce72dd96bc4ec97ab479e8f615257dc42268063",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixes for meetings interrupted when Lumi quits or restarts",
+     "items": [
+      "The call-ended card shows its buttons in full on their own row",
+      "Listen Again no longer gets stuck saying Stopping after Lumi restarts",
+      "Up Next no longer says Waiting to join for a join that cannot start",
+      "The menu bar stops counting a meeting that was cut off when Lumi quit",
+      "The next call is offered Take Notes after Meeting Notes is switched off"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa lỗi các cuộc họp bị gián đoạn khi Lumi thoát hoặc khởi động lại",
+     "items": [
+      "Thẻ kết thúc cuộc gọi hiển thị đầy đủ các nút trên hàng riêng",
+      "Nghe Lại không còn bị kẹt ở trạng thái Đang dừng sau khi Lumi khởi động lại",
+      "Sắp Tới không còn hiển thị Đang chờ tham gia cho cuộc gọi không thể bắt đầu",
+      "Thanh menu ngừng đếm cuộc họp bị cắt khi Lumi thoát",
+      "Cuộc gọi tiếp theo được đề xuất Ghi Chú sau khi Meeting Notes bị tắt"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.24.0",
+  "date": "2026-11-27",
+  "notes": "### Added\n\n- **One person heard as two is put right as you name them.** When Lumi gives one person two speaker numbers, name the second after the first: pick them in the list, type their name or address, or type Your Name. The card asks **Merge Speaker 2 into Lan Pham?**, says what becomes of the lines, and **Merge** makes the two one speaker. It works in Live Captions while the meeting is recorded, in the inspector and beside a name in the transcript. What that speaker says afterwards goes to the same person, and Undo takes it back. A merge saves no voice profile.\n\n### Changed\n\n- **Everyone invited stays in the naming list.** Someone another speaker is already named after is no longer left out: their avatar takes that speaker's colour, and the row says which speaker they are.\n- **Merge Into works while a meeting is recorded.** Assign To still waits until the meeting ends.\n\n### Fixed\n\n- **Translate All with Apple Translation no longer stops at a line in two languages.** Such a line is translated a few sentences at a time, each from its own language, and the lines after it are translated too.\n- **A meeting's last lines are kept when saving them at the end fails for a moment.** The captions panel sends them again until they are saved, with a model switch or the first translation made in the last seconds.\n- **A meeting is no longer ended as lost while Lumi asks a question before it starts listening.** If the question stayed up for more than a minute and a half, the meeting was closed, and the recording that followed could not be stopped from the menu bar.\n- **Join and Take Notes no longer starts notes for tomorrow's meeting.** For a call more than 4 hours away, Meeting Notes says it cannot wait that long and opens nothing.\n- **Try Again and Regenerate work in a chat across meetings.**\n- **Cancel stops a download that Download and Start began in Live Captions.** If Lumi cannot stop it, the panel says why.",
+  "notesSha256": "2881145ffc02f320303429f9a0a4a3d1296f622b9b9eb3ac3910e745dd17c989",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Merge speakers, translate mixed-language lines, and more fixes",
+     "items": [
+      "You can now merge speakers when Lumi splits one person into two numbers",
+      "Everyone invited now appears in the naming list, even if already assigned",
+      "Translate All no longer stops at lines that mix multiple languages",
+      "The last lines of a meeting are kept even if saving fails briefly",
+      "Meetings are no longer closed while Lumi asks a question before listening starts",
+      "Join and Take Notes no longer opens notes for meetings more than 4 hours away"
+     ]
+    },
+    "vi": {
+     "headline": "Gộp người nói, dịch dòng nhiều ngôn ngữ và sửa lỗi khác",
+     "items": [
+      "Giờ bạn có thể gộp người nói khi Lumi tách một người thành hai số",
+      "Mọi người được mời đều xuất hiện trong danh sách đặt tên, kể cả khi đã gán",
+      "Dịch Tất Cả không còn dừng ở dòng trộn nhiều ngôn ngữ",
+      "Các dòng cuối cuộc họp được giữ lại ngay cả khi lưu tạm thất bại",
+      "Cuộc họp không còn bị đóng khi Lumi hỏi trước khi bắt đầu nghe",
+      "Tham Gia và Ghi Chú không còn mở ghi chú cho cuộc họp cách xa hơn 4 giờ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.23.3",
+  "date": "2026-11-26",
+  "notes": "### Changed\n\n- **Save Now is the call-ended card's main button.** It is what the countdown does anyway. The other button now reads **Continue Recording**.",
+  "notesSha256": "cc10148d7a1a6a64c3a8e31d5633ee7e6d493afe95860edb31b322b5dabb1dd2",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Clearer buttons when a meeting ends",
+     "items": [
+      "Save Now is now the main button on the call-ended card, matching what the countdown does",
+      "The other button now reads Continue Recording instead of its old label"
+     ]
+    },
+    "vi": {
+     "headline": "Nút bấm rõ ràng hơn khi cuộc họp kết thúc",
+     "items": [
+      "Lưu Ngay giờ là nút chính trên thẻ kết thúc cuộc gọi, khớp với đếm ngược",
+      "Nút còn lại giờ hiển thị Tiếp Tục Ghi Âm thay vì nhãn cũ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.23.2",
+  "date": "2026-11-26",
+  "notes": "### Fixed\n\n- **The call-ended card no longer shows a scroll bar.** The card that appears when a call ends is one row again: the heading takes at most two lines, and the line under it keeps to one, with a long meeting name cut short. Before, it could come up a few points too short, with its text clipped and a scroll bar drawn over it.\n\n### Changed\n\n- **The call-ended card has no Show More.** It is the countdown, **Keep Recording** and **Save Now**. What was heard is in Meeting Notes once the meeting is saved.",
+  "notesSha256": "1a0a876afe58545741ec70e95433cf604ba627fa406c95c197dbc483a24f9bf4",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Cleaner end-of-call card",
+     "items": [
+      "The card that appears when a call ends no longer shows a scroll bar",
+      "Long meeting names are now cut short to fit on one line",
+      "The Show More button is removed from the end-of-call card"
+     ]
+    },
+    "vi": {
+     "headline": "Giao diện kết thúc cuộc gọi gọn gàng hơn",
+     "items": [
+      "Thẻ xuất hiện khi kết thúc cuộc gọi không còn hiển thị thanh cuộn",
+      "Tên cuộc họp dài được rút ngắn để vừa trên một dòng",
+      "Nút Xem thêm đã được gỡ bỏ khỏi thẻ kết thúc cuộc gọi"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.23.1",
+  "date": "2026-11-26",
+  "notes": "### Changed\n\n- **A film on the store page.** Meeting Notes' page in Lumi's Extension Store now shows a short video of it at work: Up Next, Live Captions and Live Translation, then Ask, Refine, Translate All, Summary, Libraries and Export.",
+  "notesSha256": "7a4d9acf3f56da6852759b058d63d83965c7dd86eefa24d3f9e507ae55a54e27",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Store page now includes a demo video",
+     "items": [
+      "The Extension Store page now shows a video demonstrating the main features"
+     ]
+    },
+    "vi": {
+     "headline": "Trang cửa hàng giờ có video giới thiệu",
+     "items": [
+      "Trang Extension Store giờ hiển thị video minh họa các tính năng chính"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.23.0",
+  "date": "2026-11-26",
+  "notes": "### Changed\n\n- **A file opens in a window of its own.** A PDF, a document or a picture in an Ask chat or a library opens in a File Preview window you move, size and close like any other window. Opening another file shows it in the same window, and the window opens where you left it. It used to open in a box drawn over the page, whose green button covered the window's own buttons.\n\n### Fixed\n\n- **\"N of N lines changed\" lines up with the transcript.** In Changes, the count starts on the same edge as the words under it, with the key to the marks at the right, and VoiceOver reads it.",
+  "notesSha256": "a7cd90d3da63d169d0a2eaf3a95b4a6a8323ffc66c97f2877dd04b43df6b00b6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Files open in their own window, and the Changes view is clearer",
+     "items": [
+      "Files from Ask chats or libraries now open in a separate window you can move and resize",
+      "The file preview window remembers its position when you open another file",
+      "The count of changed lines in Changes now aligns with the transcript text",
+      "VoiceOver now reads the line change count in the Changes view"
+     ]
+    },
+    "vi": {
+     "headline": "Tệp mở trong cửa sổ riêng và giao diện Changes rõ ràng hơn",
+     "items": [
+      "Tệp từ Ask hoặc thư viện giờ mở trong cửa sổ riêng có thể di chuyển và thay đổi kích thước",
+      "Cửa sổ xem tệp nhớ vị trí khi bạn mở tệp khác",
+      "Số dòng thay đổi trong Changes giờ căn chỉnh với văn bản phiên âm",
+      "VoiceOver giờ đọc được số dòng thay đổi trong giao diện Changes"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.22.0",
+  "date": "2026-11-26",
+  "notes": "### Added\n\n- **Up Next on the Start page.** Your calendar's next meetings, as far ahead as Settings › Calendar › Up Next says: Today, Today and Tomorrow (the default), Next 7 Days, or Don't Show. The next one is a card with its people and one button, **Join and Take Notes** (**Take Notes** for a meeting in a room). Press a later one to see its people, its agenda and the last meeting of its series. **Needs Lumi 1.102.0.**\n- **Join and Take Notes waits for the join.** It opens the call, and the notes start only once the call's app, or a browser on its site, is using the microphone and playing sound, so the lobby and the wait are left out. Until then the card says \"Waiting to join\" with Cancel, and so does Lumi's menu.\n- **A Calendar pane in Settings.** Access, the calendars read, Name Meetings After Calendar Events and Up Next, in a pane of their own after General.\n\n### Changed\n\n- **The card after a call ends counts down.** When the call's app lets go of the microphone, the card says \"The Zoom call ended — Saving “Design Review” in 20 s\" around a ring, with **Keep Recording** and **Save Now**, and **Show More** for what was heard. Nothing is saved while you point at the card or press in it.\n- **Get Started is ticked off by you.** **Mark All Done** puts it away, and the tour ticks itself at its end. The Start page's header and foot stay put while its columns scroll.\n- **The meeting's toolbar.** Ask comes first and shares a capsule with Details; Appearance and Search each stand alone, in the same place on every page.\n\n### Fixed\n\n- **A pop-up's second press closes its menu.** Pressing the button of an open menu — the source pop-up above Start in Live Captions, Settings' model pop-ups, Template or Model in a summary, a line's More — closed the menu and opened it again, or left it open. It now only closes it, as a Mac pop-up does.\n- **\"“X” ended N minutes ago\" no longer cuts into a meeting that runs over.** It came five minutes after the event's end while the call was still on. It now also waits until nothing has been said for two minutes, and says so.",
+  "notesSha256": "94d123e932a7575ed99e09e2c491d126b629f764eb573513f2c6414077fd09e7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Up Next on the Start page, and Join and Take Notes waits for you",
+     "items": [
+      "The Start page shows your upcoming meetings from the calendar",
+      "Join and Take Notes waits until the call is using your microphone before starting",
+      "The card after a call ends counts down before saving, with Keep Recording and Save Now",
+      "Calendar settings moved to their own pane after General",
+      "Pressing an open menu button now closes it instead of reopening",
+      "Ended meeting notices wait until the call is quiet before appearing"
+     ]
+    },
+    "vi": {
+     "headline": "Danh sách cuộc họp sắp tới và tham gia cuộc gọi thông minh hơn",
+     "items": [
+      "Trang Bắt đầu hiển thị các cuộc họp sắp tới từ lịch của bạn",
+      "Tham gia và Ghi chú đợi đến khi cuộc gọi dùng micrô mới bắt đầu ghi",
+      "Thẻ sau cuộc gọi đếm ngược trước khi lưu, với nút Tiếp tục ghi và Lưu ngay",
+      "Cài đặt Lịch được chuyển sang mục riêng sau mục Chung",
+      "Nhấn nút menu đang mở giờ sẽ đóng menu thay vì mở lại",
+      "Thông báo cuộc họp kết thúc đợi đến khi cuộc gọi im lặng mới xuất hiện"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.21.0",
+  "date": "2026-11-25",
+  "notes": "### Added\n\n- **A line said in another language shows which.** In a meeting in English, a line said in Vietnamese starts with a small \"VI\"; point at it for the language's whole name. VoiceOver reads each line in its own language's voice, in Live Captions too.\n\n### Changed\n\n- **Names, times and avatars follow the text size.** ⌘+ and ⌘− now size a speaker's name, time and avatar and the Translate chip with the words, so a name never reads smaller than its translation. In Paragraphs, translations hang off a thin bar, so they no longer read as a second paragraph by the same speaker.\n- **Plainer words for the transcript as it was made.** \"Heard live\" and \"as heard\" are now **Original**: \"Originally Speaker 2\" on a struck name in Changes, **Copy Original Transcript**, \"Back to Original.\" After Listen Again, the foot says \"1 new speaker found\" where it said \"1 speaker told apart again\".\n\n### Fixed\n\n- **A line and its translation light up as clearly in Dark as in Light.** Pointing at a sentence lit it and its translation only faintly in Dark. The highlight is now as strong as Apple's own in each appearance, a lit translation takes the text's colour, and Playing and Selected are stronger in Dark so Selected still stands out most.\n- **Refine and Translate… no longer runs into the sentence before it** at the foot of a transcript cleaned up as the meeting ended (\"no AI.Refine and Translate…\").",
+  "notesSha256": "92441d79655a9b3faa0f5725b37fdc3949a7e21f6b2b4c04c616bdd061ae02a6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Language labels, better scaling, and clearer highlights",
+     "items": [
+      "A line said in another language shows which language it is in",
+      "Names, times and avatars now scale with the text when you zoom in or out",
+      "Simpler labels: Heard live is now called Original throughout the app",
+      "Pointing at a line highlights it and its translation as clearly in Dark as in Light",
+      "Refine and Translate no longer runs into the sentence before it"
+     ]
+    },
+    "vi": {
+     "headline": "Nhãn ngôn ngữ, thu phóng tốt hơn và làm nổi rõ hơn",
+     "items": [
+      "Câu nói bằng ngôn ngữ khác hiện có nhãn cho biết ngôn ngữ đó",
+      "Tên, giờ và ảnh đại diện giờ phóng to thu nhỏ cùng văn bản",
+      "Nhãn đơn giản hơn: Heard live giờ gọi là Original trong toàn ứng dụng",
+      "Trỏ vào câu sẽ làm nổi câu đó và bản dịch rõ nét như nhau ở chế độ Tối và Sáng",
+      "Refine and Translate không còn chạy sát câu phía trước nữa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.20.0",
+  "date": "2026-11-25",
+  "notes": "### Added\n\n- **Narrow a question across all your meetings.** Four chips above the field on the Chats page pick what the question reads:\n  - **When:** today, yesterday, this or last week, this month, or a range of days picked on a calendar.\n  - **People:** the meetings where they spoke, or only what they said.\n  - **Meetings:** any you pick.\n  - **Reads:** transcripts and summaries, summaries only, or transcripts only.\n\n  Beside the chips, how many meetings that is. A question says above it what it read, and a chat keeps what its last question read when you open it again. **Needs Lumi 1.101.0.**\n- **Ask about several meetings at once.** ⌘-click meetings in the sidebar, or ⇧-click for a run of them, then press **Ask About These**. Right-click a folder for **Ask About This Folder**. Chats opens with those meetings picked.\n\n### Changed\n\n- **Asking across all your meetings reads their summaries too.** A meeting's summary goes in beside its transcript when it is written, edited or another version is shown, and comes out when it is deleted. Questions such as \"every decision we made\" or \"all the upcoming deadlines\" now find more of what was said. Summaries written before this go in over your next few questions across meetings.\n\n### Fixed\n\n- **A long meeting from an earlier version opens again.** Opening one stopped with \"storage.put refused: this run already made 200 host calls\" after an update, because each sentence's language was asked of Lumi one at a time. They are now asked all at once. **Needs Lumi 1.101.0.**\n- **A cite in an answer across all your meetings shows when it was said.** Every such chip read \"00:00\" and the meeting's title with the date after it. It now shows the line's own time and the meeting's title as it is now, and is greyed once that meeting is deleted. While the answer is still being written, it is already that meeting's chip rather than a greyed link.",
+  "notesSha256": "be531e923465ca40fc2c43a9b9526e5b967f6c6962817969d43bfd519032da71",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Ask questions across meetings, filtered by date and participants",
+     "items": [
+      "You can now narrow a question by date, people, meetings, or what it reads using chips above the field",
+      "Select multiple meetings with command-click or shift-click, then press Ask About These to ask about them",
+      "Questions across meetings now read summaries alongside transcripts for more complete answers",
+      "Long meetings from earlier versions now open without errors",
+      "Citations in answers across meetings now show the correct time and meeting title"
+     ]
+    },
+    "vi": {
+     "headline": "Đặt câu hỏi qua nhiều cuộc họp với bộ lọc ngày và người tham gia",
+     "items": [
+      "Bạn có thể thu hẹp câu hỏi theo ngày, người, cuộc họp hoặc nội dung đọc bằng các chip phía trên ô nhập",
+      "Chọn nhiều cuộc họp bằng command-click hoặc shift-click, sau đó nhấn Hỏi Về Những Cuộc Này",
+      "Câu hỏi qua nhiều cuộc họp giờ đọc cả bản tóm tắt lẫn bản ghi để có câu trả lời đầy đủ hơn",
+      "Các cuộc họp dài từ phiên bản trước giờ mở được mà không bị lỗi",
+      "Trích dẫn trong câu trả lời qua nhiều cuộc họp giờ hiển thị đúng thời gian và tên cuộc họp"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.19.1",
+  "date": "2026-11-25",
+  "notes": "### Fixed\n\n- Refine and Translate's time for Translate All is closer to what it takes. It counted fewer parts and calls than Translate All makes, and left out what the AI writes besides the translations.",
+  "notesSha256": "725364cd2ca8f048daca87a00adb92eab84822359b7bf3a301e5fa0c6870b281",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "More accurate time estimate for Translate All",
+     "items": [
+      "Translate All now shows a more accurate time estimate that reflects the full translation process"
+     ]
+    },
+    "vi": {
+     "headline": "Ước tính thời gian chính xác hơn cho Dịch Tất Cả",
+     "items": [
+      "Dịch Tất Cả giờ hiển thị ước tính thời gian chính xác hơn phản ánh đầy đủ quá trình dịch"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.19.0",
+  "date": "2026-11-25",
+  "notes": "### Added\n\n- **Slash commands in Ask.** Type `/` in Ask, or press the `/` button beside @, to pick a command:\n  - **Lumi's own:** `/clear` starts a new chat and keeps this one, `/compact` summarizes the earlier messages, `/retry` asks the last question again, `/title` renames the chat, and `/think` sets how hard it thinks.\n  - **Meeting Notes' own:** `/actions`, `/decisions`, `/open` and `/email [to whom]`.\n  - **In Live Captions:** also `/missed`, `/sofar` and `/suggest`.\n  - **Needs Lumi 1.100.0.**\n- **Back and Forward.** After a citation, a mention or a quote opens something else, ‹ and › at the start of the toolbar take you back to what you were reading, and forward again. ⌘[ and ⌘] do the same. A chat comes back scrolled to where you left it. In Live Captions, Ask has them at the top of the chat.\n\n### Changed\n\n- **A citation is a small token,** set after the punctuation it belongs to, as a footnote mark is. A long name is cut short, and its tooltip says it in full.\n\n### Fixed\n\n- A citation of a chat or a meeting that has since been deleted is struck through. It used to be only dimmed.\n- In Live Captions, a citation, a mention or a quote of another meeting's chat opens Meeting Notes on that chat. It used to do nothing.\n- Back to Summary shows only when you went from the summary to a line, and not when the transcript was already open.",
+  "notesSha256": "276980b8db216b9c1a2009fca7289141cb8c65f6c51cea8ea658bc0d84c80c73",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Slash commands in Ask, and back and forward navigation",
+     "items": [
+      "Type / in Ask to pick a command like clear, compact, retry, title, or think",
+      "Meeting Notes adds /actions, /decisions, /open, and /email commands in Ask",
+      "After opening a citation, mention, or quote, use ‹ and › or ⌘[ and ⌘] to go back",
+      "Citations now appear as small tokens after punctuation, with long names shortened",
+      "Citations to deleted chats or meetings now show struck through instead of dimmed",
+      "Citations to other meetings' chats now open Meeting Notes on that chat"
+     ]
+    },
+    "vi": {
+     "headline": "Lệnh gạch chéo trong Ask và điều hướng lui tới",
+     "items": [
+      "Gõ / trong Ask để chọn lệnh như clear, compact, retry, title hoặc think",
+      "Meeting Notes thêm lệnh /actions, /decisions, /open và /email trong Ask",
+      "Sau khi mở trích dẫn, đề cập hay trích lời, dùng ‹ và › hoặc ⌘[ và ⌘] để quay lại",
+      "Trích dẫn giờ hiện dạng thẻ nhỏ sau dấu câu, tên dài được rút gọn",
+      "Trích dẫn đến chat hay cuộc họp đã xóa giờ hiện gạch ngang thay vì mờ đi",
+      "Trích dẫn đến chat của cuộc họp khác giờ mở Meeting Notes tại chat đó"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.18.0",
+  "date": "2026-11-24",
+  "notes": "### Changed\n\n- **A citation plays and shows each passage of it.** A time in the Summary, a citation in Ask, or one under Live Captions can stand for lines far apart. Lines said one after another are now one passage, and each passage has its own time, Play and Show in Transcript. Play stops at the end of its passage.\n- **A file's preview is a window of its own**, as Quick Look's. Move it by its title bar, size it from its corner, fill the window with its green button, and keep working in the page behind it. In Libraries it shows the file you select.\n- **An answer says when it searched your libraries by their words.** If Lumi's embedding model stops, Ask still answers, and a line under the answer says so, with Lumi Models… to try the model again. Needs Lumi 1.99.0.\n\n### Fixed\n\n- A menu taller than the window, such as Text Model with a long list, scrolls instead of running past the window's edge.\n- Libraries shows that it is loading, and why it could not, with Try Again, instead of an empty page.\n- Record… in Get Started opens Settings on Speakers with My Voice's recording, not on the pane Settings was last left on.",
+  "notesSha256": "c631d3f438c99a178e759e34d54221df2bd84b09cbdde33b573a4f1ea2e26398",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Citations play each passage, file previews in their own window",
+     "items": [
+      "Citations now play and show each passage separately when lines are far apart",
+      "File previews open in their own movable window like Quick Look",
+      "Answers note when they searched libraries by words instead of meaning",
+      "Tall menus now scroll instead of extending past the window edge",
+      "Libraries shows loading state and error messages with retry option",
+      "Record button in Get Started opens directly to voice recording settings"
+     ]
+    },
+    "vi": {
+     "headline": "Trích dẫn phát từng đoạn, xem trước tệp trong cửa sổ riêng",
+     "items": [
+      "Trích dẫn giờ phát và hiện từng đoạn riêng khi các dòng cách xa nhau",
+      "Xem trước tệp mở trong cửa sổ riêng di chuyển được như Quick Look",
+      "Câu trả lời ghi chú khi tìm trong thư viện theo từ thay vì theo nghĩa",
+      "Menu cao giờ cuộn thay vì vượt ra ngoài cửa sổ",
+      "Thư viện hiện trạng thái đang tải và thông báo lỗi với nút thử lại",
+      "Nút ghi âm trong Bắt Đầu mở thẳng cài đặt ghi âm giọng nói"
+     ]
+    }
+   }
+  }
+ }
+]

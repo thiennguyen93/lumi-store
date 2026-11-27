@@ -1,0 +1,1249 @@
+[
+ {
+  "version": "0.5.8",
+  "date": "2026-11-04",
+  "notes": "### Fixed\n\n- The website link on Selection Bar's About page in Lumi opens its page on lumikeys.app. It opened a page that no longer exists.\n- The lumikeys.app link at the end of Selection Bar's page in the Extension Store opens the extensions on lumikeys.app. It opened a page that no longer exists.",
+  "notesSha256": "d3689ce626650483688d2e86f439718f0e49cdce5a70677997b89369b564cc3e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed broken links",
+     "items": [
+      "Fixed the website link in the About page to open the correct page",
+      "Fixed the link in the Extension Store to open the correct extensions page"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa các liên kết bị lỗi",
+     "items": [
+      "Sửa liên kết trang web trong phần Giới thiệu để mở đúng trang",
+      "Sửa liên kết trong Cửa hàng Tiện ích để mở đúng trang tiện ích"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.5.7",
+  "date": "2026-10-21",
+  "notes": "### Fixed\n\n- **Copy copies everything you selected on a web page.** On a page with answers to pick — a quiz, a form — Copy gave the question and nothing of the answers, and paragraphs ran together. Now the app you selected in copies it itself, so what you paste is what that app's own Copy gives: every answer, a line each, with its formatting and links. Where an app copies nothing, the bar copies the text it read, which Lumi 1.59.0 now reads whole on any page — so Translate, Search and the AI actions get every answer too.\n- Needs Lumi 1.59.0.",
+  "notesSha256": "b1e7f397aaf9b19a0a32e8de51e1e4d623054cbe7e63b278bcedaeb7d173a2eb",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Copy now captures everything you selected on web pages",
+     "items": [
+      "Copy now captures all selected content on web pages including form answers and quiz options",
+      "Paragraphs and line breaks are preserved when copying from web pages",
+      "Copy uses the app's own clipboard when available so formatting and links are kept",
+      "Translate, Search and AI actions now work with complete text from any web page",
+      "Requires Lumi 1.59.0"
+     ]
+    },
+    "vi": {
+     "headline": "Copy giờ chụp mọi thứ bạn chọn trên trang web",
+     "items": [
+      "Copy giờ chụp toàn bộ nội dung được chọn trên trang web kể cả câu trả lời trong form và quiz",
+      "Đoạn văn và xuống dòng được giữ nguyên khi copy từ trang web",
+      "Copy dùng clipboard của ứng dụng khi có thể nên giữ được định dạng và liên kết",
+      "Translate, Search và các hành động AI giờ hoạt động với văn bản đầy đủ từ mọi trang web",
+      "Yêu cầu Lumi 1.59.0"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.5.6",
+  "date": "2026-10-20",
+  "notes": "### Fixed\n\n- **A selection with an emoji drawn as a picture is no longer said to have changed.** In Slack, and anywhere else an emoji or an image sits in the text as a picture, Case, Lines, Encode and Format JSON are dimmed for that selection — writing over it would lose the picture — and pressed, they say so. Before, pressing one said the selection had changed when you hadn't touched it.\n- **When an app won't take a change, the bar says why in plain words**, rather than in a message meant for developers.",
+  "notesSha256": "8c3f10b587701e23eca27129722cef5b42ee9d17c8cc7cbc75e0fe379af8a81e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Clearer messages when the bar cannot change text",
+     "items": [
+      "Selections with emoji or images now show a clear explanation when you try to change them",
+      "Error messages are now written in plain language instead of technical terms"
+     ]
+    },
+    "vi": {
+     "headline": "Thông báo rõ ràng hơn khi thanh công cụ không thể thay đổi văn bản",
+     "items": [
+      "Vùng chọn có emoji hoặc hình ảnh giờ hiển thị giải thích rõ ràng khi bạn cố thay đổi",
+      "Thông báo lỗi giờ được viết bằng ngôn ngữ thông thường thay vì thuật ngữ kỹ thuật"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.5.5",
+  "date": "2026-10-20",
+  "notes": "### Fixed\n\n- **Search's results and the dictionaries on the web show again with a solid background.** With **Background transparency** moved toward Solid, the Search card and the Oxford and Cambridge tabs stayed dark where the site should be; the site now shows in its box, and the background is solid everywhere else.",
+  "notesSha256": "2cace4a3585d8c8c8c4b9adddcc3e73396013ce63118aedbf46c34ad535463de",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Search and dictionary backgrounds fixed",
+     "items": [
+      "Search results and dictionary websites now show with a solid background when transparency is reduced",
+      "The Oxford and Cambridge tabs no longer stay dark when background transparency is moved toward solid"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa nền tìm kiếm và từ điển",
+     "items": [
+      "Kết quả tìm kiếm và trang từ điển giờ hiện với nền đặc khi giảm độ trong suốt",
+      "Các tab Oxford và Cambridge không còn tối khi chỉnh độ trong suốt nền về đặc"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.5.4",
+  "date": "2026-10-20",
+  "notes": "### Added\n\n- **Glass or solid.** Settings › Look has **Background transparency**, a slider from **Glass** to **Solid**: the further toward Solid, the less the colours of the window under the bar show through it, so it reads the same over anything. The preview and the Look tiles follow it as you drag.",
+  "notesSha256": "f95af45ba3acfc848ebdbad7eabd451bbb9eece5302825ddd90803b111a7dd28",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Glass or solid",
+     "items": [
+      "Settings › Look has Background transparency, a slider from Glass to Solid",
+      "The further toward Solid, the less the window under the bar shows through",
+      "The preview and Look tiles update as you drag the slider"
+     ]
+    },
+    "vi": {
+     "headline": "Trong suốt hoặc đặc",
+     "items": [
+      "Cài đặt › Giao diện có Độ trong suốt nền, thanh trượt từ Trong suốt đến Đặc",
+      "Càng kéo về Đặc, cửa sổ phía dưới thanh càng ít lộ qua",
+      "Bản xem trước và ô Giao diện cập nhật khi bạn kéo thanh trượt"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.5.1",
+  "date": "2026-10-19",
+  "notes": "### Added\n\n- **Search shows its results in the bar.** Press Search and the bar grows into a card with the search site's results for what you selected — scroll them, follow a link, Reload, or press Browser to carry on in your browser — without leaving the app you're in. Search's gear in Settings has **Show results**: **In the bar**, or **In your browser** as before.\n\n### Fixed\n\n- **Define's tabs keep their whole names.** With more dictionaries than fit across the card, the tabs scroll sideways — swipe, or turn the mouse wheel over them — rather than each being cut short to a few letters. An end with more tabs past it fades out, and the tab you're on stays in view.\n\n### Changed\n\n- Needs Lumi 1.58.0.",
+  "notesSha256": "fe9cd4fb37270a4e8fab8e800bb6a0be7aca696720ac0fe3b0668234e87aac48",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Search shows results in the bar, Define's tabs scroll",
+     "items": [
+      "Search shows its results in the bar without opening your browser",
+      "Define's tabs keep their full names and scroll sideways when there are many",
+      "Requires Lumi 1.58.0"
+     ]
+    },
+    "vi": {
+     "headline": "Tìm kiếm hiện kết quả trong thanh, các tab Define cuộn ngang",
+     "items": [
+      "Tìm kiếm hiện kết quả ngay trong thanh mà không cần mở trình duyệt",
+      "Các tab trong Define giữ nguyên tên đầy đủ và cuộn ngang khi có nhiều tab",
+      "Yêu cầu Lumi 1.58.0"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.5.0",
+  "date": "2026-10-19",
+  "notes": "### Changed\n\n- Needs Lumi 1.57.0, and Selection Bar now asks to reach the web. This version sends nothing anywhere it did not before.",
+  "notesSha256": "3b726bbbf87705580086c89b9e3269d2e4c72f424ad9d7fb2424ba2b1d181893",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Requires Lumi 1.57.0 and new permission for web access",
+     "items": [
+      "Requires Lumi 1.57.0 or later to run",
+      "Selection Bar now requests permission to access the web, but sends no data anywhere"
+     ]
+    },
+    "vi": {
+     "headline": "Yêu cầu Lumi 1.57.0 và quyền truy cập web mới",
+     "items": [
+      "Yêu cầu Lumi phiên bản 1.57.0 trở lên",
+      "Selection Bar giờ yêu cầu quyền truy cập web nhưng không gửi dữ liệu đi đâu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.4.1",
+  "date": "2026-10-19",
+  "notes": "### Changed\n\n- **Define's card keeps one height** whichever dictionary's tab you choose — the tallest tab's, up to its usual limit, a tab with more scrolling inside. Above the text, a card that grew and shrank with each tab moved its tabs out from under the pointer, and the next tab took a move of the mouse to reach.",
+  "notesSha256": "5ab595f66bd523fc81747f6dc61df168be76c02dd4fa8c639b0f0c262b8a77bf",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Define card now stays the same height when switching tabs",
+     "items": [
+      "Define card stays the same height when switching between dictionary tabs"
+     ]
+    },
+    "vi": {
+     "headline": "Thẻ Define giữ nguyên chiều cao khi chuyển tab",
+     "items": [
+      "Thẻ Define giữ nguyên chiều cao khi chuyển giữa các tab từ điển"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.4.0",
+  "date": "2026-10-19",
+  "notes": "### Added\n\n- **Define.** Select a word or a phrase and press Define to look it up in the dictionaries you turned on in the Dictionary app, in their order — a tab for each that has it. The card shows the word and its syllables, how it is said (US and UK where the dictionary gives both), and its senses under each part of speech, with examples and usage labels; a thesaurus shows synonyms and opposites, and a bilingual dictionary — Vietnamese – English, say — its translations, examples translated too.\n- **Speak** says the word aloud with your Mac's own voices.\n- **Copy** copies the entry, and **Dictionary** opens the Dictionary app at the word, with every dictionary's whole entry.\n- Define shows for a word or a phrase of up to four words on one line, when at least one dictionary is turned on. Its gear in Settings lists the dictionaries it looks in, and opens the Dictionary app, where its Settings turn on others.\n- Looked up on this Mac: nothing you select leaves it for Define, and nothing is kept.\n\n### Changed\n\n- Needs Lumi 1.55.0.",
+  "notesSha256": "94fbb51e226126bbb3ff4abe4ace0ec81763d8e3505de9cc49996ca803690bc1",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Look up words in your dictionaries",
+     "items": [
+      "Define looks up words and phrases in the dictionaries you turned on",
+      "Shows pronunciation, meanings, examples, synonyms, and translations",
+      "Speak reads the word aloud and Copy copies the entry",
+      "Dictionary opens the full entry in the Dictionary app",
+      "Works with up to four words on one line when dictionaries are enabled",
+      "Requires Lumi 1.55.0"
+     ]
+    },
+    "vi": {
+     "headline": "Tra từ trong từ điển của bạn",
+     "items": [
+      "Define tra từ và cụm từ trong các từ điển bạn đã bật",
+      "Hiển thị cách phát âm, nghĩa, ví dụ, từ đồng nghĩa và bản dịch",
+      "Speak đọc to từ và Copy sao chép mục từ",
+      "Dictionary mở mục từ đầy đủ trong ứng dụng Từ điển",
+      "Hoạt động với tối đa bốn từ trên một dòng khi từ điển được bật",
+      "Yêu cầu Lumi 1.55.0"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.27",
+  "date": "2026-10-19",
+  "notes": "### Fixed\n\n- **Count** under ⋯ shows the words, characters and lines when you press it, as Count's button on the bar does. Pressed there — when the bar had no room for it, on either bar — it seemed to do nothing.",
+  "notesSha256": "192bd1f68a6b5df638b033a0051341d65fc5ef8c40e89046c6f849262045b6d7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Count now works from the overflow menu",
+     "items": [
+      "Count under the overflow menu now shows word, character and line counts when pressed"
+     ]
+    },
+    "vi": {
+     "headline": "Count giờ hoạt động từ menu tràn",
+     "items": [
+      "Count trong menu tràn giờ hiển thị số từ, ký tự và dòng khi nhấn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.26",
+  "date": "2026-10-18",
+  "notes": "### Added\n\n- **AI answers drawn as they are meant to read.** What a model writes when it answers Ask…, explains or summarizes — headings, **bold** and *italic*, lists inside lists, `code` and code blocks, quotes, tables, links — is shown formatted on the card, as it comes, rather than with its asterisks and hashes. Code and a table wider than the card scroll sideways on their own. A link opens in your browser, web and mail addresses only. Copy keeps the formatting for apps that take it — Mail, Notes, a document — and gives the Markdown itself to anything that takes plain text. A fix, a rewrite or a translation is still shown exactly as it will be written over your text, and a reply as it will be sent.",
+  "notesSha256": "d9f76c3335535ebba4221202ce653bd8c9dc934c332a888d5568e480807efeb4",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "AI answers now show formatted text instead of raw Markdown",
+     "items": [
+      "AI answers display headings, bold, italic, lists, code blocks, quotes, tables, and links as formatted text",
+      "Code blocks and wide tables scroll sideways within the card",
+      "Links in AI answers open in your browser when clicked",
+      "Copying formatted answers preserves formatting in apps like Mail and Notes, gives Markdown to plain text apps",
+      "Fixes, rewrites, and translations still show exactly as they will replace your text"
+     ]
+    },
+    "vi": {
+     "headline": "Câu trả lời AI hiện hiển thị văn bản định dạng thay vì Markdown thô",
+     "items": [
+      "Câu trả lời AI hiển thị tiêu đề, chữ đậm, nghiêng, danh sách, mã, trích dẫn, bảng và liên kết đã định dạng",
+      "Khối mã và bảng rộng cuộn ngang trong thẻ",
+      "Liên kết trong câu trả lời AI mở trong trình duyệt khi nhấp",
+      "Sao chép giữ định dạng trong Mail và Notes, cho Markdown với ứng dụng văn bản thuần",
+      "Sửa lỗi, viết lại và dịch vẫn hiển thị chính xác như sẽ thay thế văn bản"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.25",
+  "date": "2026-10-18",
+  "notes": "### Added\n\n- A short demo video on Selection Bar's page in the Extension Store and on lumikeys.app — fixing, rewriting, explaining and translating the text you select, in the apps you use — to watch before you install.",
+  "notesSha256": "eb01cad182dfeb11f6c84b6095c261fa58f3d22d60a495982a8ad1a867cb340a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Demo video added to the Extension Store",
+     "items": [
+      "A demo video now shows what Selection Bar does before you install it"
+     ]
+    },
+    "vi": {
+     "headline": "Thêm video giới thiệu vào Cửa hàng Tiện ích",
+     "items": [
+      "Video giới thiệu giờ hiển thị Selection Bar hoạt động như thế nào trước khi cài đặt"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.24",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **A Welcome tour**, opened when Selection Bar is installed or updated, and again from Lumi's About page. A small pretend Mac acts out each step above the words: Fix Spelling & Grammar marking and correcting a mail's mistakes one by one, Rewrite in a style — then the same answer asked again with another of your models, and more thinking, for that card alone — Explain, Reply… offering the ways to answer a message, Translate on this Mac, the second bar ⌥ holds, and the keys: the shortcut, 1–9, ↩. The bar in it wears your Look, Dark, Light or Match macOS. The models it names are yours, from Lumi's AI settings — or \"Your model\" where you have none — and its last step says whether one is set up for the AI actions, and where to set one up if not. The shortcut step says whether ⌃⌥⌘Space was free to take, and if something else holds it, offers to take it, to pick another key, or to leave it for later.",
+  "notesSha256": "61ee2f9daccbb5c501045e81c45360b1b48807d9f5890d7eb3b0e192d4f20840",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour and setup guide",
+     "items": [
+      "A welcome tour now opens when Selection Bar is installed or updated",
+      "The tour shows how each action works using a small animated Mac demonstration",
+      "The tour uses your chosen appearance and shows your configured AI models",
+      "The shortcut setup step offers to claim the keyboard shortcut or pick another one"
+     ]
+    },
+    "vi": {
+     "headline": "Hướng dẫn chào mừng và thiết lập",
+     "items": [
+      "Hướng dẫn chào mừng hiện mở ra khi cài đặt hoặc cập nhật Selection Bar",
+      "Hướng dẫn minh họa cách hoạt động của từng tính năng bằng máy Mac nhỏ",
+      "Hướng dẫn sử dụng giao diện bạn chọn và hiển thị các mô hình AI đã cấu hình",
+      "Bước thiết lập phím tắt đề nghị chiếm phím tắt hoặc chọn phím khác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.23",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **Reply…** — for a message someone sent you. The AI reads it first and offers the ways you are likeliest to answer it, a few words each — \"3 pm works for me\", \"Suggest 4 pm instead\", \"Ask what the review covers\" — and a field to say your own. Pick one and it writes the reply along it, in the message's language and your voice, to copy and send. Back goes to the ways again, and ↻ on them asks for others. Its sheet has two sets of instructions: which ways to offer, and how to write the reply. However you word the first, the bar asks for the ways one a line, so they can always be listed; should none come back, the field is still there. The ways come in your Mac's language; the way you pick goes to the model with the message, as text to work on, never as instructions.\n- **Text you can't edit**, under an AI action's Shows for: a message, a page — where Reply… shows, and where an action of your own can too.\n\n### Fixed\n\n- The Settings tab no longer says every AI action needs a model when Lumi has one. Lumi lets the tab ask the bar anything only while Settings is in front, and a tab loaded behind another app — Lumi reopening Settings as it starts, or a new version arriving — was refused, and showed what it could not read as none: no model, no translator, an empty sample bar. It now reads them again as Settings comes to the front, waits longer while the bar is busy starting, and until it knows, says nothing either way.",
+  "notesSha256": "4f732c820ea83959dd7d76f9b31b512b978c9e7453fc0ad947c9ac8718f6c99e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Reply to messages with AI-suggested responses",
+     "items": [
+      "Reply to messages with AI-suggested quick responses in the sender's language",
+      "AI actions can now appear for text you cannot edit, like messages or web pages",
+      "Settings no longer incorrectly shows that AI actions need a model when one is set"
+     ]
+    },
+    "vi": {
+     "headline": "Trả lời tin nhắn với các gợi ý từ AI",
+     "items": [
+      "Trả lời tin nhắn với các phản hồi nhanh do AI gợi ý bằng ngôn ngữ người gửi",
+      "Các hành động AI giờ có thể xuất hiện cho văn bản không chỉnh sửa được như tin nhắn",
+      "Cài đặt không còn hiển thị sai rằng hành động AI cần mô hình khi đã có sẵn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.22",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **Each bar its own settings for an action.** An action's gear on the While holding ⌥ tab opens its sheet for that bar: Use the main bar's settings, on at first, shows the main bar's settings dimmed — what the bar asks with, changed from the Main tab. Turned off, the bar has its own — instructions, model, thinking, when it shows and what its answer is for, Translate's translator and languages, Search's site — starting as a copy of the main bar's, so Fix Spelling & Grammar can ask a quick model on one bar and a careful one on the other. Turned back on, its own are kept for the next time it is turned off. Each sheet says at its top which bar it saves for, and the While holding ⌥ tab marks an action with settings of its own there. An action of your own keeps one name and icon on both bars.\n- **Ask… chooses its model before the first question.** Under the question's field, the model it goes to and how hard it thinks — Ask…'s own — open Ask With: pick another model or thinking, Done, and the question asks with it, and the chat after it too.\n\n### Fixed\n\n- The model at the foot of an AI card is as tall as the card's buttons, and its corner follows the panel's: under Ask…'s first question, alone in its footer, it had shrunk to its text, its lit background against the panel's edge.",
+  "notesSha256": "c4218df7fa0cdce5d42f0b0e7bc887386684e699e53c44e8c3af35127f094b1d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Each bar can now use different settings for the same action",
+     "items": [
+      "Each bar can have its own settings for an action instead of sharing the main bar's",
+      "An action's gear on the While holding ⌥ tab opens settings just for that bar",
+      "Ask… now lets you pick the model and thinking level before asking the first question",
+      "The model picker at the bottom of AI cards now matches the height of nearby buttons"
+     ]
+    },
+    "vi": {
+     "headline": "Mỗi thanh giờ có thể dùng cài đặt riêng cho cùng một thao tác",
+     "items": [
+      "Mỗi thanh có thể có cài đặt riêng cho một thao tác thay vì dùng chung của thanh chính",
+      "Biểu tượng bánh răng của thao tác trên tab While holding ⌥ mở cài đặt riêng cho thanh đó",
+      "Ask… giờ cho phép chọn mô hình và mức độ suy nghĩ trước khi đặt câu hỏi đầu tiên",
+      "Bộ chọn mô hình ở cuối thẻ AI giờ có chiều cao khớp với các nút bên cạnh"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.21",
+  "date": "2026-10-17",
+  "notes": "### Fixed\n\n- In Ask…'s chat, Return in the follow-up field sends the question again: the bar's own keys had taken it while the bar held the keyboard.\n- The follow-up field shows its caret only while what you type goes into it. In an app that answers Accessibility nothing while the bar has the keyboard — Chromium and Electron apps, Visual Studio Code — reading the selection for the question lent the keyboard back to the app, and the field kept a caret that typing never reached: the bar went instead. With Lumi 1.55.0 the keyboard comes back to the bar once the question is asked, so typing goes on into the field; with an older Lumi, a press on the field gives it back.",
+  "notesSha256": "1599e023610c12a22bb4e37b2ac6b8e94487ac069565f6e40e0f1d054a5584ea",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixes for Ask… chat follow-up field",
+     "items": [
+      "Return in the Ask… follow-up field now sends your question instead of being ignored",
+      "The follow-up field no longer shows a blinking cursor when typing goes elsewhere"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa lỗi ô nhập tiếp theo trong Ask…",
+     "items": [
+      "Phím Return trong ô nhập tiếp theo của Ask… giờ gửi câu hỏi thay vì bị bỏ qua",
+      "Ô nhập tiếp theo không còn hiện con trỏ nhấp nháy khi gõ vào chỗ khác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.20",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **Ask… is a chat.** Once it has answered, a field under the answer takes the next question, and the model is asked it with the chat so far — your earlier questions with its instructions, its earlier answers after the selected text, as text to work on, never as instructions — so \"which part?\" or \"make it friendlier\" follow on. The card keeps every question and answer in turn, the newest last, as a messages app draws them — yours on the right in the accent colour, the model's on the left — each answer with a Copy of its own beside it — shown as you point at the answer, and on the latest until you point at another — that leaves the chat up — in place of the footer's Copy, which took the last answer and put the bar away — and ↻ asks the last one again with the same chat. The latest eight questions go with each, and of a long answer its first 3,000 characters. Like a translation, the chat goes when the bar does.",
+  "notesSha256": "24f4dddad1f0e917b8a097e9e0306f597e68e8b340426b2f627f54cd66770f1b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Ask… now continues the conversation",
+     "items": [
+      "Ask… keeps the conversation going with a chat interface below each answer",
+      "Your questions appear on the right in the accent color, answers on the left",
+      "Each answer has its own Copy button that appears when you point at it",
+      "The refresh button asks the last question again with the conversation so far",
+      "The chat includes your last eight questions and the first 3,000 characters of long answers"
+     ]
+    },
+    "vi": {
+     "headline": "Ask… giờ tiếp tục cuộc trò chuyện",
+     "items": [
+      "Ask… duy trì cuộc trò chuyện với giao diện chat bên dưới mỗi câu trả lời",
+      "Câu hỏi của bạn hiện bên phải với màu nhấn, câu trả lời ở bên trái",
+      "Mỗi câu trả lời có nút Sao chép riêng xuất hiện khi bạn rê chuột vào",
+      "Nút làm mới hỏi lại câu hỏi cuối cùng với toàn bộ cuộc trò chuyện",
+      "Cuộc trò chuyện bao gồm tám câu hỏi gần nhất và 3.000 ký tự đầu của câu trả lời dài"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.19",
+  "date": "2026-10-17",
+  "notes": "### Changed\n\n- In an AI action's sheet, an answer that is new text to copy no longer shows Write it over at once, Show what changed and How changes are marked, dimmed: they are gone until the answer replaces what you selected again, each keeping its choice. How changes are marked goes the same way while Show what changed is off. The sheet is shorter for it.",
+  "notesSha256": "4d13e8feccdc64ba339bcc3b7f1db99aa1214922260d052631baaea2e21ee06d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Cleaner AI action sheets",
+     "items": [
+      "AI action sheets hide irrelevant options when the answer is new text to copy"
+     ]
+    },
+    "vi": {
+     "headline": "Giao diện hành động AI gọn hơn",
+     "items": [
+      "Bảng hành động AI ẩn các tùy chọn không liên quan khi câu trả lời là văn bản mới để sao chép"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.18",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **Ask again with another model.** On an AI action's card, once it has answered, the model named at the bottom opens Ask Again With: pick another of the models you turned on in Lumi, and how hard it thinks — Off, Low, Medium or High, for a model that can — then Ask Again. The choice holds for that card, ↻ asking with it too, and the action keeps its own as its sheet has it. Translate's card does the same when the AI translates, as Translate Again With, and a language changed on the card keeps the model chosen.",
+  "notesSha256": "74971a89342e4947cc244bd5af4aeabb9413d195628146066dfba3461c07df02",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Ask again with a different AI model",
+     "items": [
+      "After an AI action answers, tap the model name to ask again with a different model",
+      "Choose how hard the model thinks: Off, Low, Medium, or High",
+      "Your choice stays for that card and applies when you ask again",
+      "Translate actions also let you switch models while keeping your language choice"
+     ]
+    },
+    "vi": {
+     "headline": "Hỏi lại bằng mô hình AI khác",
+     "items": [
+      "Sau khi AI trả lời, chạm tên mô hình để hỏi lại bằng mô hình khác",
+      "Chọn mức độ suy nghĩ: Tắt, Thấp, Trung bình hoặc Cao",
+      "Lựa chọn của bạn được giữ nguyên cho thẻ đó và áp dụng khi hỏi lại",
+      "Hành động dịch cũng cho phép đổi mô hình mà vẫn giữ ngôn ngữ đã chọn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.17",
+  "date": "2026-10-17",
+  "notes": "### Removed\n\n- The Settings tab's AI section. It only said how many models Lumi has and which is the default: each AI action's sheet says which model runs it and whether it runs on this Mac, and with no model in Lumi, the AI actions' rows say they need one.",
+  "notesSha256": "05fbcab2a4c8b51917c5ec387476d21b078ad4f57f26627f710a4b3e9c6a3eb4",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Streamlined settings",
+     "items": [
+      "Removed the AI section from Settings since each action already shows its model"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt gọn gàng hơn",
+     "items": [
+      "Đã xóa phần AI trong Cài đặt vì mỗi hành động đã hiển thị mô hình của nó"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.16",
+  "date": "2026-10-17",
+  "notes": "### Changed\n\n- Selection Bar's page in Lumi opens on Settings rather than About. Once you pick another tab, Lumi reopens it on yours until it quits.\n- Show what changed and How changes are marked moved from the Settings tab's AI section into each AI action's sheet, under The answer, where they apply: only an answer that replaces what you selected is marked. Show what changed is each action's own now — on for Fix Spelling & Grammar and off for Rewrite, say. How changes are marked is still one choice for every action, chosen from a menu with a sample under it, from any of their sheets. Turned off before, Show what changed starts off for every action.",
+  "notesSha256": "9834d3da73212955da4d05ff77d52bf1bd31795fc9d366e035742bab057f23f1",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings reorganized and change tracking moved to individual actions",
+     "items": [
+      "Selection Bar now opens on Settings in Lumi instead of About",
+      "Show what changed moved from Settings to each AI action's sheet under The answer",
+      "Each action now has its own Show what changed toggle, on by default for Fix Spelling & Grammar",
+      "How changes are marked remains a single choice for all actions, accessible from any action sheet"
+     ]
+    },
+    "vi": {
+     "headline": "Sắp xếp lại cài đặt và chuyển theo dõi thay đổi vào từng hành động",
+     "items": [
+      "Selection Bar giờ mở ở phần Cài đặt trong Lumi thay vì Giới thiệu",
+      "Hiển thị thay đổi được chuyển từ Cài đặt vào trang của từng hành động AI, dưới phần Câu trả lời",
+      "Mỗi hành động giờ có nút bật tắt Hiển thị thay đổi riêng, mặc định bật cho Sửa chính tả và ngữ pháp",
+      "Cách đánh dấu thay đổi vẫn là một lựa chọn chung cho tất cả hành động, truy cập từ bất kỳ trang hành động nào"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.15",
+  "date": "2026-10-17",
+  "notes": "### Fixed\n\n- An AI action added with + in Settings could be missing from the list once its sheet closed, and a change made in an AI action's sheet could be lost: the action and the lists were saved apart, at the same moment, and Lumi kept only one of the two. They are now one save, as are Translate's choices and − taking an action off. An action lost that way has to be added again.",
+  "notesSha256": "88b9b58996360250f38f911b0fdd2779991899c67a2d25429f04ea8cbb8621df",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed AI actions disappearing after being added or edited",
+     "items": [
+      "AI actions added or edited in Settings no longer disappear when you close the sheet",
+      "Changes to translation settings and removed actions are now saved reliably"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa lỗi hành động AI biến mất sau khi thêm hoặc chỉnh sửa",
+     "items": [
+      "Hành động AI được thêm hoặc chỉnh sửa trong Cài đặt không còn biến mất khi đóng bảng",
+      "Các thay đổi cài đặt dịch thuật và xóa hành động giờ được lưu ổn định"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.14",
+  "date": "2026-10-17",
+  "notes": "### Fixed\n\n- In Settings, switching the Actions list between Main and While holding ⌥ no longer moves the page up and down in a narrow window. How many actions go under ⋯ is now a small count on the preview's ⋯ itself, instead of words beside the samples that could wrap that row onto a second line, and the two tabs' notes keep the height of the longer.",
+  "notesSha256": "aeb07b27536df220bbbbbc9bdb44ca7139ed5843a4decd0792ba5e59e051f5b8",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings layout improvements",
+     "items": [
+      "Switching between Main and While holding ⌥ in Settings no longer shifts the page in narrow windows",
+      "The number of actions under ⋯ now appears as a count on the preview button instead of wrapping text"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện bố cục Cài đặt",
+     "items": [
+      "Chuyển giữa Chính và Khi giữ ⌥ trong Cài đặt không còn làm trang nhảy lên xuống ở cửa sổ hẹp",
+      "Số lượng thao tác trong ⋯ giờ hiện dưới dạng con số trên nút xem trước thay vì văn bản có thể xuống dòng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.13",
+  "date": "2026-10-17",
+  "notes": "### Added\n\n- **A second bar while ⌥ is held.** Under Actions in Settings, a new tab, While holding ⌥, chooses a second set of actions in an order of their own. Hold ⌥ while the bar is up and it shows them instead, ⌥ after Lumi's name at its start; let go and it shows the main ones again. Select text with ⌥ held and it comes up as the second bar at once. Each action shows only when it fits, and past eight the rest go under ⋯, on either bar; one with nothing for the selection shows only ⋯. An action can be on both bars, its gear's choices the same on each. Everything starts off, so ⌥ changes nothing until you turn some on. A menu opened from either bar stays that bar's until you go back. Needs Lumi 1.54.0 for ⌥ to be heard with the pointer resting; an older Lumi swaps as the pointer comes onto the bar with ⌥ held.\n- Settings' Show the bar says that holding ⌘ as you select with the mouse keeps it away.",
+  "notesSha256": "0c0ba8d2a9ed368fb41ab8f9d3977a06736a940c1946e075a3cb9b8858e212ae",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Hold Option for a second set of actions",
+     "items": [
+      "Hold Option while the bar is up to see a different set of actions",
+      "Select text with Option held to show the second bar right away",
+      "Configure the second bar under Actions in Settings, While holding Option tab",
+      "Each bar can have up to eight actions before the rest go under the more menu",
+      "An action can appear on both bars with the same settings",
+      "Settings now mentions holding Command while selecting to keep the bar from appearing"
+     ]
+    },
+    "vi": {
+     "headline": "Giữ Option để hiện nhóm thao tác thứ hai",
+     "items": [
+      "Giữ Option khi thanh đang hiện để xem nhóm thao tác khác",
+      "Chọn văn bản với Option đã giữ để thanh thứ hai hiện ngay",
+      "Cấu hình thanh thứ hai trong Cài đặt, mục Actions, thẻ While holding Option",
+      "Mỗi thanh có thể có tối đa tám thao tác trước khi phần còn lại vào menu thêm",
+      "Một thao tác có thể xuất hiện trên cả hai thanh với cùng cài đặt",
+      "Cài đặt giờ ghi chú về việc giữ Command khi chọn để không cho thanh xuất hiện"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.12",
+  "date": "2026-10-16",
+  "notes": "### Fixed\n\n- In Translate's sheet, with the AI translating, the two languages' Download… was dimmed and could not be pressed. It can now: the languages are macOS's, for every app, and the bar's too whenever the AI cannot be asked and macOS translates instead.",
+  "notesSha256": "73e39e96764aa08a14d69bdfafbd341432c5726b16701a661271ce6349fee247",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed language download in Translate action",
+     "items": [
+      "Fixed the Download button for languages being disabled while AI translation was active"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa tải ngôn ngữ trong hành động Dịch",
+     "items": [
+      "Sửa nút Tải xuống ngôn ngữ bị vô hiệu hóa khi đang dùng AI dịch"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.11",
+  "date": "2026-10-16",
+  "notes": "### Changed\n\n- Translate's choices — who translates, the two languages, and the AI's model, instructions and thinking — and Search's site moved from their own places on the Settings tab into a sheet of their own, opened by the gear on the action's row, as an AI action's is. The row says what is chosen: \"For words · macOS\", \"For a short text · Google\".",
+  "notesSha256": "515cf62d68e7157b139d07f99818a99fabe1b74d7a01588940595e92e7c4e3e7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Translate and Search settings moved to action sheets",
+     "items": [
+      "Translate and Search settings now open in a sheet from the gear icon on their row",
+      "Each action's row shows what you have chosen, like 'For words · macOS' or 'For a short text · Google'"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt Dịch và Tìm kiếm chuyển vào bảng riêng",
+     "items": [
+      "Cài đặt Dịch và Tìm kiếm giờ mở trong bảng riêng từ biểu tượng bánh răng trên hàng của chúng",
+      "Mỗi hàng hiển thị những gì bạn đã chọn, như 'Cho từ · macOS' hoặc 'Cho văn bản ngắn · Google'"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.10",
+  "date": "2026-10-16",
+  "notes": "### Fixed\n\n- In Settings, a click on an action's name or the line under it turned the action on or off. A click anywhere on its row now only picks the row; the switch alone turns the action on or off.",
+  "notesSha256": "9cf6cf96e2185b48c5748775b9c33f750eedc581ad63b0f37ac683994ad927f0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings now easier to navigate",
+     "items": [
+      "In Settings, clicking an action's row now selects it without toggling the switch"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt dễ điều hướng hơn",
+     "items": [
+      "Trong Cài đặt, nhấn vào hàng của hành động giờ chỉ chọn nó mà không bật tắt công tắc"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.9",
+  "date": "2026-10-16",
+  "notes": "### Changed\n\n- Scrolling a page with the arrow keys, Page Up and Down, Home, End or Space no longer puts the bar away: it follows the text as it does for the trackpad. In a text field those keys move the caret or type, and the bar goes as before. Needs Lumi 1.53.0.",
+  "notesSha256": "30f8fc432699b7108ae32314ebe9e5d7b0fe0a19c3bdf4897d90c9b126c57aa5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "The bar now follows your text when you scroll with the keyboard",
+     "items": [
+      "The bar follows your selection when you scroll with arrow keys, Page Up, Page Down, Home, End or Space"
+     ]
+    },
+    "vi": {
+     "headline": "Thanh công cụ giờ theo dõi văn bản khi cuộn bằng bàn phím",
+     "items": [
+      "Thanh công cụ theo dõi văn bản đã chọn khi cuộn bằng phím mũi tên, Page Up, Page Down, Home, End, Space"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.8",
+  "date": "2026-10-16",
+  "notes": "### Changed\n\n- The bar opened with ⌃⌥⌘Space follows the text through a scroll too, as the one that comes up when you select does, instead of staying where it was. It keeps the keyboard throughout. In Chrome, Slack and other apps built on Chrome, which say nothing is selected while the bar holds the keyboard, it steps away while you scroll and comes back only if the app says again where the text is. Needs Lumi 1.53.0.",
+  "notesSha256": "d8b0ae7570cae3df0f6e891631755bbf5be4a2092fe5e4f9f606143c5f062b6f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "The bar now follows your text when you scroll",
+     "items": [
+      "The bar opened with ⌃⌥⌘Space now follows text as you scroll, just like the bar that appears on selection",
+      "In Chrome and Electron apps, the bar steps aside while scrolling and returns when the text position updates",
+      "Requires Lumi 1.53.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Thanh công cụ giờ theo dõi văn bản khi cuộn",
+     "items": [
+      "Thanh mở bằng ⌃⌥⌘Space giờ theo văn bản khi cuộn, giống như thanh xuất hiện khi chọn",
+      "Trong Chrome và ứng dụng Electron, thanh tạm ẩn khi cuộn và hiện lại khi vị trí văn bản cập nhật",
+      "Yêu cầu Lumi 1.53.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.7",
+  "date": "2026-10-16",
+  "notes": "### Changed\n\n- Scrolling no longer puts the bar away. In apps that say at once where the text is — TextEdit, Notes, Safari and most of macOS — it moves with the text you selected, to the text's other side when there is no room. Where an app cannot say in time — Chrome, Slack and other apps built on Chrome — or the text scrolls out of sight, the bar steps away while you scroll and comes back beside the text when you stop, with whatever it was showing, such as a translation or an AI answer; if the text is out of sight by then, the bar goes. Needs Lumi 1.53.0; an older Lumi puts the bar away on a scroll, as before.",
+  "notesSha256": "70fe9ecb0eaee3d409173d3a1d4cb619d4ecea707b00667446ba545a66df10fb",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "The bar now follows your text when you scroll",
+     "items": [
+      "The bar stays visible when you scroll and moves with your selected text",
+      "In apps like TextEdit, Notes, and Safari, the bar repositions to stay beside your text",
+      "In Chrome-based apps, the bar temporarily steps aside while scrolling and returns when you stop",
+      "If you scroll the selected text out of view, the bar disappears",
+      "Requires Lumi 1.53.0 or newer to work"
+     ]
+    },
+    "vi": {
+     "headline": "Thanh công cụ giờ theo dõi văn bản khi bạn cuộn",
+     "items": [
+      "Thanh công cụ vẫn hiển thị khi bạn cuộn và di chuyển theo văn bản đã chọn",
+      "Trong các ứng dụng như TextEdit, Notes và Safari, thanh tự động đổi vị trí để ở cạnh văn bản",
+      "Trong các ứng dụng dựa trên Chrome, thanh tạm lui ra khi cuộn và quay lại khi bạn dừng",
+      "Nếu bạn cuộn văn bản đã chọn ra khỏi màn hình, thanh sẽ biến mất",
+      "Cần Lumi phiên bản 1.53.0 trở lên để hoạt động"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.6",
+  "date": "2026-10-16",
+  "notes": "### Added\n\n- With the bar showing icons only, a button's name shows beside it the moment you point at it, or move onto it with the arrow keys: drawn as macOS draws a tooltip, above the bar or below it, away from the text you selected. Moving along the bar changes it at once; pressing a button or leaving the bar takes it away. Needs Lumi 1.53.0; an older Lumi shows no name.",
+  "notesSha256": "ab0ae6b4ef61dc07a1b4f7f0b45804426cda0cd091d8fc047e6f2a7967d1a5ef",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Tooltips for icon-only mode",
+     "items": [
+      "When the bar shows only icons, hovering or arrowing to a button reveals its name in a tooltip"
+     ]
+    },
+    "vi": {
+     "headline": "Chú thích cho chế độ chỉ hiện biểu tượng",
+     "items": [
+      "Khi thanh chỉ hiện biểu tượng, di chuột hoặc dùng phím mũi tên sẽ hiện tên nút trong chú thích"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.5",
+  "date": "2026-10-16",
+  "notes": "### Added\n\n- **Translate with AI.** Under Translate in Settings, choose who translates: macOS, on this Mac and offline, or the AI you set up in Lumi, which is better at tone and idioms. The translation is written onto the card as the model writes it, with Stop, Copy and Replace, and the footer says which model translated and whether it ran on this Mac. Choose its model, and change its instructions and how hard it thinks with Edit…\n- With the AI translating, a few words macOS cannot place are no longer asked about: the model tells their language, and the card says Detect Language. Choose the source on the card to tell the model instead.\n- On a Mac before macOS 26, Translate now works with the AI. With no model turned on in Lumi, macOS translates whatever is chosen; Settings says which one runs, and why.",
+  "notesSha256": "e45df018c0fd7455168ec7b20faaa1d351a759e315541cb76c4f7d55e1cc9a64",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "AI translation with live streaming and model control",
+     "items": [
+      "Choose between macOS translation or your Lumi AI for better tone and idioms",
+      "Translation streams live as the AI writes, with options to stop, copy or replace",
+      "Settings let you pick the model, adjust instructions and control how hard it thinks",
+      "AI can detect languages macOS cannot identify and shows which model translated",
+      "AI translation now works on macOS versions before 26"
+     ]
+    },
+    "vi": {
+     "headline": "Dịch bằng AI với luồng trực tiếp và điều khiển mô hình",
+     "items": [
+      "Chọn giữa dịch bằng macOS hoặc AI của Lumi để có giọng điệu và thành ngữ tốt hơn",
+      "Bản dịch hiện trực tiếp khi AI viết, có thể dừng, sao chép hoặc thay thế",
+      "Cài đặt cho phép chọn mô hình, điều chỉnh hướng dẫn và mức độ suy nghĩ",
+      "AI nhận diện được các ngôn ngữ mà macOS không xác định được và hiển thị mô hình đã dịch",
+      "Dịch bằng AI giờ hoạt động trên các phiên bản macOS trước 26"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.4",
+  "date": "2026-10-16",
+  "notes": "### Fixed\n\n- Translate in Slack, and in other apps built on Chromium, no longer says nothing is selected. Pressing it took the keyboard from the app, which then answered as if nothing were selected; Translate's card never needed the keyboard, and no longer takes it.",
+  "notesSha256": "8e1177fda7108d2c6067baa56ddf97c9ae3d276efd5e4af23cce9c58760f1d59",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Translate now works in Slack and other Chromium-based apps",
+     "items": [
+      "Translate now works in Slack and other Chromium-based apps where it previously said nothing was selected"
+     ]
+    },
+    "vi": {
+     "headline": "Translate giờ hoạt động trong Slack và các ứng dụng Chromium khác",
+     "items": [
+      "Translate giờ hoạt động trong Slack và các ứng dụng dựa trên Chromium mà trước đây báo không có gì được chọn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.3",
+  "date": "2026-10-16",
+  "notes": "### Changed\n\n- An AI action's sheet is shorter: its title and its buttons stay put, and only the settings between them scroll, so Done and Cancel are always in sight. What a setting's name does not say is behind a (?) beside it, shown when you point at it; settings whose names say it all have none.\n\n### Fixed\n\n- Scrolling an AI action's sheet no longer shows the Settings page through it, in strips beside and above the settings, and the sheet no longer sits a little to the left of its frame.\n- A (?) tip on a setting that waits on another, such as Write it over at once, is no longer see-through.",
+  "notesSha256": "8e6229fc0f25be2ec637eb8297851c92b705d6a8d4862bd60e799005364b7471",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "AI action sheets are easier to use and look cleaner",
+     "items": [
+      "AI action sheets are shorter with Done and Cancel always visible",
+      "Only the settings scroll while the title and buttons stay in place",
+      "Tooltips appear when you hover over (?) icons next to settings that need explanation",
+      "Scrolling no longer reveals the Settings page through gaps in the sheet",
+      "The sheet now aligns properly within its frame instead of sitting slightly left",
+      "Tooltips on dependent settings like Write it over at once are no longer transparent"
+     ]
+    },
+    "vi": {
+     "headline": "Bảng hành động AI dễ dùng hơn và gọn gàng hơn",
+     "items": [
+      "Bảng hành động AI ngắn hơn với nút Xong và Hủy luôn hiển thị",
+      "Chỉ phần cài đặt cuộn còn tiêu đề và nút giữ nguyên vị trí",
+      "Chú giải hiện ra khi di chuột qua biểu tượng (?) bên cạnh cài đặt cần giải thích",
+      "Cuộn không còn để lộ trang Cài đặt qua khe hở trên bảng",
+      "Bảng giờ căn chỉnh đúng trong khung thay vì lệch sang trái một chút",
+      "Chú giải trên cài đặt phụ thuộc như Ghi đè ngay không còn trong suốt"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.2",
+  "date": "2026-10-16",
+  "notes": "### Added\n\n- **How changes are marked**, under AI in Settings: GitHub's red and green backgrounds (the default), GitLab's, VS Code's — a background and a line through what went — or Track Changes, as Word and Google Docs mark a suggestion. Each is shown on the bar's own glass, as the card will show it.\n\n### Changed\n\n- What an AI answer took away is no longer greyed and struck through, which was hard to read: it is marked as the chosen convention marks it.",
+  "notesSha256": "2439cfb4fe29417ef5bc62e1b27bf1360252b26f5dc386c313ff410e9a2429c4",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Choose how AI edits are marked",
+     "items": [
+      "Settings lets you pick how changes are shown: GitHub, GitLab, VS Code, or Track Changes like Word",
+      "Each style is previewed on glass that matches how the card will look",
+      "Removed text is no longer greyed out and struck through, making edits easier to read"
+     ]
+    },
+    "vi": {
+     "headline": "Chọn cách đánh dấu chỉnh sửa của AI",
+     "items": [
+      "Cài đặt giờ cho phép chọn cách hiển thị thay đổi: kiểu GitHub, GitLab, VS Code, hoặc Track Changes như Word",
+      "Mỗi kiểu được xem trước trên nền giống như thẻ sẽ hiển thị",
+      "Văn bản bị xóa không còn bị làm mờ và gạch ngang, giúp đọc chỉnh sửa dễ hơn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.1",
+  "date": "2026-10-16",
+  "notes": "### Added\n\n- A **Changes** toggle at the top of an AI answer that replaces your text: the changes marked, or the answer as it reads. It starts as Show what changed in Settings has it, and changes only that card.",
+  "notesSha256": "6d6c7c6dbe27ccc3c7556bbf8c4bc2be5243c3ace81b78c22040a6a39f357e58",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "See what changed in AI rewrites",
+     "items": [
+      "A toggle at the top of AI answers that replace your text shows the changes marked or the final result"
+     ]
+    },
+    "vi": {
+     "headline": "Xem những thay đổi trong văn bản AI viết lại",
+     "items": [
+      "Nút chuyển đổi ở đầu câu trả lời AI cho thấy những thay đổi được đánh dấu hoặc kết quả cuối cùng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.0",
+  "date": "2026-10-16",
+  "notes": "### Added\n\n- AI actions, on the AI you set up in Lumi: **Fix Spelling & Grammar**, **Rewrite** with a menu of styles, **Summarize**, **Explain** and **Ask…**. Each is a button on the bar like the rest, and shows only when it fits: Fix and Rewrite for text you can edit, Summarize for a longer text. Ask… is there to switch on.\n- Actions of your own: + under the Actions list adds one, with a name, an icon and instructions of your own, such as composing a reply to a message you received.\n- The answer comes onto a card beside the text as it is written. One that replaces what you selected — a fix, a rewrite — marks what it changed and offers Replace; new text — a reply, an explanation — offers Copy and is never written over what you selected. Stop, ask again, and see which model answered and whether the text left your Mac.\n- Every AI action's instructions are yours to change, with its default one press away: the gear on its row in Settings opens them, with when it shows, what its answer is for, the language it answers in, the model it asks and how hard it thinks. Rewrite's styles are each a name and instructions of their own.\n- Write it over at once: a fix or a rewrite written straight over the text, with no card first.\n- Settings' AI section says whether Lumi has a model for the bar to ask, and whether answers mark what they changed.\n\n### Changed\n\n- Needs Lumi 1.52.0.\n- Selected text leaves your Mac when you press an AI action on a model that runs online, and Lumi asks you first, unless you told it not to.",
+  "notesSha256": "a4f75322f6c757cb87817e723644c4d2dec5504da9cf664cc6f02ae4b60a4830",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "AI actions to fix, rewrite, summarize, explain and ask about text",
+     "items": [
+      "AI actions appear on the bar: fix spelling and grammar, rewrite in styles, summarize, explain and ask",
+      "Create custom actions with your own instructions, like composing a reply to a message",
+      "Answers appear on a card as they are written, with options to replace or copy the text",
+      "Change any AI action's instructions, when it appears, which model it uses and how it responds",
+      "Turn on write it over at once to apply fixes and rewrites directly without showing a card first",
+      "Requires Lumi 1.52.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Thao tác AI sửa lỗi, viết lại, tóm tắt, giải thích và hỏi văn bản",
+     "items": [
+      "Thao tác AI xuất hiện trên thanh: sửa chính tả, viết lại theo phong cách, tóm tắt, giải thích và hỏi",
+      "Tạo thao tác tùy chỉnh với hướng dẫn riêng, như soạn câu trả lời tin nhắn",
+      "Câu trả lời hiện trên thẻ khi được viết, với tùy chọn thay thế hoặc sao chép",
+      "Thay đổi hướng dẫn, thời điểm xuất hiện, mô hình sử dụng và cách phản hồi của mỗi thao tác AI",
+      "Bật viết đè ngay để áp dụng sửa lỗi và viết lại trực tiếp mà không hiện thẻ trước",
+      "Yêu cầu Lumi phiên bản 1.52.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.8",
+  "date": "2026-10-16",
+  "notes": "### Fixed\n\n- A section of Settings that stacks what it holds — the Look tiles, the apps the bar stays out of — is as tall as what it shows, never taller. A grid that fills its lines could be measured as if one item wide, and leave a tall empty space under it.",
+  "notesSha256": "ee967a2d777c0500ef36928b662065d7eafaa63926e34198859b36f40593a38c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed layout in Settings",
+     "items": [
+      "Settings sections now fit their content height correctly"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa bố cục trong Cài đặt",
+     "items": [
+      "Các phần trong Cài đặt giờ vừa khít với nội dung bên trong"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.7",
+  "date": "2026-10-14",
+  "notes": "### Fixed\n\n- Back from macOS's download prompt, the bar stays exactly where it was. It came back a little lower, placed again from scratch.\n- An answer that comes back after you have selected something else is dropped. Selecting text in another app while macOS's download prompt was up brought the card for the old text back beside the new selection; a press's tick could also put away a bar just shown for a new selection.",
+  "notesSha256": "eecca3d2786bfd17b8b43125454f047e3a1fe44244ac1699e48a212e5128403a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "The bar stays put when you return from download prompts",
+     "items": [
+      "The bar stays exactly where it was when you return from the download prompt",
+      "Answers for old selections are dropped if you have selected something new"
+     ]
+    },
+    "vi": {
+     "headline": "Thanh công cụ giữ nguyên vị trí khi quay lại từ hộp thoại tải",
+     "items": [
+      "Thanh công cụ giữ nguyên vị trí khi bạn quay lại từ hộp thoại tải xuống",
+      "Câu trả lời cho văn bản cũ sẽ bị bỏ qua nếu bạn đã chọn văn bản mới"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.6",
+  "date": "2026-10-14",
+  "notes": "### Fixed\n\n- Back from macOS's download prompt, Translate's card no longer comes back a little too big for the bar, its right and bottom edges cut off — Try again among them. The bar measured the card while it was still rising into place, a touch smaller than it is.",
+  "notesSha256": "3642ba1bec78e84b04e4e97b60b0be81190e65a11f5e786500568680acdd0bcc",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed Translate card sizing after download prompt",
+     "items": [
+      "Translate card no longer appears too large with edges cut off after returning from download prompt"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa kích thước thẻ Dịch sau hộp thoại tải xuống",
+     "items": [
+      "Thẻ Dịch không còn hiển thị quá lớn với các cạnh bị cắt sau khi quay lại từ hộp thoại tải xuống"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.5",
+  "date": "2026-10-14",
+  "notes": "### Changed\n\n- The buttons at the bar's edges take the bar's corner radius from Lumi, so they keep following its corners if Lumi ever rounds them differently.",
+  "notesSha256": "38afe33b499c6222e268c58cefd0d338d6e3a68e38bd5ed956d33b1aa227bf0d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Visual refinement",
+     "items": [
+      "The buttons at the bar's edges now match the bar's corner radius"
+     ]
+    },
+    "vi": {
+     "headline": "Cải tiến giao diện",
+     "items": [
+      "Các nút ở hai đầu thanh giờ khớp với độ bo góc của thanh"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.4",
+  "date": "2026-10-14",
+  "notes": "### Fixed\n\n- A button lit at the edge of the bar — the way back in a menu, More, the last item, and on Translate's card its way back, Copy or Replace and the last language in a list — now rounds its outer corners along the bar's own. They drew a tighter curve inside the bar's corner.",
+  "notesSha256": "2be3807736505269fae880bee82379cdfa2585f400986aec53976dbbd7f48251",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Polished corner rounding on edge buttons",
+     "items": [
+      "Buttons at the edge of the bar now round their outer corners to match the bar itself"
+     ]
+    },
+    "vi": {
+     "headline": "Làm mịn các góc bo tròn của nút ở cạnh",
+     "items": [
+      "Các nút ở cạnh thanh giờ bo tròn góc ngoài khớp với chính thanh đó"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.3",
+  "date": "2026-10-14",
+  "notes": "### Changed\n\n- **Not in…** under ⋯ on the bar is now **Don't pop up in…**, and so is its section in Settings: selecting text in that app no longer brings up the bar, and the shortcut still does.",
+  "notesSha256": "a06d0e2a480b73a8162d71d74281621e62e5e4d404dd2739fc6dae2dff93224e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Renamed exclusion setting for clarity",
+     "items": [
+      "Not in… under ⋯ on the bar is now Don't pop up in…, matching its behavior more clearly",
+      "Selecting text in excluded apps no longer shows the bar, but the shortcut still works"
+     ]
+    },
+    "vi": {
+     "headline": "Đổi tên cài đặt loại trừ cho rõ ràng hơn",
+     "items": [
+      "Not in… trong menu ⋯ trên thanh giờ là Don't pop up in…, phản ánh chính xác hơn cách hoạt động",
+      "Chọn văn bản trong ứng dụng bị loại trừ sẽ không hiện thanh, nhưng phím tắt vẫn hoạt động"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.2",
+  "date": "2026-10-14",
+  "notes": "### Fixed\n\n- When Translate's card comes up, nothing on it is lit until you move the pointer. The language to translate into, where Translate had been, came up lit as if the pointer were over it. The same goes for a language list opening in the card, and for going back.",
+  "notesSha256": "30482264f82b205adafabb03be8189f47ee2e902e74fb915b2a0f7c09b469681",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed highlight appearing without hovering in Translate",
+     "items": [
+      "Fixed Translate showing a language as highlighted when the card opens without the pointer over it",
+      "Fixed language lists opening with an item highlighted when the pointer is not hovering over it"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa lỗi làm nổi mục khi chưa di chuột trong Translate",
+     "items": [
+      "Sửa lỗi Translate hiển thị ngôn ngữ được làm nổi khi mở thẻ mà con trỏ không ở trên đó",
+      "Sửa lỗi danh sách ngôn ngữ mở ra với mục được làm nổi khi con trỏ không di chuyển qua"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.1",
+  "date": "2026-10-14",
+  "notes": "### Fixed\n\n- Going back from Translate's card to the buttons, the bar shrinks back to its own size and returns to its place beside the text. It used to stay as tall as the card, with the buttons at its top.",
+  "notesSha256": "b53d450493d0d1fcd3341c77d4ee21bd7d8bc4dc6d62800521b0b283441e59b9",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed the bar returning from Translate",
+     "items": [
+      "The bar now shrinks back to its size and place beside the text when you go back from Translate's card"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa thanh công cụ khi quay lại từ Dịch",
+     "items": [
+      "Thanh công cụ giờ thu nhỏ về kích thước và vị trí bên văn bản khi quay lại từ thẻ Dịch"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.0",
+  "date": "2026-10-14",
+  "notes": "### Added\n\n- **Translate** on the bar: press it to read what you selected in your own language. The bar opens into a card with the translation, made on this Mac by the translator built into macOS. Nothing you select leaves your Mac.\n- Text in your own language goes into your next one: on a Mac set to English in Vietnam, English goes into Vietnamese and everything else into English. Choose both in Settings → Translate.\n- The card names both languages. Press either to choose another, from a list that shows which are on this Mac and which need downloading.\n- **Copy** puts the translation on the clipboard. **Replace** writes it over what you selected, where the text can be edited.\n- A word or two can be in several languages, so when the language isn't clear the card asks which it is.\n- When a language isn't on your Mac yet, **Download…** opens macOS's own prompt, and the card shows the translation once it's there. Settings → Translate does the same for your two languages.\n- Lines of a paragraph that was wrapped at a fixed width, as in text copied from a PDF, are translated as one sentence.\n- Needs Lumi 1.51.0 and macOS 26. On an older Mac the bar offers no Translate.",
+  "notesSha256": "471262501d29e885288a237118f1f2a0a39643abaacdc4c34e4b3c80602ea20f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Translate text without leaving your Mac",
+     "items": [
+      "Press Translate on the bar to read your selection in your own language",
+      "The translation appears in a card, made on your Mac by the translator built into macOS",
+      "On a Mac set to English in Vietnam, English becomes Vietnamese and everything else English",
+      "Press either language name to choose another from a list showing what is on your Mac",
+      "Copy puts the translation on the clipboard, Replace writes it over your selection",
+      "When a language is not on your Mac yet, Download opens the macOS prompt"
+     ]
+    },
+    "vi": {
+     "headline": "Dịch văn bản ngay trên máy Mac",
+     "items": [
+      "Nhấn Dịch trên thanh công cụ để đọc nội dung đã chọn bằng ngôn ngữ của bạn",
+      "Bản dịch xuất hiện trong thẻ, được tạo trên máy Mac bằng trình dịch tích hợp sẵn của macOS",
+      "Trên máy Mac đặt tiếng Anh ở Việt Nam, tiếng Anh chuyển sang tiếng Việt và ngược lại",
+      "Nhấn tên ngôn ngữ để chọn ngôn ngữ khác từ danh sách hiển thị những gì có trên máy Mac",
+      "Sao chép đưa bản dịch vào clipboard, Thay thế ghi đè lên nội dung đã chọn",
+      "Khi ngôn ngữ chưa có trên máy Mac, Tải xuống mở hộp thoại của macOS"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.20",
+  "date": "2026-10-14",
+  "notes": "### Added\n\n- Select text with the mouse in any app — drag across it, double-click a word or triple-click a line — and a small bar of actions shows up beside it. It never takes the keyboard from the app, and goes away when you click, type or scroll somewhere else.\n- Nothing on the bar is lit when it comes up — not the button the pointer was last over, nor the first button when the shortcut opens it. The arrow keys light the button they move to.\n- Escape backs out of the menus a level at a time — a group opened from More back to More, then to the bar — and then puts the bar away, also when the bar came up for the mouse: opening a menu gives it the keyboard.\n- A menu with more items than fit, such as Case, keeps to a width and scrolls sideways: swipe on the trackpad or turn the mouse wheel. The way back stays put, and the ends fade where items are hidden. The first few times one opens, its items slide a little to the left and back, to show they scroll.\n- The bar starts with Lumi's mark and name, so you can tell where it comes from. Menus opened in it keep their room for their items.\n- After a double-click the bar waits a fifth of a second, in case a third click makes it a triple-click, so selecting a line by triple-clicking shows it once, not twice. With a slower double-click speed in macOS, it waits longer. In Settings it can also show at once, or a moment after every selection.\n- Select text with the keyboard too — ⇧ and the arrow keys, ⇧⌥ by words, ⌘A — and the bar shows up once you stop and let go. Typing over what you selected never brings it up. Turn it off in Settings. Or keep it to ⇧ with the arrow keys and ⌘A, so a command that leaves text selected — ⌘F filling its field, ⌘L an address bar — does not bring it up.\n- **Copy** and **Search** for any text. **Open link** for a web address, **New email** for an email address, the answer to a sum such as `1280 * 0.15 + 42`, and **Format JSON** for JSON.\n- **Case**, **Lines** and **Encode**, each opening in the bar with Lumi's own changes: UPPERCASE, Title Case, snake_case, Sort lines, Remove duplicate lines, Base64, URL encode and more. The change is written over what you selected and stays selected, with the bar beside it, so you can make another.\n- **Count** shows the words, characters and lines in what you selected. It is off at first; turn it on in Settings.\n- Press **⌃⌥⌘Space** for the same bar from the keyboard, in any app: numbers or arrow keys choose, Return presses, Escape closes. Each button shows its number while you use the keys — not when you open a menu with the mouse.\n- In Settings: show the bar when you select text or only with the shortcut; its look — Dark, Light or Match macOS — and its size; whether it shows on the pointer's side of the text, above it or below it; icons or icons and names; the search engine; and which actions show, each with its own switch, in the order you drag them to. A preview at the top shows the bar as you set it, for a few words, a link, an email address, a sum, JSON or several lines. Press the shortcut's keys there to record another.\n- Copy shows a tick before the bar goes, and a change still being made shows a spinner on its button.\n- **Settings…** is under ⋯ on the bar.\n- **Not in…** under ⋯ on the bar keeps it from showing by itself in that app. The shortcut still works there.\n- Needs Lumi 1.50.0.",
+  "notesSha256": "95d0e1372460e63ee4feb8d1362691d47d49416540133cb578eb4aa2434ac59a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Select text and a bar of actions shows up beside it",
+     "items": [
+      "Select text with the mouse or keyboard and a small bar shows up beside it",
+      "Press Escape to back out of menus one level at a time, then close the bar",
+      "Menus with many items scroll sideways and fade at the ends where items are hidden",
+      "The bar waits after a double-click in case a third click makes it a triple-click",
+      "Copy, Search, Open link, New email, answer sums, Format JSON, Case, Lines, Encode and Count",
+      "Press Control-Option-Command-Space to open the bar from the keyboard in any app"
+     ]
+    },
+    "vi": {
+     "headline": "Chọn văn bản và thanh công cụ hiện lên bên cạnh",
+     "items": [
+      "Chọn văn bản bằng chuột hoặc bàn phím và thanh công cụ nhỏ hiện lên bên cạnh",
+      "Nhấn Escape để thoát khỏi menu từng cấp một, sau đó đóng thanh công cụ",
+      "Menu có nhiều mục cuộn ngang và mờ dần ở hai đầu nơi các mục bị ẩn",
+      "Thanh công cụ đợi sau khi nhấp đúp phòng khi nhấp lần ba biến thành nhấp ba",
+      "Sao chép, Tìm kiếm, Mở liên kết, Email mới, tính toán, Định dạng JSON, Chữ hoa/thường, Dòng, Mã hóa và Đếm",
+      "Nhấn Control-Option-Command-Space để mở thanh công cụ từ bàn phím trong bất kỳ ứng dụng nào"
+     ]
+    }
+   }
+  }
+ }
+]

@@ -1,0 +1,2831 @@
+[
+ {
+  "version": "0.91.1",
+  "date": "2026-11-18",
+  "notes": "### Changed\n\n- Nothing in the extension itself has changed: this release only carries a file in its source that names who reviews changes to it.",
+  "notesSha256": "98d41acf3c2b9d4b0480486f4bfea94a4f664c8bb35b42db74c35745024b4f41",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Under-the-hood improvements",
+     "items": [
+      "Internal project maintenance with no user-facing changes"
+     ]
+    },
+    "vi": {
+     "headline": "Cải tiến nội bộ",
+     "items": [
+      "Bảo trì dự án nội bộ, không có thay đổi gì cho người dùng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.91.0",
+  "date": "2026-11-10",
+  "notes": "### Added\n\n- **Insert at cursor**: a text item's actions write it where you are typing without putting it on the clipboard, so ⌘V still pastes what you copied last. A rich text item is written as plain text, and says so: **Insert as plain text**. Where something is selected it is not written over.\n- Needs Lumi 1.79.0.",
+  "notesSha256": "128acb120faecce760a95626520933cb58dc932ed1e40c255da40afd47e2be44",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Insert text at cursor without changing what you last copied",
+     "items": [
+      "Write a text item where you are typing, straight from its actions",
+      "Rich text is inserted as plain text when using insert at cursor",
+      "Selected text is preserved when inserting at cursor",
+      "Requires Lumi 1.79.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Chèn văn bản tại con trỏ mà không thay đổi nội dung đã sao chép",
+     "items": [
+      "Ghi một mục văn bản vào chỗ bạn đang gõ, ngay từ các thao tác của mục đó",
+      "Văn bản định dạng được chèn dưới dạng văn bản thuần khi dùng chèn tại con trỏ",
+      "Văn bản đang chọn được giữ nguyên khi chèn tại con trỏ",
+      "Yêu cầu Lumi phiên bản 1.79.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.90.0",
+  "date": "2026-11-04",
+  "notes": "### Added\n\n- The preview of a text or rich text item says how long it is: its characters, words and paragraphs, counted over the whole text, however much of it the preview shows. Characters include spaces and line breaks, and a paragraph is every line with something on it, as Pages and Word count them. Hidden items in privacy mode show no counts until you show them.",
+  "notesSha256": "4e96336bbc8ba9123acc7d91adfe56252128aacb5cd01fed076bf9a4f45fde8c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Text previews now show character, word and paragraph counts",
+     "items": [
+      "Text previews display character, word and paragraph counts for the entire item",
+      "Character counts include spaces and line breaks in the total",
+      "Paragraphs are counted as any line containing text, matching Pages and Word",
+      "Hidden items in privacy mode show counts only after you reveal them"
+     ]
+    },
+    "vi": {
+     "headline": "Xem trước văn bản giờ hiển thị số ký tự, từ và đoạn",
+     "items": [
+      "Xem trước văn bản hiển thị số ký tự, từ và đoạn văn của toàn bộ mục",
+      "Số ký tự bao gồm cả khoảng trắng và xuống dòng",
+      "Đoạn văn được đếm là bất kỳ dòng nào có chữ, giống Pages và Word",
+      "Mục ẩn trong chế độ riêng tư chỉ hiển thị số đếm sau khi bạn bật lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.89.2",
+  "date": "2026-11-04",
+  "notes": "### Fixed\n\n- The lumikeys.app link at the end of Clipboard Manager's page in the Extension Store opens the extensions on lumikeys.app. It opened a page that no longer exists.",
+  "notesSha256": "ae066f5bddd1a041b29a322dabb3b1a389a224097999e9ac0c9dae6c2cabf584",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed a broken link",
+     "items": [
+      "The link to extensions on lumikeys.app now works correctly"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa liên kết bị hỏng",
+     "items": [
+      "Liên kết đến các tiện ích trên lumikeys.app giờ hoạt động bình thường"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.89.1",
+  "date": "2026-10-21",
+  "notes": "### Changed\n\n- New pictures on Clipboard Manager's page in the Extension Store and on lumikeys.app: the history, searching the text in a screenshot, privacy mode and the ⌘K actions. Nothing in the extension itself has changed.",
+  "notesSha256": "21591240f0ce418bf447b46beec11cf7fed083161093699534bf7c0101de7ebb",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Under-the-hood improvements",
+     "items": [
+      "Internal updates to marketing materials and documentation"
+     ]
+    },
+    "vi": {
+     "headline": "Cải tiến nội bộ",
+     "items": [
+      "Cập nhật tài liệu và hình ảnh quảng bá"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.89.0",
+  "date": "2026-10-21",
+  "notes": "### Added\n\n- **Glass or solid.** Settings → Appearance has **Background transparency**, a slider from **Glass** to **Solid**: the further toward Solid, the less the colours of the window under the panel show through it, so the history reads the same over anything. It works with every panel glass and theme, and the glass tiles above it follow the slider as you drag.",
+  "notesSha256": "7f6f2e4f84801ae7c1c30d2cb7055fb98cbab48ded68248738859b7a96472888",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Control how much the background shows through the panel",
+     "items": [
+      "A new slider in Settings lets you adjust panel transparency from glass to solid",
+      "The more solid you make it, the less windows behind the panel show through",
+      "Works with all panel styles and themes, and updates live as you drag the slider"
+     ]
+    },
+    "vi": {
+     "headline": "Điều chỉnh độ trong suốt của bảng điều khiển",
+     "items": [
+      "Thanh trượt mới trong Cài đặt cho phép điều chỉnh độ trong suốt từ kính sang đặc",
+      "Càng đặc thì cửa sổ phía sau càng ít hiện qua bảng điều khiển",
+      "Hoạt động với mọi kiểu bảng và chủ đề, cập nhật trực tiếp khi kéo thanh trượt"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.88.0",
+  "date": "2026-10-15",
+  "notes": "### Changed\n\n- The panel now opens on your newest copy, not on your first pinned item, so ↩ pastes what you copied last however many items you have pinned. Your pinned items are still at the top: press ↑ to reach them, or their own ⌘-letter. Clearing the search or switching between All, Text, Links and the rest also goes back to your newest copy. While you search, the first match is still selected, pinned or not.",
+  "notesSha256": "aff2cdf22c0ce22b9cd4739cda48c1c503540e5d88e1ca2d68f88c6c64f55ca2",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Panel opens on your newest copy, not your first pinned item",
+     "items": [
+      "Panel opens on your newest copy so Return pastes what you copied last",
+      "Pinned items stay at the top but press Up to reach them or use their shortcuts",
+      "Clearing search or switching filters returns to your newest copy",
+      "First match stays selected while you search regardless of pins"
+     ]
+    },
+    "vi": {
+     "headline": "Bảng mở tại mục vừa sao chép, không phải mục ghim đầu tiên",
+     "items": [
+      "Bảng mở tại mục vừa sao chép nên Return dán nội dung sao chép gần nhất",
+      "Mục ghim vẫn ở trên cùng nhưng nhấn Lên để tới hoặc dùng phím tắt riêng",
+      "Xóa tìm kiếm hoặc chuyển bộ lọc sẽ quay về mục vừa sao chép",
+      "Kết quả khớp đầu tiên vẫn được chọn khi tìm kiếm dù có ghim hay không"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.87.1",
+  "date": "2026-10-11",
+  "notes": "### Fixed\n\n- Scrolling the history fast with a trackpad no longer leaves part of the list empty for a moment. The rows ahead of the scroll now show as they come into view, at any speed.",
+  "notesSha256": "879852d55dea0b4d1b62921bed3ea65e2c763641d6e412b968c12d5df0198a31",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Smoother scrolling in the history list",
+     "items": [
+      "Scrolling the history fast with a trackpad no longer leaves part of the list empty for a moment"
+     ]
+    },
+    "vi": {
+     "headline": "Cuộn danh sách lịch sử mượt mà hơn",
+     "items": [
+      "Cuộn nhanh lịch sử bằng trackpad không còn để trống một phần danh sách trong chốc lát nữa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.87.0",
+  "date": "2026-10-09",
+  "notes": "### Added\n\n- Settings → Shortcuts has a new option, \"Press shortcut again to hide\". Turn it on and the Show clipboard history shortcut also closes the panel when it is already open, even when the panel is pinned behind another app. It is off by default, so the shortcut only opens the panel, as before.",
+  "notesSha256": "380e087d1bbeee9d3475f3927fc8d0ae61af290da74b118d7c0a25148f0c361e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Show clipboard history shortcut can now also hide the panel",
+     "items": [
+      "The Show clipboard history shortcut can now close the panel when it is already open",
+      "Find the new option in Settings → Shortcuts: Press shortcut again to hide",
+      "The option is off by default, so the shortcut only opens the panel as before",
+      "When turned on, the shortcut closes the panel even if it is pinned behind another app"
+     ]
+    },
+    "vi": {
+     "headline": "Phím tắt hiện lịch sử giờ đây cũng có thể ẩn bảng điều khiển",
+     "items": [
+      "Phím tắt Hiện lịch sử clipboard giờ có thể đóng bảng điều khiển khi đang mở",
+      "Tìm tùy chọn mới trong Cài đặt → Phím tắt: Nhấn phím tắt lần nữa để ẩn",
+      "Tùy chọn này tắt theo mặc định nên phím tắt chỉ mở bảng điều khiển như trước",
+      "Khi bật, phím tắt sẽ đóng bảng điều khiển ngay cả khi nó được ghim sau ứng dụng khác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.86.0",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- The Show clipboard history shortcut is set on the Settings tab now. Click the key and press a new one; Clear removes it, and a button puts the default ⇧⌘C back. It is the same key as before and works in every profile. Clipboard Manager's separate Shortcuts tab in Lumi is gone.\n- While you record a new key, Lumi's other shortcuts stay quiet. Pressing ⇧⌘C, or a combination something else already uses, records it instead of opening the panel or running that shortcut. This needs a newer Lumi; on an older one, recording works as before.\n- If the key you pick belongs to one of your shortcuts in Lumi, the row says which one and offers to take it over.",
+  "notesSha256": "276e4777e00c921bb0e74f9c8c9575305381593eac1842857f11f344b696460c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Shortcut settings moved and improved",
+     "items": [
+      "The Show clipboard history shortcut is now set on the Settings tab",
+      "Click the key field and press a new combination to change it",
+      "Clear removes the shortcut; a button restores the default",
+      "While recording a new key, other shortcuts do not trigger",
+      "If you pick a key already used by another shortcut, Lumi shows which one and offers to reassign it"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện cài đặt phím tắt",
+     "items": [
+      "Phím tắt Hiện lịch sử clipboard giờ được đặt trong tab Cài đặt",
+      "Nhấn vào ô phím và bấm tổ hợp mới để thay đổi",
+      "Nút Xóa gỡ phím tắt; nút khác khôi phục mặc định",
+      "Khi đang ghi phím mới, các phím tắt khác không kích hoạt",
+      "Nếu chọn phím đã dùng cho phím tắt khác, Lumi hiện phím tắt đó và đề nghị chuyển sang"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.85.3",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- Loading the panel when Lumi starts is on when you first install Clipboard Manager. An update leaves it as you set it.",
+  "notesSha256": "73f26274e1e0f69343cd00d2f113b517b07b2596d3a32631b9b4d24e0fd54379",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Panel loads when Lumi starts by default for new installs",
+     "items": [
+      "Panel loads when Lumi starts by default for new installs"
+     ]
+    },
+    "vi": {
+     "headline": "Bảng tự động tải khi Lumi khởi động cho cài đặt mới",
+     "items": [
+      "Bảng tự động tải khi Lumi khởi động cho cài đặt mới"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.85.2",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- Loading the panel ahead is now a permission Clipboard Manager asks for, listed with the others before you install or update: it keeps its panel loaded out of sight from when Lumi starts.",
+  "notesSha256": "16a380fb5f0fcebbd7a3f75ce5ade64f3111f935371050e4c4aded677d88c03c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Permission update for keeping the panel ready",
+     "items": [
+      "Clipboard Manager now asks for permission to keep its panel loaded in the background"
+     ]
+    },
+    "vi": {
+     "headline": "Cập nhật quyền để giữ bảng điều khiển sẵn sàng",
+     "items": [
+      "Clipboard Manager giờ yêu cầu quyền để giữ bảng điều khiển luôn sẵn sàng ở chế độ nền"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.85.1",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- The switch on Clipboard Manager's Permissions sheet in Lumi that matches **Load the panel when Lumi starts** is now called **Preload**.",
+  "notesSha256": "057fd1de246616624146ef6686886578e0d9f30507b14c26ff9484746bc84ad3",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Clearer permission labels",
+     "items": [
+      "The permission switch is now called Preload instead of Load the panel when Lumi starts"
+     ]
+    },
+    "vi": {
+     "headline": "Nhãn quyền rõ ràng hơn",
+     "items": [
+      "Công tắc quyền giờ được gọi là Tải trước thay vì Tải bảng khi Lumi khởi động"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.85.0",
+  "date": "2026-10-09",
+  "notes": "### Added\n\n- **Menu bar & startup** in Settings: **Show in Lumi's menu bar menu** and **Load the panel when Lumi starts**. They are the same switches as **Menu bar** and **Preload** on Clipboard Manager's Permissions sheet in Lumi, so you can turn them on or off in either place.\n- Needs Lumi 1.45.0 or later.",
+  "notesSha256": "a57926631c0f39f75583418ec02d4b47c8f508a00d8469c3c9afd2566ade209f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings for menu bar and startup",
+     "items": [
+      "You can now show or hide Clipboard Manager in Lumi's menu bar menu from Settings",
+      "You can now choose whether the panel loads when Lumi starts from Settings",
+      "These settings match the switches on the Permissions sheet in Lumi",
+      "Requires Lumi 1.45.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt thanh menu và khởi động",
+     "items": [
+      "Giờ bạn có thể hiện hoặc ẩn Clipboard Manager trong menu thanh menu của Lumi từ Cài đặt",
+      "Giờ bạn có thể chọn panel có tải khi Lumi khởi động hay không từ Cài đặt",
+      "Các cài đặt này giống với các công tắc trên bảng Quyền trong Lumi",
+      "Yêu cầu Lumi 1.45.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.84.0",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- Loading the panel ahead is now yours to allow. Clipboard Manager asks Lumi to load it as Lumi starts, and you decide with **Preload** on Clipboard Manager's Permissions sheet in Lumi. With it off, the panel loads the first time you open it and opens at once every time after that.",
+  "notesSha256": "6583fe74d6193d0e084115df9c2fda6a836eb2b615c24aa2d9ed18f98dfc0be5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Choose whether the panel loads at startup or when first opened",
+     "items": [
+      "You can now decide when the panel loads using the Preload setting in Permissions",
+      "With Preload off, the panel loads only when you first open it, then opens instantly after that",
+      "With Preload on, the panel loads as Lumi starts so it opens instantly from the beginning"
+     ]
+    },
+    "vi": {
+     "headline": "Chọn thời điểm tải bảng điều khiển: khi khởi động hay khi mở lần đầu",
+     "items": [
+      "Giờ bạn có thể quyết định khi nào tải bảng điều khiển bằng cài đặt Tải trước trong Quyền",
+      "Khi tắt Tải trước, bảng điều khiển chỉ tải khi bạn mở lần đầu, sau đó mở ngay lập tức",
+      "Khi bật Tải trước, bảng điều khiển tải cùng Lumi khởi động nên mở ngay từ đầu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.83.0",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- The first **⇧⌘C** after Lumi starts is as quick as every one after it. On Lumi 1.45.0 or later, Lumi loads the panel ahead, out of sight, as it starts, and once Clipboard Manager is installed, updated or switched on, so your history is already drawn the first time you open it.",
+  "notesSha256": "7b7fd9dbb8d737742316b87f161fa583b18c502fdf44f2be00a8ee29b604f4b6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster first open",
+     "items": [
+      "Opening the panel for the first time is now as fast as every time after"
+     ]
+    },
+    "vi": {
+     "headline": "Mở nhanh hơn ngay lần đầu",
+     "items": [
+      "Mở bảng lần đầu giờ cũng nhanh như những lần sau"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.82.0",
+  "date": "2026-10-09",
+  "notes": "### Changed\n\n- **⇧⌘C** opens the panel with your history already in it, instead of an empty sheet of glass that fills in a moment later. On Lumi 1.45.0 or later the panel keeps its page while it is put away, so it is shown again at once, with what you copied meanwhile on top. Each opening still starts fresh: the search is empty, the first item is selected, and privacy mode covers what you showed. On an older Lumi the panel opens as before, a little sooner.\n- A long history scrolls and moves under the arrow keys more smoothly.\n- While **Lock history** is on, the panel is not given your history at all until you unlock it.",
+  "notesSha256": "3d958bf42a4d785e0bf1e7243e2631d0aced6dd665cec09971de36409b8ddd4c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster panel opening and smoother scrolling",
+     "items": [
+      "The panel now opens instantly with your history already visible",
+      "History scrolls more smoothly when navigating with arrow keys",
+      "Locked history stays hidden from the panel until you unlock it"
+     ]
+    },
+    "vi": {
+     "headline": "Mở bảng nhanh hơn và cuộn mượt hơn",
+     "items": [
+      "Bảng giờ mở ngay với lịch sử đã hiển thị sẵn",
+      "Lịch sử cuộn mượt hơn khi dùng phím mũi tên",
+      "Lịch sử đã khóa được giữ kín cho đến khi bạn mở khóa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.81.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- Lock your history at once from the panel with **⇧⌘L**, the same as **Lock history now** in **⌘K**: every preview is covered, and the panel asks \"Is it you?\" before it shows your history again. The key works while **Lock history** is on, and **⌘K** shows it beside the action.\n- Choose your own key for it in Settings, under **Lock again after panel closes**, the way you choose Pin's. A key another of the panel's shortcuts already uses is refused, with what that shortcut does.",
+  "notesSha256": "ec359efa4c2f53f8252abe4d45f6077cfe031da5ce2b8f516f1f60c64f91bfe7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Lock your history from the panel with a keyboard shortcut",
+     "items": [
+      "Press Shift-Command-L in the panel to lock your history immediately",
+      "The panel asks for confirmation before showing your history again after you lock it",
+      "Choose your own keyboard shortcut for locking in Settings under Lock again after panel closes",
+      "The panel prevents you from picking a shortcut already used by another panel action"
+     ]
+    },
+    "vi": {
+     "headline": "Khóa lịch sử từ bảng điều khiển bằng phím tắt",
+     "items": [
+      "Nhấn Shift-Command-L trong bảng điều khiển để khóa lịch sử ngay lập tức",
+      "Bảng điều khiển yêu cầu xác nhận trước khi hiển thị lại lịch sử sau khi bạn khóa",
+      "Chọn phím tắt riêng để khóa trong Cài đặt mục Khóa lại sau khi đóng bảng điều khiển",
+      "Bảng điều khiển ngăn bạn chọn phím tắt đã được dùng cho hành động khác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.5",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- In the Welcome tour, the buttons on the privacy mode step and the Touch ID step sit at the same height, just above Back and Continue, so they no longer jump when you go from one step to the other.",
+  "notesSha256": "7969fbdd0088b47fedd754bf70a553cc5c46d1faf07c3d8a7197b0f8c09b750a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour polish",
+     "items": [
+      "Buttons in the Welcome tour no longer jump between the privacy mode and Touch ID steps"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện hướng dẫn chào mừng",
+     "items": [
+      "Các nút trong hướng dẫn chào mừng không còn nhảy khi chuyển giữa bước chế độ riêng tư và Touch ID"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.4",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- In the Welcome tour, **Turn on privacy mode**, **Lock my history** and **Ask before showing** no longer jump when pressed. Each now says it is done in its own place, at the same size, instead of turning into a smaller line that moved the button next to it.\n- **Ask before showing** stays in the Touch ID step once your history is locked, dimmed as it is in Settings, instead of disappearing.",
+  "notesSha256": "95156700c25f19c70013d9167093ee44f5a74a1552dba62f40e718feb82dd517",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour buttons no longer jump when pressed",
+     "items": [
+      "Welcome tour buttons now stay in place when pressed instead of shrinking and moving",
+      "Ask before showing option remains visible but dimmed in the Touch ID step when history is locked"
+     ]
+    },
+    "vi": {
+     "headline": "Các nút trong hướng dẫn không còn nhảy khi nhấn",
+     "items": [
+      "Các nút trong hướng dẫn giờ đây giữ nguyên vị trí khi nhấn thay vì thu nhỏ và di chuyển",
+      "Tùy chọn hỏi trước khi hiển thị vẫn hiện nhưng mờ đi trong bước Touch ID khi lịch sử đã khóa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.3",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- The eye in the panel's title bar is gone. It only showed that privacy mode was on, but looked like a button beside the pin. The covered previews already show it.",
+  "notesSha256": "1d7a982b55b4eb7e9c17b21546eb008288e86acf21b4a2c954fca45e8a1ac0dd",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Cleaner panel header",
+     "items": [
+      "The eye icon in the panel header has been removed to reduce clutter"
+     ]
+    },
+    "vi": {
+     "headline": "Thanh tiêu đề gọn gàng hơn",
+     "items": [
+      "Đã xóa biểu tượng con mắt trên thanh tiêu đề để giao diện gọn gàng hơn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.2",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- In Settings, a setting that only works while another is on is now dimmed as a whole row: its name, its description and its control. The \"Works while…\" and \"Lock history already asks…\" lines are gone, since the setting it waits on is right above it. Its value is kept as before.\n- **Look in**, under **Match snippets**, stays in view and is dimmed while Match snippets is off, instead of disappearing.\n- **Theme** is dimmed the same way while **Dark glass** is chosen.\n- Where \"Is it you?\" cannot be asked, the Settings tab, the Welcome tour and the locked panel now say it needs a password on this Mac, without naming an old Lumi version.",
+  "notesSha256": "ce4f11a691c5be2b2a702a12d9d8dfe83f289f3e03e6955f9ce4312487682de5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings that depend on others now dim instead of hiding",
+     "items": [
+      "Settings that only work when another is on now dim as a whole row",
+      "Look in stays visible and dims when Match snippets is off",
+      "Theme dims when Dark glass is chosen",
+      "Screens that need a password now say so without naming old Lumi versions"
+     ]
+    },
+    "vi": {
+     "headline": "Các cài đặt phụ thuộc giờ mờ đi thay vì ẩn",
+     "items": [
+      "Các cài đặt chỉ hoạt động khi cài đặt khác bật giờ mờ cả hàng",
+      "Tìm trong vẫn hiển thị và mờ đi khi Khớp đoạn mã tắt",
+      "Giao diện mờ đi khi chọn Kính tối",
+      "Các màn hình cần mật khẩu giờ nói rõ mà không nhắc phiên bản Lumi cũ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.1",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- In Settings, **Confirm it's you before showing** is greyed out while **Lock history** is on, and says \"Lock history already asks before anything is shown\". A locked history already asks \"Is it you?\" before you see anything, and that answer covers showing items too, so the setting did nothing alongside it. Its value is kept, and it works again once Lock history is off. It now sits under **Lock again after panel closes**.\n- With **Lock history** on, turning privacy mode off no longer asks \"Is it you?\": the panel itself still asks before it shows anything.\n- The Welcome tour's Touch ID step no longer offers **Ask before showing** once your history is locked.",
+  "notesSha256": "03ccac536408f60110844a0e5feb6f4f2a11dab422a2cd922a14ea82dd965f66",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Clearer privacy settings when your history is locked",
+     "items": [
+      "The setting to confirm before showing items is now disabled while Lock history is on",
+      "Turning off privacy mode no longer asks for confirmation when history is locked",
+      "The welcome tour no longer offers the confirm-before-showing option with a locked history"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt bảo mật rõ ràng hơn khi lịch sử đã khóa",
+     "items": [
+      "Tùy chọn xác nhận trước khi hiển thị giờ bị vô hiệu hóa khi Khóa lịch sử đang bật",
+      "Tắt chế độ riêng tư không còn yêu cầu xác nhận khi lịch sử đã khóa",
+      "Hướng dẫn chào mừng không còn đề xuất tùy chọn xác nhận trước khi hiển thị với lịch sử đã khóa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.80.0",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- With **Confirm it's you before showing** on, turning privacy mode off asks \"Is it you?\" first, from Settings, from Lumi's menu bar or with the **Toggle privacy mode** key. Someone at your Mac can no longer switch it off to see your previews. If you cancel, privacy mode stays on. Turning it on never asks.",
+  "notesSha256": "b4d03451da1108225d71d1bf41f4de55ccb58271b8f7437871320ed42c632df0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Privacy mode now asks for confirmation before turning off",
+     "items": [
+      "Turning off privacy mode now asks for confirmation first, from Settings, menu bar, or keyboard shortcut",
+      "Someone at your Mac can no longer turn off privacy mode to see your previews without confirming identity",
+      "Turning privacy mode on still never asks for confirmation"
+     ]
+    },
+    "vi": {
+     "headline": "Chế độ riêng tư giờ yêu cầu xác nhận trước khi tắt",
+     "items": [
+      "Tắt chế độ riêng tư giờ yêu cầu xác nhận trước, dù từ Cài đặt, thanh menu hay phím tắt",
+      "Người khác không thể tắt chế độ riêng tư để xem nội dung của bạn mà không xác nhận danh tính",
+      "Bật chế độ riêng tư vẫn không yêu cầu xác nhận"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.79.0",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- **Cover again after panel closes** (was **Cover again after**) now counts from when the panel closes. Reopen the panel within that time and what you showed is still shown. While the panel is open, nothing is covered again by itself, and a pinned panel stays as it is when you switch to another app. The choices are **Immediately** (the new default), 30 seconds, 1 minute and 5 minutes.\n- **Lock again after panel closes** (was **Lock again**) now counts from when the panel closes, not from when you unlocked. While the panel is open, it stays unlocked. The choices are **Immediately**, 1 minute, 5 minutes and 15 minutes.\n- **Lock again after panel closes** is greyed out while **Lock history** is off.\n- Needs Lumi 1.37.0 or later, which tells the extension when the panel closes.",
+  "notesSha256": "6dfd5337ec7826d333d593929a02aae860cdbc0e9f387a8fa9d617a12fb2f0d7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Cover and lock timers now count from when you close the panel",
+     "items": [
+      "Cover again after panel closes now counts from when you close the panel, not when you first showed an item",
+      "Lock again after panel closes now counts from when you close the panel, not when you unlocked",
+      "While the panel is open, items stay shown and unlocked until you close it",
+      "Pinned panels stay as they are when you switch to another app",
+      "Requires Lumi 1.37.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Bộ đếm che và khóa giờ tính từ khi bạn đóng bảng điều khiển",
+     "items": [
+      "Che lại sau khi đóng bảng giờ tính từ khi bạn đóng bảng, không phải khi bạn hiển thị mục",
+      "Khóa lại sau khi đóng bảng giờ tính từ khi bạn đóng bảng, không phải khi bạn mở khóa",
+      "Khi bảng đang mở, các mục vẫn hiển thị và mở khóa cho đến khi bạn đóng bảng",
+      "Bảng được ghim giữ nguyên trạng thái khi bạn chuyển sang ứng dụng khác",
+      "Yêu cầu Lumi 1.37.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.78.1",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- In Settings, the settings that only act on covered previews (**Show or hide content**, **Show or hide all**, **Cover again after** and **Confirm it's you before showing**) are greyed out while privacy mode is off, and say \"Works while privacy mode is on\". They keep their values, and become available again when privacy mode is turned on.",
+  "notesSha256": "71ce351adbe6b7c3ac2bea53603b0d68d16105005bec6e5faefd0ce6bc2edf0d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings that need privacy mode now show when they apply",
+     "items": [
+      "Settings that only work with privacy mode on are now greyed out when privacy mode is off",
+      "Each greyed-out setting shows a note explaining it works while privacy mode is on",
+      "Your choices are kept and become active again when you turn privacy mode back on"
+     ]
+    },
+    "vi": {
+     "headline": "Các cài đặt cần chế độ riêng tư giờ hiển thị khi nào áp dụng",
+     "items": [
+      "Các cài đặt chỉ hoạt động khi bật chế độ riêng tư giờ bị mờ đi khi chế độ riêng tư tắt",
+      "Mỗi cài đặt bị mờ hiển thị ghi chú giải thích nó hoạt động khi chế độ riêng tư bật",
+      "Lựa chọn của bạn được giữ nguyên và hoạt động lại khi bạn bật chế độ riêng tư"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.78.0",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- Privacy mode can no longer be turned on or off from the panel. The eye in the panel's title bar now only shows that privacy mode is on, and **⌘K** no longer offers **Turn on privacy mode** or **Turn off privacy mode**. Turn it on or off in the extension's Settings tab, from Lumi's menu bar, or with the **Toggle privacy mode** key. Showing covered content in the panel works as before.",
+  "notesSha256": "4baaf47dcfcd594ffb68af490679155de342cafabf899a83ff7fe1d2ec9fbcd0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Privacy mode is now controlled from Settings",
+     "items": [
+      "Privacy mode can only be toggled from Settings or with a keyboard shortcut",
+      "The eye icon in the panel now only indicates when privacy mode is active",
+      "Showing covered content in the panel still works the same way"
+     ]
+    },
+    "vi": {
+     "headline": "Chế độ riêng tư giờ được điều khiển từ Cài đặt",
+     "items": [
+      "Chế độ riêng tư chỉ có thể bật tắt từ Cài đặt hoặc bằng phím tắt",
+      "Biểu tượng con mắt trong bảng giờ chỉ hiển thị khi chế độ riêng tư đang bật",
+      "Hiển thị nội dung bị che trong bảng vẫn hoạt động như trước"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.77.2",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- **Copy all** in the Math section has its copy icon and lines up with the cards under it, instead of running into the preview's right edge.",
+  "notesSha256": "874490a9a9b55390523fb556ce62440ba016b53252cb67d31c7a7fd06f8a7ea2",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Visual fixes for the Math section",
+     "items": [
+      "Copy all in the Math section now has its icon and aligns properly with the cards"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa giao diện phần Toán học",
+     "items": [
+      "Nút sao chép tất cả trong phần Toán học giờ có biểu tượng và căn chỉnh đúng với các thẻ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.77.1",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- Rich text copied while 0.76.0 was installed now shows its **Math** section too. Those items had been marked as having no math, and copying the same text again did not look again. They are worked out the first time you preview them, and their row shows the answer from then on.",
+  "notesSha256": "99a84067b974e1f185b5e4d579fec82dba19325931db0ad2ab29a16edf094f02",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Math now appears in rich text copied before this update",
+     "items": [
+      "Rich text copied while the previous version was running now shows its Math section when you preview it"
+     ]
+    },
+    "vi": {
+     "headline": "Công thức toán giờ hiện với văn bản đã sao chép trước bản cập nhật",
+     "items": [
+      "Văn bản có định dạng đã sao chép khi dùng phiên bản trước giờ hiện phần Toán khi bạn xem trước"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.77.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- Rich text copies get the **Math** section too. The math is read from the copy's text and marked where it is written in the formatted preview, even when it runs across bold, italic or coloured words. The row in the list shows its answer, as for plain text.",
+  "notesSha256": "2fcc5e04f10503571b13f2d8aa68234255b53e5a36f526cc16a8f42294ed4c93",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Math detection now works in rich text copies",
+     "items": [
+      "Math expressions are now detected and calculated in rich text copies",
+      "The formatted preview highlights where math appears, even across styled text",
+      "List rows show the calculated answer for rich text copies with math"
+     ]
+    },
+    "vi": {
+     "headline": "Nhận diện toán học trong văn bản định dạng",
+     "items": [
+      "Biểu thức toán học được nhận diện và tính toán trong văn bản định dạng",
+      "Xem trước hiển thị vị trí toán học xuất hiện, ngay cả khi qua văn bản có định dạng",
+      "Danh sách hiển thị kết quả tính toán cho văn bản định dạng có toán học"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.76.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- Math in copied plain text is worked out in the preview. Under the text, a **Math** section shows each sum with its result (`1 + 2 + 5 + 10 = 18`), each equation in one unknown of degree one or two solved (`x² − 5x + 6 = 0` gives `x = 2` and `x = 3`, with exact roots like `2 ± √3` and complex ones), each written equality checked as true or false, and each `15% of 200` taken. Every result is typeset, and a click copies it; **Copy all** copies every answer. Where each one is written is marked in the text, and the row in the list shows its answer (`= 18`), or how many there are.\n- Dates, times, phone numbers, version numbers, ranges like `1-2` and sizes like `1920x1080` are left alone.",
+  "notesSha256": "32438b9ecd012a9abb0a18e735017ec955f3dba070a21e88dbbeb2aca91a0bf2",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Math in copied text is worked out in the preview",
+     "items": [
+      "Math in copied text is worked out in the preview with results you can copy",
+      "Equations in one unknown are solved with exact and complex roots",
+      "Written equalities are checked as true or false",
+      "Percentages like 15% of 200 are calculated",
+      "Dates, times, phone numbers, version numbers and ranges are left alone"
+     ]
+    },
+    "vi": {
+     "headline": "Tính toán trong văn bản đã sao chép ngay trong bản xem trước",
+     "items": [
+      "Tính toán trong văn bản đã sao chép hiển thị kết quả có thể sao chép",
+      "Phương trình một ẩn được giải với nghiệm chính xác và nghiệm phức",
+      "Đẳng thức được kiểm tra đúng hay sai",
+      "Phần trăm như 15% của 200 được tính toán",
+      "Ngày tháng, giờ, số điện thoại, phiên bản và khoảng giá trị được giữ nguyên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.75.3",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- A pinned panel no longer locks your history again when you switch to another app. With **Lock again** set to **When the panel closes**, a pinned panel in the background has not closed, so it stays unlocked until you close it. Lock it by hand with **Lock history now** in **⌘K**, or pick one of the timed **Lock again** choices. Privacy mode still covers previews when you switch away, and with history unlocked, showing one again doesn't ask \"Is it you?\".",
+  "notesSha256": "d663eb8c4b2e5434d093453b48bacd51e9e715aca7470b766f62084bfd8a4ce5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Pinned panel no longer locks history when switching apps",
+     "items": [
+      "A pinned panel in the background no longer locks your history when you switch to another app",
+      "History stays unlocked until you close the pinned panel if Lock again is set to When the panel closes",
+      "Privacy mode still covers previews when you switch away from a pinned panel"
+     ]
+    },
+    "vi": {
+     "headline": "Bảng ghim không còn khóa lịch sử khi chuyển ứng dụng",
+     "items": [
+      "Bảng ghim ở chế độ nền không còn khóa lịch sử khi bạn chuyển sang ứng dụng khác",
+      "Lịch sử vẫn mở khóa cho đến khi bạn đóng bảng ghim nếu Khóa lại được đặt là Khi đóng bảng",
+      "Chế độ riêng tư vẫn che xem trước khi bạn chuyển khỏi bảng ghim"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.75.2",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- With **Lock history** on, the panel no longer flashes the open history's search box, filters and paste keys before it shows it is locked. Until the panel knows whether your history is locked, it shows an empty frame where nothing can be typed or pasted, then the lock card or the history.",
+  "notesSha256": "5105edf019eb2aab3697bf789592c2601e771868fbfc9aed8f1e7d804d8b13d0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Smoother lock screen",
+     "items": [
+      "The panel no longer briefly shows the search box and filters before displaying the lock screen"
+     ]
+    },
+    "vi": {
+     "headline": "Màn hình khóa mượt mà hơn",
+     "items": [
+      "Bảng điều khiển không còn hiển thị thoáng qua ô tìm kiếm và bộ lọc trước khi hiện màn hình khóa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.75.1",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- **Lock history** no longer locks again right after you confirm it's you, and an item shown after \"Is it you?\" no longer covers itself again a moment later. After the dialog answers, Lumi briefly loses the keyboard and takes it straight back, and the panel was treating that as you leaving. Now only the keyboard staying away counts as leaving (a pinned panel still locks and covers itself when you switch apps), and answering the dialog never counts.",
+  "notesSha256": "48f201534d63ebf05b9a31c6f194b1d85acf4ac3a12f5ad63bf5cee34e3180e6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Lock history stays unlocked after you confirm it's you",
+     "items": [
+      "Lock history no longer locks itself again right after you confirm your identity",
+      "Items shown after unlocking no longer cover themselves a moment later",
+      "Answering the unlock dialog no longer counts as leaving the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Lịch sử khóa không tự khóa lại sau khi bạn xác nhận",
+     "items": [
+      "Lịch sử khóa không tự động khóa lại ngay sau khi bạn xác nhận danh tính",
+      "Các mục hiển thị sau khi mở khóa không tự che lại sau một lúc",
+      "Trả lời hộp thoại mở khóa không còn được tính là rời khỏi bảng điều khiển"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.75.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- The Welcome tour has a Touch ID step: the panel opens locked, macOS asks \"Is it you?\", and the history opens behind it. Buttons there lock your history or ask before showing, straight away; on a Lumi older than 1.36 the step says what it needs instead.",
+  "notesSha256": "6dd59b82a958c779b71e7ee9f7edc9deeb3bc4e032bbc320972d6d0999ef8db7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour now shows how Touch ID keeps your history private",
+     "items": [
+      "The Welcome tour demonstrates Touch ID locking with a hands-on step",
+      "Buttons to lock your history or require authentication appear right in the tour",
+      "Tour adapts if you are running an older version of Lumi"
+     ]
+    },
+    "vi": {
+     "headline": "Hướng dẫn chào mừng giờ trình bày Touch ID bảo vệ lịch sử",
+     "items": [
+      "Hướng dẫn chào mừng có bước thực hành về khóa bằng Touch ID",
+      "Các nút khóa lịch sử hoặc yêu cầu xác thực xuất hiện ngay trong hướng dẫn",
+      "Hướng dẫn tự điều chỉnh nếu bạn dùng phiên bản Lumi cũ hơn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.74.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- The Welcome tour has a step on privacy mode: the panel covers a budget, shows it with your key, shows a colour that is never covered, shows everything at once and covers it all again. A button there turns privacy mode on, and the keys it names are the ones you set.",
+  "notesSha256": "e87cda2cce89979b3307ad044a3c1d0d49fcf7a1d0726e831439f9b5740010ca",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour now includes privacy mode",
+     "items": [
+      "The welcome tour shows how privacy mode works and lets you turn it on"
+     ]
+    },
+    "vi": {
+     "headline": "Hướng dẫn chào mừng giờ có chế độ riêng tư",
+     "items": [
+      "Hướng dẫn chào mừng giờ trình bày cách hoạt động của chế độ riêng tư và cho phép bật nó"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.73.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- **Confirm it's you before showing.** In privacy mode, the first item you show asks macOS's \"Is it you?\" — Touch ID, your Apple Watch or your password. After that, showing more items, or all of them, does not ask again until they are covered again.\n- **Lock history.** The panel opens locked: no list, no preview and nothing to paste until you confirm it's you. It asks as soon as the panel opens; **Cancel** leaves an **Unlock** button. Choose under **Lock again** whether it locks every time the panel closes or a while after you unlock, and lock it at once with **Lock history now** in **⌘K**.\n- Turning either of them off in Settings asks \"Is it you?\" first, so someone at your Mac cannot switch them off.\n- Both need Lumi 1.36. On an older Lumi the switches say so, and nothing else changes.",
+  "notesSha256": "aabced8830dcf0bd7ff8947c867bcb3d05b9a6be1201eff3495d3c53d54f9233",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Lock your clipboard history with Touch ID or password",
+     "items": [
+      "Privacy mode now asks for Touch ID, Apple Watch or password before showing items",
+      "Lock history keeps the panel locked until you confirm it's you",
+      "Choose when to lock again: every time you close the panel or after a delay",
+      "Lock history instantly from the command palette",
+      "Turning off privacy or lock protection requires authentication",
+      "Requires Lumi 1.36 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Khóa lịch sử clipboard bằng Touch ID hoặc mật khẩu",
+     "items": [
+      "Chế độ riêng tư giờ yêu cầu Touch ID, Apple Watch hoặc mật khẩu trước khi hiện mục",
+      "Khóa lịch sử giữ bảng điều khiển đóng cho đến khi bạn xác nhận danh tính",
+      "Chọn thời điểm khóa lại: mỗi khi đóng bảng hoặc sau một khoảng thời gian",
+      "Khóa lịch sử ngay lập tức từ bảng lệnh",
+      "Tắt chế độ riêng tư hoặc khóa bảo vệ cần xác thực",
+      "Yêu cầu Lumi 1.36 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.72.1",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- Privacy mode leaves colours uncovered. A colour's row already shows its whole value and its swatch, so covering its preview kept nothing private and only cost a press. Everything else is covered as before.",
+  "notesSha256": "224111b08e73600ce8f7ea47b17d86fc62c9893ad3042a684ebca56971bc7f52",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Privacy mode now leaves colour previews visible",
+     "items": [
+      "Privacy mode no longer covers colour previews since they already show the full value"
+     ]
+    },
+    "vi": {
+     "headline": "Chế độ riêng tư giờ để lộ xem trước màu",
+     "items": [
+      "Chế độ riêng tư không còn che xem trước màu vì chúng đã hiển thị đầy đủ giá trị"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.72.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- Show every item at once in privacy mode with **⌥⇧⌘H**, instead of showing them one by one: they stay shown until the panel covers them again, and the same key covers them all. **⇧⌘H** still covers or shows the selected item on its own. Also in the **⌘K** menu, as **Show all content** and **Hide all content**.\n- Choose your own key for it under **Privacy** in Settings, next to the key for one item. A key another of the panel's shortcuts holds is refused with what it does.",
+  "notesSha256": "d457c02acf63490fcd8d6c76f24989fc003f200b4b680b4715f3b5140b975155",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Show all items at once in privacy mode",
+     "items": [
+      "Privacy mode can now reveal all items at once with ⌥⇧⌘H instead of one by one",
+      "All revealed items stay visible until the panel covers them again",
+      "The same shortcut hides all items at once",
+      "Show all content and Hide all content also appear in the ⌘K menu",
+      "You can set your own shortcut for this under Privacy in Settings"
+     ]
+    },
+    "vi": {
+     "headline": "Hiện tất cả mục cùng lúc trong chế độ riêng tư",
+     "items": [
+      "Chế độ riêng tư giờ có thể hiện tất cả mục cùng lúc bằng ⌥⇧⌘H thay vì từng mục một",
+      "Các mục đã hiện sẽ giữ nguyên cho đến khi bảng điều khiển che lại",
+      "Phím tắt này cũng ẩn tất cả mục cùng lúc",
+      "Hiện tất cả nội dung và Ẩn tất cả nội dung cũng xuất hiện trong menu ⌘K",
+      "Bạn có thể đặt phím tắt riêng cho chức năng này trong phần Riêng tư ở Cài đặt"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.71.1",
+  "date": "2026-10-05",
+  "notes": "### Changed\n\n- The key that shows or hides an item is set under **Privacy** in Settings, next to **Privacy mode**, instead of under **Shortcuts**.\n\n### Fixed\n\n- **Reset** no longer shows beside a shortcut that is already its default.",
+  "notesSha256": "a7f379836f097504ac602389c7ca0c124793840f7c6d8e1da74f2182da7831de",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Privacy shortcut moved, reset button fixed",
+     "items": [
+      "The shortcut to show or hide an item moved to Privacy in Settings",
+      "Reset no longer appears next to shortcuts that are already their default"
+     ]
+    },
+    "vi": {
+     "headline": "Di chuyển phím tắt riêng tư, sửa nút đặt lại",
+     "items": [
+      "Phím tắt để hiện hoặc ẩn mục đã chuyển sang mục Riêng tư trong Cài đặt",
+      "Nút Đặt lại không còn hiện bên cạnh phím tắt đã ở trạng thái mặc định"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.71.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- Choose your own key for showing and hiding an item in privacy mode in Settings, the way you choose Pin's. It is ⇧⌘H until you change it, and a key the panel already uses — Pin's among them — is refused with what it does.\n\n### Fixed\n\n- A Pin key held with ⇧, such as ⇧⌘K, no longer opens the actions menu or does what the key without ⇧ does: the keys you set are answered first.",
+  "notesSha256": "69bbf2239f37cc98c15206635614dce7d36454a3b5461676fae953cf884bb8b6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Customize privacy mode shortcut and fix modifier key conflicts",
+     "items": [
+      "You can now set your own keyboard shortcut for showing and hiding items in privacy mode",
+      "The default privacy mode shortcut is Shift-Command-H until you change it",
+      "Setting a shortcut that conflicts with another feature shows what that key already does",
+      "Pin shortcuts with Shift now work correctly instead of triggering other actions"
+     ]
+    },
+    "vi": {
+     "headline": "Tùy chỉnh phím tắt chế độ riêng tư và sửa xung đột phím bổ trợ",
+     "items": [
+      "Giờ bạn có thể đặt phím tắt riêng để hiện và ẩn mục trong chế độ riêng tư",
+      "Phím tắt chế độ riêng tư mặc định là Shift-Command-H cho đến khi bạn thay đổi",
+      "Đặt phím tắt trùng với tính năng khác sẽ hiện thông báo phím đó đang dùng làm gì",
+      "Phím tắt ghim có Shift giờ hoạt động đúng thay vì kích hoạt hành động khác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.70.1",
+  "date": "2026-10-05",
+  "notes": "### Fixed\n\n- The ninth pinned item could be given the letter K, but **⌘K** always opens the actions menu, so that item could never be pasted with its key. Pins skip K now, and an item already pinned to K moves to the first free letter when the panel opens.",
+  "notesSha256": "6916acdc616366297f17e20c5e91d8331f03613827d2d8385f08af79c8f8ac89",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed keyboard shortcut conflict with pinned items",
+     "items": [
+      "Pinned items no longer use the letter K, which always opens the actions menu",
+      "Items previously pinned to K move to the first available letter when you open the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa xung đột phím tắt với mục đã ghim",
+     "items": [
+      "Mục đã ghim không còn dùng chữ K vì phím này luôn mở menu thao tác",
+      "Mục trước đây ghim với K sẽ chuyển sang chữ trống đầu tiên khi bạn mở bảng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.70.0",
+  "date": "2026-10-05",
+  "notes": "### Added\n\n- Privacy mode. While it is on, the preview of every item is covered until you show it, so whatever you copied is not on screen just because the selection landed on it. Click the cover or press **⌘⇧H** to show an item; it stays shown while you move around the list, and **⌘⇧H** covers it again. Everything is covered again when the panel closes, when a pinned panel loses the keyboard to another app, and after a minute with nothing done in the panel (**Cover again after** in Settings).\n- Turn privacy mode on or off with the eye in the panel's title bar, from **⌘K**, from **Turn On Privacy Mode** in Lumi's menu bar menu, in Settings, or with a key of your own for the new **Toggle privacy mode** command — so it can be turned on before the panel is ever opened.\n- A covered item can still be pasted, dragged out, copied, pinned and deleted. The list itself is unchanged: titles, thumbnails and search matches still show.",
+  "notesSha256": "438936f19914474b1087929bb5860130b3b71a05ba7c268008ca6b2852fb168c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Privacy mode to hide what you copied until you choose to see it",
+     "items": [
+      "Privacy mode covers the preview of every item until you click it or press ⌘⇧H",
+      "Turn privacy mode on or off from the eye icon, ⌘K, the menu bar, Settings, or a custom key",
+      "Covered items automatically hide again when the panel closes or after a minute of inactivity",
+      "You can still paste, drag, copy, pin and delete covered items without seeing them",
+      "Titles, thumbnails and search results remain visible when items are covered"
+     ]
+    },
+    "vi": {
+     "headline": "Chế độ riêng tư để ẩn nội dung đã sao chép cho đến khi bạn muốn xem",
+     "items": [
+      "Chế độ riêng tư che phần xem trước của mọi mục cho đến khi bạn nhấp hoặc nhấn ⌘⇧H",
+      "Bật hoặc tắt chế độ riêng tư từ biểu tượng con mắt, ⌘K, thanh menu, Cài đặt hoặc phím tùy chỉnh",
+      "Các mục đã che sẽ tự động ẩn lại khi đóng bảng điều khiển hoặc sau một phút không hoạt động",
+      "Bạn vẫn có thể dán, kéo, sao chép, ghim và xóa các mục đã che mà không cần xem chúng",
+      "Tiêu đề, hình thu nhỏ và kết quả tìm kiếm vẫn hiển thị khi các mục được che"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.69.1",
+  "date": "2026-10-04",
+  "notes": "### Fixed\n\n- \"Clipboard Manager is already doing 4 things at once\" no longer turns up when you move through the list quickly, or while the panel is reading the text in your images. The preview, and the words on a picture, are now asked for one at a time and only for the row you stopped on; reading images steps aside whenever you do something. A request Lumi turns away because the extension is full is asked again for a moment before it is given up on.",
+  "notesSha256": "bfb7fbbdbea4ea0f22abf67f8cdb4632ed534801991fac6cdb1ec356c7c49fd6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Smoother browsing through your clipboard history",
+     "items": [
+      "Moving quickly through the list no longer triggers busy warnings",
+      "Image text is read only for the item you stop on, not every item you pass",
+      "The preview loads one item at a time as you navigate",
+      "Image reading pauses automatically when you interact with the panel",
+      "Failed requests are retried briefly before being abandoned"
+     ]
+    },
+    "vi": {
+     "headline": "Duyệt lịch sử clipboard mượt mà hơn",
+     "items": [
+      "Di chuyển nhanh trong danh sách không còn gây cảnh báo bận",
+      "Chữ trong ảnh chỉ được đọc cho mục bạn dừng lại, không phải mọi mục bạn qua",
+      "Bản xem trước tải từng mục một khi bạn điều hướng",
+      "Đọc chữ trong ảnh tự động tạm dừng khi bạn thao tác với bảng",
+      "Yêu cầu thất bại được thử lại trong chốc lát trước khi bỏ qua"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.69.0",
+  "date": "2026-10-03",
+  "notes": "### Added\n\n- Select text right on a copied image in the preview: press on a word and drag across the words you want, or double-click a line. **⌘C** or **Copy** copies just those words; **⎋** lets them go. A press between words still drags the image out.\n\n### Fixed\n\n- Images whose text was never read are read now, when the panel opens or when **Search text in images** is turned on, so every image can be found by its words. This covers images copied while that setting was off, while Lumi was quitting, or in a quick run of copies.",
+  "notesSha256": "034df2f092c02883da0eea61c26e9b5f5199c06d4c77ed5d1cfbc0245c6fad47",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Select and copy text from images, plus fixes",
+     "items": [
+      "Select text on a copied image by pressing and dragging across words or double-clicking a line",
+      "Press Command-C or Copy to copy the selected text, or press Escape to deselect",
+      "Images whose text was not read before are now analyzed when the panel opens or search is enabled"
+     ]
+    },
+    "vi": {
+     "headline": "Chọn và sao chép văn bản từ hình ảnh, cùng các sửa lỗi",
+     "items": [
+      "Chọn văn bản trên hình ảnh bằng cách nhấn và kéo qua các từ hoặc nhấp đúp vào dòng",
+      "Nhấn Command-C hoặc Copy để sao chép văn bản đã chọn, hoặc nhấn Escape để bỏ chọn",
+      "Hình ảnh chưa đọc văn bản trước đây giờ được phân tích khi mở bảng hoặc bật tìm kiếm"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.68.0",
+  "date": "2026-10-03",
+  "notes": "### Added\n\n- Icons beside every row of Clipboard Manager's menu in Lumi's menu bar.\n\n### Changed\n\n- **Pause Recording** in the menu bar reads **Resume Recording** while paused, in place of a tick.\n- Needs Lumi 1.34.0.",
+  "notesSha256": "835a7e3758ff83388d25e4b75e0cc9fa81f436ef12b318a6e95fb5943f32ef26",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Icons in the menu and clearer pause state",
+     "items": [
+      "Every item in the menu bar now shows an icon",
+      "Pause Recording changes to Resume Recording when paused instead of showing a tick"
+     ]
+    },
+    "vi": {
+     "headline": "Biểu tượng trong menu và trạng thái tạm dừng rõ ràng hơn",
+     "items": [
+      "Mỗi mục trong thanh menu giờ hiển thị biểu tượng",
+      "Tạm dừng ghi chép đổi thành Tiếp tục ghi chép khi đang tạm dừng thay vì hiện dấu tick"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.67.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- Clipboard Manager in Lumi's menu bar menu: **Show Clipboard History**, **Pause Recording**, **Delete All Unpinned…** and **Settings…**.\n- **Pause Recording** stops keeping what you copy until you untick it. Nothing copied while paused is recorded.\n- **Delete All Unpinned…** opens the panel and deletes there, so ⌘Z still brings everything back.\n\n### Fixed\n\n- The preview's width and split, and what a PDF fits, are kept between openings of the panel. They were never saved before.\n\n### Changed\n\n- Needs Lumi 1.33.0, and declares `menu`, the capability its menu bar rows need. The menu shows nothing you copied.",
+  "notesSha256": "df1a8c9b3a285785458db2cf20bf8f3242de1f9a4c7e4d052c4268199dfa0f73",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Pause recording and menu bar shortcuts",
+     "items": [
+      "You can pause recording from the menu bar to stop keeping what you copy",
+      "Delete all unpinned items from the menu bar, with undo still available",
+      "The preview width and PDF zoom level are now remembered between sessions",
+      "Show clipboard history and open settings directly from the menu bar"
+     ]
+    },
+    "vi": {
+     "headline": "Tạm dừng ghi lại và phím tắt trên thanh menu",
+     "items": [
+      "Bạn có thể tạm dừng ghi lại từ thanh menu để ngừng lưu những gì bạn sao chép",
+      "Xóa tất cả mục chưa ghim từ thanh menu, vẫn có thể hoàn tác",
+      "Độ rộng bản xem trước và mức phóng to PDF giờ được ghi nhớ giữa các phiên",
+      "Hiển thị lịch sử clipboard và mở cài đặt trực tiếp từ thanh menu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.66.1",
+  "date": "2026-10-02",
+  "notes": "### Changed\n\n- With the panel pinned and you working in another app, Show clipboard history gives it the keyboard back the moment you press it, before the selected item blinks: Clipboard Manager now asks Lumi where the panel stands instead of finding out from the panel. Needs Lumi 1.31.0.",
+  "notesSha256": "a718405e79938019231d429acf57385558f9c4380ace361a438808a23bb07a3c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster keyboard focus when the panel is pinned",
+     "items": [
+      "Pressing Show clipboard history returns keyboard focus instantly when the panel is pinned"
+     ]
+    },
+    "vi": {
+     "headline": "Lấy nét bàn phím nhanh hơn khi bảng được ghim",
+     "items": [
+      "Nhấn Hiện lịch sử clipboard trả lại nét bàn phím ngay lập tức khi bảng được ghim"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.66.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- Two more commands, Hide clipboard history and Toggle clipboard history, for keys of your own in Lumi's Settings. The shortcut the extension comes with stays on Show clipboard history.\n\n### Changed\n\n- Show clipboard history only ever brings the panel up. Pressed while the panel is already up, pinned or not, it no longer puts it away: the panel takes the keyboard back if you were working in another app, and the selected item blinks so you know you can search or move through the list. Escape, Hide or Toggle put it away.",
+  "notesSha256": "2214f7470bf0bf64d629781a2f499ae6e04c7af0f93c756fb9209f365931331c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "New commands to hide or toggle the panel with your own shortcuts",
+     "items": [
+      "Two new commands let you assign shortcuts to hide or toggle the panel",
+      "Show clipboard history now only opens the panel, never closes it",
+      "When the panel is already open, Show clipboard history brings focus back to it",
+      "The selected item blinks when you reopen the panel so you know where you are",
+      "Use Escape, the new Hide command, or Toggle to close the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Lệnh mới để ẩn hoặc bật tắt bảng bằng phím tắt riêng",
+     "items": [
+      "Hai lệnh mới cho phép bạn gán phím tắt để ẩn hoặc bật tắt bảng",
+      "Hiện lịch sử clipboard giờ chỉ mở bảng, không đóng nữa",
+      "Khi bảng đã mở, Hiện lịch sử clipboard đưa con trỏ về bảng",
+      "Mục đang chọn nhấp nháy khi bạn mở lại bảng để bạn biết vị trí",
+      "Dùng Escape, lệnh Ẩn mới, hoặc Bật tắt để đóng bảng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.65.1",
+  "date": "2026-10-02",
+  "notes": "### Fixed\n\n- A long copy's scroll bar no longer covers its last letters. Every scroll bar in the preview — the copy, what it expands to, the text read in an image, the list of links — now sits in one line along the right edge.",
+  "notesSha256": "55747f960af878a6467c076d10344ad474c33bafa5f29ec2cec900f076e0dc75",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Scroll bars no longer cover text",
+     "items": [
+      "Scroll bars in the preview now sit along the right edge instead of covering text"
+     ]
+    },
+    "vi": {
+     "headline": "Thanh cuộn không còn che chữ",
+     "items": [
+      "Thanh cuộn trong bản xem trước giờ nằm sát mép phải thay vì che chữ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.65.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- Drag the line across the preview up or down to give more room to either side: the picture or the text read in it, or a copy or what it expands to. The line stays where you leave it for both kinds, so it holds still as you move through the list. Double-click the line to put it back where it was.",
+  "notesSha256": "d32c50a43d6b754eaa0fb20259ca376538724b35442176143dd1091a6bdde23c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Resize the preview by dragging the divider",
+     "items": [
+      "Drag the line across the preview up or down to adjust how much space the image and text each get",
+      "The divider stays where you put it as you move through your clipboard history",
+      "Double-click the divider to reset it to its original position"
+     ]
+    },
+    "vi": {
+     "headline": "Thay đổi kích thước bản xem trước bằng cách kéo đường phân chia",
+     "items": [
+      "Kéo đường ngang trong bản xem trước lên hoặc xuống để điều chỉnh không gian cho hình ảnh và văn bản",
+      "Đường phân chia giữ nguyên vị trí khi bạn di chuyển qua lịch sử clipboard",
+      "Nhấp đúp vào đường phân chia để đặt lại về vị trí ban đầu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.64.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- With the panel pinned and you working in another app, the shortcut gives the panel the keyboard back where it stands, and the selected item now blinks to say so, so you know you can search or move through the list right away. With the ⌘K menu up, its chosen action blinks instead. Press the shortcut again to put the panel away.",
+  "notesSha256": "97ff4102e1530bbd222139535f16162986c0b6cfde6466a8784a024b44abf397",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Panel shortcut now refocuses when pinned",
+     "items": [
+      "When the panel is pinned and another app is active, the shortcut brings keyboard focus back to the panel",
+      "The selected item blinks briefly to confirm the panel is ready for searching or navigation",
+      "If the command menu is open, the selected action blinks instead",
+      "Press the shortcut again to hide the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Phím tắt giờ đây lấy lại tiêu điểm khi ghim bảng điều khiển",
+     "items": [
+      "Khi bảng điều khiển được ghim và ứng dụng khác đang hoạt động, phím tắt đưa bàn phím về bảng điều khiển",
+      "Mục đang chọn nhấp nháy ngắn để xác nhận bảng điều khiển sẵn sàng tìm kiếm hoặc di chuyển",
+      "Nếu menu lệnh đang mở, hành động được chọn sẽ nhấp nháy",
+      "Nhấn phím tắt lần nữa để ẩn bảng điều khiển"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.63.26",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- Copy one of your snippet triggers, such as `;addr`, and the preview shows what it expands to: its web addresses read as plain text and turn into links under the pointer, a button copies it, and clicking its heading folds it away. A snippet that comes out the same every time is remembered with the copy. One that changes, such as a date, is expanded again each time the panel shows it.\n- Settings has a new Snippets section. Match snippets switches it on or off. Look in picks the profile you're using (the default), every profile, or Selected Profiles. Once Selected Profiles is chosen, its submenu lists every profile with a search field on top, to find them by name and tick them however many you have. An open panel, pinned or not, follows at once when you switch, rename or remove a profile, change these settings or edit a snippet in Lumi, and a snippet that can change is expanded again each time you come back to it. Needs Lumi 1.31.0.",
+  "notesSha256": "dde792e136600dd5d2503530266c356ff84530d8a460f317026bb38e17572a7f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Snippet previews and profile selection",
+     "items": [
+      "Copy a snippet trigger and see what it expands to in the preview",
+      "Web addresses in snippet previews become clickable links",
+      "Snippets that always expand the same way are remembered with the copy",
+      "Snippets with dates or other changing parts are expanded fresh each time",
+      "New Snippets section in Settings lets you choose which profiles to match",
+      "The panel updates immediately when you change profiles or edit snippets in Lumi"
+     ]
+    },
+    "vi": {
+     "headline": "Xem trước snippet và chọn hồ sơ",
+     "items": [
+      "Sao chép trigger của snippet để xem nó mở rộng thành gì trong phần xem trước",
+      "Địa chỉ web trong xem trước snippet trở thành liên kết có thể nhấp",
+      "Snippet luôn mở rộng giống nhau được ghi nhớ cùng bản sao",
+      "Snippet có ngày tháng hoặc phần thay đổi được mở rộng mới mỗi lần",
+      "Mục Snippets mới trong Cài đặt cho phép chọn hồ sơ nào để khớp",
+      "Bảng cập nhật ngay khi bạn thay đổi hồ sơ hoặc chỉnh sửa snippet trong Lumi"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.62.1",
+  "date": "2026-10-01",
+  "notes": "### Fixed\n\n- The ⌘K actions menu's search field fits inside the menu instead of running past its right edge.",
+  "notesSha256": "22d1a243d4c91ffddf1a291e0aee22108b5f836bdf087e87ed514a76ca12c939",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed the actions menu search field",
+     "items": [
+      "The actions menu search field now fits inside the menu instead of overflowing"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa ô tìm kiếm trong menu thao tác",
+     "items": [
+      "Ô tìm kiếm trong menu thao tác giờ vừa khít thay vì tràn ra ngoài"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.62.0",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- The ⌘K actions menu highlights the letters you typed in each action it found, the way the history search does.",
+  "notesSha256": "3a869a438a74dc4078a72e51f16670ae7189ae2c7fb947a387c67caa42c1050d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Highlights in the actions menu",
+     "items": [
+      "The actions menu highlights the letters you typed in each action it found"
+     ]
+    },
+    "vi": {
+     "headline": "Làm nổi bật trong menu thao tác",
+     "items": [
+      "Menu thao tác làm nổi bật các chữ cái bạn đã gõ trong mỗi thao tác tìm thấy"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.61.0",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- The ⌘K actions menu takes shorthand: string together the starts of an action's words, as in \"delall\" for \"Delete all…\" or \"sif\" for \"Show in Finder\". The closest match comes first, right above the search field.",
+  "notesSha256": "bda4325ea323d3b43166fbec248bdf19c54a66a0c06c8456498a1d04de77eb81",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster actions with shorthand commands",
+     "items": [
+      "The actions menu now accepts shorthand: type the first letters of each word to find commands quickly"
+     ]
+    },
+    "vi": {
+     "headline": "Thao tác nhanh hơn với lệnh viết tắt",
+     "items": [
+      "Menu thao tác giờ nhận viết tắt: gõ chữ cái đầu của mỗi từ để tìm lệnh nhanh hơn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.8",
+  "date": "2026-10-01",
+  "notes": "### Fixed\n\n- Searching the ⌘K actions menu matches the start of a word: \"de\" finds the Delete actions, no longer \"Show in Finder\" for the \"de\" inside \"Finder\".",
+  "notesSha256": "e54ab2b3ec26bbecc5ab2fb89641b801dba4c5943d786f094d68a13fe0606e85",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Smarter search in the actions menu",
+     "items": [
+      "Searching the actions menu now matches the start of words instead of any part"
+     ]
+    },
+    "vi": {
+     "headline": "Tìm kiếm thông minh hơn trong menu hành động",
+     "items": [
+      "Tìm kiếm trong menu hành động giờ khớp đầu từ thay vì bất kỳ phần nào"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.7",
+  "date": "2026-10-01",
+  "notes": "### Changed\n\n- The ⌘K actions menu reads from the bottom up: Paste sits right above the search field, the delete actions furthest from it. The arrow keys move the way they point.",
+  "notesSha256": "7d1465cb0ac019522fb700fcfad32f48b40f20baa03b6820d97b983e7adc26a8",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Actions menu now flows from bottom to top",
+     "items": [
+      "The actions menu reads from bottom to top, with Paste closest to the search field",
+      "Arrow keys now move in the direction they point when navigating the actions menu"
+     ]
+    },
+    "vi": {
+     "headline": "Menu hành động giờ hiển thị từ dưới lên trên",
+     "items": [
+      "Menu hành động giờ đọc từ dưới lên trên, với Dán gần ô tìm kiếm nhất và các hành động xóa ở trên cùng",
+      "Phím mũi tên giờ di chuyển theo hướng chúng chỉ khi điều hướng trong menu hành động"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.6",
+  "date": "2026-10-01",
+  "notes": "### Changed\n\n- The ⌘K actions menu has its search field at the bottom, next to the ⌘K that opens it. The field stays in place while you type and the list narrows above it.",
+  "notesSha256": "201f9a1b769fdf7a219ae5c3f89c5c43bab923908cdec7f8b4a71f2d98e04e00",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Actions menu search field moved to the bottom",
+     "items": [
+      "The actions menu search field now sits at the bottom and stays in place while the list filters above"
+     ]
+    },
+    "vi": {
+     "headline": "Ô tìm kiếm menu hành động chuyển xuống dưới",
+     "items": [
+      "Ô tìm kiếm menu hành động giờ nằm ở dưới cùng và giữ nguyên vị trí khi danh sách lọc phía trên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.5",
+  "date": "2026-10-01",
+  "notes": "### Fixed\n\n- The ⌘K actions menu shows all its actions instead of cutting the last one in half. When the panel is too short for them all, the list scrolls, fades at the edge that has more, and the arrow keys keep the chosen action in view.",
+  "notesSha256": "b86368ad1c5f2feef7fefa6e3ff0804084f517924a5f545b7fd72ba98f7d430b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Actions menu improvements",
+     "items": [
+      "The actions menu now shows all actions without cutting the last one in half",
+      "When the panel is too short, the actions list scrolls and fades at the edge",
+      "Arrow keys keep the selected action visible when scrolling"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện menu thao tác",
+     "items": [
+      "Menu thao tác hiện hiển thị đầy đủ các mục mà không bị cắt nửa mục cuối",
+      "Khi bảng điều khiển quá ngắn, danh sách sẽ cuộn và mờ dần ở rìa",
+      "Phím mũi tên giữ thao tác đang chọn luôn hiển thị khi cuộn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.4",
+  "date": "2026-10-01",
+  "notes": "### Changed\n\n- The panel opens faster with a long history: it reads the history once, and brings items kept by older versions up to date only once.",
+  "notesSha256": "e5520b3bab05115bde820771cfb7e42e4604b4c1d3bc77e53f80c1f029ecac82",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster panel opening with long history",
+     "items": [
+      "The panel opens faster when you have a long history"
+     ]
+    },
+    "vi": {
+     "headline": "Mở bảng nhanh hơn với lịch sử dài",
+     "items": [
+      "Bảng mở nhanh hơn khi bạn có lịch sử dài"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.3",
+  "date": "2026-10-01",
+  "notes": "### Fixed\n\n- What you copy while the panel is open, pinned or not, shows up in it straight away.",
+  "notesSha256": "f449cc2da26db4f6d568279a169ee94788446cb2c952ad3a4b36b6d7f009a0d0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Instant updates when copying with the panel open",
+     "items": [
+      "What you copy while the panel is open, pinned or not, shows up in it straight away"
+     ]
+    },
+    "vi": {
+     "headline": "Cập nhật ngay lập tức khi sao chép với bảng điều khiển đang mở",
+     "items": [
+      "Nội dung bạn sao chép khi bảng điều khiển đang mở, có ghim hay không, sẽ hiện lên ngay lập tức"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.2",
+  "date": "2026-10-01",
+  "notes": "### Changed\n\n- A copy's links are found once, when it is copied, instead of each time its preview is shown.",
+  "notesSha256": "c82ce013c490451ccd71ec434200e0d6d1c64580ee5f5c9e82a000a315d099c6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Faster preview loading",
+     "items": [
+      "Link previews load faster by detecting links only once when you copy"
+     ]
+    },
+    "vi": {
+     "headline": "Tải xem trước nhanh hơn",
+     "items": [
+      "Xem trước liên kết tải nhanh hơn nhờ chỉ phát hiện liên kết một lần khi bạn sao chép"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.60.1",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- Links in rich text can be clicked in the preview. Plain text stays plain, to select and copy; its links are listed under it.",
+  "notesSha256": "197f7d392777500308c5d6f5cc2d47ffaf129fa88681e6976604961e3e19bf7e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Links in rich text previews are now clickable",
+     "items": [
+      "Links in rich text can be clicked in the preview",
+      "Plain text remains selectable for copying, with links listed below"
+     ]
+    },
+    "vi": {
+     "headline": "Liên kết trong bản xem trước rich text giờ có thể nhấp được",
+     "items": [
+      "Liên kết trong rich text có thể nhấp trực tiếp trong bản xem trước",
+      "Văn bản thuần vẫn có thể chọn để sao chép, với danh sách liên kết bên dưới"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.59.0",
+  "date": "2026-10-01",
+  "notes": "### Added\n\n- Text and rich text show the links they contain under their preview, each opened in the browser with a click.\n\n### Fixed\n\n- Links in rich text copied from TextEdit or Pages no longer drop out of the preview.",
+  "notesSha256": "83c76cad5bc86c279bd815b787e165d625957ac840bc94928a0c2ab5aece67bc",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Links in text and rich text now show and open with a click",
+     "items": [
+      "Text and rich text show the links they contain under their preview",
+      "Click any link to open it in your browser",
+      "Links in rich text copied from TextEdit or Pages no longer disappear from the preview"
+     ]
+    },
+    "vi": {
+     "headline": "Liên kết trong văn bản hiện hiển thị và mở được bằng cách nhấp",
+     "items": [
+      "Văn bản và văn bản định dạng hiển thị các liên kết chứa bên trong dưới phần xem trước",
+      "Nhấp vào bất kỳ liên kết nào để mở trong trình duyệt",
+      "Liên kết trong văn bản định dạng sao chép từ TextEdit hoặc Pages không còn biến mất khỏi phần xem trước"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.58.3",
+  "date": "2026-09-30",
+  "notes": "### Changed\n\n- The extension's homepage is now its page on lumikeys.app.",
+  "notesSha256": "3cefdecadaff9a9ef53feee9ef9bc539f5ca7ea250e40f913d93f766e6832323",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Updated extension homepage",
+     "items": [
+      "The extension's homepage now points to its page on lumikeys.app"
+     ]
+    },
+    "vi": {
+     "headline": "Cập nhật trang chủ tiện ích",
+     "items": [
+      "Trang chủ của tiện ích giờ trỏ đến trang của nó trên lumikeys.app"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.58.2",
+  "date": "2026-09-30",
+  "notes": "### Changed\n\n- About's Docs opens this extension's page on lumikeys.app, and Store page opens the extensions list there.",
+  "notesSha256": "40cd65a6c966894de104612c4b19cf0bf0616aadc0ceb6e793a7d772859c3629",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "About panel links updated",
+     "items": [
+      "About panel now links to the extension page and extensions list on lumikeys.app"
+     ]
+    },
+    "vi": {
+     "headline": "Cập nhật liên kết trong bảng Giới thiệu",
+     "items": [
+      "Bảng Giới thiệu giờ liên kết đến trang tiện ích mở rộng và danh sách tiện ích trên lumikeys.app"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.58.1",
+  "date": "2026-09-30",
+  "notes": "### Changed\n\n- About's buttons stay at the bottom of the panel while the changelog scrolls above them.",
+  "notesSha256": "1141138df711cbf255d66f08171024d30e5f9bf47bef916c09295c7e09e29ee8",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Improved About panel layout",
+     "items": [
+      "About panel buttons now stay at the bottom while you scroll through the changelog"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện bố cục bảng Giới thiệu",
+     "items": [
+      "Các nút trong bảng Giới thiệu giờ luôn ở dưới cùng khi bạn cuộn danh sách thay đổi"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.58.0",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- About in the ⌘K menu: the extension's version, what's new, the full changelog, and links to the docs, the store page and the Welcome tour, right in the panel.",
+  "notesSha256": "2d2fb2f8ddc9df6f96859785b32d55ad810e6392dba38253d18c97b3be9b6670",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "About section added to the command menu",
+     "items": [
+      "About section added to command menu with version, release notes, changelog, docs, store and tour links"
+     ]
+    },
+    "vi": {
+     "headline": "Thêm mục Giới thiệu vào menu lệnh",
+     "items": [
+      "Thêm mục Giới thiệu vào menu lệnh với phiên bản, ghi chú, nhật ký, tài liệu và liên kết hướng dẫn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.57.0",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- Colours written as `rgb()`, `rgba()`, `hsl()` or `hsla()` are recognised as colours.\n- A copied colour's preview lists it in the other formats (hex, `rgb()`, `hsl()`) to copy from.",
+  "notesSha256": "6e9a433d6fd3a527aaa6c8a6903a2bbb8d6368911ece0e2130e134ed069d8ef1",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Colour formats beyond hex",
+     "items": [
+      "Colours written as rgb(), rgba(), hsl() or hsla() are now recognised as colours",
+      "A copied colour's preview shows it in hex, rgb() and hsl() so you can copy any format"
+     ]
+    },
+    "vi": {
+     "headline": "Hỗ trợ nhiều định dạng màu hơn",
+     "items": [
+      "Màu viết dưới dạng rgb(), rgba(), hsl() hoặc hsla() giờ được nhận diện là màu",
+      "Xem trước màu đã sao chép hiển thị dạng hex, rgb() và hsl() để bạn sao chép định dạng bất kỳ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.54.11",
+  "date": "2026-09-30",
+  "notes": "### Changed\n\n- Long lists fade at the edge while there is more to scroll.\n\n### Fixed\n\n- The text-recognition panel no longer collapses when it has little to show.",
+  "notesSha256": "fe92481f4224ed6cf83790f94d71c916975a64c387997cace382e3ed3ff6ad4b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Smoother scrolling and a more stable text-recognition panel",
+     "items": [
+      "Long lists fade at the edge while there is more to scroll",
+      "The text-recognition panel no longer collapses when it has little to show"
+     ]
+    },
+    "vi": {
+     "headline": "Cuộn mượt hơn và bảng nhận dạng văn bản ổn định hơn",
+     "items": [
+      "Danh sách dài có hiệu ứng mờ dần ở rìa khi còn nội dung để cuộn",
+      "Bảng nhận dạng văn bản không còn bị thu nhỏ khi có ít nội dung hiển thị"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.54.6",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- Each panel remembers how you like PDFs fitted.",
+  "notesSha256": "ddc8b47a65a593fdce6110f8b3aba85a1afd9bde19642d66b515d3443c151a66",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "PDF viewing improvements",
+     "items": [
+      "Each panel remembers how you like PDFs fitted"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện xem PDF",
+     "items": [
+      "Mỗi bảng nhớ cách bạn thích hiển thị PDF"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.54.2",
+  "date": "2026-09-30",
+  "notes": "### Fixed\n\n- ⌘Y expands the preview, so an item pinned to Y moves to another letter.",
+  "notesSha256": "5bf8d40906bc496b8d29394068840cc6a8296a2061c01e77ecce9491305288d0",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed keyboard shortcut conflict with preview expansion",
+     "items": [
+      "Items pinned to Y now move to another letter when Command-Y expands the preview"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa xung đột phím tắt với việc mở rộng xem trước",
+     "items": [
+      "Mục được ghim vào chữ Y giờ sẽ chuyển sang chữ khác khi Command-Y mở rộng xem trước"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.53.3",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- A zoomed view for PDF previews.",
+  "notesSha256": "c9660e1fa48ea4696b8be9e20fc74165f5cc36d76d36b056c8fc80fc8f8a623b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Zoomed view for PDF previews",
+     "items": [
+      "You can now zoom in on PDF previews to see details more clearly"
+     ]
+    },
+    "vi": {
+     "headline": "Phóng to xem trước PDF",
+     "items": [
+      "Giờ bạn có thể phóng to bản xem trước PDF để xem rõ hơn các chi tiết"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.52.4",
+  "date": "2026-09-30",
+  "notes": "### Changed\n\n- Simpler wording in the Welcome tour.",
+  "notesSha256": "5b2575b8de5cf9a9aa80712c89ab4462eff89ceab03b10bbd27b3f8b04257412",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour improvements",
+     "items": [
+      "The Welcome tour now uses simpler, clearer wording"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện hướng dẫn chào mừng",
+     "items": [
+      "Hướng dẫn chào mừng giờ dùng từ ngữ đơn giản và rõ ràng hơn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.52.3",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- ⌘⇧P pins the panel, so it stays open while you paste one item after another.\n\n### Changed\n\n- Pinning an item is ⌘P by default (it was ⌥P).",
+  "notesSha256": "f980e398560814319f383abb1cdfe140fe7cc1b115e992fcc5fdd376aaae1285",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Pin the panel or an item with new shortcuts",
+     "items": [
+      "Press Command-Shift-P to pin the panel open while you paste multiple items",
+      "Press Command-P to pin an item (changed from Option-P)"
+     ]
+    },
+    "vi": {
+     "headline": "Ghim bảng điều khiển hoặc mục với phím tắt mới",
+     "items": [
+      "Nhấn Command-Shift-P để ghim bảng điều khiển mở khi dán nhiều mục",
+      "Nhấn Command-P để ghim một mục (thay đổi từ Option-P)"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.51.6",
+  "date": "2026-09-30",
+  "notes": "### Changed\n\n- File icons are easier to tell apart in light and dark mode.",
+  "notesSha256": "be7c8c43b52421f04cdaaf354e615f440b1d7118a3f5b2b073655400102bc27a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Improved file icon visibility",
+     "items": [
+      "File icons are easier to tell apart in light and dark mode"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện hiển thị biểu tượng tệp",
+     "items": [
+      "Biểu tượng tệp dễ phân biệt hơn ở cả chế độ sáng và tối"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.51.5",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- Images in the preview can be dragged into other apps.",
+  "notesSha256": "fb3b38a618a8d1d34a293a421b309ab8eb0d2a025b0386a4b77127a5499eb1da",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Drag images from the preview",
+     "items": [
+      "Images in the preview can be dragged into other apps"
+     ]
+    },
+    "vi": {
+     "headline": "Kéo hình ảnh từ bản xem trước",
+     "items": [
+      "Có thể kéo hình ảnh từ bản xem trước sang ứng dụng khác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.51.4",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- Choosing an app in Settings suggests matches as you type its name or bundle id.",
+  "notesSha256": "c256e52c6d8a1f419754bdeaa476004d9ab95f70170c0fe767f2fbf6b1f45fad",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Easier app selection in Settings",
+     "items": [
+      "Choosing an app in Settings suggests matches as you type its name or bundle id"
+     ]
+    },
+    "vi": {
+     "headline": "Chọn ứng dụng dễ hơn trong Cài đặt",
+     "items": [
+      "Chọn ứng dụng trong Cài đặt giờ gợi ý kết quả khi bạn gõ tên hoặc bundle id"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.51.2",
+  "date": "2026-09-30",
+  "notes": "### Fixed\n\n- Search no longer loses letter case the first time it reads the history.",
+  "notesSha256": "8bfef2c53c7969543fd12fb3fb42165c8b4319a056eeb0760fc1a38c7ee9853a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Search now preserves letter case correctly",
+     "items": [
+      "Search now preserves letter case when reading the history for the first time"
+     ]
+    },
+    "vi": {
+     "headline": "Tìm kiếm giờ giữ nguyên chữ hoa chữ thường",
+     "items": [
+      "Tìm kiếm giờ giữ nguyên chữ hoa chữ thường khi đọc lịch sử lần đầu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.51.1",
+  "date": "2026-09-30",
+  "notes": "### Fixed\n\n- Search keeps text cased as it was copied.",
+  "notesSha256": "a727c2b345ff895aae0e8909d36389dcb3b3a75650d953370de96ed29bb9307c",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Search improvements",
+     "items": [
+      "Search keeps text cased as it was copied"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện tìm kiếm",
+     "items": [
+      "Tìm kiếm giữ nguyên chữ hoa chữ thường như khi sao chép"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.51.0",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- A sixth step in the Welcome tour, on privacy.",
+  "notesSha256": "362d38a11722f4676da7de630efe3f3cb9d8fe738a6350a2f3768bef77e3d88b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour now covers privacy",
+     "items": [
+      "A sixth step in the Welcome tour explains how your data stays private"
+     ]
+    },
+    "vi": {
+     "headline": "Hướng dẫn chào mừng giờ đây có phần về quyền riêng tư",
+     "items": [
+      "Bước thứ sáu trong hướng dẫn chào mừng giải thích cách dữ liệu của bạn được bảo mật"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.50.0",
+  "date": "2026-09-30",
+  "notes": "### Changed\n\n- Searching the text recognised in images is separate from searching what you copied.",
+  "notesSha256": "dd85231543c46c24477056662de2f251169efd60bb69d76b4c7af2998c2dffcd",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Separate search for text in images",
+     "items": [
+      "Searching the text recognised in images is separate from searching what you copied"
+     ]
+    },
+    "vi": {
+     "headline": "Tìm kiếm riêng cho văn bản trong ảnh",
+     "items": [
+      "Tìm kiếm văn bản nhận diện trong ảnh được tách riêng khỏi tìm kiếm nội dung đã sao chép"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.49.1",
+  "date": "2026-09-30",
+  "notes": "### Changed\n\n- The Welcome tour has five steps.\n\n### Fixed\n\n- Keyboard focus in the Welcome tour.",
+  "notesSha256": "de7fb4405b102b7223609802d6a5e5dfd6acb6d958b41f219c69e789922abb0b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour improvements",
+     "items": [
+      "The Welcome tour now has five steps instead of four",
+      "Fixed keyboard navigation in the Welcome tour"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện hướng dẫn chào mừng",
+     "items": [
+      "Hướng dẫn chào mừng giờ có năm bước thay vì bốn",
+      "Sửa lỗi điều hướng bàn phím trong hướng dẫn chào mừng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.46.15",
+  "date": "2026-09-30",
+  "notes": "### Changed\n\n- The Welcome window's example copies lumikeys.app.",
+  "notesSha256": "498e1c7cf66aee63b26c6d757c195bfe3722d02149affe15c80dcd224303253e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome window update",
+     "items": [
+      "The Welcome window's example copies lumikeys.app"
+     ]
+    },
+    "vi": {
+     "headline": "Cập nhật cửa sổ chào mừng",
+     "items": [
+      "Ví dụ trong cửa sổ chào mừng giờ sao chép lumikeys.app"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.46.14",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- Screenshots for the Extension Store.",
+  "notesSha256": "b455b51bb6b0b651576b94c0f7c36efd8c6bf46351c8c268f55ab3ddafe7d1c5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Extension Store screenshots added",
+     "items": [
+      "Extension Store now shows screenshots of Clipboard Manager in action"
+     ]
+    },
+    "vi": {
+     "headline": "Thêm ảnh chụp màn hình cho Cửa hàng Tiện ích",
+     "items": [
+      "Cửa hàng Tiện ích giờ hiển thị ảnh chụp màn hình Clipboard Manager"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.46.13",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Links in the preview can be clicked.",
+  "notesSha256": "9e42bd5f5b395b52e8d517fd6b2ea7e520e410e9f5b8a16827d0ddc92e5cfee5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Links in previews are now clickable",
+     "items": [
+      "Links in the preview can be clicked"
+     ]
+    },
+    "vi": {
+     "headline": "Liên kết trong bản xem trước giờ có thể nhấp được",
+     "items": [
+      "Liên kết trong bản xem trước giờ có thể nhấp vào"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.46.11",
+  "date": "2026-09-29",
+  "notes": "### Changed\n\n- Renamed to Clipboard Manager.\n- Better search.",
+  "notesSha256": "ac0039b6c7e65d8fe080357a5626535dcbf5b1ace699573117155b9b601c6ec4",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Renamed and improved search",
+     "items": [
+      "The extension is now called Clipboard Manager",
+      "Search works better when finding your clipboard history"
+     ]
+    },
+    "vi": {
+     "headline": "Đổi tên và cải thiện tìm kiếm",
+     "items": [
+      "Tiện ích giờ có tên là Clipboard Manager",
+      "Tìm kiếm hoạt động tốt hơn khi tra cứu lịch sử clipboard"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.46.8",
+  "date": "2026-09-29",
+  "notes": "### Changed\n\n- The Welcome window is redesigned around a live preview of the panel.",
+  "notesSha256": "095901636b0e4e3476bf499940f8f6556650ccb45afd2515e88f22b85e23558d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Redesigned Welcome window",
+     "items": [
+      "The Welcome window now shows a live preview of the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Cửa sổ Chào mừng được thiết kế lại",
+     "items": [
+      "Cửa sổ Chào mừng giờ hiển thị bản xem trước trực tiếp của bảng điều khiển"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.46.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- A Welcome tour.",
+  "notesSha256": "baaa00ea8d9831392057a4ea67f5ebfe4db1adeef8fe85478ce0a4de75e20e04",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome tour added",
+     "items": [
+      "A Welcome tour now guides you through the app when you first open it"
+     ]
+    },
+    "vi": {
+     "headline": "Thêm hướng dẫn chào mừng",
+     "items": [
+      "Hướng dẫn chào mừng giúp bạn làm quen với ứng dụng khi mở lần đầu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.45.6",
+  "date": "2026-09-29",
+  "notes": "### Changed\n\n- An empty history shows an icon and a clearer layout.",
+  "notesSha256": "fc32606154053bb2f26dcff0b0a577ce1e2aa9286b5c469e94d5440c8d4cb715",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Clearer empty state",
+     "items": [
+      "An empty history shows an icon and a clearer layout"
+     ]
+    },
+    "vi": {
+     "headline": "Giao diện trống rõ ràng hơn",
+     "items": [
+      "Lịch sử trống giờ hiển thị biểu tượng và bố cục rõ ràng hơn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.45.2",
+  "date": "2026-09-29",
+  "notes": "### Fixed\n\n- Escape closes an open menu before it closes the panel.",
+  "notesSha256": "8074fe5c34346d15bb062ec109b8fb887e5b354f165ed0910b7ee634818683a5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Menu handling improvements",
+     "items": [
+      "Pressing Escape now closes an open menu before closing the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện xử lý menu",
+     "items": [
+      "Nhấn Escape giờ sẽ đóng menu đang mở trước khi đóng bảng điều khiển"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.45.1",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- A Copy path action for files.",
+  "notesSha256": "80c2bfca5cb325e07ec942702fd1afc178a58f2f9380e78a7d1bc03de89bf187",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Copy file paths",
+     "items": [
+      "You can now copy the path of a file from the clipboard panel"
+     ]
+    },
+    "vi": {
+     "headline": "Sao chép đường dẫn tập tin",
+     "items": [
+      "Giờ bạn có thể sao chép đường dẫn của tập tin từ bảng clipboard"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.43.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Items can be dragged out of the history into other apps.",
+  "notesSha256": "f122328888997c19975fe09f8206d0a03473ae70d555ab12bab052d2ef112140",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Drag items from history to other apps",
+     "items": [
+      "Items can be dragged out of the history into other apps"
+     ]
+    },
+    "vi": {
+     "headline": "Kéo mục từ lịch sử sang ứng dụng khác",
+     "items": [
+      "Có thể kéo các mục từ lịch sử sang ứng dụng khác"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.42.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Copies of several files show a list of them in the preview, with highlighting.",
+  "notesSha256": "ef142744d3b7f22cae445cfcb0907daf5a2c87e1664e505cb4041fb8053dc7e5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "File list previews",
+     "items": [
+      "Copying multiple files now shows a list of them in the preview with highlighting"
+     ]
+    },
+    "vi": {
+     "headline": "Xem trước danh sách tệp",
+     "items": [
+      "Sao chép nhiều tệp giờ hiển thị danh sách chúng trong phần xem trước có làm nổi bật"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.39.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- JSON is previewed as a tree, and text files are previewed.",
+  "notesSha256": "43ef9c2dccb6e8d9eb6dd046119948ce8007e838ed32435ba8f45f48b6b94800",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Preview improvements for JSON and text files",
+     "items": [
+      "JSON files now show as an expandable tree instead of raw text",
+      "Text files can now be previewed directly in the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện xem trước cho JSON và tệp văn bản",
+     "items": [
+      "Tệp JSON hiện hiển thị dạng cây có thể mở rộng thay vì văn bản thô",
+      "Tệp văn bản giờ có thể xem trước trực tiếp trong bảng điều khiển"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.37.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Previews for copied image files, with their size in pixels and on disk.",
+  "notesSha256": "35291802510812209330e8c996453d00d1b6926193448dc371bdaa08aa046d58",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Image file previews",
+     "items": [
+      "Copied image files now show a preview with their size in pixels and on disk"
+     ]
+    },
+    "vi": {
+     "headline": "Xem trước tệp hình ảnh",
+     "items": [
+      "Tệp hình ảnh đã sao chép giờ hiển thị bản xem trước kèm kích thước pixel và dung lượng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.36.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Previews for PDFs.",
+  "notesSha256": "790b94f10b92946d953b3f0db70cd67c54947d4ba135b051243a25c6088a4694",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "PDF previews",
+     "items": [
+      "You can now preview PDFs directly in the clipboard panel"
+     ]
+    },
+    "vi": {
+     "headline": "Xem trước PDF",
+     "items": [
+      "Giờ bạn có thể xem trước PDF ngay trong bảng clipboard"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.30.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Copied files show an icon for their type, their path and their extension.",
+  "notesSha256": "ca4d8ba36c57770c37862c770121303958c5da756d3819adfb1c2023c78f860e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "File previews now show type icons and paths",
+     "items": [
+      "Copied files show an icon for their type, their path and their extension"
+     ]
+    },
+    "vi": {
+     "headline": "Xem trước tệp giờ hiển thị biểu tượng loại và đường dẫn",
+     "items": [
+      "Tệp đã sao chép hiển thị biểu tượng loại, đường dẫn và phần mở rộng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.28.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- The preview shows a copied file's size.\n- Each item shows the icon of the app it was copied from, with the name on hover.",
+  "notesSha256": "9c3c12fd0ff4484bcce8f7483fe4e960680daef48040b871d2bf2b9d0b289eec",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "File sizes and app icons",
+     "items": [
+      "The preview now shows the size of copied files",
+      "Each item displays the icon of the app it was copied from",
+      "Hovering over an app icon shows the app's name"
+     ]
+    },
+    "vi": {
+     "headline": "Kích thước tệp và biểu tượng ứng dụng",
+     "items": [
+      "Bản xem trước hiện hiển thị kích thước của tệp đã sao chép",
+      "Mỗi mục hiển thị biểu tượng của ứng dụng đã sao chép nó",
+      "Di chuột qua biểu tượng ứng dụng để xem tên ứng dụng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.26.2",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Save image as… in the actions menu for images. Needs Lumi 1.26.0.\n\n### Fixed\n\n- Rich text previews no longer go blank or flash as plain text.",
+  "notesSha256": "eaa111356a79cd1fed0b232848394b50dc56c104349954e349beb1d840f91d4b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Save images and smoother rich text previews",
+     "items": [
+      "You can now save images directly from the actions menu",
+      "Rich text previews no longer flash or go blank"
+     ]
+    },
+    "vi": {
+     "headline": "Lưu hình ảnh và xem trước văn bản định dạng mượt hơn",
+     "items": [
+      "Giờ bạn có thể lưu hình ảnh trực tiếp từ menu thao tác",
+      "Xem trước văn bản định dạng không còn nhấp nháy hay biến mất"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.25.2",
+  "date": "2026-09-29",
+  "notes": "### Fixed\n\n- Text recognised in images is left out of search when reading images is off.",
+  "notesSha256": "9c137e43a9bc91e22e402e2be69ea4a988b44563a2e0c9d3f084a4552b9c280e",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Search respects your image reading preference",
+     "items": [
+      "Text recognized in images is no longer searched when image reading is turned off"
+     ]
+    },
+    "vi": {
+     "headline": "Tìm kiếm tuân theo tùy chọn đọc hình ảnh",
+     "items": [
+      "Văn bản nhận dạng trong hình ảnh không còn được tìm kiếm khi tắt đọc hình ảnh"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.23.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- The text recognised in a copied image is shown in its preview.",
+  "notesSha256": "4ca784b6789be22997e46aa5bf76589645030e0583ebe364a11b3d45a3c9cd78",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Text recognition in copied images",
+     "items": [
+      "The text recognised in a copied image is shown in its preview"
+     ]
+    },
+    "vi": {
+     "headline": "Nhận diện văn bản trong ảnh đã sao chép",
+     "items": [
+      "Văn bản được nhận diện trong ảnh đã sao chép hiển thị ngay trong phần xem trước"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.22.1",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- The key used for pinning can be changed.",
+  "notesSha256": "889dc71a66f0390159e80d8695a2a396727b9ffafe215d32de2dd2f04cc34edd",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Customizable pinning shortcut",
+     "items": [
+      "The key used for pinning can be changed"
+     ]
+    },
+    "vi": {
+     "headline": "Tùy chỉnh phím ghim",
+     "items": [
+      "Có thể thay đổi phím dùng để ghim mục"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.21.0",
+  "date": "2026-09-29",
+  "notes": "### Changed\n\n- Deleting an item takes ⌘⌥⌫, so it is not done by accident.",
+  "notesSha256": "c1cd9b58da39e706b45ebaec86b9bbe1462207d4c0487c7ffdcce9c7827f3483",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Safer item deletion",
+     "items": [
+      "Deleting an item now requires Command-Option-Delete to prevent accidents"
+     ]
+    },
+    "vi": {
+     "headline": "Xóa mục an toàn hơn",
+     "items": [
+      "Xóa mục giờ cần nhấn Command-Option-Delete để tránh xóa nhầm"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.19.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- A Settings page, and a choice of how long history is kept.",
+  "notesSha256": "6d00585d446aeb344e9ed6633503f087db1d361dd62d5788800e31991304b516",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings and history retention",
+     "items": [
+      "Added a Settings page where you can choose how long clipboard history is kept"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt và lưu trữ lịch sử",
+     "items": [
+      "Thêm trang Cài đặt để chọn thời gian lưu giữ lịch sử clipboard"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.15.1",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Rich text is previewed with its formatting.",
+  "notesSha256": "87268ca1967a82abc457687b35eec903fb9ea76414849214d8288a2208dcae9f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Rich text previews",
+     "items": [
+      "Rich text is previewed with its formatting"
+     ]
+    },
+    "vi": {
+     "headline": "Xem trước văn bản định dạng",
+     "items": [
+      "Văn bản định dạng hiển thị với đầy đủ kiểu chữ"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.13.1",
+  "date": "2026-09-29",
+  "notes": "### Changed\n\n- The About page is now the Dashboard tab.",
+  "notesSha256": "236417d042004cdbc81c4d4ae094daa5601d51dc4cf8df511840104d76320946",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Dashboard replaces About page",
+     "items": [
+      "The About page is now called Dashboard"
+     ]
+    },
+    "vi": {
+     "headline": "Bảng điều khiển thay thế trang Giới thiệu",
+     "items": [
+      "Trang Giới thiệu giờ được gọi là Bảng điều khiển"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.12.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- A choice of glass material for the panel.",
+  "notesSha256": "89e0f867912b87fbaa1d52d00ead27edb275a9d52e4af6b2a33f8821358ecc3a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "New glass material option",
+     "items": [
+      "You can now choose a glass material for the panel"
+     ]
+    },
+    "vi": {
+     "headline": "Tùy chọn chất liệu kính mới",
+     "items": [
+      "Giờ bạn có thể chọn chất liệu kính cho bảng điều khiển"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.10.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- A menu entry and a shortcut for Settings.",
+  "notesSha256": "2e87d780e76fa5abb2596d9793afbc9e88a639c6592abc139d0cabe598380d39",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Quick access to Settings",
+     "items": [
+      "Added a menu entry and keyboard shortcut to open Settings"
+     ]
+    },
+    "vi": {
+     "headline": "Truy cập nhanh vào Cài đặt",
+     "items": [
+      "Thêm mục menu và phím tắt để mở Cài đặt"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.9.3",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Text in copied images is recognised, so they can be found by what they say.\n- Clear all.\n- Actions for links and files.",
+  "notesSha256": "6764897474e04739be8cf51e365f9e6c4b269e36c62cfdf3deb75a22d4830d61",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Text recognition in images, clear all, and actions for links and files",
+     "items": [
+      "Text in copied images is recognised, so they can be found by what they say",
+      "Clear all items at once",
+      "Actions for links and files"
+     ]
+    },
+    "vi": {
+     "headline": "Nhận dạng chữ trong ảnh, xóa tất cả và thao tác với liên kết và tệp",
+     "items": [
+      "Nhận dạng chữ trong ảnh đã sao chép để có thể tìm theo nội dung",
+      "Xóa tất cả mục cùng lúc",
+      "Thao tác với liên kết và tệp"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.8.0",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- Undo for deleted items, which also restores their pins.",
+  "notesSha256": "9ef053c8738bd3afb18d47422e43173e1f1363d64be1a69ed12d6eb00a3cb40d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Undo for deleted items",
+     "items": [
+      "You can now undo when you delete an item, and it restores pins too"
+     ]
+    },
+    "vi": {
+     "headline": "Hoàn tác khi xóa mục",
+     "items": [
+      "Giờ bạn có thể hoàn tác khi xóa một mục, và ghim cũng được khôi phục"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.5.2",
+  "date": "2026-09-29",
+  "notes": "### Added\n\n- First release: a history of what you copy — text, links, images and files — with a panel to search it and paste an item back.",
+  "notesSha256": "a858dbc6549736825a95c2566d6e3f27944578c111085b6858596b87775095bc",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "First release",
+     "items": [
+      "Keep what you copy — text, links, images and files — and paste it back from a panel"
+     ]
+    },
+    "vi": {
+     "headline": "Phiên bản đầu tiên",
+     "items": [
+      "Lưu lại những gì bạn sao chép — văn bản, liên kết, hình ảnh và tệp — và dán lại từ bảng điều khiển"
+     ]
+    }
+   }
+  }
+ }
+]

@@ -1,0 +1,1051 @@
+[
+ {
+  "version": "0.36.1",
+  "date": "2026-11-04",
+  "notes": "### Fixed\n\n- The extension guide linked from the sample's page in the Extension Store, and the page opened when the sample is uninstalled, are the developer guide on docs.lumikeys.app. Both were a page that no longer exists.",
+  "notesSha256": "4b20c465135c308e045e2d457bfa3c1a6403ed4957b59309a0e65fa106cb2606",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Fixed broken documentation links",
+     "items": [
+      "Fixed broken links to the extension guide and uninstall page"
+     ]
+    },
+    "vi": {
+     "headline": "Sửa liên kết tài liệu bị hỏng",
+     "items": [
+      "Sửa liên kết đến hướng dẫn mở rộng và trang gỡ cài đặt bị hỏng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.36.0",
+  "date": "2026-10-25",
+  "notes": "### Added\n\n- **How loud**, in Transcribe: what is being heard drawn three ways while it records — the loudness over time, over pitch, and as an orb that swells with it — and a file's loudness drawn under its transcript. Lumi tells the sample how loud, never the sound.\n- Needs Lumi 1.64.0.",
+  "notesSha256": "535c4f0961e0ad74769830ee2b37d63bedfc1327ed2d0f4495e1b4815b6a4a36",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Visualize loudness while recording and in transcripts",
+     "items": [
+      "Transcribe now shows three live visualizations of loudness while recording",
+      "See loudness over time, across pitch ranges, and as a pulsing orb",
+      "Transcripts display the loudness of the recording underneath the text",
+      "Requires Lumi 1.64.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Hiển thị độ lớn khi ghi âm và trong bản ghi chép",
+     "items": [
+      "Transcribe giờ hiển thị ba dạng trực quan độ lớn khi đang ghi",
+      "Xem độ lớn theo thời gian, theo dải cao độ và dạng hình cầu nhịp động",
+      "Bản ghi chép hiển thị độ lớn của đoạn ghi âm bên dưới văn bản",
+      "Yêu cầu Lumi 1.64.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.35.0",
+  "date": "2026-10-24",
+  "notes": "### Changed\n\n- **Summarize**, in the peek panel, is offered wherever the sample may ask the AI, and when no model answers yet Lumi offers to download one first — on this Mac, in its own panel — then summarizes.\n- Needs Lumi 1.64.0.",
+  "notesSha256": "68722463c285a309079ce6b697e5761e3bda4b4593713530c87bfee49107542d",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Summarize now works in the peek panel",
+     "items": [
+      "Summarize is now available in the peek panel wherever you can ask the AI",
+      "When no model is installed, Lumi offers to download one before summarizing",
+      "Requires Lumi 1.64.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Tóm tắt giờ hoạt động trong bảng xem nhanh",
+     "items": [
+      "Tóm tắt giờ có sẵn trong bảng xem nhanh ở mọi nơi bạn có thể hỏi AI",
+      "Khi chưa cài mô hình nào, Lumi đề nghị tải về trước khi tóm tắt",
+      "Yêu cầu Lumi 1.64.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.34.0",
+  "date": "2026-10-24",
+  "notes": "### Added\n\n- **Who is speaking**, in Transcribe: tell the voices apart, or name the people you asked Lumi to remember. Name… beside a speaker asks Lumi to remember their voice — Lumi asks you first, with a few seconds of them to play — and the window lists the voices remembered, to rename or forget.\n- Lumi keeps each voice on this Mac; the sample gets a name and an id, never the sound.\n- Needs Lumi 1.64.0.",
+  "notesSha256": "7f3c12dc1ac335803ddbbe2d55c36e9713f0cfcdb9a655ba486b400c7c0f5f9f",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Speaker identification in Transcribe",
+     "items": [
+      "Transcribe now shows who is speaking in conversations",
+      "You can teach Lumi to recognize and name individual voices",
+      "Lumi remembers voices on this Mac without storing audio samples",
+      "Requires Lumi 1.64.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Nhận diện người nói trong Transcribe",
+     "items": [
+      "Transcribe giờ hiển thị ai đang nói trong cuộc hội thoại",
+      "Bạn có thể dạy Lumi nhận diện và đặt tên cho từng giọng nói",
+      "Lumi ghi nhớ giọng nói trên máy Mac này mà không lưu trữ âm thanh",
+      "Yêu cầu Lumi 1.64.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.33.0",
+  "date": "2026-10-24",
+  "notes": "### Added\n\n- **Transcribe**, a window that turns what is said into text as it is said: the microphone, what your Mac plays — every app, or the one you choose when it starts — or both at once in a call, each line saying which. Choose a File… hears a recording the same way, and Hear Again, Whole hears it in one go.\n- **Transcribe an audio file**, a command that hears a recording you pick and says its text in an alert.\n- Lumi turns the speech into text with the speech model you set up in it, on this Mac; the sample gets the text, never the sound. Lumi asks you which app to hear, says what the microphone is for, and offers a speech model when none is downloaded.\n- Needs Lumi 1.64.0.",
+  "notesSha256": "995a81a374126db3cd0dc97974abec9cc84f891bd9caa9b265152e3455fe6012",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Transcribe speech and audio files into text",
+     "items": [
+      "Transcribe window turns speech into text as it happens from microphone or apps",
+      "Each line shows whether it came from the microphone or which app played it",
+      "Choose a File hears a recording live, Hear Again Whole processes it at once",
+      "Transcribe an audio file command processes a recording and shows the text",
+      "Requires Lumi 1.64.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Chuyển giọng nói và file âm thanh thành văn bản",
+     "items": [
+      "Cửa sổ Transcribe chuyển lời nói thành chữ ngay khi nghe từ micro hoặc ứng dụng",
+      "Mỗi dòng ghi rõ nguồn từ micro hay ứng dụng nào phát ra",
+      "Choose a File nghe file ghi âm trực tiếp, Hear Again Whole xử lý một lượt",
+      "Lệnh Transcribe an audio file xử lý file ghi âm và hiển thị văn bản",
+      "Yêu cầu Lumi 1.64.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.32.0",
+  "date": "2026-10-21",
+  "notes": "### Added\n\n- **Remind me every hour**, a command and a tick in Lumi's menu bar menu: on the hour, every hour, the sample says so in an alert with the time on your clock, windows or no windows. Press it again to stop.\n- Needs Lumi 1.60.0.",
+  "notesSha256": "a9249e6d66f1850c1c7df362d3958c8004b0aa4e515fc25cdb4fee434b619a1a",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Hourly reminders arrive on the hour",
+     "items": [
+      "Remind me every hour shows an alert with the current time each hour",
+      "Toggle the reminder on or off from the menu bar or by running the command",
+      "Requires Lumi 1.60.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Nhắc nhở theo giờ đến đúng giờ",
+     "items": [
+      "Nhắc tôi mỗi giờ hiển thị thông báo với thời gian hiện tại mỗi giờ",
+      "Bật hoặc tắt nhắc nhở từ thanh menu hoặc bằng cách chạy lệnh",
+      "Yêu cầu Lumi 1.60.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.31.0",
+  "date": "2026-10-21",
+  "notes": "### Added\n\n- **Remind me in a minute**, a command and a row in Lumi's menu bar menu. A minute later the sample says so in an alert, with the time on your clock, whether or not any of its windows is open — and if the Mac slept or Lumi was quit meanwhile, it says so as soon as it can after, and that it is late.\n- Needs Lumi 1.59.0.",
+  "notesSha256": "1da61913e5630e0fe9d393b75d9a936961814e5d452ee5cbf4e681d5e0288634",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Remind me in a minute",
+     "items": [
+      "Added a command to set a one-minute reminder that alerts you when time is up",
+      "The alert shows the exact time and notes if your Mac was asleep or Lumi was quit",
+      "Works even when Sample's windows are closed",
+      "Requires Lumi 1.59.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Nhắc tôi sau một phút",
+     "items": [
+      "Thêm lệnh đặt nhắc nhở một phút, sẽ thông báo khi hết giờ",
+      "Thông báo hiển thị giờ chính xác và ghi chú nếu Mac đang ngủ hoặc Lumi đã thoát",
+      "Hoạt động ngay cả khi cửa sổ Sample đóng",
+      "Yêu cầu Lumi 1.59.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.30.0",
+  "date": "2026-10-21",
+  "notes": "### Added\n\n- The peek panel has a **Copy** button. The app you selected in copies the selection itself, so what you paste keeps what that app keeps — its formatting, its links — and the panel goes away once it has. If nothing was copied, Lumi says so.\n- Needs Lumi 1.59.0.",
+  "notesSha256": "cdeab13bc917f4c14b1c6601d9174e43953b59d0476e73fd38c3d553d4a6d713",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Copy button in the peek panel",
+     "items": [
+      "The peek panel now has a Copy button that copies the selection with its original formatting and links",
+      "The panel closes automatically after copying",
+      "If nothing was copied, you see a message letting you know",
+      "Requires Lumi 1.59.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Nút Sao chép trong bảng xem nhanh",
+     "items": [
+      "Bảng xem nhanh giờ có nút Sao chép để sao chép vùng chọn với định dạng và liên kết gốc",
+      "Bảng tự động đóng sau khi sao chép",
+      "Nếu không sao chép được gì, bạn sẽ thấy thông báo",
+      "Yêu cầu Lumi 1.59.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.29.0",
+  "date": "2026-10-19",
+  "notes": "### Added\n\n- The peek panel has a **Define** button. It looks up the word or phrase you selected in the dictionaries you turned on in the Dictionary app, in their order, and shows the headword, how it is said, and its first sense. Looked up on your Mac: nothing leaves it.\n- **More in Dictionary** then opens the Dictionary app at the word, with every dictionary's whole entry.\n- The panel offers Define for a word or a phrase of one line, when at least one dictionary is turned on — on text you can't edit too, since a definition is only read.\n- Needs Lumi 1.55.0.",
+  "notesSha256": "214024d552bc01c6d1ccb19652a5210edd700b6e57037a10433ce64b5237fce3",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Look up words in Dictionary without leaving what you're reading",
+     "items": [
+      "The peek panel now has a Define button that shows the word's pronunciation and first meaning",
+      "More in Dictionary opens the full entry in the Dictionary app",
+      "Define works on single words or short phrases using your enabled dictionaries",
+      "Works on text you can't edit since you're only reading the definition"
+     ]
+    },
+    "vi": {
+     "headline": "Tra từ trong Dictionary mà không cần rời khỏi nội dung đang đọc",
+     "items": [
+      "Bảng peek giờ có nút Define hiển thị cách phát âm và nghĩa đầu tiên của từ",
+      "Mở Thêm trong Dictionary để xem toàn bộ mục từ trong ứng dụng Dictionary",
+      "Define hoạt động với từ đơn hoặc cụm từ ngắn dùng các từ điển bạn đã bật",
+      "Hoạt động trên văn bản không chỉnh sửa được vì chỉ cần đọc định nghĩa"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.28.0",
+  "date": "2026-10-15",
+  "notes": "### Added\n\n- The peek panel has a **Summarize** button. It sums up the text you selected in a sentence or two, with the AI you set up in Lumi, and writes the summary into the panel as it comes; while it comes, the button is **Stop**. If your model runs online, Lumi asks you first.\n- The panel offers Summarize only when you have set up a model in Settings › AI.\n- The peek panel grows to fit what it shows: its buttons wrap onto a second row instead of running past its edge, and a summary is shown whole.\n- Needs Lumi 1.52.0.",
+  "notesSha256": "15dcf8618dd391041e5a6cab18de247a13fbccb0de594f7163e2096aa7578512",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Summarize selected text with AI",
+     "items": [
+      "The peek panel now has a Summarize button that condenses your selection into a sentence or two",
+      "Summarize appears only when you have configured an AI model in Lumi settings",
+      "The summary streams in as it generates, and you can stop it mid-way",
+      "The panel automatically grows to fit its content without cutting off buttons or text",
+      "Requires Lumi 1.52.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Tóm tắt văn bản đã chọn bằng AI",
+     "items": [
+      "Bảng peek giờ có nút Tóm tắt để rút gọn đoạn văn bạn chọn thành một hai câu",
+      "Nút Tóm tắt chỉ xuất hiện khi bạn đã thiết lập mô hình AI trong cài đặt Lumi",
+      "Bản tóm tắt hiện dần trong khi AI đang tạo và bạn có thể dừng giữa chừng",
+      "Bảng tự động mở rộng để vừa nội dung mà không bị cắt nút hoặc chữ",
+      "Yêu cầu Lumi 1.52.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.27.0",
+  "date": "2026-10-14",
+  "notes": "### Added\n\n- When the languages Translate needs aren't on your Mac yet, the peek panel says so and offers **Download…**. It opens macOS's own download prompt at the top of the screen; once the languages are on your Mac, the panel shows the translation. If you close the prompt without downloading, or macOS is still downloading, the panel says so and you can try again later.\n- Needs Lumi 1.51.0 and macOS 26.",
+  "notesSha256": "a1c20d41b9b109cdddc068aa524537f9347efee48393d0c8302d96b3913904b9",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Download missing languages right from the peek panel",
+     "items": [
+      "The peek panel now tells you when translation languages are missing and offers a Download button",
+      "Clicking Download opens the system prompt to add languages to your Mac",
+      "The panel shows your translation once the download finishes",
+      "If you close the prompt or the download is still running, the panel explains and lets you retry",
+      "Requires Lumi 1.51.0 and macOS 26"
+     ]
+    },
+    "vi": {
+     "headline": "Tải ngôn ngữ thiếu ngay từ bảng xem nhanh",
+     "items": [
+      "Bảng xem nhanh giờ báo khi thiếu ngôn ngữ dịch và hiện nút Tải xuống",
+      "Nhấn Tải xuống sẽ mở hộp thoại hệ thống để thêm ngôn ngữ vào máy",
+      "Bảng hiện bản dịch sau khi tải xong",
+      "Nếu đóng hộp thoại hoặc đang tải, bảng sẽ giải thích và cho thử lại",
+      "Yêu cầu Lumi 1.51.0 và macOS 26"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.26.0",
+  "date": "2026-10-14",
+  "notes": "### Added\n\n- The peek panel has a **Translate** button. It translates the text you selected into your own language, or into your next one when the text is already in it, with the translator built into macOS. The text is translated on your Mac and never leaves it. The panel shows the start of the translation and the two languages.\n- Translate works on text you can't edit too, since a translation is only read.\n- Needs Lumi 1.51.0 and macOS 26. On an older Mac the panel offers no Translate button.",
+  "notesSha256": "e295bb41c2c176105ad52faa6f802d38d9a501dfbb414179895b7274e78ac742",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Translate selected text without leaving your Mac",
+     "items": [
+      "The peek panel now has a Translate button that uses macOS translation",
+      "Translations happen on your Mac and never leave it",
+      "The panel shows the start of the translation and which languages it used",
+      "Translation works on text you cannot edit since you only read the result",
+      "Requires Lumi 1.51.0 and macOS 15 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Dịch văn bản đã chọn ngay trên máy",
+     "items": [
+      "Bảng xem nhanh giờ có nút Dịch sử dụng tính năng dịch của macOS",
+      "Văn bản được dịch ngay trên máy và không bao giờ rời khỏi máy",
+      "Bảng hiển thị phần đầu bản dịch và hai ngôn ngữ được dùng",
+      "Dịch hoạt động cả với văn bản không chỉnh sửa được vì chỉ cần đọc kết quả",
+      "Yêu cầu Lumi 1.51.0 và macOS 15 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.25.0",
+  "date": "2026-10-12",
+  "notes": "### Added\n\n- When the text you select is the trigger of one of your snippets, the peek panel shows what it expands to. A snippet that expands to a web address gets an **Open** button that opens it in your browser, even on text you can't edit. Any other snippet gets an **Expand** button that puts its text in place of what you selected.\n- Snippets set to **Never from typing** work here too, so you can keep a snippet only for this: `otr-(\\d+)` returning a link to that ticket never expands while you type, and selecting `OTR-123` anywhere offers to open it.\n- The sample now asks for the **snippets** permission, to look up what you selected among your snippets.",
+  "notesSha256": "107415d1e493bdc04f7b263dab1d1bab2a66a973397991c0abed3978faeea0de",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Open snippet expansions from selected text",
+     "items": [
+      "Selecting a snippet trigger shows what it expands to in the peek panel",
+      "Snippets that expand to web addresses get an Open button to visit them",
+      "Other snippets get an Expand button to replace the selection with their text",
+      "Snippets set to never expand from typing still work when you select them"
+     ]
+    },
+    "vi": {
+     "headline": "Mở kết quả mở rộng của snippet từ văn bản đã chọn",
+     "items": [
+      "Chọn một trigger snippet sẽ hiện nội dung mở rộng trong bảng xem nhanh",
+      "Snippet mở rộng thành địa chỉ web có nút Mở để truy cập",
+      "Snippet khác có nút Mở rộng để thay thế văn bản đã chọn bằng nội dung snippet",
+      "Snippet đặt không bao giờ tự động mở rộng vẫn hoạt động khi bạn chọn chúng"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.24.0",
+  "date": "2026-10-12",
+  "notes": "### Changed\n\n- After a button on the peek panel changes your text, the new text stays selected and the panel stays beside it, so you can press another button on it straight away. This works even when the text changes length.\n- Needs Lumi 1.48.0.",
+  "notesSha256": "3defcf1174a6d615391b2ecbd9a80cecc2dffb5d54308d5a2ad65ef4dad9df1b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Peek panel stays with your selection after changes",
+     "items": [
+      "The peek panel now stays beside your selection after changing text, so you can press another button",
+      "This works even when the text changes length",
+      "Requires Lumi 1.48.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Bảng peek giữ nguyên vị trí sau khi thay đổi",
+     "items": [
+      "Bảng peek giờ ở nguyên bên cạnh văn bản sau khi thay đổi, để bạn có thể nhấn nút khác",
+      "Hoạt động ngay cả khi văn bản thay đổi độ dài",
+      "Yêu cầu Lumi 1.48.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.23.0",
+  "date": "2026-10-11",
+  "notes": "### Added\n\n- The peek panel has a search field, filled in with the text you selected. Click it and press Return to search the web for it, or change the words first: what you type goes into the field, not over the text you selected. The panel stays up while you type, and goes when you click elsewhere.\n- Needs Lumi 1.48.0.",
+  "notesSha256": "757455e5142d66665375d7143503d893c549802ad01fb4afc75bd8dde587e8ff",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Search the web from the peek panel",
+     "items": [
+      "The peek panel now has a search field prefilled with your selected text",
+      "Click the search field and press Return to search, or type to change the query first",
+      "The panel stays open while you type and closes when you click elsewhere",
+      "Requires Lumi 1.48.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Tìm kiếm web từ bảng xem nhanh",
+     "items": [
+      "Bảng xem nhanh giờ có ô tìm kiếm điền sẵn văn bản bạn chọn",
+      "Nhấp vào ô tìm kiếm và nhấn Return để tìm, hoặc gõ để thay đổi truy vấn trước",
+      "Bảng vẫn mở khi bạn gõ và đóng lại khi bạn nhấp ra ngoài",
+      "Yêu cầu Lumi 1.48.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.22.0",
+  "date": "2026-10-11",
+  "notes": "### Changed\n\n- The peek panel goes on the side of your selection the pointer is at: below it after you drag down over several lines, above it after you drag up. On a single line it stays above.\n- Each shortcut for Peek at the selection can choose **Pointer's side** too, besides Above and Below. It is the new default.\n- Needs Lumi 1.48.0.",
+  "notesSha256": "0cff76196ee523a32fc2a015c4aec81a602123cb9536d62105c86e19715c56ac",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Peek panel follows where you drag",
+     "items": [
+      "The peek panel appears on the side you drag toward: below when you drag down, above when you drag up",
+      "Each peek shortcut can now choose Pointer's side, Above, or Below",
+      "Requires Lumi 1.48.0"
+     ]
+    },
+    "vi": {
+     "headline": "Bảng xem nhanh theo hướng kéo chuột",
+     "items": [
+      "Bảng xem nhanh xuất hiện ở phía bạn kéo đến: bên dưới khi kéo xuống, bên trên khi kéo lên",
+      "Mỗi phím tắt xem nhanh giờ có thể chọn Phía con trỏ, Bên trên hoặc Bên dưới",
+      "Yêu cầu Lumi 1.48.0"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.21.0",
+  "date": "2026-10-11",
+  "notes": "### Added\n\n- The peek panel comes up by itself when you select text with the mouse in any app: drag across it, double-click a word or triple-click a line. It never takes the keyboard, and goes away when you click, type or scroll.\n- The sample now asks for the **selection-watch** permission. **See text you select in any app** on the sample's Permissions sheet turns it off; **Peek at the selection** still works from its shortcut and the menu bar.\n- Needs Lumi 1.47.0.",
+  "notesSha256": "4036d28b467e8e473c6c57ea62f95d92435418d1fd5b58f180da2df4f1e079e9",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Peek panel appears automatically when you select text",
+     "items": [
+      "The peek panel now shows up when you select text with the mouse in any app",
+      "It disappears when you click, type or scroll and never takes keyboard focus",
+      "A new permission lets you turn off automatic peeking while keeping the shortcut",
+      "Requires Lumi 1.47.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Bảng xem nhanh tự động hiện khi bạn chọn văn bản",
+     "items": [
+      "Bảng xem nhanh giờ hiện lên khi bạn chọn văn bản bằng chuột trong bất kỳ ứng dụng nào",
+      "Nó tự động biến mất khi bạn nhấp chuột, gõ phím hoặc cuộn trang và không chiếm bàn phím",
+      "Quyền mới cho phép tắt tự động xem nhanh nhưng vẫn giữ phím tắt",
+      "Yêu cầu Lumi phiên bản 1.47.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.20.0",
+  "date": "2026-10-11",
+  "notes": "### Added\n\n- The peek panel has buttons: UPPERCASE, lowercase, Title Case and Sentence case. Pressing one changes the text you selected, in the app you selected it in.\n- On text that can't be edited, such as a web page, the panel says so instead of showing the buttons.\n- The sample now asks for the **input** permission, which the buttons need to type the change in when an app won't take it otherwise.\n- Needs Lumi 1.47.0.",
+  "notesSha256": "59cdf4e2c3d85c44f022368c412917d6e51568d1b564c9f888364b01641880af",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Change the case of selected text with new panel buttons",
+     "items": [
+      "The peek panel now has buttons to change selected text to uppercase, lowercase, title case, or sentence case",
+      "When text cannot be edited, such as on a web page, the panel shows a message instead of the buttons",
+      "The extension now requests input permission to type changes when apps do not accept them directly",
+      "Requires Lumi 1.47.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Thay đổi kiểu chữ của văn bản đã chọn bằng nút mới",
+     "items": [
+      "Bảng xem nhanh có nút chuyển văn bản thành chữ hoa, chữ thường, viết hoa đầu từ hoặc đầu câu",
+      "Khi văn bản không thể chỉnh sửa như trên trang web, bảng hiển thị thông báo thay vì các nút",
+      "Tiện ích yêu cầu quyền nhập liệu để gõ thay đổi khi ứng dụng không chấp nhận trực tiếp",
+      "Yêu cầu Lumi 1.47.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.19.0",
+  "date": "2026-10-11",
+  "notes": "### Added\n\n- **Peek at the selection** opens a small panel beside the text you selected, in whatever app holds it: above it, or below when there is no room above. It shows the first words and how many characters you selected, and an arrow pointing at the text. It never takes the keyboard — the app you are in keeps it and its selection — and goes away at your next click, key or scroll anywhere else. Also in the sample's menu bar menu, as **Peek at the Selection**, with a row for each place it can stand.\n- Each shortcut for Peek at the selection chooses where the panel stands: by the pointer, at the start, at the end or in the middle of what you selected, and above or below it. A small mark on the panel's edge points at the spot.\n- Needs Lumi 1.47.0.",
+  "notesSha256": "3cfd5bf60de19ddcc7a83c06676907356ca6cfbdd88582190ce4b2cd82786eed",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Peek at the selection without leaving your app",
+     "items": [
+      "A small panel now appears beside selected text showing word count and character count",
+      "The panel points to your selection and disappears when you click, type, or scroll",
+      "Choose where the panel appears: above, below, at start, end, or middle of selection",
+      "Your app keeps focus and the selection stays active while the panel is visible",
+      "Access peek positions from the menu bar menu"
+     ]
+    },
+    "vi": {
+     "headline": "Xem nhanh văn bản đã chọn mà không rời ứng dụng",
+     "items": [
+      "Bảng nhỏ hiện bên cạnh văn bản đã chọn, hiển thị số từ và số ký tự",
+      "Bảng chỉ vào vùng chọn và tự động biến mất khi bạn nhấp, gõ phím hoặc cuộn",
+      "Chọn vị trí hiển thị bảng: phía trên, dưới, đầu, cuối hoặc giữa vùng chọn",
+      "Ứng dụng của bạn vẫn giữ tiêu điểm và vùng chọn không bị mất",
+      "Truy cập các vị trí xem nhanh từ menu thanh trình đơn"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.18.0",
+  "date": "2026-10-09",
+  "notes": "### Added\n\n- The background card keeps its page while it is put away: opened again, it is there at once, as you left it — still taller, if you made it so — and says how many times it has been shown since it loaded.\n- It is loaded ahead when Lumi starts, so the first opening is as quick — the new **preload** permission, which the sample now asks for. **Load ahead when Lumi starts** on the card turns that on or off — the same switch as **Preload** on the sample's Permissions sheet, and each follows the other.\n- Needs Lumi 1.45.0.",
+  "notesSha256": "a4cecee61cd3c3f835e0a84938da214e25ecd5712a3d9a87c3a378ec7d5c56e4",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "The background card remembers its state and loads ahead at startup",
+     "items": [
+      "The background card keeps its page and size when put away and reopened",
+      "It shows how many times it has been displayed since it loaded",
+      "The card now loads ahead when Lumi starts so the first opening is instant",
+      "A new preload permission lets you control whether the card loads at startup",
+      "Requires Lumi 1.45.0"
+     ]
+    },
+    "vi": {
+     "headline": "Thẻ nền giữ trạng thái và tải trước khi khởi động",
+     "items": [
+      "Thẻ nền giữ nguyên trang và kích thước khi đóng rồi mở lại",
+      "Hiển thị số lần thẻ đã được mở kể từ khi tải",
+      "Thẻ giờ tải trước khi Lumi khởi động để mở ngay lập tức",
+      "Quyền tải trước mới cho phép bạn chọn có tải thẻ lúc khởi động hay không",
+      "Yêu cầu Lumi 1.45.0"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.17.0",
+  "date": "2026-10-07",
+  "notes": "### Added\n\n- The background card comes back where you left it, at the size you left it, on Lumi 1.40.0 and later. An older Lumi opens it at its corner, as before.",
+  "notesSha256": "d9b9d5303901150895ab8be85d2062077a4d8ec1d780631268d06c274e4e3a97",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Background card remembers its position and size",
+     "items": [
+      "The background card reopens where you left it and at the size you set, if you use Lumi 1.40.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Thẻ nền nhớ vị trí và kích thước",
+     "items": [
+      "Thẻ nền mở lại đúng vị trí và kích thước bạn đã để, nếu bạn dùng Lumi 1.40.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.16.1",
+  "date": "2026-10-06",
+  "notes": "### Changed\n\n- The rename sheet says when the name is empty, and grows to fit the line saying so.",
+  "notesSha256": "34f41c17906df6f478e33315f819e4fc5fc1509e73e9a3d6e20eb395f8ab8eb5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Improved rename sheet",
+     "items": [
+      "The rename sheet now shows a message when the name is empty",
+      "The rename sheet grows to fit the empty name message"
+     ]
+    },
+    "vi": {
+     "headline": "Cải thiện hộp thoại đổi tên",
+     "items": [
+      "Hộp thoại đổi tên giờ hiển thị thông báo khi tên để trống",
+      "Hộp thoại đổi tên tự mở rộng để vừa với thông báo tên trống"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.16.0",
+  "date": "2026-10-06",
+  "notes": "### Added\n\n- Rename in a sheet, on the Settings page: a dialog over the whole of Lumi's window, in Lumi's own frame, that answers the new name back to the page. Needs Lumi 1.38.",
+  "notesSha256": "b4ccb4a293128565c72b2462174581669e9d9dcdfcfb3b4981e73e7472ad71cd",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Rename through a dialog over Lumi's window",
+     "items": [
+      "You can now rename through a dialog that appears over Lumi's window"
+     ]
+    },
+    "vi": {
+     "headline": "Đổi tên qua hộp thoại hiển thị trên cửa sổ Lumi",
+     "items": [
+      "Giờ bạn có thể đổi tên qua hộp thoại xuất hiện trên cửa sổ Lumi"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.15.0",
+  "date": "2026-10-06",
+  "notes": "### Added\n\n- Hold input from a window or a panel: for ten seconds no key reaches any app, and the keys pressed are listed. A second button holds the trackpad too. Needs Lumi 1.38.",
+  "notesSha256": "f4a578628a3c08cdbfdc9df329bd67963ce2bf259d17ffc2cc1825760868e0b9",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Hold input to see what keys you press",
+     "items": [
+      "Hold input from a window or panel to see every key pressed for ten seconds",
+      "A second button holds both keyboard and trackpad input"
+     ]
+    },
+    "vi": {
+     "headline": "Giữ phím để xem bạn đang nhấn gì",
+     "items": [
+      "Giữ phím từ cửa sổ hoặc bảng để xem mọi phím được nhấn trong mười giây",
+      "Nút thứ hai giữ cả bàn phím và trackpad"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.14.1",
+  "date": "2026-10-06",
+  "notes": "### Changed\n\n- A new icon: Lucide's translate mark on the macOS icon grid, in place of the hand-set A and 文.",
+  "notesSha256": "ca74812f01c33bfbbf30890bcd7f071f90b295a1a7a603bda49e15a59e08cee7",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "New icon",
+     "items": [
+      "The extension now uses a translate symbol instead of the A and 文 characters"
+     ]
+    },
+    "vi": {
+     "headline": "Biểu tượng mới",
+     "items": [
+      "Tiện ích giờ dùng ký hiệu dịch thuật thay vì chữ A và 文"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.14.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- Rows of its own in Lumi's menu bar menu: **Translate Selection**, a **Translate To** submenu whose tick follows the language picked, and **Sample Settings…** — the `lumi::menu` calls, set on install and update.\n\n### Changed\n\n- Declares `menu`, the capability its menu bar rows need.",
+  "notesSha256": "475da3c90016ecbe5e5cc8ce12d0c5c9280f903b30a7fdc14c55e2b9d0d0e159",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Menu bar commands for translating the selection",
+     "items": [
+      "Added Translate Selection and Translate To commands to Lumi's menu",
+      "The Translate To submenu shows which language is currently selected",
+      "Added Sample Settings command to open preferences from the menu bar"
+     ]
+    },
+    "vi": {
+     "headline": "Lệnh dịch văn bản trong thanh menu",
+     "items": [
+      "Thêm lệnh Dịch Văn Bản Đã Chọn và Dịch Sang vào menu của Lumi",
+      "Menu con Dịch Sang hiển thị ngôn ngữ đang được chọn",
+      "Thêm lệnh Cài Đặt Sample để mở tùy chọn từ thanh menu"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.13.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- A **Permissions** part on the settings page: check, ask with Lumi's own sheet, ask macOS directly, and open System Settings — the four calls in `lumi::permissions`, for Screen Recording.\n\n### Changed\n\n- Needs Lumi 1.33.0, and declares `screen`, the capability Screen Recording is for.",
+  "notesSha256": "37577ff45ab541f32ee923f6311ed3cf62c203e5555716206807c95c161ad7df",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Screen Recording permission controls added to settings",
+     "items": [
+      "Settings now show Screen Recording permission status and let you request it",
+      "Requires Lumi 1.33.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Thêm điều khiển quyền Ghi màn hình vào cài đặt",
+     "items": [
+      "Cài đặt hiện hiển thị trạng thái quyền Ghi màn hình và cho phép yêu cầu quyền",
+      "Yêu cầu Lumi 1.33.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.12.0",
+  "date": "2026-10-02",
+  "notes": "### Added\n\n- The Changelog tab on its page in Lumi is renamed **What's new**, to show how an extension changes one of Lumi's own tabs.\n- Two windows whose toolbar is their title bar, one with a taller band, to show `titlebar = \"unified\"`.\n\n### Changed\n\n- Needs Lumi 1.31.0.",
+  "notesSha256": "bcac4053e282bf1ee94a39d0088c3973bed1dd8ed1201e6581201778a7a42a17",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "New windows and a renamed tab",
+     "items": [
+      "The Changelog tab is now called What's new",
+      "Two new example windows show how to use a unified title bar",
+      "Requires Lumi 1.31.0 or later"
+     ]
+    },
+    "vi": {
+     "headline": "Cửa sổ mới và đổi tên tab",
+     "items": [
+      "Tab Changelog giờ có tên là What's new",
+      "Hai cửa sổ mẫu mới minh họa cách dùng thanh tiêu đề thống nhất",
+      "Yêu cầu Lumi 1.31.0 trở lên"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.11.1",
+  "date": "2026-09-30",
+  "notes": "### Added\n\n- Screenshots of the About and Settings pages for the Extension Store.",
+  "notesSha256": "feb938b90b420b2b44db9dcb5bc5a6941a3cdea78af38b77b6ca2bdf0eb6db19",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Screenshots added for the Extension Store",
+     "items": [
+      "Screenshots of the About and Settings pages now appear in the Extension Store"
+     ]
+    },
+    "vi": {
+     "headline": "Thêm ảnh chụp màn hình cho Cửa hàng Tiện ích",
+     "items": [
+      "Ảnh chụp màn hình của trang Giới thiệu và Cài đặt hiện xuất hiện trong Cửa hàng Tiện ích"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.11.0",
+  "date": "2026-09-29",
+  "notes": "### Changed\n\n- Rebuilt against the latest extension SDK. Still runs on Lumi 1.22.",
+  "notesSha256": "c94b70c6204ce9b6727c113b2923605da7a2af6a25f4f3d7cf89f9106badb6f5",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Updated for compatibility",
+     "items": [
+      "Updated to work with the latest version of Lumi while remaining compatible with Lumi 1.22"
+     ]
+    },
+    "vi": {
+     "headline": "Cập nhật tương thích",
+     "items": [
+      "Cập nhật để hoạt động với phiên bản Lumi mới nhất, vẫn tương thích với Lumi 1.22"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.10.0",
+  "date": "2026-09-28",
+  "notes": "### Added\n\n- A Welcome window that opens when the extension is installed.\n- An installer page, a note when the extension is updated, and a page shown before it is uninstalled.\n\n### Changed\n\n- Built for version 0.2 of Lumi's extension interface.",
+  "notesSha256": "3f319e648352209710de60b69bddb26049ece405d0694942d907e4ff7c51465b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Welcome window and update notes",
+     "items": [
+      "A welcome window now appears when you first install the extension",
+      "You will see a note when the extension updates to a new version",
+      "An installer page helps you get started with the extension",
+      "A page appears before uninstalling to confirm your choice"
+     ]
+    },
+    "vi": {
+     "headline": "Cửa sổ chào mừng và thông báo cập nhật",
+     "items": [
+      "Cửa sổ chào mừng xuất hiện khi bạn cài đặt tiện ích lần đầu",
+      "Bạn sẽ thấy thông báo khi tiện ích cập nhật lên phiên bản mới",
+      "Trang cài đặt giúp bạn bắt đầu sử dụng tiện ích",
+      "Trang xác nhận xuất hiện trước khi gỡ cài đặt tiện ích"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.8.0",
+  "date": "2026-09-28",
+  "notes": "### Changed\n\n- Built for version 0.1 of Lumi's extension interface.",
+  "notesSha256": "88571b88362197a7541df53d09aedcb74e98dd06cacda32e670e3a45e12cbbce",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Under-the-hood improvements",
+     "items": [
+      "Updated to work with the latest version of Lumi"
+     ]
+    },
+    "vi": {
+     "headline": "Cải tiến nội bộ",
+     "items": [
+      "Cập nhật để hoạt động với phiên bản Lumi mới nhất"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.7.0",
+  "date": "2026-09-27",
+  "notes": "### Added\n\n- Translate can open the text in more languages at once: pick them under \"Also open in\" and each gets its own tab.\n- A short note under each of Translate's four tabs.\n\n### Fixed\n\n- Languages with special characters in their code now open the right translation page.",
+  "notesSha256": "f95fbe172855444a30ba1fa6f49e87f3f10d074e4c907339691226b55fa845a2",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Translate now opens multiple languages at once",
+     "items": [
+      "Translate can open the text in several languages at once through Also open in",
+      "Each language you pick opens in its own tab",
+      "Languages with special characters in their code now open the correct page",
+      "A short note now appears under each of Translate's four tabs"
+     ]
+    },
+    "vi": {
+     "headline": "Translate giờ mở nhiều ngôn ngữ cùng lúc",
+     "items": [
+      "Translate có thể mở văn bản bằng nhiều ngôn ngữ cùng lúc qua Also open in",
+      "Mỗi ngôn ngữ bạn chọn sẽ mở trong tab riêng",
+      "Ngôn ngữ có ký tự đặc biệt trong mã giờ mở đúng trang dịch",
+      "Ghi chú ngắn xuất hiện dưới mỗi tab trong bốn tab của Translate"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.6.0",
+  "date": "2026-09-27",
+  "notes": "### Added\n\n- An About page and a Settings tab in the extension's page.\n- An icon for each command.\n- Translate's tab is chosen from a segmented picker.",
+  "notesSha256": "12de1707e478223b1b836ea6add6de72e39f210fa73a990d28751aa0ad3f77c6",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings, icons, and a smoother translate picker",
+     "items": [
+      "Added an About page and a Settings tab",
+      "Each command now has its own icon",
+      "The translate tab is now a segmented picker instead of a dropdown"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt, biểu tượng và bộ chọn dịch mượt hơn",
+     "items": [
+      "Thêm trang Giới thiệu và tab Cài đặt",
+      "Mỗi lệnh giờ có biểu tượng riêng",
+      "Tab dịch giờ dùng bộ chọn phân đoạn thay vì menu thả xuống"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.5.0",
+  "date": "2026-09-27",
+  "notes": "### Added\n\n- The settings window shows which Lumi it is running in, and the edition when it is Pro.",
+  "notesSha256": "90a08817645c0d97aaae21339f619cbb5c06a1f88c57a47020617117771aba17",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings now show which Lumi edition you're using",
+     "items": [
+      "The settings window now displays which Lumi you are running in and shows the edition if it is Pro"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt hiện hiển thị phiên bản Lumi bạn đang dùng",
+     "items": [
+      "Cửa sổ cài đặt giờ hiển thị Lumi nào bạn đang chạy và cho biết phiên bản nếu là Pro"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.4.0",
+  "date": "2026-09-27",
+  "notes": "### Changed\n\n- The default language is kept per profile: each profile can have its own, and the settings window says whose value you are editing.",
+  "notesSha256": "4a2f78736a27ac5b867657966d205788c58c90de9d0a1937a19590284a896299",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Default language now saved per profile",
+     "items": [
+      "Each profile can have its own default language setting",
+      "The settings window shows which profile's language you are editing"
+     ]
+    },
+    "vi": {
+     "headline": "Ngôn ngữ mặc định giờ được lưu theo hồ sơ",
+     "items": [
+      "Mỗi hồ sơ có thể có ngôn ngữ mặc định riêng",
+      "Cửa sổ cài đặt hiển thị bạn đang chỉnh sửa ngôn ngữ của hồ sơ nào"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.3.0",
+  "date": "2026-09-27",
+  "notes": "### Added\n\n- The settings window shows which profile is live.",
+  "notesSha256": "81099056575be488684ed8df7a2ca2d6a067191f7397df9ecb6750cdea4f9034",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Profile indicator in settings",
+     "items": [
+      "The settings window shows which profile is currently active"
+     ]
+    },
+    "vi": {
+     "headline": "Hiển thị hồ sơ đang dùng trong cài đặt",
+     "items": [
+      "Cửa sổ cài đặt hiển thị hồ sơ nào đang hoạt động"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.2.0",
+  "date": "2026-09-27",
+  "notes": "### Added\n\n- A settings window, opened from the new Configure command.\n- An icon for the extension.",
+  "notesSha256": "754559160a35f4c1b9a95353f761e6ac22193167752039bb05ef4a245489e993",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "Settings and icon",
+     "items": [
+      "Added a settings window, opened from the new Configure command",
+      "Added an icon for the extension"
+     ]
+    },
+    "vi": {
+     "headline": "Cài đặt và biểu tượng",
+     "items": [
+      "Thêm cửa sổ cài đặt, mở từ lệnh Cấu hình mới",
+      "Thêm biểu tượng cho tiện ích"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "version": "0.1.0",
+  "date": "2026-09-27",
+  "notes": "### Added\n\n- First release: a small extension to learn from, with commands to copy from when you write your own.",
+  "notesSha256": "ccaa486a9428831d873409f434d0742f1d4820a15e57c34656838428ca04935b",
+  "summary": {
+   "lumi_notes": 1,
+   "locales": {
+    "en": {
+     "headline": "First release",
+     "items": [
+      "A simple extension that reads your selection and shows it in an alert"
+     ]
+    },
+    "vi": {
+     "headline": "Phiên bản đầu tiên",
+     "items": [
+      "Tiện ích đơn giản đọc văn bản bạn chọn và hiển thị trong hộp thoại"
+     ]
+    }
+   }
+  }
+ }
+]

@@ -1,0 +1,4 @@
+untrusted comment: signature from minisign secret key
+RURHYfQI7f2AO8vV5h/QZI0F/g3KYfGIMm2eoy0sOGwHtuv+ZYV1K2wm1YMRSTliT5M0LqFCw6cLZtbbCNsEa9tjkrWW6ndzVwM=
+trusted comment: lumi-store dev.thiennguyen.meeting
+F5fkqNroAXxH0/byfVy4YyT6hYc7M2DDiXbZKV7k0wK0tCWN1pNi1Alwq9m0HG3HJlgkL0yreZNzxCiedecDDw==
