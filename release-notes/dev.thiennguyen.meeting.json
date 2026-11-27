@@ -1,4 +1,32 @@
 {
+  "0.26.0": {
+    "notesSha256": "240835e84b4c9b02fcde73081fd1bc1b0cde97d6465a01e659ae24912dfcb6d7",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Headings and controls stay in place while you scroll",
+          "items": [
+            "Start, Chats and Libraries stay under the title bar while meetings scroll beneath them",
+            "Search results no longer jump up when Start, Chats and Libraries disappear",
+            "Section headings like Today and Yesterday stay visible as their meetings scroll past",
+            "An open folder keeps its name at the top while you scroll through its meetings",
+            "When searching, a meeting's name stays visible while its matching lines scroll by"
+          ]
+        },
+        "vi": {
+          "headline": "Các tiêu đề và điều khiển giữ nguyên vị trí khi cuộn",
+          "items": [
+            "Start, Chats và Libraries ở dưới thanh tiêu đề trong khi các cuộc họp cuộn bên dưới",
+            "Kết quả tìm kiếm không còn nhảy lên khi Start, Chats và Libraries biến mất",
+            "Các tiêu đề phần như Hôm nay và Hôm qua vẫn hiển thị khi các cuộc họp cuộn qua",
+            "Thư mục đang mở giữ tên ở trên cùng khi bạn cuộn qua các cuộc họp",
+            "Khi tìm kiếm, tên cuộc họp vẫn hiển thị trong khi các dòng khớp cuộn qua"
+          ]
+        }
+      }
+    }
+  },
   "0.25.1": {
     "notesSha256": "fb1919b292507f81b2a6fec1a9a18aa5899230cecde6e809cc847acefa1c6a96",
     "summary": {
