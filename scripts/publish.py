@@ -239,6 +239,11 @@ EVENTS = {
     # told once by its id.
     "audio-output-use": "audio-output-use",
     "kept-press": "offer",
+    # Lumi 1.103: what Lumi cut short of the extension's own tasks — a
+    # switch-off or a quit — told at the switch back on or the next launch.
+    # Only the ids of its own tasks, so no capability: `window-closed`'s
+    # reasoning.
+    "interrupted": None,
 }
 PARAM_KINDS = {
     "text", "textarea", "number", "bool", "select", "segmented", "slider",
@@ -498,6 +503,12 @@ AWAY_SINCE = (1, 81, 0)
 # older Lumi refuses the words, so the package would be offered to it and
 # fail at install: a manifest naming one names this floor.
 KEPT_PRESS_SINCE = (1, 102, 0)
+
+# The Lumi that first tells `interrupted` (what it cut short of an
+# extension's tasks at a switch-off or a quit). An older Lumi refuses the
+# word, so the package would be offered to it and fail at install: a
+# manifest naming it names this floor.
+INTERRUPTED_SINCE = (1, 103, 0)
 
 # The Lumi that first reads `[switches]`, knows the `launcher` capability and
 # its `[launcher]` table, and tells the `launcher-shown` event. An older Lumi
@@ -1035,6 +1046,14 @@ def check_manifest(entry_id: str, manifest: dict):
                 entry_id,
                 'the audio-output-use capability and event and the kept-press event are told from Lumi 1.102.0 — '
                 'an older Lumi refuses the manifest; set min-lumi-version to "1.102.0" or later',
+            )
+    if "interrupted" in ext.get("events", []):
+        floor = ext.get("min-lumi-version") or ext.get("min_lumi_version") or ""
+        if version_tuple(floor) < INTERRUPTED_SINCE:
+            fail(
+                entry_id,
+                'the interrupted event is told from Lumi 1.103.0 — an older Lumi refuses the manifest; '
+                'set min-lumi-version to "1.103.0" or later',
             )
     if "clipboard-ocr" in ext.get("events", []) and "clipboard" not in ext.get("events", []):
         fail(entry_id, 'hearing "clipboard-ocr" needs "clipboard" too — the text names a copy the extension has to have heard')

@@ -303,6 +303,10 @@ class TextInput(unittest.TestCase):
         self.assertIn('set min-lumi-version to "1.102.0"', self.refusal('"offer"', 'min-lumi-version = "1.101.0"\nevents = ["kept-press"]'))
         publish.check_manifest("dev.you.thing", self.manifest('"audio-output-use", "offer"', 'min-lumi-version = "1.102.0"\nevents = ["audio-output-use", "kept-press"]'))
 
+    def test_hearing_what_was_cut_short_needs_no_capability_but_its_floor(self):
+        self.assertIn('set min-lumi-version to "1.103.0"', self.refusal('"menu"', 'min-lumi-version = "1.102.0"\nevents = ["interrupted"]'))
+        publish.check_manifest("dev.you.thing", self.manifest('"menu"', 'min-lumi-version = "1.103.0"\nevents = ["interrupted"]'))
+
     def test_the_menu_bar_item_heading_needs_the_item(self):
         publish.check_manifest("dev.you.thing", self.manifest('"menu-bar-item"', "menu-bar-item-heading = false"))
         self.assertIn("needs the menu-bar-item capability", self.refusal('"menu"', "menu-bar-item-heading = false"))
