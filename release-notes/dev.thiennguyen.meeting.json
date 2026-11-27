@@ -1,4 +1,108 @@
 {
+  "0.25.0": {
+    "notesSha256": "2c6ad9ff3961864989fd5e990ce72dd96bc4ec97ab479e8f615257dc42268063",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Fixes for meetings interrupted when Lumi quits or restarts",
+          "items": [
+            "The call-ended card shows its buttons in full on their own row",
+            "Listen Again no longer gets stuck saying Stopping after Lumi restarts",
+            "Up Next no longer says Waiting to join for a join that cannot start",
+            "The menu bar stops counting a meeting that was cut off when Lumi quit",
+            "The next call is offered Take Notes after Meeting Notes is switched off"
+          ]
+        },
+        "vi": {
+          "headline": "Sửa lỗi các cuộc họp bị gián đoạn khi Lumi thoát hoặc khởi động lại",
+          "items": [
+            "Thẻ kết thúc cuộc gọi hiển thị đầy đủ các nút trên hàng riêng",
+            "Nghe Lại không còn bị kẹt ở trạng thái Đang dừng sau khi Lumi khởi động lại",
+            "Sắp Tới không còn hiển thị Đang chờ tham gia cho cuộc gọi không thể bắt đầu",
+            "Thanh menu ngừng đếm cuộc họp bị cắt khi Lumi thoát",
+            "Cuộc gọi tiếp theo được đề xuất Ghi Chú sau khi Meeting Notes bị tắt"
+          ]
+        }
+      }
+    }
+  },
+  "0.24.0": {
+    "notesSha256": "2881145ffc02f320303429f9a0a4a3d1296f622b9b9eb3ac3910e745dd17c989",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Merge speakers, translate mixed-language lines, and more fixes",
+          "items": [
+            "You can now merge speakers when Lumi splits one person into two numbers",
+            "Everyone invited now appears in the naming list, even if already assigned",
+            "Translate All no longer stops at lines that mix multiple languages",
+            "The last lines of a meeting are kept even if saving fails briefly",
+            "Meetings are no longer closed while Lumi asks a question before listening starts",
+            "Join and Take Notes no longer opens notes for meetings more than 4 hours away"
+          ]
+        },
+        "vi": {
+          "headline": "Gộp người nói, dịch dòng nhiều ngôn ngữ và sửa lỗi khác",
+          "items": [
+            "Giờ bạn có thể gộp người nói khi Lumi tách một người thành hai số",
+            "Mọi người được mời đều xuất hiện trong danh sách đặt tên, kể cả khi đã gán",
+            "Dịch Tất Cả không còn dừng ở dòng trộn nhiều ngôn ngữ",
+            "Các dòng cuối cuộc họp được giữ lại ngay cả khi lưu tạm thất bại",
+            "Cuộc họp không còn bị đóng khi Lumi hỏi trước khi bắt đầu nghe",
+            "Tham Gia và Ghi Chú không còn mở ghi chú cho cuộc họp cách xa hơn 4 giờ"
+          ]
+        }
+      }
+    }
+  },
+  "0.23.3": {
+    "notesSha256": "cc10148d7a1a6a64c3a8e31d5633ee7e6d493afe95860edb31b322b5dabb1dd2",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Clearer buttons when a meeting ends",
+          "items": [
+            "Save Now is now the main button on the call-ended card, matching what the countdown does",
+            "The other button now reads Continue Recording instead of its old label"
+          ]
+        },
+        "vi": {
+          "headline": "Nút bấm rõ ràng hơn khi cuộc họp kết thúc",
+          "items": [
+            "Lưu Ngay giờ là nút chính trên thẻ kết thúc cuộc gọi, khớp với đếm ngược",
+            "Nút còn lại giờ hiển thị Tiếp Tục Ghi Âm thay vì nhãn cũ"
+          ]
+        }
+      }
+    }
+  },
+  "0.23.2": {
+    "notesSha256": "1a0a876afe58545741ec70e95433cf604ba627fa406c95c197dbc483a24f9bf4",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Cleaner end-of-call card",
+          "items": [
+            "The card that appears when a call ends no longer shows a scroll bar",
+            "Long meeting names are now cut short to fit on one line",
+            "The Show More button is removed from the end-of-call card"
+          ]
+        },
+        "vi": {
+          "headline": "Giao diện kết thúc cuộc gọi gọn gàng hơn",
+          "items": [
+            "Thẻ xuất hiện khi kết thúc cuộc gọi không còn hiển thị thanh cuộn",
+            "Tên cuộc họp dài được rút ngắn để vừa trên một dòng",
+            "Nút Xem thêm đã được gỡ bỏ khỏi thẻ kết thúc cuộc gọi"
+          ]
+        }
+      }
+    }
+  },
   "0.23.1": {
     "notesSha256": "7a4d9acf3f56da6852759b058d63d83965c7dd86eefa24d3f9e507ae55a54e27",
     "summary": {
