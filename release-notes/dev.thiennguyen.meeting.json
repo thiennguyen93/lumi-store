@@ -1,4 +1,30 @@
 {
+  "0.25.1": {
+    "notesSha256": "fb1919b292507f81b2a6fec1a9a18aa5899230cecde6e809cc847acefa1c6a96",
+    "summary": {
+      "lumi_notes": 1,
+      "locales": {
+        "en": {
+          "headline": "Summaries of long meetings now complete successfully",
+          "items": [
+            "Summaries of long meetings no longer fail with an error about the answer being unreadable",
+            "Clean Up and Translate All also handle longer answers without failing",
+            "Each model now writes up to its own limit instead of a fixed length",
+            "Answers that are cut short are automatically read in two parts"
+          ]
+        },
+        "vi": {
+          "headline": "Tóm tắt cuộc họp dài giờ hoàn thành được",
+          "items": [
+            "Tóm tắt cuộc họp dài không còn báo lỗi không đọc được câu trả lời",
+            "Dọn dẹp và Dịch tất cả cũng xử lý được câu trả lời dài hơn",
+            "Mỗi mô hình giờ viết đến giới hạn riêng thay vì độ dài cố định",
+            "Câu trả lời bị cắt ngắn sẽ tự động đọc lại thành hai phần"
+          ]
+        }
+      }
+    }
+  },
   "0.25.0": {
     "notesSha256": "2c6ad9ff3961864989fd5e990ce72dd96bc4ec97ab479e8f615257dc42268063",
     "summary": {
